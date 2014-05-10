@@ -4,7 +4,11 @@
 #include <string>
 #include <iomanip>
 
-//! Outputs a representation of the given value to the given output stream.
+namespace rc {
+
+//! Outputs a representation of the given value to the given output stream. The
+//! default is to use \c operator<< but you can override this representation by
+//! providing overloads for different types.
 //!
 //! @param value  The value.
 //! @param os     The output stream.
@@ -14,6 +18,7 @@ void show(const T &value, std::ostream &os)
     os << value;
 }
 
+//! Overloaded show to display strings in a more readable way.
 void show(const std::string &value, std::ostream &os)
 {
     os << '"';
@@ -70,6 +75,7 @@ void show(const std::string &value, std::ostream &os)
     os << '"';
 }
 
+//! Delegates to the \c std::string version
 void show(const char *value, std::ostream &os)
 {
     show(std::string(value), os);
@@ -106,3 +112,5 @@ void show(const std::vector<T, Alloc> &vec, std::ostream &os)
 {
     showCollection("[", "]", vec.begin(), vec.end(), os);
 }
+
+} // namespace rc

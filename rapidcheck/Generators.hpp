@@ -25,15 +25,14 @@ template<typename Generator, typename Predicate>
 class SuchThat
 {
 public:
-    typedef typename std::result_of<Generator(size_t)>::type ResultType;
+    SuchThat(Generator generator, Predicate predicate)
+        : m_generator(std::move(generator))
+        , m_predicate(std::move(predicate)) {}
 
-    SuchThat(const Generator &generator, const Predicate &predicate)
-        : m_generator(generator), m_predicate(predicate) {}
-
-    ResultType operator()(size_t size) const
+    GeneratedType<Generator> operator()(size_t size) const
     {
         while (true) {
-            ResultType x(m_generator(size));
+            auto x(m_generator(size));
             if (m_predicate(x))
                 return x;
             // Increase size with each try. This prevents problems
@@ -92,8 +91,8 @@ template<typename Coll, typename Generator>
 class CollectionGenerator
 {
 public:
-    explicit CollectionGenerator(const Generator &generator)
-        : m_generator(generator) {}
+    explicit CollectionGenerator(Generator generator)
+        : m_generator(std::move(generator)) {}
 
     Coll operator()(size_t size) const
     {
@@ -112,12 +111,10 @@ template<typename Generator>
 class Resized
 {
 public:
-    typedef typename std::result_of<Generator(size_t)>::type ResultType;
+    Resized(size_t size, Generator generator)
+        : m_size(size), m_generator(std::move(generator)) {}
 
-    Resized(size_t size, const Generator &generator)
-        : m_size(size), m_generator(generator) {}
-
-    ResultType operator()(size_t size) const
+    GeneratedType<Generator> operator()(size_t size) const
     { return m_generator(m_size); }
 
 private:
@@ -138,9 +135,9 @@ Arbitrary<T> arbitrary() { return Arbitrary<T>(); }
 //! @param gen   The underlying generator to use.
 //! @param pred  The predicate that the generated values must satisfy
 template<typename Generator, typename Predicate>
-SuchThat<Generator, Predicate> suchThat(const Generator &gen,
-                                        const Predicate &pred)
-{ return SuchThat<Generator, Predicate>(gen, pred); }
+SuchThat<Generator, Predicate> suchThat(Generator gen,
+                                        Predicate pred)
+{ return SuchThat<Generator, Predicate>(std::move(gen), std::move(pred)); }
 
 //! Generates an arbitrary value between \c min and \c max. Both \c min and
 //! \c max are included in the range.
@@ -149,15 +146,18 @@ SuchThat<Generator, Predicate> suchThat(const Generator &gen,
 //! @param max  The maximum value.
 template<typename T>
 Ranged<T> ranged(T min, T max)
-{ return Ranged<T>(min, max); }
+{
+    static_assert(std::is_arithmetic<T>::value,
+                  "ranged only supports arithmetic types");
+    return Ranged<T>(min, max);
+}
 
 //! Generates a value by randomly using one of the given generators.
 template<typename Generator, typename ...Generators>
-OneOf<typename std::result_of<Generator(size_t)>::type>
-oneOf(const Generator &gen, const Generators &...gens)
+OneOf<GeneratedType<Generator>> oneOf(Generator gen, Generators ...gens)
 {
     typedef typename std::result_of<Generator(size_t)>::type T;
-    return OneOf<T>{ gen, gens... };
+    return OneOf<T>{ std::move(gen), std::move(gens)... };
 }
 
 //! Generates a non-zero value of type \c T.
@@ -173,14 +173,14 @@ NonZero<T> nonZero() { return NonZero<T>(); }
 //! @tparam C          The collection type.
 //! @tparam Generator  The generator type.
 template<typename Coll, typename Generator>
-CollectionGenerator<Coll, Generator> collection(const Generator &gen)
-{ return CollectionGenerator<Coll, Generator>(gen); }
+CollectionGenerator<Coll, Generator> collection(Generator gen)
+{ return CollectionGenerator<Coll, Generator>(std::move(gen)); }
 
 //! Returns a version of the given generator that always uses the specified size.
 //!
 //! @param gen  The generator to wrap.
 template<typename Generator>
-Resized<Generator> resize(size_t size, const Generator &gen)
-{ return Resized<Generator>(size, gen); }
+Resized<Generator> resize(size_t size, Generator gen)
+{ return Resized<Generator>(size, std::move(gen)); }
 
 }
