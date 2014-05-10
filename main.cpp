@@ -1,26 +1,28 @@
 #include <iostream>
 
 #include "rapidcheck/Arbitrary.hpp"
+#include "rapidcheck/Show.hpp"
+#include "rapidcheck/Check.hpp"
 
 using namespace rc;
 
-template<typename T, typename Alloc>
-std::ostream &operator<<(std::ostream &os, const std::vector<T, Alloc> &vec)
+template<typename Iterator>
+void crappyReverse(Iterator begin, Iterator end)
 {
-    os << "[";
-    if (!vec.empty()) {
-        for (auto it = vec.begin(); it != (vec.end() - 1); it++)
-            os << *it << ", ";
-        os << vec.back();
-    }
-    os << "]";
-
-    return os;
+    if ((end - begin) > 10)
+        end = begin + 10;
+    std::reverse(begin, end);
 }
 
 int main()
 {
-    auto vec = Arbitrary<std::vector<std::string>>()(10);
-    std::cout << "int: " << vec << std::endl;
+    check([](const std::vector<int> &vec) {
+            auto expected = vec;
+            auto actual = vec;
+            std::reverse(expected.begin(), expected.end());
+            crappyReverse(actual.begin(), actual.end());
+            return expected == actual;
+        });
+
     return 0;
 }

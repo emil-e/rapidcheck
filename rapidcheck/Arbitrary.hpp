@@ -10,6 +10,7 @@ namespace rc {
 
 template<typename T> struct Arbitrary;
 
+// Signed integer generation
 template<typename T>
 typename std::enable_if<std::is_integral<T>::value, T>::type
 defaultGenerate(size_t size)
@@ -17,8 +18,11 @@ defaultGenerate(size_t size)
     auto &context = Context::instance();
 
     BasicInt r = context.getRandomInt();
-    int nBits = (size * std::numeric_limits<T>::digits) / 100;
-    BasicInt mask = ~(std::numeric_limits<BasicInt>::max() << nBits);
+    size = std::min(size, kReferenceSize);
+    int nBits = (size * std::numeric_limits<T>::digits) / kReferenceSize;
+    if (nBits == 0)
+        return 0;
+    BasicInt mask = ~(((std::numeric_limits<BasicInt>::max() - 1) << (nBits - 1)));
     T x = static_cast<T>(r & mask);
     if (std::numeric_limits<T>::is_signed)
     {
@@ -30,6 +34,7 @@ defaultGenerate(size_t size)
     return x;
 }
 
+// Real generation
 template<typename T>
 typename std::enable_if<std::is_floating_point<T>::value, T>::type
 defaultGenerate(size_t size)
@@ -43,7 +48,7 @@ defaultGenerate(size_t size)
 //! template to provide generation for custom types.
 //!
 //! @tparam T       The type to generate.
-//! @tparam Enable  To be used with enable_if
+//! @tparam Enable  To be used with \c enable_if
 template<typename T>
 struct Arbitrary
 {
@@ -62,25 +67,20 @@ template<>
 struct Arbitrary<bool>
 {
     bool operator()(size_t size) const
-    {
-        return (Arbitrary<uint8_t>()(100) & 0x1) == 0;
-    }
+    { return (arbitrary<uint8_t>()(kReferenceSize) & 0x1) == 0; }
 };
 
+// std::vector
 template<typename T, typename Alloc>
 struct Arbitrary<std::vector<T, Alloc>>
 {
     typedef std::vector<T, Alloc> VectorType;
 
     VectorType operator()(size_t size) const
-    {
-        auto length = Arbitrary<typename VectorType::size_type>()(size);
-        VectorType vec(length);
-        std::generate(vec.begin(), vec.end(), [&]{ return Arbitrary<T>()(size); });
-        return vec;
-    }
+    { return collection<std::vector<T, Alloc>>(arbitrary<T>())(size); }
 };
 
+// std::basic_string
 template<typename T, typename Traits, typename Alloc>
 struct Arbitrary<std::basic_string<T, Traits, Alloc>>
 {
@@ -88,11 +88,9 @@ struct Arbitrary<std::basic_string<T, Traits, Alloc>>
 
     StringType operator()(size_t size) const
     {
-        auto length = Arbitrary<typename StringType::size_type>()(size);
-        StringType str(length, '\0');
-        auto nonZeroChar = suchThat(Arbitrary<T>(), [](T x){ return x != 0; });
-        std::generate(str.begin(), str.end(), [&]{ return nonZeroChar(100); });
-        return str;
+        auto charGen = resize(kReferenceSize,
+                              oneOf(ranged<uint8_t>(1, 127), nonZero<T>()));
+        return collection<std::string>(charGen)(size);
     }
 };
 
