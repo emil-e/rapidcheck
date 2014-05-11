@@ -13,11 +13,7 @@ template<typename T> T pick();
 
 namespace detail {
 
-//! The integral type returned by basic random function in rapidcheck.
-typedef uint64_t BasicInt;
-
-//! The real type returned by basic random functions in rapidcheck.
-typedef double BasicReal;
+typedef std::function<bool()> Property;
 
 //! This is the class that does the actual testing. It is NOT thread safe!!!
 class Checker
@@ -34,7 +30,7 @@ public:
     GeneratedType<Generator> pick(const Generator &generator)
     {
         typedef GeneratedType<Generator> T;
-        T value(generator(m_currentSize));
+        T value(getValue(generator));
         m_currentTestCase.emplace_back(new StoredValue<T>(value));
         return value;
     }
@@ -52,19 +48,19 @@ public:
 
     //! Runs the checker on the given property.
     //!
-    //! @param property  A property to test. Should be callable and return a
-    //!                  bool.
-    template<typename Property>
-    bool check(Property property)
+    //! @param property  A property to test.
+    bool check(const Property &property)
     {
-        for (int testNumber = 1; testNumber <= m_maxSuccess; testNumber++) {
-            resetTestCase();
-            *m_output << testNumber << "/" << m_maxSuccess << std::endl;
-            if (!property()) {
-                onFailure(testNumber, m_currentTestCase);
+        m_currentProperty = property;
+        m_currentTestNumber = 1;
+        m_currentMinimum.clear();
+        while (m_currentTestNumber <= m_maxSuccess) {
+            m_currentTestCase.clear();
+            if (!m_currentProperty()) {
+                onFailure(std::move(m_currentTestCase));
                 return false;
             }
-            printTestCase(m_currentTestCase);
+            m_currentTestNumber++;
             m_currentSize = std::min(m_maxSize, m_currentSize + 1);
         }
 
@@ -74,17 +70,38 @@ public:
 private:
     Checker() { reset(); }
 
-    // Reset parameters before each test case.
-    void resetTestCase()
+    // Retrieves a value to return from \c pick.
+    template<typename Generator>
+    GeneratedType<Generator> getValue(const Generator &generator)
     {
-        m_currentTestCase.clear();
+        typedef GeneratedType<Generator> T;
+        if (m_currentMinimum.empty()) {
+            return generator(m_currentSize);
+        } else {
+            // TODO check for incompatible types
+            auto storedValue = dynamic_cast<StoredValue<T> *>(
+                m_fixIterator->get());
+            if (!m_didShrink && storedValue->hasNextShrink()) {
+                // No other value has been shrunk and there is a possible shrink
+                m_didShrink = true;
+                return storedValue->nextShrink();
+            } else {
+                // Another value has already been shrunk or there is no possible
+                // shrink
+                return storedValue->get();
+            }
+        }
     }
 
     // Run when a test fails.
-    void onFailure(int testNumber, const TestCase &failingCase)
+    void onFailure(TestCase failingCase)
     {
-        *m_output << "Falsifiable after " << testNumber << " tests:" << std::endl;
+        *m_output << "Found failure:" << std::endl;
         printTestCase(failingCase);
+        TestCase minimalCase = doShrink(std::move(failingCase));
+        *m_output << "Falsifiable after " << m_currentTestNumber << " tests and "
+                  << m_numShrinks << " shrinks:" << std::endl;
+        printTestCase(minimalCase);
     }
 
     void printTestCase(const TestCase &testCase)
@@ -93,6 +110,29 @@ private:
             value->show(*m_output);
             *m_output << std::endl;
         }
+    }
+
+    TestCase doShrink(TestCase startCase)
+    {
+        m_currentMinimum = std::move(startCase);
+        while (!isLocalMinimum(m_currentMinimum)) {
+            m_currentTestCase.clear();
+            m_didShrink = false;
+            m_fixIterator = m_currentMinimum.begin();
+            if (!m_currentProperty()) {
+                m_currentMinimum = std::move(m_currentTestCase);
+                m_numShrinks++;
+            }
+        }
+
+        return std::move(m_currentMinimum);
+    }
+
+    static bool isLocalMinimum(const TestCase &testCase)
+    {
+        return std::none_of(testCase.begin(),testCase.end(),
+                            [](const ValueUP &value)
+                            { return value->hasNextShrink(); });
     }
 
     void reset()
@@ -106,8 +146,15 @@ private:
     Checker(const Checker &) = delete;
 
     RandomEngine m_randomEngine;
+    Property m_currentProperty;
     size_t m_currentSize;
+    int m_currentTestNumber;
     TestCase m_currentTestCase;
+
+    TestCase m_currentMinimum;
+    TestCase::iterator m_fixIterator;
+    int m_numShrinks;
+    bool m_didShrink;
 
     // Parameters
     size_t m_maxSuccess = 100;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Show.hpp"
+#include "Shrink.hpp"
 
 namespace rc {
 namespace detail {
@@ -19,6 +20,9 @@ public:
     //! Returns the type_info for the represented value.
     virtual const std::type_info &typeInfo() const = 0;
 
+    //! Returns \c true if this value has more possible shrinks.
+    virtual bool hasNextShrink() const = 0;
+
     virtual ~Value() = default;
 };
 
@@ -28,8 +32,19 @@ template<typename T>
 class TypedValue : public Value
 {
 public:
+    TypedValue() = default;
+
     //! Returns a copy of the represented value.
     virtual T get() const = 0;
+
+    //! Returns the next possible shrink of this value or the original value if
+    //! no shrink is possible.
+    virtual T nextShrink() = 0;
+
+private:
+    // No copying since shrinkers are, in general, not copyable
+    TypedValue(const TypedValue &) = delete;
+    TypedValue &operator=(const TypedValue &) = delete;
 };
 
 //! Implementation of \c TypedValue which simply stores a copy of the
@@ -38,7 +53,9 @@ template<typename T>
 class StoredValue : public TypedValue<T>
 {
 public:
-    StoredValue(T value) : m_value(std::move(value)) {}
+    StoredValue(T value)
+        : m_value(std::move(value))
+        , m_shrinker(Shrinkable<T>::shrink(m_value)) { }
 
     void show(std::ostream &os) const override
     { rc::show(m_value, os); }
@@ -48,8 +65,16 @@ public:
 
     T get() const override { return m_value; }
 
+    bool hasNextShrink() const override { return m_shrinker.hasNext(); }
+
+    T nextShrink() override
+    {
+        return m_shrinker.hasNext() ? m_shrinker.next() : m_value;
+    }
+
 private:
     T m_value;
+    Shrinker<T> m_shrinker;
 };
 
 typedef std::unique_ptr<Value> ValueUP;

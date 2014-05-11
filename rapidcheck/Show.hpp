@@ -99,7 +99,7 @@ void showCollection(const std::string &prefix,
     os << prefix;
     if (begin != end) {
         show(*begin, os);
-        for (auto it = begin++; it != end; it++) {
+        for (auto it = ++begin; it != end; it++) {
             os << ", ";
             show(*it, os);
         }

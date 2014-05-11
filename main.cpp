@@ -9,9 +9,9 @@ using namespace rc;
 template<typename Iterator>
 void crappyReverse(Iterator begin, Iterator end)
 {
-    if ((end - begin) > 10)
-        end = begin + 10;
     std::reverse(begin, end);
+    if ((end - begin) > 40 && *(begin + 21) > 20)
+        *(begin + 20) = 10;
 }
 
 int main()
