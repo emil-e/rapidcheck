@@ -8,7 +8,7 @@ namespace rc {
 //! but serves as a guideline. In general, genenerators for which there is a
 //! natural limit which is not too expensive to generate should max out at this.
 //! This applies to, for example, generation of numbers but not to the
-//! of collection where there is an associate cost to generating large sizes.
+//! of collections where there is an associate cost to generating large sizes.
 constexpr size_t kReferenceSize = 100;
 
 //Forward declarations
