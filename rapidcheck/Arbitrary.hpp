@@ -3,41 +3,38 @@
 #include <limits>
 #include <type_traits>
 
-#include "Context.hpp"
-#include "Generators.hpp"
+#include "Generator.hpp"
 #include "Check.hpp"
 
 namespace rc {
 
-template<typename T> struct Arbitrary;
+template<typename T> class Arbitrary;
 
 namespace detail {
 
 // Signed integer generation
 template<typename T>
-typename std::enable_if<std::is_integral<T>::value, T>::type
-defaultGenerate(size_t size)
+typename std::enable_if<std::is_integral<T>::value, T>::type defaultGenerate()
 {
-    size = std::min(size, kReferenceSize);
-
-    auto &randomEngine = detail::Checker::instance().randomEngine();
-    RandomEngine::Int r = randomEngine.getRandomInt();
+    size_t size = std::min(currentSize(), kReferenceSize);
+    RandomEngine::Atom r = RoseNode::current().atom();
 
     // We vary the size by using different number of bits. This way, we can be
     // that the max value can also be generated.
     int nBits = (size * std::numeric_limits<T>::digits) / kReferenceSize;
     if (nBits == 0)
         return 0;
-    constexpr RandomEngine::Int randIntMax =
-        std::numeric_limits<RandomEngine::Int>::max();
-    BasicInt mask = ~((randIntMax - 1) << (nBits - 1));
+    constexpr RandomEngine::Atom randIntMax =
+        std::numeric_limits<RandomEngine::Atom>::max();
+    RandomEngine::Atom mask = ~((randIntMax - 1) << (nBits - 1));
 
     T x = static_cast<T>(r & mask);
     if (std::numeric_limits<T>::is_signed)
     {
         // Use the topmost bit as the signed bit. Even in the case of a signed
         // 64-bit integer, it won't be used since it actually IS the sign bit.
-        constexpr int basicBits = std::numeric_limits<RandomEngine::Int>::digits;
+        constexpr int basicBits =
+            std::numeric_limits<RandomEngine::Atom>::digits;
         x *= ((r >> (basicBits - 1)) == 0) ? 1 : -1;
     }
 
@@ -47,11 +44,10 @@ defaultGenerate(size_t size)
 // Real generation
 template<typename T>
 typename std::enable_if<std::is_floating_point<T>::value, T>::type
-defaultGenerate(size_t size)
+defaultGenerate()
 {
-    //TODO implement sizing
-    auto &randomEngine = detail::Checker::instance().randomEngine();
-    return static_cast<T>(randomEngine.getRandomReal());
+    //TODO implement at all
+    return 0.0;
 }
 
 }
@@ -62,8 +58,9 @@ defaultGenerate(size_t size)
 //! @tparam T       The type to generate.
 //! @tparam Enable  To be used with \c enable_if
 template<typename T>
-struct Arbitrary
+class Arbitrary : public Generator<T>
 {
+public:
     //! Generates a value of type T.
     //!
     //! @param size  The "size" of the value to generate. This can mean
@@ -72,37 +69,42 @@ struct Arbitrary
     //!              example.
     //!
     //! @return The generated value.
-    T operator()(size_t size) const { return detail::defaultGenerate<T>(size); }
+    T operator()() const { return detail::defaultGenerate<T>(); }
 };
 
 template<>
-struct Arbitrary<bool>
+class Arbitrary<bool> : public Generator<bool>
 {
+public:
     bool operator()(size_t size) const
-    { return (arbitrary<uint8_t>()(kReferenceSize) & 0x1) == 0; }
+    { return (pick(resize(kReferenceSize, arbitrary<uint8_t>())) & 0x1) == 0; }
 };
 
 // std::vector
 template<typename T, typename Alloc>
-struct Arbitrary<std::vector<T, Alloc>>
+class Arbitrary<std::vector<T, Alloc>>
+    : public Generator<std::vector<T, Alloc>>
 {
+public:
     typedef std::vector<T, Alloc> VectorType;
 
-    VectorType operator()(size_t size) const
-    { return collection<std::vector<T, Alloc>>(arbitrary<T>())(size); }
+    VectorType operator()() const
+    { return pick(collection<std::vector<T, Alloc>>(arbitrary<T>())); }
 };
 
 // std::basic_string
 template<typename T, typename Traits, typename Alloc>
-struct Arbitrary<std::basic_string<T, Traits, Alloc>>
+class Arbitrary<std::basic_string<T, Traits, Alloc>>
+    : Generator<std::basic_string<T, Traits, Alloc>>
 {
+public:
     typedef std::basic_string<T, Traits, Alloc> StringType;
 
-    StringType operator()(size_t size) const
+    StringType operator()() const
     {
         auto charGen = resize(kReferenceSize,
                               oneOf(ranged<uint8_t>(1, 127), nonZero<T>()));
-        return collection<std::string>(charGen)(size);
+        return pick(collection<std::string>(charGen));
     }
 };
 
