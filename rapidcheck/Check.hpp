@@ -56,10 +56,10 @@ private:
 
 } // namespace detail
 
-template<typename T>
-T pick(const Generator<T> &generator)
+template<typename Gen>
+typename Gen::GeneratedType pick(const Gen &generator)
 {
-    return detail::RoseNode::pick(generator);
+    return detail::RoseNode::current().pick(generator);
 }
 
 template<typename T>
@@ -68,21 +68,41 @@ T pick()
     return pick(arbitrary<T>());
 }
 
+//! Describes the parameters for a test.
+struct TestParameters
+{
+    int maxSuccess = 100;
+    size_t maxSize = 100;
+};
 
 template<typename Testable>
 bool check(Testable testable)
 {
     using namespace detail;
-    ImplicitParam<param::Size> size;
-    ImplicitParam<param::RandomEngine> randomEngine;
+    TestParameters params;
 
-    RoseNode rootNode(0);
-    size.let(50);
-    randomEngine.let(RandomEngine());
     detail::Quantifier<Testable> property(testable);
-    bool result = rootNode.call(property);
-    rootNode.print(std::cout);
-    return result;
+    ImplicitParam<param::RandomEngine> randomEngine;
+    randomEngine.let(RandomEngine());
+    size_t currentSize = 0;
+    for (int testIndex = 1; testIndex <= params.maxSuccess; testIndex++) {
+        RoseNode rootNode;
+        ImplicitParam<param::Size> size;
+        size.let(currentSize);
+
+        if (!rootNode.callInNode(property)) {
+            // Test failed!
+            for (const auto &desc : rootNode.example()) {
+                std::cout << desc.value() << " :: " << desc.typeName() << std::endl;
+            }
+            return false;
+        }
+
+        // TODO do size iteration like Haskells quickcheck
+        currentSize  = std::min(params.maxSize, currentSize + 1);
+    }
+
+    return true;
 }
 
 }

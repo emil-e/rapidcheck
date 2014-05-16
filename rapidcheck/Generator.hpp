@@ -59,7 +59,7 @@ public:
         : m_generator(std::move(generator))
         , m_predicate(std::move(predicate)) {}
 
-    typename Gen::GeneratedType operator()() const
+    typename Gen::GeneratedType operator()() const override
     {
         size_t size = currentSize();
         while (true) {
@@ -81,7 +81,7 @@ class Ranged : public Generator<T>
 public:
     Ranged(T min, T max) : m_min(min), m_max(max) {}
 
-    T operator()() const
+    T operator()() const override
     {
         auto value(pick(resize(kReferenceSize, arbitrary<T>())));
         return m_min + value % (m_max - m_min + 1);
@@ -95,16 +95,12 @@ template<typename T>
 class OneOf : public Generator<T>
 {
 public:
-    OneOf(std::initializer_list<Generator<T>> generators)
-        : m_generators(generators.size())
+    OneOf(std::initializer_list<GeneratorUP<T>> generators)
+        : m_generators(generators)
     {
-        std::transform(generators.begin(),
-                       generators.end(),
-                       m_generators.begin(),
-                       [](Generator<T> *ptr) { return GeneratorUP<T>(ptr); });
     }
 
-    T operator()() const
+    T operator()() const override
     {
         typedef typename decltype(m_generators)::size_type SizeType;
         auto index = pick(
@@ -130,11 +126,9 @@ public:
     explicit CollectionGenerator(Gen generator)
         : m_generator(std::move(generator)) {}
 
-    Coll operator()() const
+    Coll operator()() const override
     {
-        auto length = pick(
-            resize(kReferenceSize,
-                   ranged<typename Coll::size_type>(0, currentSize())));
+        auto length = pick(ranged<typename Coll::size_type>(0, currentSize()));
         Coll coll(length, typename Coll::value_type());
         std::generate(coll.begin(), coll.end(),
                       [&]{ return pick(m_generator); });
@@ -152,7 +146,7 @@ public:
     Resized(size_t size, Gen generator)
         : m_size(size), m_generator(std::move(generator)) {}
 
-    typename Gen::GeneratedType operator()() const
+    typename Gen::GeneratedType operator()() const override
     {
         detail::ImplicitParam<detail::param::Size> size;
         size.let(m_size);
@@ -199,9 +193,9 @@ template<typename Gen, typename ...Gens>
 OneOf<typename Gen::GeneratedType> oneOf(Gen gen, Gens ...gens)
 {
     return OneOf<typename Gen::GeneratedType>{
-        new Gen(std::move(gen)),
-            new Gens(std::move(gens))... };
-    //TODO allocate unique_ptr here
+        GeneratorUP<typename Gen::GeneratedType>(new Gen(std::move(gen))),
+        GeneratorUP<typename Gen::GeneratedType>(new Gens(std::move(gens)))...
+    };
 }
 
 //! Generates a non-zero value of type \c T.

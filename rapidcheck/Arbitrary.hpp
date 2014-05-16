@@ -69,14 +69,14 @@ public:
     //!              example.
     //!
     //! @return The generated value.
-    T operator()() const { return detail::defaultGenerate<T>(); }
+    T operator()() const override { return detail::defaultGenerate<T>(); }
 };
 
 template<>
 class Arbitrary<bool> : public Generator<bool>
 {
 public:
-    bool operator()(size_t size) const
+    bool operator()() const override
     { return (pick(resize(kReferenceSize, arbitrary<uint8_t>())) & 0x1) == 0; }
 };
 
@@ -88,7 +88,7 @@ class Arbitrary<std::vector<T, Alloc>>
 public:
     typedef std::vector<T, Alloc> VectorType;
 
-    VectorType operator()() const
+    VectorType operator()() const override
     { return pick(collection<std::vector<T, Alloc>>(arbitrary<T>())); }
 };
 
@@ -100,10 +100,9 @@ class Arbitrary<std::basic_string<T, Traits, Alloc>>
 public:
     typedef std::basic_string<T, Traits, Alloc> StringType;
 
-    StringType operator()() const
+    StringType operator()() const override
     {
-        auto charGen = resize(kReferenceSize,
-                              oneOf(ranged<uint8_t>(1, 127), nonZero<T>()));
+        auto charGen = oneOf(ranged<uint8_t>(1, 127), nonZero<T>());
         return pick(collection<std::string>(charGen));
     }
 };
