@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Show.hpp"
-#include "Shrink.hpp"
+#include "rapidcheck/Generator.h"
+#include "rapidcheck/Show.hpp"
+#include "rapidcheck/Shrink.hpp"
 
 namespace rc {
 namespace detail {

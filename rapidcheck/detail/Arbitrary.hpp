@@ -3,7 +3,6 @@
 #include <limits>
 #include <type_traits>
 
-#include "Generator.hpp"
 #include "Check.hpp"
 
 namespace rc {
@@ -52,23 +51,10 @@ defaultGenerate()
 
 }
 
-//! Template for generators of arbitrary values of different types. Specialize
-//! template to provide generation for custom types.
-//!
-//! @tparam T       The type to generate.
-//! @tparam Enable  To be used with \c enable_if
 template<typename T>
 class Arbitrary : public Generator<T>
 {
 public:
-    //! Generates a value of type T.
-    //!
-    //! @param size  The "size" of the value to generate. This can mean
-    //!              different things for different types. For a container
-    //!              class, this can mean the size of the container, for
-    //!              example.
-    //!
-    //! @return The generated value.
     T operator()() const override { return detail::defaultGenerate<T>(); }
 };
 

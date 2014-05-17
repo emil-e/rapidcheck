@@ -2,8 +2,10 @@
 
 #include <sstream>
 
+#include "rapidcheck/Show.hpp"
+
 #include "ImplicitParam.hpp"
-#include "Show.hpp"
+#include "RandomEngine.hpp"
 #include "GeneratorProxy.hpp"
 
 namespace rc {

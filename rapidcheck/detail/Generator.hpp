@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "Arbitrary.hpp"
 #include "ImplicitParam.hpp"
+#include "Rose.hpp"
 
 namespace rc {
 
@@ -16,36 +16,18 @@ struct Size { typedef size_t ValueType; };
 } // namespace param
 } // namespace detail
 
-//! The reference size. This is not a max limit on the generator size parameter
-//! but serves as a guideline. In general, genenerators for which there is a
-//! natural limit which is not too expensive to generate should max out at this.
-//! This applies to, for example, generation of numbers but not to the
-//! of collection where there is an associate cost to generating large sizes.
-constexpr size_t kReferenceSize = 100;
-
-//Forward declarations
-template<typename T> class Arbitrary;
-template<typename T> Arbitrary<T> arbitrary();
-template<typename T> class Ranged;
-template<typename T> Ranged<T> ranged(T min, T max);
-
-//! Base class for generators. Parameterized on the generated type \c T.
-template<typename T>
-class Generator
+template<typename Gen>
+typename Gen::GeneratedType pick(const Gen &generator)
 {
-public:
-    //! The generated type.
-    typedef T GeneratedType;
+    return detail::RoseNode::current().pick(generator);
+}
 
-    //! Generates a value.
-    virtual T operator()() const = 0;
-};
-
-//! unique_ptr to \c Generator<T>.
 template<typename T>
-using GeneratorUP = std::unique_ptr<Generator<T>>;
+T pick()
+{
+    return pick(arbitrary<T>());
+}
 
-//! Returns the current size that is being generated.
 size_t currentSize()
 {
     return *detail::ImplicitParam<detail::param::Size>();
@@ -113,7 +95,7 @@ private:
 };
 
 template<typename T>
-struct NonZero : public Generator<T>
+class NonZero : public Generator<T>
 {
     T operator()() const
     { return pick(suchThat(arbitrary<T>(), [](T x){ return x != 0; })); }
@@ -158,28 +140,46 @@ private:
     Gen m_generator;
 };
 
-//! Arbitrary generator for type \c T. Essentially a wrapper around
-//! \c Arbitrary<T> but the naming meshes better with the rest of the generator
-//! factories.
-//!
-//! @tparam T  The generated type.
+template<typename MemberFuncPtr> class FunctorHelper;
+
+template<typename Functor, typename Ret, typename ...Args>
+class FunctorHelper<Ret (Functor::*)(Args...) const>
+{
+public:
+    typedef Ret ReturnType;
+
+    FunctorHelper(Functor functor) : m_functor(std::move(functor)) {}
+
+    ReturnType operator()() const
+    { return m_functor(pick<typename std::decay<Args>::type>()...); }
+
+private:
+    Functor m_functor;
+};
+
+template<typename Callable>
+class AnyInvocation : public Generator<
+    typename FunctorHelper<decltype(&Callable::operator())>::ReturnType>
+{
+public:
+    AnyInvocation(Callable callable) : m_helper(std::move(callable)) {}
+
+    typename FunctorHelper<decltype(&Callable::operator())>::ReturnType
+    operator()() const override
+    { return m_helper(); }
+
+private:
+    FunctorHelper<decltype(&Callable::operator())> m_helper;
+};
+
 template<typename T>
 Arbitrary<T> arbitrary() { return Arbitrary<T>(); }
 
-//! Uses another generator to generate values satisfying a given condition.
-//!
-//! @param gen   The underlying generator to use.
-//! @param pred  The predicate that the generated values must satisfy
 template<typename Generator, typename Predicate>
 SuchThat<Generator, Predicate> suchThat(Generator gen,
                                         Predicate pred)
 { return SuchThat<Generator, Predicate>(std::move(gen), std::move(pred)); }
 
-//! Generates an arbitrary value between \c min and \c max. Both \c min and
-//! \c max are included in the range.
-//!
-//! @param min  The minimum value.
-//! @param max  The maximum value.
 template<typename T>
 Ranged<T> ranged(T min, T max)
 {
@@ -188,7 +188,6 @@ Ranged<T> ranged(T min, T max)
     return Ranged<T>(min, max);
 }
 
-//! Generates a value by randomly using one of the given generators.
 template<typename Gen, typename ...Gens>
 OneOf<typename Gen::GeneratedType> oneOf(Gen gen, Gens ...gens)
 {
@@ -198,27 +197,21 @@ OneOf<typename Gen::GeneratedType> oneOf(Gen gen, Gens ...gens)
     };
 }
 
-//! Generates a non-zero value of type \c T.
-//!
-//! @tparam T  An integral type.
 template<typename T>
 NonZero<T> nonZero() { return NonZero<T>(); }
 
-//! Generates a collection of the given type using the given generator.
-//!
-//! @param gen  The generator to use.
-//!
-//! @tparam C          The collection type.
-//! @tparam Generator  The generator type.
 template<typename Coll, typename Gen>
 CollectionGenerator<Coll, Gen> collection(Gen gen)
 { return CollectionGenerator<Coll, Gen>(std::move(gen)); }
 
-//! Returns a version of the given generator that always uses the specified size.
-//!
-//! @param gen  The generator to wrap.
 template<typename Gen>
 Resized<Gen> resize(size_t size, Gen gen)
 { return Resized<Gen>(size, std::move(gen)); }
 
+template<typename Callable>
+AnyInvocation<Callable> anyInvocation(Callable callable)
+{ return AnyInvocation<Callable>(std::move(callable)); }
+
 } // namespace rc
+
+#include "Arbitrary.hpp"

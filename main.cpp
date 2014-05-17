@@ -1,8 +1,6 @@
 #include <iostream>
 
-#include "rapidcheck/Arbitrary.hpp"
-#include "rapidcheck/Show.hpp"
-#include "rapidcheck/Check.hpp"
+#include <rapidcheck/rapidcheck.h>
 
 using namespace rc;
 
