@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Shrink.h"
+
 namespace rc {
 
 //! Picks a random value using the given generator.
@@ -15,6 +17,9 @@ typename Gen::GeneratedType pick(const Gen &generator);
 //! @tparam T  The type of the value to pick.
 template<typename T>
 T pick();
+
+//! Returns the current size that is being generated.
+size_t currentSize();
 
 //! The reference size. This is not a max limit on the generator size parameter
 //! but serves as a guideline. In general, genenerators for which there is a
@@ -33,14 +38,18 @@ public:
 
     //! Generates a value.
     virtual T operator()() const = 0;
+
+    //! Returns a \c ShrinkIterator which yields the possible shrinks for the
+    //! given value. The default impelemtation returns a \c NullIterator.
+    virtual ShrinkIteratorUP<T> shrink(const T &value) const;
+
+    virtual ~Generator() = default;
 };
 
 //! \c std::unique_ptr to \c Generator<T>.
 template<typename T>
 using GeneratorUP = std::unique_ptr<Generator<T>>;
 
-//! Returns the current size that is being generated.
-size_t currentSize();
 
 // Generator implementations
 template<typename Gen, typename Predicate> class SuchThat;

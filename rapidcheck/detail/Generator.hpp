@@ -33,6 +33,12 @@ size_t currentSize()
     return *detail::ImplicitParam<detail::param::Size>();
 }
 
+template<typename T>
+ShrinkIteratorUP<T> Generator<T>::shrink(const T &value) const
+{
+    return ShrinkIteratorUP<T>(new NullIterator<T>());
+}
+
 template<typename Gen, typename Predicate>
 class SuchThat : public Generator<typename Gen::GeneratedType>
 {
@@ -97,6 +103,7 @@ private:
 template<typename T>
 class NonZero : public Generator<T>
 {
+public:
     T operator()() const
     { return pick(suchThat(arbitrary<T>(), [](T x){ return x != 0; })); }
 };

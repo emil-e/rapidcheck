@@ -3,7 +3,7 @@
 #include <limits>
 #include <type_traits>
 
-#include "Check.hpp"
+#include "rapidcheck/Check.h"
 
 namespace rc {
 
@@ -40,13 +40,23 @@ typename std::enable_if<std::is_integral<T>::value, T>::type defaultGenerate()
     return x;
 }
 
-// Real generation
+// Default catch all
 template<typename T>
-typename std::enable_if<std::is_floating_point<T>::value, T>::type
-defaultGenerate()
+typename std::enable_if<
+    !std::is_integral<T>::value,
+    ShrinkIteratorUP<T>>::type
+defaultShrink(const T &value)
 {
-    //TODO implement at all
-    return 0.0;
+    return ShrinkIteratorUP<T>(new NullIterator<T>());
+}
+
+template<typename T>
+typename std::enable_if<
+    std::is_integral<T>::value,
+    ShrinkIteratorUP<T>>::type
+defaultShrink(const T &value)
+{
+    return ShrinkIteratorUP<T>(new DivideByTwoIterator<T>(value));
 }
 
 }
@@ -55,7 +65,11 @@ template<typename T>
 class Arbitrary : public Generator<T>
 {
 public:
-    T operator()() const override { return detail::defaultGenerate<T>(); }
+    T operator()() const override
+    { return detail::defaultGenerate<T>(); }
+
+    ShrinkIteratorUP<T> shrink(const T &value) const override
+    { return detail::defaultShrink<T>(value); }
 };
 
 template<>

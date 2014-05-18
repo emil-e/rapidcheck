@@ -14,13 +14,12 @@ void crappyReverse(Iterator begin, Iterator end)
 
 int main()
 {
-    int foob = 0;
-    check([&foob](const std::vector<int> &vec, int foo) {
-            foob++;
-            if (foob > 50)
-                return false;
-            else
-                return true;
+    check([](const std::vector<int> &vec, int foo) {
+            auto expected(vec);
+            auto actual(vec);
+            std::reverse(expected.begin(), expected.end());
+            crappyReverse(actual.begin(), actual.end());
+            return expected == actual;
         });
 
     return 0;
