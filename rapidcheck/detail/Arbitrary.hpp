@@ -56,7 +56,10 @@ typename std::enable_if<
     ShrinkIteratorUP<T>>::type
 defaultShrink(const T &value)
 {
-    return ShrinkIteratorUP<T>(new DivideByTwoIterator<T>(value));
+    return unfold(
+        value,
+        [=](T i) { return i != 0; },
+        [=](T i) { return std::make_pair(static_cast<T>(value - i), i / 2); });
 }
 
 }

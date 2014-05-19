@@ -56,6 +56,42 @@ private:
     T m_collection;
 };
 
+template<typename T,
+         typename I,
+         typename Predicate,
+         typename Iterate>
+class UnfoldIterator : public ShrinkIterator<T>
+{
+public:
+    UnfoldIterator(I initial, Predicate predicate, Iterate iterate)
+        : m_it(initial), m_predicate(predicate), m_iterate(iterate) {}
+
+    bool hasNext() const override { return m_predicate(m_it); }
+
+    T next() override
+    {
+        std::pair<T, I> result(m_iterate(m_it));
+        m_it = result.second;
+        return result.first;
+    }
+
+private:
+    I m_it;
+    Predicate m_predicate;
+    Iterate m_iterate;
+};
+
+template<typename I,
+         typename Predicate,
+         typename Iterate>
+ShrinkIteratorUP<typename std::result_of<Iterate(I)>::type::first_type>
+unfold(I initial, Predicate predicate, Iterate iterate)
+{
+    typedef typename decltype(iterate(initial))::first_type T;
+    return ShrinkIteratorUP<T>(new UnfoldIterator<T, I, Predicate, Iterate>(
+                                   initial, predicate, iterate));
+}
+
 //! Shrinks collections by trying to shrink each element in turn.
 // template<typename T>
 // class ShrinkElementIterator

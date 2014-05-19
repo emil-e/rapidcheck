@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 namespace rc {
 
 //! Instances of this class are used to implement shrinking. A \c ShrinkIterator
@@ -32,6 +34,27 @@ template<typename T> class DivideByTwoIterator;
 
 //! Shrinks collections by removal of each element in turn.
 template<typename T> class RemoveElementIterator;
+
+//! See \c unfold
+template<typename T,
+         typename I,
+         typename Predicate,
+         typename Iterate>
+class UnfoldIterator;
+
+//! Takes an iterate functor and a stop predicate. To yield each new value, the
+//! iterate functor is called with an iterator value and yields a tuple of the
+//! next shrink as well as a new iterator value. This is repeated until the
+//! predicate returns false for the iterator value.
+//!
+//! @param initial    The initial iterator value.
+//! @param predicate  The stop predicate.
+//! @param iterate    The iterate functor.
+template<typename I,
+         typename Predicate,
+         typename Iterate>
+ShrinkIteratorUP<typename std::result_of<Iterate(I)>::type::first_type>
+unfold(I initial, Predicate predicate, Iterate iterate);
 
 } // namespace rc
 
