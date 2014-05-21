@@ -4,23 +4,30 @@
 
 namespace rc {
 
-//! Instances of this class are used to implement shrinking. A \c ShrinkIterator
-//! type \c T successively yields possible shrinks of some value of that type
-//! until all possibilities are exhausted.
-template<typename T>
-class ShrinkIterator
+//! Base class for \c ShrinkIterators of all types.
+class UntypedShrinkIterator
 {
 public:
     //! Returns \c true if this \c ShrinkIterator has more values or \c false if
     //! all possible shrinks have been exhausted.
     virtual bool hasNext() const = 0;
 
+    virtual ~UntypedShrinkIterator() = default;
+};
+
+//! Instances of this class are used to implement shrinking. A \c ShrinkIterator
+//! type \c T successively yields possible shrinks of some value of that type
+//! until all possibilities are exhausted.
+template<typename T>
+class ShrinkIterator : public UntypedShrinkIterator
+{
+public:
     //! Returns the next possible shrink value. The result of calling this
     //! method if \c hasNext returns false is undefined.
     virtual T next() = 0;
-
-    virtual ~ShrinkIterator() = default;
 };
+
+typedef std::unique_ptr<UntypedShrinkIterator> UntypedShrinkIteratorUP;
 
 //! \c std::unique_ptr to ShrinkIterator
 template<typename T>

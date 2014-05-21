@@ -28,9 +28,24 @@ size_t currentSize();
 //! of collection where there is an associate cost to generating large sizes.
 constexpr size_t kReferenceSize = 100;
 
-//! Base class for generators. Parameterized on the generated type \c T.
+//! Base class for generators of all types.
+class UntypedGenerator
+{
+public:
+    //! Returns the type info for the generated type.
+    virtual const std::type_info *generatedTypeInfo() const = 0;
+
+    //! Generates the value and returns a strint representation of it.
+    virtual std::string generateString() const = 0;
+
+    virtual ~UntypedGenerator() = default;
+};
+
+typedef std::unique_ptr<UntypedGenerator> UntypedGeneratorUP;
+
+//! Base class for generators of value of type \c T.
 template<typename T>
-class Generator
+class Generator : public UntypedGenerator
 {
 public:
     //! The generated type.
@@ -43,7 +58,8 @@ public:
     //! given value. The default impelemtation returns a \c NullIterator.
     virtual ShrinkIteratorUP<T> shrink(const T &value) const;
 
-    virtual ~Generator() = default;
+    const std::type_info *generatedTypeInfo() const override;
+    std::string generateString() const override;
 };
 
 //! \c std::unique_ptr to \c Generator<T>.
@@ -59,6 +75,8 @@ template<typename T> class NonZero;
 template<typename Coll, typename Gen> class CollectionGenerator;
 template<typename Gen> class Resized;
 template<typename Callable> class AnyInvocation;
+template<typename T> class Constant;
+
 
 //! Template for generators of arbitrary values of different types. Specialize
 //! this template to provide generation for custom types.

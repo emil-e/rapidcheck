@@ -7,15 +7,6 @@
 
 namespace rc {
 
-void printExample(const std::vector<detail::ValueDescription> &example)
-{
-    for (const auto &desc : example) {
-        std::cout << std::endl;
-        std::cout << desc.typeName() << ":" << std::endl;
-        std::cout << desc.value() << std::endl;
-    }
-}
-
 template<typename Gen>
 int doShrink(detail::RoseNode &rootNode, const Gen &generator)
 {
@@ -47,11 +38,10 @@ bool check(Testable testable)
         size.let(currentSize);
 
         if (!rootNode.generate(property)) {
-            printExample(rootNode.example());
             int numShrinks = doShrink(rootNode, property);
             std::cout << "Falsifiable after " << testIndex << " tests and "
                       << numShrinks << " shrinks:" << std::endl;
-            printExample(rootNode.example());
+            rootNode.printExample();
             return false;
         }
 

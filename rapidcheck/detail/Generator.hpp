@@ -34,6 +34,20 @@ size_t currentSize()
 }
 
 template<typename T>
+const std::type_info *Generator<T>::generatedTypeInfo() const
+{
+    return &typeid(T);
+}
+
+template<typename T>
+std::string Generator<T>::generateString() const
+{
+    std::ostringstream ss;
+    show((*this)(), ss);
+    return ss.str();
+}
+
+template<typename T>
 ShrinkIteratorUP<T> Generator<T>::shrink(const T &value) const
 {
     return ShrinkIteratorUP<T>(new NullIterator<T>());
@@ -178,6 +192,21 @@ public:
 private:
     FunctorHelper<decltype(&Callable::operator())> m_helper;
 };
+
+template<typename T>
+class Constant : public Generator<T>
+{
+public:
+    Constant(const T &value) : m_value(value) {}
+    T operator()() const override { return m_value; }
+
+private:
+    T m_value;
+};
+
+//
+// Helper functions
+//
 
 template<typename T>
 Arbitrary<T> arbitrary() { return Arbitrary<T>(); }
