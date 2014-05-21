@@ -138,6 +138,11 @@ public:
         return coll;
     }
 
+    ShrinkIteratorUP<Coll> shrink(const Coll &value) const override
+    {
+        return ShrinkIteratorUP<Coll>(new RemoveChunksIterator<Coll>(value));
+    }
+
 private:
     Gen m_generator;
 };

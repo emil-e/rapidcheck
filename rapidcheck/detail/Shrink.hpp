@@ -29,31 +29,43 @@ private:
 };
 
 template<typename T>
-class RemoveElementIterator : public ShrinkIterator<T>
+class RemoveChunksIterator : public ShrinkIterator<T>
 {
 public:
-    RemoveElementIterator(T collection)
+    typedef typename T::size_type SizeT;
+
+    RemoveChunksIterator(T collection)
         : m_collection(std::move(collection))
-    { m_skipElement = m_collection.begin(); }
+        , m_skipStart(0)
+        , m_skipSize(m_collection.size()) {}
 
     bool hasNext() const override
-    { return m_skipElement != m_collection.end(); }
+    { return m_skipSize != 0; }
 
     T next() override
     {
         T shrunk;
-        for (auto it = m_collection.begin(); it != m_collection.end(); it++) {
-            if (it != m_skipElement)
-                shrunk.insert(shrunk.end(), *it);
+        SizeT i = 0;
+        SizeT skipEnd = m_skipStart + m_skipSize;
+        for (const auto &element : m_collection) {
+            if ((i < m_skipStart) || (i >= skipEnd))
+                shrunk.insert(shrunk.end(), element);
+            i++;
         }
 
-        m_skipElement++;
+        m_skipStart++;
+        if ((m_skipStart + m_skipSize) > m_collection.size()) {
+            m_skipStart = 0;
+            m_skipSize--;
+        }
+
         return shrunk;
     }
 
 private:
-    typename T::const_iterator m_skipElement;
     T m_collection;
+    SizeT m_skipStart;
+    SizeT m_skipSize;
 };
 
 template<typename T,
