@@ -32,7 +32,7 @@ public:
         return m_atom;
     }
 
-    //! Outputs a string representation of this node and all its children.
+    //! Outputs the tree structure to the given output stream for debugging.
     void print(std::ostream &os)
     {
         for (int i = 0; i < depth(); i++)
@@ -101,13 +101,13 @@ public:
         std::vector<std::string> values;
         values.reserve(m_children.size());
         for (auto &child : m_children)
-            values.push_back(child.stringValue());
+            values.push_back(child.regenerateString());
         return values;
     }
 
-    //! Returns a string representation of the value of this node or an empty
+    //! Regenerates a string representation of the value of this node or an empty
     //! if one hasn't been decided.
-    std::string stringValue()
+    std::string regenerateString()
     {
         ImplicitParam<CurrentNode> currentNode;
         currentNode.let(this);
@@ -182,12 +182,6 @@ public:
         return *this;
     }
 
-    void printExample()
-    {
-        for (const auto &desc : example())
-            std::cout << desc << std::endl;
-    }
-
     //! Returns a reference to the current node.
     static RoseNode &current()
     { return **ImplicitParam<CurrentNode>(); }
@@ -223,7 +217,10 @@ private:
     //! Returns a description of this node.
     std::string description() const
     {
-        return generatorName();
+        std::string desc(generatorName());
+        if (m_parent != nullptr)
+            desc += "[" + std::toString(index()) + "]";
+        return desc;
     }
 
     //! Returns the index of this node among its sibilings. Returns \c -1 if
