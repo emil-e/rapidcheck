@@ -50,7 +50,8 @@ public:
         typedef typename Gen::GeneratedType T;
         ImplicitParam<ShrunkNode> shrunkNode;
 
-        m_lastGenerator = UntypedGeneratorUP(new Gen(generator));
+        if (!isFrozen())
+            m_originalGenerator = UntypedGeneratorUP(new Gen(generator));
 
         if (shrunkNode.hasBinding() && (*shrunkNode == nullptr)) {
             if (!m_shrinkIterator) {
@@ -69,12 +70,12 @@ public:
                 auto typedIterator =
                     dynamic_cast<ShrinkIterator<T> *>(m_shrinkIterator.get());
                 assert(typedIterator != nullptr);
-                m_shrunkGenerator = UntypedGeneratorUP(
+                m_currentGenerator = UntypedGeneratorUP(
                     new Constant<T>(typedIterator->next()));
                 *shrunkNode = this;
             } else {
                 // Shrinking exhausted
-                m_shrunkGenerator = nullptr;
+                m_currentGenerator = nullptr;
             }
         }
 
@@ -144,15 +145,23 @@ public:
         return std::make_tuple(true, numTries);
     }
 
+    //! Returns true if this node is frozen. If a node is frozen, the generator
+    //! passed to \c generate will only be used to infer the type, the actual
+    //! value will come from shrinking or similar.
+    bool isFrozen() const
+    {
+        return bool(m_acceptedGenerator);
+    }
+
     //! Move constructor.
     RoseNode(RoseNode &&other)
         : m_parent(other.m_parent)
         , m_children(std::move(other.m_children))
         , m_hasAtom(other.m_hasAtom)
         , m_atom(other.m_atom)
-        , m_lastGenerator(std::move(other.m_lastGenerator))
+        , m_originalGenerator(std::move(other.m_originalGenerator))
         , m_acceptedGenerator(std::move(other.m_acceptedGenerator))
-        , m_shrunkGenerator(std::move(other.m_shrunkGenerator))
+        , m_currentGenerator(std::move(other.m_currentGenerator))
         , m_shrinkIterator(std::move(other.m_shrinkIterator))
     {
         adoptChildren();
@@ -165,9 +174,9 @@ public:
         m_children = std::move(rhs.m_children);
         m_hasAtom = rhs.m_hasAtom;
         m_atom = rhs.m_atom;
-        m_lastGenerator = std::move(rhs.m_lastGenerator);
+        m_originalGenerator = std::move(rhs.m_originalGenerator);
         m_acceptedGenerator = std::move(rhs.m_acceptedGenerator);
-        m_shrunkGenerator = std::move(rhs.m_shrunkGenerator);
+        m_currentGenerator = std::move(rhs.m_currentGenerator);
         m_shrinkIterator = std::move(rhs.m_shrinkIterator);
         adoptChildren();
         return *this;
@@ -245,12 +254,12 @@ private:
     //! Returns the active generator.
     UntypedGenerator *activeGenerator() const
     {
-        if (m_shrunkGenerator)
-            return m_shrunkGenerator.get();
+        if (m_currentGenerator)
+            return m_currentGenerator.get();
         else if (m_acceptedGenerator)
             return m_acceptedGenerator.get();
-        else if (m_lastGenerator)
-            return m_lastGenerator.get();
+        else if (m_originalGenerator)
+            return m_originalGenerator.get();
         else
             return nullptr;
     }
@@ -280,9 +289,9 @@ private:
     //! Accepts the current shrink value
     void acceptShrink()
     {
-        if (!m_shrunkGenerator)
+        if (!m_currentGenerator)
             return;
-        m_acceptedGenerator = std::move(m_shrunkGenerator);
+        m_acceptedGenerator = std::move(m_currentGenerator);
         m_shrinkIterator = nullptr;
     }
 
@@ -291,9 +300,9 @@ private:
     Children m_children;
     bool m_hasAtom = false;
     RandomEngine::Atom m_atom;
-    UntypedGeneratorUP m_lastGenerator;
+    UntypedGeneratorUP m_originalGenerator;
     UntypedGeneratorUP m_acceptedGenerator;
-    UntypedGeneratorUP m_shrunkGenerator;
+    UntypedGeneratorUP m_currentGenerator;
     UntypedShrinkIteratorUP m_shrinkIterator;
 };
 
