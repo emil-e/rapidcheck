@@ -9,7 +9,7 @@ namespace rc {
 //! @param generator  The Generator to use.
 //! @return  The generated value.
 template<typename Gen>
-typename Gen::GeneratedType pick(const Gen &generator);
+typename Gen::GeneratedType pick(Gen generator);
 
 //! Picks a random value of the given type. Essentially a shorthand for
 //! <pre>pick(arbitrary<T>())</pre>.
@@ -76,6 +76,7 @@ template<typename Coll, typename Gen> class CollectionGenerator;
 template<typename Gen> class Resized;
 template<typename Callable> class AnyInvocation;
 template<typename T> class Constant;
+template<typename Gen> class NoShrink;
 
 
 //! Template for generators of arbitrary values of different types. Specialize
@@ -134,6 +135,11 @@ Resized<Gen> resize(size_t size, Gen gen);
 //! arguments.
 template<typename Callable>
 AnyInvocation<Callable> anyInvocation(Callable callable);
+
+//! Returns a generator which wraps the given generator but does not try to
+//! the argument or any of its sub generators.
+template<typename Gen>
+NoShrink<Gen> noShrink(Gen generator);
 
 } // namespace rc
 

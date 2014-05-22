@@ -9,7 +9,7 @@
 namespace rc {
 
 template<typename Gen>
-typename Gen::GeneratedType pick(const Gen &generator)
+typename Gen::GeneratedType pick(Gen generator)
 {
     return detail::RoseNode::current().pick(generator);
 }
@@ -77,7 +77,7 @@ public:
 
     T operator()() const override
     {
-        auto value(pick(resize(kReferenceSize, arbitrary<T>())));
+        auto value(pick(noShrink(resize(kReferenceSize, arbitrary<T>()))));
         return m_min + value % (m_max - m_min + 1);
     }
 
@@ -166,7 +166,7 @@ class FunctorHelper<Ret (Functor::*)(Args...) const>
 public:
     typedef Ret ReturnType;
 
-    FunctorHelper(Functor functor) : m_functor(std::move(functor)) {}
+    explicit FunctorHelper(Functor functor) : m_functor(std::move(functor)) {}
 
     ReturnType operator()() const
     { return m_functor(pick<typename std::decay<Args>::type>()...); }
@@ -180,7 +180,7 @@ class AnyInvocation : public Generator<
     typename FunctorHelper<decltype(&Callable::operator())>::ReturnType>
 {
 public:
-    AnyInvocation(Callable callable) : m_helper(std::move(callable)) {}
+    explicit AnyInvocation(Callable callable) : m_helper(std::move(callable)) {}
 
     typename FunctorHelper<decltype(&Callable::operator())>::ReturnType
     operator()() const override
@@ -194,15 +194,32 @@ template<typename T>
 class Constant : public Generator<T>
 {
 public:
-    Constant(const T &value) : m_value(value) {}
+    explicit Constant(const T &value) : m_value(value) {}
     T operator()() const override { return m_value; }
 
 private:
     T m_value;
 };
 
+
+template<typename Gen>
+class NoShrink : public Generator<typename Gen::GeneratedType>
+{
+public:
+    explicit NoShrink(Gen generator) : m_generator(std::move(generator)) {}
+    typename Gen::GeneratedType operator()() const override
+    {
+        detail::ImplicitParam<detail::param::NoShrink> noShrink;
+        noShrink.let(true);
+        return m_generator();
+    }
+
+private:
+    Gen m_generator;
+};
+
 //
-// Helper functions
+// Factory functions
 //
 
 template<typename T>
@@ -244,6 +261,10 @@ Resized<Gen> resize(size_t size, Gen gen)
 template<typename Callable>
 AnyInvocation<Callable> anyInvocation(Callable callable)
 { return AnyInvocation<Callable>(std::move(callable)); }
+
+template<typename Gen>
+NoShrink<Gen> noShrink(Gen generator)
+{ return NoShrink<Gen>(std::move(generator)); }
 
 } // namespace rc
 
