@@ -22,6 +22,12 @@ int doShrink(detail::RoseNode &rootNode, const Gen &generator)
     }
 }
 
+void printExample(detail::RoseNode &rootNode)
+{
+    for (const auto &v : rootNode.example())
+        std::cout << v << std::endl;
+}
+
 template<typename Testable>
 bool check(Testable testable)
 {
@@ -36,12 +42,14 @@ bool check(Testable testable)
         RoseNode rootNode;
         ImplicitParam<param::Size> size;
         size.let(currentSize);
+        ImplicitParam<param::NoShrink> noShrink;
+        noShrink.let(false);
 
         if (!rootNode.generate(property)) {
             int numShrinks = doShrink(rootNode, property);
             std::cout << "Falsifiable after " << testIndex << " tests and "
                       << numShrinks << " shrinks:" << std::endl;
-            rootNode.printExample();
+            printExample(rootNode);
             return false;
         }
 

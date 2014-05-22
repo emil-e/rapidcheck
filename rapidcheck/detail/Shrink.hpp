@@ -104,6 +104,12 @@ unfold(I initial, Predicate predicate, Iterate iterate)
                                    initial, predicate, iterate));
 }
 
+template<typename T>
+ShrinkIteratorUP<T> shrinkNothing()
+{
+    return ShrinkIteratorUP<T>(new NullIterator<T>());
+}
+
 //! Shrinks collections by trying to shrink each element in turn.
 // template<typename T>
 // class ShrinkElementIterator

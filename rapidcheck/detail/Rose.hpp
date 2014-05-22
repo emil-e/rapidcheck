@@ -3,9 +3,11 @@
 #include <sstream>
 
 #include "rapidcheck/Show.hpp"
+#include "rapidcheck/Generator.h"
 
 #include "ImplicitParam.hpp"
 #include "RandomEngine.hpp"
+#include "GenerationParams.hpp"
 
 namespace rc {
 namespace detail {
@@ -49,6 +51,7 @@ public:
     {
         typedef typename Gen::GeneratedType T;
         ImplicitParam<ShrunkNode> shrunkNode;
+        ImplicitParam<param::NoShrink> noShrink;
 
         if (!isFrozen())
             m_originalGenerator = UntypedGeneratorUP(new Gen(generator));
@@ -60,7 +63,11 @@ public:
                 if (*shrunkNode != nullptr)
                     return value;
 
-                m_shrinkIterator = generator.shrink(value);
+                if (*noShrink)
+                    m_shrinkIterator = shrinkNothing<T>();
+                else
+                    m_shrinkIterator = generator.shrink(value);
+
                 // We need a fallback accepted generator if shrinking fails
                 if (!m_acceptedGenerator)
                     m_acceptedGenerator = UntypedGeneratorUP(new Gen(generator));
@@ -219,7 +226,7 @@ private:
     {
         std::string desc(generatorName());
         if (m_parent != nullptr)
-            desc += "[" + std::toString(index()) + "]";
+            desc += "[" + std::to_string(index()) + "]";
         return desc;
     }
 

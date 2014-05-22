@@ -63,6 +63,10 @@ template<typename I,
 ShrinkIteratorUP<typename std::result_of<Iterate(I)>::type::first_type>
 unfold(I initial, Predicate predicate, Iterate iterate);
 
+//! Returns a shrink iterator which doesn't return any possible shrinks.
+template<typename T>
+ShrinkIteratorUP<T> shrinkNothing();
+
 } // namespace rc
 
 #include "detail/Shrink.hpp"

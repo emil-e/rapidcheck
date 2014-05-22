@@ -4,17 +4,9 @@
 
 #include "ImplicitParam.hpp"
 #include "Rose.hpp"
+#include "GenerationParams.hpp"
 
 namespace rc {
-
-namespace detail {
-namespace param {
-
-//! The current generation size.
-struct Size { typedef size_t ValueType; };
-
-} // namespace param
-} // namespace detail
 
 template<typename Gen>
 typename Gen::GeneratedType pick(const Gen &generator)
