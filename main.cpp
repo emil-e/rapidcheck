@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 
 #include <rapidcheck/rapidcheck.h>
 
@@ -22,14 +23,26 @@ void crappyReverse2(Iterator begin, Iterator end)
     std::reverse(begin, end);
 }
 
+template<typename Iterator>
+void crappyReverse3(Iterator begin, Iterator end)
+{
+    for (auto it = begin; it != end; it++) {
+        if (it->find("ab") != std::string::npos)
+            return;
+    }
+    std::reverse(begin, end);
+}
+
+template<typename K, typename V>
+size_t crappySize(const std::map<K, V> &m)
+{
+    return std::min<size_t>(20, m.size());
+}
+
 int main()
 {
-    check([](const std::vector<int> &vec, int foo) {
-            auto expected(vec);
-            auto actual(vec);
-            std::reverse(expected.begin(), expected.end());
-            crappyReverse2(actual.begin(), actual.end());
-            return expected == actual;
+    check([](const std::map<std::string, std::string> &m) {
+            return crappySize(m) == m.size();
         });
 
     return 0;

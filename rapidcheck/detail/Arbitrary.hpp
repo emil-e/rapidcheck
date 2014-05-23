@@ -71,8 +71,8 @@ public:
     T operator()() const override
     { return detail::defaultGenerate<T>(); }
 
-    ShrinkIteratorUP<T> shrink(const T &value) const override
-    { return detail::defaultShrink<T>(value); }
+    ShrinkIteratorUP<T> shrink(T value) const override
+    { return detail::defaultShrink<T>(std::move(value)); }
 };
 
 template<>
@@ -81,6 +81,14 @@ class Arbitrary<bool> : public Generator<bool>
 public:
     bool operator()() const override
     { return (pick(resize(kReferenceSize, arbitrary<uint8_t>())) & 0x1) == 0; }
+};
+
+template<typename T1, typename T2>
+class Arbitrary<std::pair<T1, T2>> : public Generator<std::pair<T1, T2>>
+{
+public:
+    std::pair<T1, T2> operator()() const override
+    { return std::make_pair(pick<T1>(), pick<T2>()); }
 };
 
 // std::vector
@@ -95,17 +103,34 @@ public:
     { return pick(collection<std::vector<T, Alloc>>(arbitrary<T>())); }
 };
 
+// std::map
+template<typename Key, typename T, typename Compare, typename Alloc>
+class Arbitrary<std::map<Key, T, Compare, Alloc>>
+    : public Generator<std::map<Key, T, Compare, Alloc>>
+{
+public:
+    typedef std::map<Key, T, Compare, Alloc> VectorType;
+
+    VectorType operator()() const override
+    {
+        return pick(collection<std::map<Key, T, Compare, Alloc>>(
+                        arbitrary<std::pair<Key, T>>()));
+    }
+};
+
 // std::basic_string
 template<typename T, typename Traits, typename Alloc>
 class Arbitrary<std::basic_string<T, Traits, Alloc>>
-    : Generator<std::basic_string<T, Traits, Alloc>>
+    : public Generator<std::basic_string<T, Traits, Alloc>>
 {
 public:
     typedef std::basic_string<T, Traits, Alloc> StringType;
 
     StringType operator()() const override
     {
-        auto charGen = oneOf(ranged<uint8_t>(1, 127), nonZero<T>());
+        auto charGen = oneOf(map(ranged<uint8_t>(1, 127),
+                                 [](uint8_t x){ return static_cast<T>(x); }),
+                             nonZero<T>());
         return pick(collection<std::string>(charGen));
     }
 };

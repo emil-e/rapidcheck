@@ -40,7 +40,7 @@ std::string Generator<T>::generateString() const
 }
 
 template<typename T>
-ShrinkIteratorUP<T> Generator<T>::shrink(const T &value) const
+ShrinkIteratorUP<T> Generator<T>::shrink(T value) const
 {
     return ShrinkIteratorUP<T>(new NullIterator<T>());
 }
@@ -57,7 +57,7 @@ public:
     {
         size_t size = currentSize();
         while (true) {
-            auto x(pick(resize(size, m_generator)));
+            auto x(pick(noShrink(resize(size, m_generator))));
             if (m_predicate(x))
                 return x;
             size++;
@@ -85,25 +85,97 @@ private:
     T m_min, m_max;
 };
 
-template<typename T>
-class OneOf : public Generator<T>
+template<typename Gen>
+class Resized : public Generator<typename Gen::GeneratedType>
 {
 public:
-    OneOf(std::initializer_list<GeneratorUP<T>> generators)
-        : m_generators(generators)
+    Resized(size_t size, Gen generator)
+        : m_size(size), m_generator(std::move(generator)) {}
+
+    typename Gen::GeneratedType operator()() const override
     {
+        detail::ImplicitParam<detail::param::Size> size;
+        size.let(m_size);
+        return pick(m_generator);
     }
 
-    T operator()() const override
-    {
-        typedef typename decltype(m_generators)::size_type SizeType;
-        auto index = pick(
-            resize(kReferenceSize,
-                   ranged<SizeType>(0, m_generators.size() - 1)));
-        return pick(*m_generators[index]);
-    }
 private:
-    std::vector<GeneratorUP<T>> m_generators;
+    size_t m_size;
+    Gen m_generator;
+};
+
+// Helper class for OneOf to be able to have a collection of generators of
+// different types
+template<typename ...Gens>
+class Multiplexer;
+
+template<typename Gen, typename ...Gens>
+class Multiplexer<Gen, Gens...>
+{
+public:
+    typedef typename Gen::GeneratedType GeneratedType;
+    static constexpr int numGenerators = sizeof...(Gens) + 1;
+
+    static_assert(
+        std::is_same<
+            typename Gen::GeneratedType,
+            typename std::tuple_element<0,
+                std::tuple<typename Gens::GeneratedType...>>::type>::value,
+        "All generators must have the same result type");
+
+    Multiplexer(Gen generator, Gens... generators)
+        : m_generator(std::move(generator))
+        , m_multiplexer(std::move(generators)...) {}
+
+    typename Gen::GeneratedType pickWithId(int id) const
+    {
+        if (id == myId)
+            return pick(m_generator);
+        else
+            return m_multiplexer.pickWithId(id);
+    }
+
+private:
+    static constexpr int myId = sizeof...(Gens);
+
+    Gen m_generator;
+    Multiplexer<Gens...> m_multiplexer;
+};
+
+template<typename Gen>
+class Multiplexer<Gen>
+{
+public:
+    typedef typename Gen::GeneratedType GeneratedType;
+    static constexpr int numGenerators = 1;
+
+    Multiplexer(Gen generator)
+        : m_generator(std::move(generator)) {}
+
+    typename Gen::GeneratedType pickWithId(int id) const
+    { return pick(m_generator); }
+
+private:
+    static constexpr int myId = 0;
+
+    Gen m_generator;
+};
+
+template<typename ...Gens>
+class OneOf : public Generator<typename Multiplexer<Gens...>::GeneratedType>
+{
+public:
+    OneOf(Gens... generators) : m_multiplexer(std::move(generators)...) {}
+
+    typename Multiplexer<Gens...>::GeneratedType operator()() const override
+    {
+        constexpr int n = Multiplexer<Gens...>::numGenerators;
+        auto id = pick(resize(kReferenceSize, ranged<int>(0, n - 1)));
+        return m_multiplexer.pickWithId(id);
+    }
+
+private:
+    Multiplexer<Gens...> m_multiplexer;
 };
 
 template<typename T>
@@ -124,37 +196,19 @@ public:
     Coll operator()() const override
     {
         auto length = pick(ranged<typename Coll::size_type>(0, currentSize()));
-        Coll coll(length, typename Coll::value_type());
-        std::generate(coll.begin(), coll.end(),
+        Coll coll;
+        std::generate_n(std::inserter(coll, coll.end()), length,
                       [&]{ return pick(m_generator); });
         return coll;
     }
 
-    ShrinkIteratorUP<Coll> shrink(const Coll &value) const override
+    ShrinkIteratorUP<Coll> shrink(Coll value) const override
     {
-        return ShrinkIteratorUP<Coll>(new RemoveChunksIterator<Coll>(value));
+        return ShrinkIteratorUP<Coll>(
+            new RemoveChunksIterator<Coll>(std::move(value)));
     }
 
 private:
-    Gen m_generator;
-};
-
-template<typename Gen>
-class Resized : public Generator<typename Gen::GeneratedType>
-{
-public:
-    Resized(size_t size, Gen generator)
-        : m_size(size), m_generator(std::move(generator)) {}
-
-    typename Gen::GeneratedType operator()() const override
-    {
-        detail::ImplicitParam<detail::param::Size> size;
-        size.let(m_size);
-        return pick(m_generator);
-    }
-
-private:
-    size_t m_size;
     Gen m_generator;
 };
 
@@ -194,7 +248,7 @@ template<typename T>
 class Constant : public Generator<T>
 {
 public:
-    explicit Constant(const T &value) : m_value(value) {}
+    explicit Constant(T value) : m_value(std::move(value)) {}
     T operator()() const override { return m_value; }
 
 private:
@@ -211,11 +265,30 @@ public:
     {
         detail::ImplicitParam<detail::param::NoShrink> noShrink;
         noShrink.let(true);
-        return m_generator();
+        return pick(m_generator);
     }
 
 private:
     Gen m_generator;
+};
+
+template<typename Gen, typename Mapper>
+class Mapped : public Generator<
+    typename std::result_of<Mapper(typename Gen::GeneratedType)>::type>
+{
+public:
+    typedef typename
+        std::result_of<Mapper(typename Gen::GeneratedType)>::type T;
+
+    Mapped(Gen generator, Mapper mapper)
+        : m_generator(std::move(generator))
+        , m_mapper(std::move(mapper)) {}
+
+    T operator()() const override { return m_mapper(pick(m_generator)); }
+
+private:
+    Gen m_generator;
+    Mapper m_mapper;
 };
 
 //
@@ -238,13 +311,10 @@ Ranged<T> ranged(T min, T max)
     return Ranged<T>(min, max);
 }
 
-template<typename Gen, typename ...Gens>
-OneOf<typename Gen::GeneratedType> oneOf(Gen gen, Gens ...gens)
+template<typename ...Gens>
+OneOf<Gens...> oneOf(Gens... generators)
 {
-    return OneOf<typename Gen::GeneratedType>{
-        GeneratorUP<typename Gen::GeneratedType>(new Gen(std::move(gen))),
-        GeneratorUP<typename Gen::GeneratedType>(new Gens(std::move(gens)))...
-    };
+    return OneOf<Gens...>(std::move(generators)...);
 }
 
 template<typename T>
@@ -266,6 +336,11 @@ template<typename Gen>
 NoShrink<Gen> noShrink(Gen generator)
 { return NoShrink<Gen>(std::move(generator)); }
 
+template<typename Gen, typename Mapper>
+Mapped<Gen, Mapper> map(Gen generator, Mapper mapper)
+{ return Mapped<Gen, Mapper>(std::move(generator), std::move(mapper)); }
+
 } // namespace rc
+
 
 #include "Arbitrary.hpp"

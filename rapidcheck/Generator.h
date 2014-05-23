@@ -56,7 +56,7 @@ public:
 
     //! Returns a \c ShrinkIterator which yields the possible shrinks for the
     //! given value. The default impelemtation returns a \c NullIterator.
-    virtual ShrinkIteratorUP<T> shrink(const T &value) const;
+    virtual ShrinkIteratorUP<T> shrink(T value) const;
 
     const std::type_info *generatedTypeInfo() const override;
     std::string generateString() const override;
@@ -70,14 +70,14 @@ using GeneratorUP = std::unique_ptr<Generator<T>>;
 // Generator implementations
 template<typename Gen, typename Predicate> class SuchThat;
 template<typename T> class Ranged;
-template<typename T> class OneOf;
+template<typename ...Gens> class OneOf;
 template<typename T> class NonZero;
 template<typename Coll, typename Gen> class CollectionGenerator;
 template<typename Gen> class Resized;
 template<typename Callable> class AnyInvocation;
 template<typename T> class Constant;
 template<typename Gen> class NoShrink;
-
+template<typename Gen, typename Mapper> class Mapped;
 
 //! Template for generators of arbitrary values of different types. Specialize
 //! this template to provide generation for custom types.
@@ -106,9 +106,10 @@ SuchThat<Generator, Predicate> suchThat(Generator gen, Predicate pred);
 template<typename T>
 Ranged<T> ranged(T min, T max);
 
-//! Generates a value by randomly using one of the given generators.
-template<typename Gen, typename ...Gens>
-OneOf<typename Gen::GeneratedType> oneOf(Gen gen, Gens ...gens);
+//! Generates a value by randomly using one of the given generators. All the
+//! generators must have the same result type.
+template<typename ...Gens>
+OneOf<Gens...> oneOf(Gens... generators);
 
 //! Generates a non-zero value of type \c T.
 //!
@@ -140,6 +141,11 @@ AnyInvocation<Callable> anyInvocation(Callable callable);
 //! the argument or any of its sub generators.
 template<typename Gen>
 NoShrink<Gen> noShrink(Gen generator);
+
+//! Maps a generator of one type to a generator of another type using the given
+//! mapping callable.
+template<typename Gen, typename Mapper>
+Mapped<Gen, Mapper> map(Gen generator, Mapper mapper);
 
 } // namespace rc
 

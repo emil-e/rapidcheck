@@ -81,6 +81,15 @@ void show(const char *value, std::ostream &os)
     show(std::string(value), os);
 }
 
+template<typename T1, typename T2>
+void show(const std::pair<T1, T2> &pair, std::ostream &os)
+{
+    os << "(";
+    show(pair.first, os);
+    os << ", ";
+    show(pair.second, os);
+    os << ")";
+}
 
 //! Helper function for showing collections of values.
 //!
@@ -111,6 +120,15 @@ template<typename T, typename Alloc>
 void show(const std::vector<T, Alloc> &vec, std::ostream &os)
 {
     showCollection("[", "]", vec.begin(), vec.end(), os);
+}
+
+template<typename Key,
+         typename T,
+         typename Compare,
+         typename Allocator>
+void show(const std::map<Key, T, Compare, Allocator> &m, std::ostream &os)
+{
+    showCollection("{", "}", m.begin(), m.end(), os);
 }
 
 } // namespace rc
