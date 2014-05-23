@@ -244,6 +244,22 @@ private:
     FunctorHelper<decltype(&Callable::operator())> m_helper;
 };
 
+template<typename GeneratedType, typename ...Args>
+class AnyInvocation<GeneratedType (*)(Args...)>
+    : public Generator<GeneratedType>
+{
+public:
+    typedef GeneratedType (*Function)(Args...);
+
+    explicit AnyInvocation(Function function) : m_function(function) {}
+
+    GeneratedType operator()() const override
+    { return m_function(pick<typename std::decay<Args>::type>()...); }
+
+private:
+    Function m_function;
+};
+
 template<typename T>
 class Constant : public Generator<T>
 {

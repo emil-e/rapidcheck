@@ -39,11 +39,30 @@ size_t crappySize(const std::map<K, V> &m)
     return std::min<size_t>(20, m.size());
 }
 
+template<typename Collection>
+size_t crappySize2(const Collection &c)
+{
+    if (c.size() <= 1)
+        return c.size();
+
+    for (auto it = ++c.begin(); it != c.end(); it++) {
+        if (*it == c[0])
+            return 2;
+    }
+
+    return c.size();
+}
+
+template<typename Collection>
+bool prop_size(const Collection &c)
+{
+    return crappySize2(c) == c.size();
+}
+
 int main()
 {
-    check([](const std::map<std::string, std::string> &m) {
-            return crappySize(m) == m.size();
-        });
-
+    check(prop_size<std::string>);
+//    check(prop_size<std::vector<int>>);
+//    check(prop_size<std::vector<std::string>>);
     return 0;
 }
