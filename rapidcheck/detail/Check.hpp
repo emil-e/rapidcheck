@@ -47,16 +47,18 @@ bool check(Testable testable)
 
         if (!rootNode.generate(property)) {
             int numShrinks = doShrink(rootNode, property);
-            std::cout << "Falsifiable after " << testIndex << " tests and "
-                      << numShrinks << " shrinks:" << std::endl;
+            std::cout << std::endl << "Falsifiable, after " << testIndex
+                      << " tests and " << numShrinks << " shrinks:" << std::endl;
             printExample(rootNode);
             return false;
         }
 
+        std::cout << "." << std::flush;
         // TODO do size iteration like Haskells quickcheck
         currentSize = std::min(params.maxSize, currentSize + 1);
     }
 
+    std::cout << "OK, passed " << params.maxSuccess << std::endl;
     return true;
 }
 
