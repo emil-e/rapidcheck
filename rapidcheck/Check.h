@@ -11,7 +11,7 @@ typedef Generator<bool> Property;
 struct TestParameters
 {
     //! The maximum number of successes before deciding a property passes.
-    int maxSuccess = 1000;
+    int maxSuccess = 100;
     //! The maximum size to generate.
     size_t maxSize = 100;
 };
