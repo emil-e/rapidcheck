@@ -94,6 +94,7 @@ public:
     template<typename Gen>
     typename Gen::GeneratedType pick(const Gen &generator)
     {
+        //std::cout << path() << std::endl;
         ImplicitParam<NextChildIndex> nextChildIndex;
         if (*nextChildIndex >= m_children.size())
             m_children.push_back(RoseNode(this));
@@ -250,9 +251,9 @@ private:
     std::string path()
     {
         if (m_parent == nullptr)
-            return "/ " + description();
+            return "/ " + description() + "\n";
         else
-            return m_parent->path() + " / " + description();
+            return m_parent->path() + "/ " + description() + "\n";
     }
 
     //! Returns the active generator.
