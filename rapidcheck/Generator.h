@@ -18,6 +18,13 @@ typename Gen::GeneratedType pick(Gen generator);
 template<typename T>
 T pick();
 
+//! Prints a sample value to stdout for the given generator.
+//!
+//! @param sz         The size to sample.
+//! @param generator  The generator.
+template<typename Gen>
+void sample(size_t sz, Gen generator);
+
 //! Returns the current size that is being generated.
 size_t currentSize();
 

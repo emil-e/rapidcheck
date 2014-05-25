@@ -20,6 +20,20 @@ T pick()
     return pick(arbitrary<T>());
 }
 
+template<typename Gen>
+void sample(size_t sz, Gen generator)
+{
+    using namespace detail;
+    ImplicitParam<param::Size> size;
+    size.let(sz);
+    ImplicitParam<param::RandomEngine> randomEngine;
+    randomEngine.let(RandomEngine());
+
+    RoseNode rootNode;
+    show(rootNode.generate(generator), std::cout);
+    std::cout << std::endl;
+}
+
 size_t currentSize()
 {
     return *detail::ImplicitParam<detail::param::Size>();
