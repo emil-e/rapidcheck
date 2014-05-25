@@ -2,5 +2,5 @@
 
 #include "Check.h"
 #include "Generator.h"
-#include "Show.hpp"
+#include "Show.h"
 #include "Shrink.h"

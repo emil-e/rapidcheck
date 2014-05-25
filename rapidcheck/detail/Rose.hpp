@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "rapidcheck/Show.hpp"
+#include "rapidcheck/Show.h"
 #include "rapidcheck/Generator.h"
 
 #include "ImplicitParam.hpp"
