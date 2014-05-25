@@ -75,10 +75,12 @@ private:
     RC_DISABLE_COPY(ImplicitParam)
     RC_DISABLE_MOVE(ImplicitParam)
 
-    static std::stack<ValueType> &values()
+    typedef std::stack<ValueType, std::vector<ValueType>> StackT;
+
+    static StackT &values()
     {
         // TODO needs thread local
-        static std::stack<ValueType> valueStack;
+        static StackT valueStack;
         return valueStack;
     }
 

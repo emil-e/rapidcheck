@@ -8,7 +8,7 @@ namespace param {
 struct Size { typedef size_t ValueType; };
 
 //! Disable shrinking for generators in scope.
-struct NoShrink { typedef bool ValueType; };
+struct NoShrink { typedef int ValueType; };
 
 } // namespace param
 } // namespace detail
