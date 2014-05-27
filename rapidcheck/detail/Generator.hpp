@@ -11,7 +11,10 @@ namespace rc {
 template<typename Gen>
 typename Gen::GeneratedType pick(Gen generator)
 {
-    return detail::RoseNode::current().pick(generator);
+    if (detail::RoseNode::hasCurrent())
+        return detail::RoseNode::current().pick(generator);
+    else
+        return generator();
 }
 
 template<typename T>
@@ -24,13 +27,14 @@ template<typename Gen>
 void sample(size_t sz, Gen generator)
 {
     using namespace detail;
+
     ImplicitParam<param::Size> size;
     size.let(sz);
+
     ImplicitParam<param::RandomEngine> randomEngine;
     randomEngine.let(RandomEngine());
 
-    RoseNode rootNode;
-    show(rootNode.generate(generator), std::cout);
+    show(generator(), std::cout);
     std::cout << std::endl;
 }
 
@@ -183,7 +187,7 @@ public:
 
     typename Multiplexer<Gens...>::GeneratedType operator()() const override
     {
-        constexpr int n = Multiplexer<Gens...>::numGenerators;
+        int n = Multiplexer<Gens...>::numGenerators;
         auto id = pick(resize(kReferenceSize, ranged<int>(0, n - 1)));
         return m_multiplexer.pickWithId(id);
     }
@@ -210,16 +214,20 @@ public:
     Coll operator()() const override
     {
         auto length = pick(ranged<typename Coll::size_type>(0, currentSize()));
+        auto gen = noShrink(m_generator);
         Coll coll;
         std::generate_n(std::inserter(coll, coll.end()), length,
-                      [&]{ return pick(m_generator); });
+                      [&]{ return pick(gen); });
         return coll;
     }
 
     ShrinkIteratorUP<Coll> shrink(Coll value) const override
     {
-        return ShrinkIteratorUP<Coll>(
-            new RemoveChunksIterator<Coll>(std::move(value)));
+        return sequentially(
+            ShrinkIteratorUP<Coll>(
+                new RemoveChunksIterator<Coll>(value)),
+            ShrinkIteratorUP<Coll>(
+                new ShrinkElementIterator<Coll, Gen>(value, m_generator)));
     }
 
 private:
@@ -321,6 +329,51 @@ private:
     Mapper m_mapper;
 };
 
+template<typename T>
+class CharacterGenerator : public Generator<T>
+{
+public:
+    T operator()() const override
+    {
+        return pick(oneOf(map(ranged<uint8_t>(1, 127),
+                              [](uint8_t x){ return static_cast<T>(x); }),
+                          nonZero<T>()));
+    }
+
+    ShrinkIteratorUP<T> shrink(T value) const override
+    {
+        std::vector<T> chars;
+        switch (value) {
+        default:
+            chars.insert(chars.begin(), static_cast<T>('3'));
+        case '3':
+            chars.insert(chars.begin(), static_cast<T>('2'));
+        case '2':
+            chars.insert(chars.begin(), static_cast<T>('1'));
+        case '1':
+            chars.insert(chars.begin(), static_cast<T>('C'));
+        case 'C':
+            chars.insert(chars.begin(), static_cast<T>('B'));
+        case 'B':
+            chars.insert(chars.begin(), static_cast<T>('A'));
+        case 'A':
+            chars.insert(chars.begin(), static_cast<T>('c'));
+        case 'c':
+            chars.insert(chars.begin(), static_cast<T>('b'));
+        case 'b':
+            chars.insert(chars.begin(), static_cast<T>('a'));
+        case 'a':
+            ;
+        }
+
+        switch (value) {
+            ;
+        }
+
+        return shrinkConstant<T>(chars);
+    }
+};
+
 //
 // Factory functions
 //
@@ -330,7 +383,7 @@ Arbitrary<T> arbitrary() { return Arbitrary<T>(); }
 
 template<typename Generator, typename Predicate>
 SuchThat<Generator, Predicate> suchThat(Generator gen,
-                                        Predicate pred)
+                                                  Predicate pred)
 { return SuchThat<Generator, Predicate>(std::move(gen), std::move(pred)); }
 
 template<typename T>
@@ -369,6 +422,9 @@ NoShrink<Gen> noShrink(Gen generator)
 template<typename Gen, typename Mapper>
 Mapped<Gen, Mapper> map(Gen generator, Mapper mapper)
 { return Mapped<Gen, Mapper>(std::move(generator), std::move(mapper)); }
+
+template<typename T>
+CharacterGenerator<T> character() { return CharacterGenerator<T>(); }
 
 } // namespace rc
 

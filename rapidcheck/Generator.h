@@ -33,7 +33,7 @@ size_t currentSize();
 //! natural limit which is not too expensive to generate should max out at this.
 //! This applies to, for example, generation of numbers but not to the
 //! of collection where there is an associate cost to generating large sizes.
-constexpr size_t kReferenceSize = 100;
+size_t kReferenceSize = 100;
 
 //! Base class for generators of all types.
 class UntypedGenerator
@@ -85,6 +85,7 @@ template<typename Callable> class AnyInvocation;
 template<typename T> class Constant;
 template<typename Gen> class NoShrink;
 template<typename Gen, typename Mapper> class Mapped;
+template<typename T> class CharacterGenerator;
 
 //! Template for generators of arbitrary values of different types. Specialize
 //! this template to provide generation for custom types.
@@ -153,6 +154,12 @@ NoShrink<Gen> noShrink(Gen generator);
 //! mapping callable.
 template<typename Gen, typename Mapper>
 Mapped<Gen, Mapper> map(Gen generator, Mapper mapper);
+
+//! Generates a character of type \c T.
+//!
+//! @tparam T  The character type (i.e. char, wchar_t etc.)
+template<typename T>
+CharacterGenerator<T> character();
 
 } // namespace rc
 

@@ -16,7 +16,14 @@ template<typename T>
 typename std::enable_if<std::is_integral<T>::value, T>::type defaultGenerate()
 {
     size_t size = std::min(currentSize(), kReferenceSize);
-    RandomEngine::Atom r = RoseNode::current().atom();
+    RandomEngine::Atom r;
+    // TODO this switching shouldn't be done here.
+    if (RoseNode::hasCurrent()) {
+        r = RoseNode::current().atom();
+    } else {
+        ImplicitParam<param::RandomEngine> randomEngine;
+        r = randomEngine->nextAtom();
+    }
 
     // We vary the size by using different number of bits. This way, we can be
     // that the max value can also be generated.
@@ -89,34 +96,39 @@ class Arbitrary<std::pair<T1, T2>> : public Generator<std::pair<T1, T2>>
 public:
     std::pair<T1, T2> operator()() const override
     { return std::make_pair(pick<T1>(), pick<T2>()); }
+
+    ShrinkIteratorUP<std::pair<T1, T2>>
+    shrink(std::pair<T1, T2> pair) const override
+    {
+        return sequentially(
+            mapShrink(arbitrary<T1>().shrink(pair.first),
+                      [=](T1 x) { return std::make_pair(x, pair.second); }),
+            mapShrink(arbitrary<T2>().shrink(pair.second),
+                      [=](T2 x) { return std::make_pair(pair.first, x); }));
+    }
+};
+
+template<typename Coll, typename ValueType>
+class ArbitraryCollection : public Generator<Coll>
+{
+public:
+    Coll operator()() const override
+    { return pick(collection<Coll>(arbitrary<ValueType>())); }
+
+    ShrinkIteratorUP<Coll> shrink(Coll value) const override
+    { return collection<Coll>(arbitrary<ValueType>()).shrink(value); }
 };
 
 // std::vector
 template<typename T, typename Alloc>
 class Arbitrary<std::vector<T, Alloc>>
-    : public Generator<std::vector<T, Alloc>>
-{
-public:
-    typedef std::vector<T, Alloc> VectorType;
-
-    VectorType operator()() const override
-    { return pick(collection<std::vector<T, Alloc>>(arbitrary<T>())); }
-};
+    : public ArbitraryCollection<std::vector<T, Alloc>, T> {};
 
 // std::map
 template<typename Key, typename T, typename Compare, typename Alloc>
 class Arbitrary<std::map<Key, T, Compare, Alloc>>
-    : public Generator<std::map<Key, T, Compare, Alloc>>
-{
-public:
-    typedef std::map<Key, T, Compare, Alloc> VectorType;
-
-    VectorType operator()() const override
-    {
-        return pick(collection<std::map<Key, T, Compare, Alloc>>(
-                        arbitrary<std::pair<Key, T>>()));
-    }
-};
+    : public ArbitraryCollection<std::map<Key, T, Compare, Alloc>,
+                                 std::pair<Key, T>> {};
 
 // std::basic_string
 template<typename T, typename Traits, typename Alloc>
@@ -127,12 +139,10 @@ public:
     typedef std::basic_string<T, Traits, Alloc> StringType;
 
     StringType operator()() const override
-    {
-        auto charGen = oneOf(map(ranged<uint8_t>(1, 127),
-                                 [](uint8_t x){ return static_cast<T>(x); }),
-                             nonZero<T>());
-        return pick(collection<std::string>(charGen));
-    }
+    { return pick(collection<StringType>(character<T>())); }
+
+    ShrinkIteratorUP<StringType> shrink(StringType value) const override
+    { return collection<StringType>(character<T>()).shrink(value); }
 };
 
 }

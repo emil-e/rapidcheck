@@ -24,11 +24,10 @@ public:
         return m_distribution(m_randomEngine);
     }
 
-    //! Resets this random engine.
-    void reset()
+    //! Sets the seed of this random engine.
+    void seed(Atom s)
     {
-        // TODO what should be reset?
-        //m_randomEngine.reset();
+        m_randomEngine.seed(s);
         m_distribution.reset();
     }
 

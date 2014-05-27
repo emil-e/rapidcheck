@@ -59,10 +59,21 @@ bool prop_size(const Collection &c)
     return crappySize2(c) == c.size();
 }
 
+bool prop_size2(const std::vector<std::map<std::string, std::string>> &c)
+{
+    int count = 0;
+    for (const auto &m : c) {
+        for (const auto &p : m) {
+            if (p.first.size() > 10)
+                count++;
+        }
+    }
+
+    return count < 5;
+}
+
 int main()
 {
-    check(prop_size<std::string>);
-//    check(prop_size<std::vector<int>>);
-//    check(prop_size<std::vector<std::string>>);
+    check(prop_size2);
     return 0;
 }

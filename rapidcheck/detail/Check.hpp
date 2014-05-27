@@ -33,32 +33,42 @@ bool check(Testable testable)
 {
     using namespace detail;
 
-    auto property(anyInvocation(testable));
     TestParameters params;
-    ImplicitParam<param::RandomEngine> randomEngine;
-    randomEngine.let(RandomEngine());
+    RandomEngine seedEngine;
+
+    auto property(anyInvocation(testable));
     size_t currentSize = 0;
     for (int testIndex = 1; testIndex <= params.maxSuccess; testIndex++) {
-        RoseNode rootNode;
+        RandomEngine::Atom seed = seedEngine.nextAtom();
+        ImplicitParam<param::RandomEngine> randomEngine;
+        randomEngine.let(RandomEngine());
+        randomEngine->seed(seed);
+
         ImplicitParam<param::Size> size;
         size.let(currentSize);
+
         ImplicitParam<param::NoShrink> noShrink;
         noShrink.let(false);
 
-        if (!rootNode.generate(property)) {
+        if (!property()) {
+            std::cout << "...Failed!" << std::endl;
+            std::cout << "Shrinking..." << std::flush;
+            RoseNode rootNode;
+            randomEngine->seed(seed);
             int numShrinks = doShrink(rootNode, property);
-            std::cout << std::endl << "Falsifiable, after " << testIndex
+            std::cout << std::endl;
+            std::cout << "Falsifiable, after " << testIndex
                       << " tests and " << numShrinks << " shrinks:" << std::endl;
             printExample(rootNode);
             return false;
         }
 
-        std::cout << "." << std::flush;
-        // TODO do size iteration like Haskells quickcheck
+        std::cout << "\r" << testIndex << "/" << params.maxSuccess << std::flush;
         currentSize = std::min(params.maxSize, currentSize + 1);
     }
 
-    std::cout << "OK, passed " << params.maxSuccess << std::endl;
+    std::cout << std::endl << "OK, passed " << params.maxSuccess
+              << " tests" << std::endl;
     return true;
 }
 

@@ -194,6 +194,10 @@ public:
     static RoseNode &current()
     { return **ImplicitParam<CurrentNode>(); }
 
+    //! Returns a reference to the current node.
+    static bool hasCurrent()
+    { return ImplicitParam<CurrentNode>().hasBinding(); }
+
 private:
     RC_DISABLE_COPY(RoseNode)
 
