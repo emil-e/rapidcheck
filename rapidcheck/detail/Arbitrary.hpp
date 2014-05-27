@@ -100,7 +100,7 @@ public:
     shrink::IteratorUP<std::pair<T1, T2>>
     shrink(std::pair<T1, T2> pair) const override
     {
-        return sequentially(
+        return shrink::sequentially(
             shrink::map(gen::arbitrary<T1>().shrink(pair.first),
                       [=](T1 x) { return std::make_pair(x, pair.second); }),
             shrink::map(gen::arbitrary<T2>().shrink(pair.second),
