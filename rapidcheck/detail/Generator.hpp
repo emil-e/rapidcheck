@@ -366,10 +366,6 @@ public:
             ;
         }
 
-        switch (value) {
-            ;
-        }
-
         return shrinkConstant<T>(chars);
     }
 };
