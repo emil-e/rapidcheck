@@ -18,6 +18,14 @@ typename Gen::GeneratedType pick(Gen generator);
 template<typename T>
 T pick();
 
+//! Template for generators of arbitrary values of different types. Specialize
+//! this template to provide generation for custom types.
+//!
+//! @tparam T  The generated type.
+template<typename T> class Arbitrary;
+
+namespace gen {
+
 //! Prints a sample value to stdout for the given generator.
 //!
 //! @param sz         The size to sample.
@@ -79,19 +87,13 @@ template<typename Gen, typename Predicate> class SuchThat;
 template<typename T> class Ranged;
 template<typename ...Gens> class OneOf;
 template<typename T> class NonZero;
-template<typename Coll, typename Gen> class CollectionGenerator;
+template<typename Coll, typename Gen> class Collection;
 template<typename Gen> class Resized;
 template<typename Callable> class AnyInvocation;
 template<typename T> class Constant;
 template<typename Gen> class NoShrink;
 template<typename Gen, typename Mapper> class Mapped;
-template<typename T> class CharacterGenerator;
-
-//! Template for generators of arbitrary values of different types. Specialize
-//! this template to provide generation for custom types.
-//!
-//! @tparam T  The generated type.
-template<typename T> class Arbitrary;
+template<typename T> class Character;
 
 //! Arbitrary generator for type \c T.
 //!
@@ -132,7 +134,7 @@ NonZero<T> nonZero();
 //! @tparam C          The collection type.
 //! @tparam Generator  The generator type.
 template<typename Coll, typename Gen>
-CollectionGenerator<Coll, Gen> collection(Gen gen);
+Collection<Coll, Gen> collection(Gen gen);
 
 //! Returns a version of the given generator that always uses the specified size.
 //!
@@ -159,8 +161,9 @@ Mapped<Gen, Mapper> map(Gen generator, Mapper mapper);
 //!
 //! @tparam T  The character type (i.e. char, wchar_t etc.)
 template<typename T>
-CharacterGenerator<T> character();
+Character<T> character();
 
+} // namespace gen
 } // namespace rc
 
 #include "detail/Generator.hpp"

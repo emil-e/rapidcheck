@@ -5,7 +5,7 @@
 namespace rc {
 
 //! A property is a \c Generator<bool>, nifty, huh?
-typedef Generator<bool> Property;
+typedef gen::Generator<bool> Property;
 
 //! Describes the parameters for a test.
 struct TestParameters

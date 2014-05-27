@@ -20,8 +20,10 @@ typename Gen::GeneratedType pick(Gen generator)
 template<typename T>
 T pick()
 {
-    return pick(arbitrary<T>());
+    return pick(gen::arbitrary<T>());
 }
+
+namespace gen {
 
 template<typename Gen>
 void sample(size_t sz, Gen generator)
@@ -60,7 +62,7 @@ std::string Generator<T>::generateString() const
 template<typename T>
 ShrinkIteratorUP<T> Generator<T>::shrink(T value) const
 {
-    return ShrinkIteratorUP<T>(new NullIterator<T>());
+    return shrinkNothing<T>();
 }
 
 template<typename Gen, typename Predicate>
@@ -205,10 +207,10 @@ public:
 };
 
 template<typename Coll, typename Gen>
-class CollectionGenerator : public Generator<Coll>
+class Collection : public Generator<Coll>
 {
 public:
-    explicit CollectionGenerator(Gen generator)
+    explicit Collection(Gen generator)
         : m_generator(std::move(generator)) {}
 
     Coll operator()() const override
@@ -330,7 +332,7 @@ private:
 };
 
 template<typename T>
-class CharacterGenerator : public Generator<T>
+class Character : public Generator<T>
 {
 public:
     T operator()() const override
@@ -400,8 +402,8 @@ template<typename T>
 NonZero<T> nonZero() { return NonZero<T>(); }
 
 template<typename Coll, typename Gen>
-CollectionGenerator<Coll, Gen> collection(Gen gen)
-{ return CollectionGenerator<Coll, Gen>(std::move(gen)); }
+Collection<Coll, Gen> collection(Gen gen)
+{ return Collection<Coll, Gen>(std::move(gen)); }
 
 template<typename Gen>
 Resized<Gen> resize(size_t size, Gen gen)
@@ -420,9 +422,9 @@ Mapped<Gen, Mapper> map(Gen generator, Mapper mapper)
 { return Mapped<Gen, Mapper>(std::move(generator), std::move(mapper)); }
 
 template<typename T>
-CharacterGenerator<T> character() { return CharacterGenerator<T>(); }
+Character<T> character() { return Character<T>(); }
 
+} // namespace gen
 } // namespace rc
-
 
 #include "Arbitrary.hpp"

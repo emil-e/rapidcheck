@@ -54,7 +54,7 @@ public:
         ImplicitParam<param::NoShrink> noShrink;
 
         if (!isFrozen())
-            m_originalGenerator = UntypedGeneratorUP(new Gen(generator));
+            m_originalGenerator = gen::UntypedGeneratorUP(new Gen(generator));
 
         if (shrunkNode.hasBinding() && (*shrunkNode == nullptr)) {
             if (!m_shrinkIterator) {
@@ -70,15 +70,15 @@ public:
 
                 // We need a fallback accepted generator if shrinking fails
                 if (!m_acceptedGenerator)
-                    m_acceptedGenerator = UntypedGeneratorUP(new Gen(generator));
+                    m_acceptedGenerator = gen::UntypedGeneratorUP(new Gen(generator));
             }
 
             if (m_shrinkIterator->hasNext()) {
                 auto typedIterator =
                     dynamic_cast<ShrinkIterator<T> *>(m_shrinkIterator.get());
                 assert(typedIterator != nullptr);
-                m_currentGenerator = UntypedGeneratorUP(
-                    new Constant<T>(typedIterator->next()));
+                m_currentGenerator = gen::UntypedGeneratorUP(
+                    new gen::Constant<T>(typedIterator->next()));
                 *shrunkNode = this;
             } else {
                 // Shrinking exhausted
@@ -122,7 +122,7 @@ public:
         ImplicitParam<NextChildIndex> nextChildIndex;
         nextChildIndex.let(0);
 
-        UntypedGenerator *generator = activeGenerator();
+        gen::UntypedGenerator *generator = activeGenerator();
         if (generator != nullptr)
             return generator->generateString();
         else
@@ -261,7 +261,7 @@ private:
     }
 
     //! Returns the active generator.
-    UntypedGenerator *activeGenerator() const
+    gen::UntypedGenerator *activeGenerator() const
     {
         if (m_currentGenerator)
             return m_currentGenerator.get();
@@ -292,7 +292,7 @@ private:
         currentNode.let(this);
         ImplicitParam<NextChildIndex> nextChildIndex;
         nextChildIndex.let(0);
-        return (*dynamic_cast<Generator<T> *>(activeGenerator()))();
+        return (*dynamic_cast<gen::Generator<T> *>(activeGenerator()))();
     }
 
     //! Accepts the current shrink value
@@ -309,9 +309,9 @@ private:
     Children m_children;
     bool m_hasAtom = false;
     RandomEngine::Atom m_atom;
-    UntypedGeneratorUP m_originalGenerator;
-    UntypedGeneratorUP m_acceptedGenerator;
-    UntypedGeneratorUP m_currentGenerator;
+    gen::UntypedGeneratorUP m_originalGenerator;
+    gen::UntypedGeneratorUP m_acceptedGenerator;
+    gen::UntypedGeneratorUP m_currentGenerator;
     UntypedShrinkIteratorUP m_shrinkIterator;
 };
 

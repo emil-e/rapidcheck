@@ -15,7 +15,7 @@ namespace detail {
 template<typename T>
 typename std::enable_if<std::is_integral<T>::value, T>::type defaultGenerate()
 {
-    size_t size = std::min(currentSize(), kReferenceSize);
+    size_t size = std::min(gen::currentSize(), gen::kReferenceSize);
     RandomEngine::Atom r;
     // TODO this switching shouldn't be done here.
     if (RoseNode::hasCurrent()) {
@@ -27,7 +27,7 @@ typename std::enable_if<std::is_integral<T>::value, T>::type defaultGenerate()
 
     // We vary the size by using different number of bits. This way, we can be
     // that the max value can also be generated.
-    int nBits = (size * std::numeric_limits<T>::digits) / kReferenceSize;
+    int nBits = (size * std::numeric_limits<T>::digits) / gen::kReferenceSize;
     if (nBits == 0)
         return 0;
     constexpr RandomEngine::Atom randIntMax =
@@ -72,7 +72,7 @@ defaultShrink(const T &value)
 }
 
 template<typename T>
-class Arbitrary : public Generator<T>
+class Arbitrary : public gen::Generator<T>
 {
 public:
     T operator()() const override
@@ -83,15 +83,15 @@ public:
 };
 
 template<>
-class Arbitrary<bool> : public Generator<bool>
+class Arbitrary<bool> : public gen::Generator<bool>
 {
 public:
     bool operator()() const override
-    { return (pick(resize(kReferenceSize, arbitrary<uint8_t>())) & 0x1) == 0; }
+    { return (pick(resize(gen::kReferenceSize, gen::arbitrary<uint8_t>())) & 0x1) == 0; }
 };
 
 template<typename T1, typename T2>
-class Arbitrary<std::pair<T1, T2>> : public Generator<std::pair<T1, T2>>
+class Arbitrary<std::pair<T1, T2>> : public gen::Generator<std::pair<T1, T2>>
 {
 public:
     std::pair<T1, T2> operator()() const override
@@ -101,22 +101,22 @@ public:
     shrink(std::pair<T1, T2> pair) const override
     {
         return sequentially(
-            mapShrink(arbitrary<T1>().shrink(pair.first),
+            mapShrink(gen::arbitrary<T1>().shrink(pair.first),
                       [=](T1 x) { return std::make_pair(x, pair.second); }),
-            mapShrink(arbitrary<T2>().shrink(pair.second),
+            mapShrink(gen::arbitrary<T2>().shrink(pair.second),
                       [=](T2 x) { return std::make_pair(pair.first, x); }));
     }
 };
 
 template<typename Coll, typename ValueType>
-class ArbitraryCollection : public Generator<Coll>
+class ArbitraryCollection : public gen::Generator<Coll>
 {
 public:
     Coll operator()() const override
-    { return pick(collection<Coll>(arbitrary<ValueType>())); }
+    { return pick(gen::collection<Coll>(gen::arbitrary<ValueType>())); }
 
     ShrinkIteratorUP<Coll> shrink(Coll value) const override
-    { return collection<Coll>(arbitrary<ValueType>()).shrink(value); }
+    { return gen::collection<Coll>(gen::arbitrary<ValueType>()).shrink(value); }
 };
 
 // std::vector
@@ -133,16 +133,16 @@ class Arbitrary<std::map<Key, T, Compare, Alloc>>
 // std::basic_string
 template<typename T, typename Traits, typename Alloc>
 class Arbitrary<std::basic_string<T, Traits, Alloc>>
-    : public Generator<std::basic_string<T, Traits, Alloc>>
+    : public gen::Generator<std::basic_string<T, Traits, Alloc>>
 {
 public:
     typedef std::basic_string<T, Traits, Alloc> StringType;
 
     StringType operator()() const override
-    { return pick(collection<StringType>(character<T>())); }
+    { return pick(gen::collection<StringType>(gen::character<T>())); }
 
     ShrinkIteratorUP<StringType> shrink(StringType value) const override
-    { return collection<StringType>(character<T>()).shrink(value); }
+    { return gen::collection<StringType>(gen::character<T>()).shrink(value); }
 };
 
 }

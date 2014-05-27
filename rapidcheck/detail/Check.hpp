@@ -36,7 +36,7 @@ bool check(Testable testable)
     TestParameters params;
     RandomEngine seedEngine;
 
-    auto property(anyInvocation(testable));
+    auto property(gen::anyInvocation(testable));
     size_t currentSize = 0;
     for (int testIndex = 1; testIndex <= params.maxSuccess; testIndex++) {
         RandomEngine::Atom seed = seedEngine.nextAtom();
