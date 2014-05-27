@@ -5,9 +5,10 @@
 #include "Utility.hpp"
 
 namespace rc {
+namespace shrink {
 
 template<typename T>
-class NullIterator : public ShrinkIterator<T>
+class Nothing : public Iterator<T>
 {
 public:
     bool hasNext() const override { return false; }
@@ -15,12 +16,12 @@ public:
 };
 
 template<typename T>
-class RemoveChunksIterator : public ShrinkIterator<T>
+class RemoveChunks : public Iterator<T>
 {
 public:
     typedef typename T::size_type SizeT;
 
-    RemoveChunksIterator(T collection)
+    RemoveChunks(T collection)
         : m_collection(std::move(collection))
         , m_skipStart(0)
         , m_skipSize(m_collection.size()) {}
@@ -55,10 +56,10 @@ private:
 };
 
 template<typename T, typename ElementGenerator>
-class ShrinkElementIterator : public ShrinkIterator<T>
+class ShrinkElement : public Iterator<T>
 {
 public:
-    ShrinkElementIterator(T collection, ElementGenerator elementGenerator)
+    ShrinkElement(T collection, ElementGenerator elementGenerator)
         : m_collection(std::move(collection))
         , m_elementGenerator(std::move(elementGenerator))
         , m_shrinkElement(m_collection.begin())
@@ -102,7 +103,7 @@ private:
 
     T m_collection;
     ElementGenerator m_elementGenerator;
-    ShrinkIteratorUP<typename ElementGenerator::GeneratedType> m_shrinkIterator;
+    IteratorUP<typename ElementGenerator::GeneratedType> m_shrinkIterator;
     typename T::iterator m_shrinkElement;
 };
 
@@ -110,10 +111,10 @@ template<typename T,
          typename I,
          typename Predicate,
          typename Iterate>
-class UnfoldIterator : public ShrinkIterator<T>
+class Unfold : public Iterator<T>
 {
 public:
-    UnfoldIterator(I initial, Predicate predicate, Iterate iterate)
+    Unfold(I initial, Predicate predicate, Iterate iterate)
         : m_it(std::move(initial))
         , m_predicate(std::move(predicate))
         , m_iterate(std::move(iterate)) {}
@@ -134,12 +135,12 @@ private:
 };
 
 template<typename T>
-class SequentialIterator : public ShrinkIterator<T>
+class Sequentially : public Iterator<T>
 {
 public:
-    typedef std::vector<ShrinkIteratorUP<T>> Iterators;
+    typedef std::vector<IteratorUP<T>> Iterators;
 
-    SequentialIterator(Iterators iterators)
+    Sequentially(Iterators iterators)
         : m_iterators(std::move(iterators))
         , m_current(m_iterators.begin())
     {
@@ -169,10 +170,10 @@ private:
 };
 
 template<typename T>
-class ConstantIterator : public ShrinkIterator<T>
+class Constant : public Iterator<T>
 {
 public:
-    ConstantIterator(std::vector<T> constants)
+    Constant(std::vector<T> constants)
         : m_constants(std::move(constants))
         , m_iterator(m_constants.begin()) {}
 
@@ -185,11 +186,11 @@ private:
 };
 
 template<typename T, typename Mapper>
-class MappedIterator : public ShrinkIterator<
+class Mapped : public Iterator<
     typename std::result_of<Mapper(T)>::type>
 {
 public:
-    MappedIterator(ShrinkIteratorUP<T> iterator, Mapper mapper)
+    Mapped(IteratorUP<T> iterator, Mapper mapper)
         : m_iterator(std::move(iterator))
         , m_mapper(std::move(mapper)) {}
 
@@ -199,7 +200,7 @@ public:
     next() override { return m_mapper(m_iterator->next()); }
 
 private:
-    ShrinkIteratorUP<T> m_iterator;
+    IteratorUP<T> m_iterator;
     Mapper m_mapper;
 };
 
@@ -210,38 +211,37 @@ IteratorUP sequentially(IteratorUP iterator, IteratorsUP ...iterators)
     iteratorVec.reserve(1 + sizeof...(IteratorsUP));
     detail::pushBackAll(iteratorVec, std::move(iterator), std::move(iterators...));
     typedef typename IteratorUP::element_type::ShrunkType T;
-    return IteratorUP(new SequentialIterator<T>(std::move(iteratorVec)));
+    return IteratorUP(new Sequentially<T>(std::move(iteratorVec)));
 }
 
 template<typename I,
          typename Predicate,
          typename Iterate>
-ShrinkIteratorUP<typename std::result_of<Iterate(I)>::type::first_type>
+IteratorUP<typename std::result_of<Iterate(I)>::type::first_type>
 unfold(I initial, Predicate predicate, Iterate iterate)
 {
     typedef typename decltype(iterate(initial))::first_type T;
-    return ShrinkIteratorUP<T>(new UnfoldIterator<T, I, Predicate, Iterate>(
+    return IteratorUP<T>(new Unfold<T, I, Predicate, Iterate>(
                                    std::move(initial),
                                    std::move(predicate),
                                    std::move(iterate)));
 }
 
 template<typename T>
-ShrinkIteratorUP<T> shrinkNothing()
-{ return ShrinkIteratorUP<T>(new NullIterator<T>()); }
+IteratorUP<T> nothing()
+{ return IteratorUP<T>(new Nothing<T>()); }
 
 template<typename T, typename Mapper>
-ShrinkIteratorUP<typename std::result_of<Mapper(T)>::type>
-mapShrink(ShrinkIteratorUP<T> iterator, Mapper mapper)
+IteratorUP<typename std::result_of<Mapper(T)>::type>
+map(IteratorUP<T> iterator, Mapper mapper)
 {
-    return ShrinkIteratorUP<typename std::result_of<Mapper(T)>::type>(
-        new MappedIterator<T, Mapper>(
-            std::move(iterator),
-            std::move(mapper)));
+    return IteratorUP<typename std::result_of<Mapper(T)>::type>(
+        new Mapped<T, Mapper>(std::move(iterator), std::move(mapper)));
 }
 
 template<typename T>
-ShrinkIteratorUP<T> shrinkConstant(std::vector<T> constants)
-{ return ShrinkIteratorUP<T>(new ConstantIterator<T>(std::move(constants))); }
+IteratorUP<T> constant(std::vector<T> constants)
+{ return IteratorUP<T>(new Constant<T>(std::move(constants))); }
 
+} // namespace shrink
 } // namespace rc

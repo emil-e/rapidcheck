@@ -64,7 +64,7 @@ public:
                     return value;
 
                 if (*noShrink)
-                    m_shrinkIterator = shrinkNothing<T>();
+                    m_shrinkIterator = shrink::nothing<T>();
                 else
                     m_shrinkIterator = generator.shrink(value);
 
@@ -75,7 +75,7 @@ public:
 
             if (m_shrinkIterator->hasNext()) {
                 auto typedIterator =
-                    dynamic_cast<ShrinkIterator<T> *>(m_shrinkIterator.get());
+                    dynamic_cast<shrink::Iterator<T> *>(m_shrinkIterator.get());
                 assert(typedIterator != nullptr);
                 m_currentGenerator = gen::UntypedGeneratorUP(
                     new gen::Constant<T>(typedIterator->next()));
@@ -312,7 +312,7 @@ private:
     gen::UntypedGeneratorUP m_originalGenerator;
     gen::UntypedGeneratorUP m_acceptedGenerator;
     gen::UntypedGeneratorUP m_currentGenerator;
-    UntypedShrinkIteratorUP m_shrinkIterator;
+    shrink::UntypedIteratorUP m_shrinkIterator;
 };
 
 } // namespace detail

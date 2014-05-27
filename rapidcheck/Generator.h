@@ -71,7 +71,7 @@ public:
 
     //! Returns a \c ShrinkIterator which yields the possible shrinks for the
     //! given value. The default impelemtation returns a \c NullIterator.
-    virtual ShrinkIteratorUP<T> shrink(T value) const;
+    virtual shrink::IteratorUP<T> shrink(T value) const;
 
     const std::type_info *generatedTypeInfo() const override;
     std::string generateString() const override;

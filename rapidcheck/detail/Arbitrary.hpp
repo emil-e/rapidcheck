@@ -51,19 +51,19 @@ typename std::enable_if<std::is_integral<T>::value, T>::type defaultGenerate()
 template<typename T>
 typename std::enable_if<
     !std::is_integral<T>::value,
-    ShrinkIteratorUP<T>>::type
+    shrink::IteratorUP<T>>::type
 defaultShrink(const T &value)
 {
-    return ShrinkIteratorUP<T>(new NullIterator<T>());
+    return shrink::nothing<T>();
 }
 
 template<typename T>
 typename std::enable_if<
     std::is_integral<T>::value,
-    ShrinkIteratorUP<T>>::type
+    shrink::IteratorUP<T>>::type
 defaultShrink(const T &value)
 {
-    return unfold(
+    return shrink::unfold(
         value,
         [=](T i) { return i != 0; },
         [=](T i) { return std::make_pair(static_cast<T>(value - i), i / 2); });
@@ -78,7 +78,7 @@ public:
     T operator()() const override
     { return detail::defaultGenerate<T>(); }
 
-    ShrinkIteratorUP<T> shrink(T value) const override
+    shrink::IteratorUP<T> shrink(T value) const override
     { return detail::defaultShrink<T>(std::move(value)); }
 };
 
@@ -97,13 +97,13 @@ public:
     std::pair<T1, T2> operator()() const override
     { return std::make_pair(pick<T1>(), pick<T2>()); }
 
-    ShrinkIteratorUP<std::pair<T1, T2>>
+    shrink::IteratorUP<std::pair<T1, T2>>
     shrink(std::pair<T1, T2> pair) const override
     {
         return sequentially(
-            mapShrink(gen::arbitrary<T1>().shrink(pair.first),
+            shrink::map(gen::arbitrary<T1>().shrink(pair.first),
                       [=](T1 x) { return std::make_pair(x, pair.second); }),
-            mapShrink(gen::arbitrary<T2>().shrink(pair.second),
+            shrink::map(gen::arbitrary<T2>().shrink(pair.second),
                       [=](T2 x) { return std::make_pair(pair.first, x); }));
     }
 };
@@ -115,7 +115,7 @@ public:
     Coll operator()() const override
     { return pick(gen::collection<Coll>(gen::arbitrary<ValueType>())); }
 
-    ShrinkIteratorUP<Coll> shrink(Coll value) const override
+    shrink::IteratorUP<Coll> shrink(Coll value) const override
     { return gen::collection<Coll>(gen::arbitrary<ValueType>()).shrink(value); }
 };
 
@@ -141,7 +141,7 @@ public:
     StringType operator()() const override
     { return pick(gen::collection<StringType>(gen::character<T>())); }
 
-    ShrinkIteratorUP<StringType> shrink(StringType value) const override
+    shrink::IteratorUP<StringType> shrink(StringType value) const override
     { return gen::collection<StringType>(gen::character<T>()).shrink(value); }
 };
 

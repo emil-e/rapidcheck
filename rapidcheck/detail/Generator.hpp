@@ -60,9 +60,9 @@ std::string Generator<T>::generateString() const
 }
 
 template<typename T>
-ShrinkIteratorUP<T> Generator<T>::shrink(T value) const
+shrink::IteratorUP<T> Generator<T>::shrink(T value) const
 {
-    return shrinkNothing<T>();
+    return shrink::nothing<T>();
 }
 
 template<typename Gen, typename Predicate>
@@ -223,13 +223,13 @@ public:
         return coll;
     }
 
-    ShrinkIteratorUP<Coll> shrink(Coll value) const override
+    shrink::IteratorUP<Coll> shrink(Coll value) const override
     {
         return sequentially(
-            ShrinkIteratorUP<Coll>(
-                new RemoveChunksIterator<Coll>(value)),
-            ShrinkIteratorUP<Coll>(
-                new ShrinkElementIterator<Coll, Gen>(value, m_generator)));
+            shrink::IteratorUP<Coll>(
+                new shrink::RemoveChunks<Coll>(value)),
+            shrink::IteratorUP<Coll>(
+                new shrink::ShrinkElement<Coll, Gen>(value, m_generator)));
     }
 
 private:
@@ -342,7 +342,7 @@ public:
                           nonZero<T>()));
     }
 
-    ShrinkIteratorUP<T> shrink(T value) const override
+    shrink::IteratorUP<T> shrink(T value) const override
     {
         std::vector<T> chars;
         switch (value) {
@@ -368,7 +368,7 @@ public:
             ;
         }
 
-        return shrinkConstant<T>(chars);
+        return shrink::constant<T>(chars);
     }
 };
 
