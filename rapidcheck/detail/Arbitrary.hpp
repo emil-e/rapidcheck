@@ -7,80 +7,88 @@
 
 namespace rc {
 
-template<typename T> class Arbitrary;
-
-namespace detail {
-
-// Signed integer generation
-template<typename T>
-typename std::enable_if<std::is_integral<T>::value, T>::type defaultGenerate()
-{
-    size_t size = std::min(gen::currentSize(), gen::kReferenceSize);
-    RandomEngine::Atom r;
-    // TODO this switching shouldn't be done here.
-    if (RoseNode::hasCurrent()) {
-        r = RoseNode::current().atom();
-    } else {
-        ImplicitParam<param::RandomEngine> randomEngine;
-        r = randomEngine->nextAtom();
-    }
-
-    // We vary the size by using different number of bits. This way, we can be
-    // that the max value can also be generated.
-    int nBits = (size * std::numeric_limits<T>::digits) / gen::kReferenceSize;
-    if (nBits == 0)
-        return 0;
-    constexpr RandomEngine::Atom randIntMax =
-        std::numeric_limits<RandomEngine::Atom>::max();
-    RandomEngine::Atom mask = ~((randIntMax - 1) << (nBits - 1));
-
-    T x = static_cast<T>(r & mask);
-    if (std::numeric_limits<T>::is_signed)
-    {
-        // Use the topmost bit as the signed bit. Even in the case of a signed
-        // 64-bit integer, it won't be used since it actually IS the sign bit.
-        constexpr int basicBits =
-            std::numeric_limits<RandomEngine::Atom>::digits;
-        x *= ((r >> (basicBits - 1)) == 0) ? 1 : -1;
-    }
-
-    return x;
-}
-
-// Default catch all
-template<typename T>
-typename std::enable_if<
-    !std::is_integral<T>::value,
-    shrink::IteratorUP<T>>::type
-defaultShrink(const T &value)
-{
-    return shrink::nothing<T>();
-}
-
-template<typename T>
-typename std::enable_if<
-    std::is_integral<T>::value,
-    shrink::IteratorUP<T>>::type
-defaultShrink(const T &value)
-{
-    return shrink::unfold(
-        value,
-        [=](T i) { return i != 0; },
-        [=](T i) { return std::make_pair(static_cast<T>(value - i), i / 2); });
-}
-
-}
-
 template<typename T>
 class Arbitrary : public gen::Generator<T>
 {
 public:
+    static_assert(std::is_integral<T>::value,
+                  "No specialization of Arbitrary for type");
+
     T operator()() const override
-    { return detail::defaultGenerate<T>(); }
+    {
+        size_t size = std::min(gen::currentSize(), gen::kReferenceSize);
+        detail::RandomEngine::Atom r;
+        // TODO this switching shouldn't be done here.
+        if (detail::RoseNode::hasCurrent()) {
+            r = detail::RoseNode::current().atom();
+        } else {
+            detail::ImplicitParam<detail::param::RandomEngine> randomEngine;
+            r = randomEngine->nextAtom();
+        }
+
+        // We vary the size by using different number of bits. This way, we can be
+        // that the max value can also be generated.
+        int nBits = (size * std::numeric_limits<T>::digits) / gen::kReferenceSize;
+        if (nBits == 0)
+            return 0;
+        constexpr detail::RandomEngine::Atom randIntMax =
+            std::numeric_limits<detail::RandomEngine::Atom>::max();
+        detail::RandomEngine::Atom mask = ~((randIntMax - 1) << (nBits - 1));
+
+        T x = static_cast<T>(r & mask);
+        if (std::numeric_limits<T>::is_signed)
+        {
+            // Use the topmost bit as the signed bit. Even in the case of a signed
+            // 64-bit integer, it won't be used since it actually IS the sign bit.
+            constexpr int basicBits =
+                std::numeric_limits<detail::RandomEngine::Atom>::digits;
+            x *= ((r >> (basicBits - 1)) == 0) ? 1 : -1;
+        }
+
+        return x;
+    }
 
     shrink::IteratorUP<T> shrink(T value) const override
-    { return detail::defaultShrink<T>(std::move(value)); }
+    {
+        return shrink::unfold(
+            value,
+            [=](T i) { return i != 0; },
+            [=](T i) { return std::make_pair(static_cast<T>(value - i), i / 2); });
+    }
 };
+
+// Base for float and double arbitrary instances
+template<typename T>
+class ArbitraryReal : public gen::Generator<T>
+{
+public:
+    T operator()() const override
+    {
+        int64_t i = pick(gen::arbitrary<int64_t>());
+        T x = static_cast<T>(i) / std::numeric_limits<int64_t>::max();
+        return std::pow<T>(2.0, gen::currentSize()) * x;
+    }
+
+    shrink::IteratorUP<T> shrink(T value) const override
+    {
+        std::vector<T> constants;
+
+        T truncated = std::trunc(value);
+        if (std::abs(truncated) < std::abs(value))
+            constants.push_back(truncated);
+
+        if (value < 0)
+            constants.push_back(-value);
+
+        return shrink::constant(constants);
+    }
+};
+
+template<>
+class Arbitrary<float> : public ArbitraryReal<float> {};
+
+template<>
+class Arbitrary<double> : public ArbitraryReal<double> {};
 
 template<>
 class Arbitrary<bool> : public gen::Generator<bool>
@@ -145,4 +153,4 @@ public:
     { return gen::collection<StringType>(gen::character<T>()).shrink(value); }
 };
 
-}
+} // namespace rc
