@@ -1,0 +1,4 @@
+* TODO Tuple generation and shrinking
+* TODO Verify that non-copyable objects can also be generated
+* TODO All collection types in STL should be generateable
+* TODO Maybe shrink reals to smaller values as well?
