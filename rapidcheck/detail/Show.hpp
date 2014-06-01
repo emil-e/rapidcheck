@@ -116,4 +116,19 @@ void show(const std::map<Key, T, Compare, Allocator> &m, std::ostream &os)
     showCollection("{", "}", m.begin(), m.end(), os);
 }
 
+template<typename T>
+void show(T *p, std::ostream &os)
+{
+    show(*p, os);
+    auto flags = os.flags();
+    os << " (" << std::hex << std::showbase << p << ")";
+    os.flags(flags);
+}
+
+template<typename T>
+void show(const std::unique_ptr<T> &p, std::ostream &os)
+{
+    show(p.get(), os);
+}
+
 } // namespace rc

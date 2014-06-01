@@ -49,44 +49,9 @@ public:
     template<typename Gen>
     typename Gen::GeneratedType generate(const Gen &generator)
     {
-        typedef typename Gen::GeneratedType T;
-        ImplicitParam<ShrunkNode> shrunkNode;
-        ImplicitParam<param::NoShrink> noShrink;
-
-        if (!isFrozen())
-            m_originalGenerator = gen::UntypedGeneratorUP(new Gen(generator));
-
-        if (shrunkNode.hasBinding() && (*shrunkNode == nullptr)) {
-            if (!m_shrinkIterator) {
-                T value(regenerate<T>());
-                // Did children shrink before us?
-                if (*shrunkNode != nullptr)
-                    return value;
-
-                if (*noShrink)
-                    m_shrinkIterator = shrink::nothing<T>();
-                else
-                    m_shrinkIterator = generator.shrink(value);
-
-                // We need a fallback accepted generator if shrinking fails
-                if (!m_acceptedGenerator)
-                    m_acceptedGenerator = gen::UntypedGeneratorUP(new Gen(generator));
-            }
-
-            if (m_shrinkIterator->hasNext()) {
-                auto typedIterator =
-                    dynamic_cast<shrink::Iterator<T> *>(m_shrinkIterator.get());
-                assert(typedIterator != nullptr);
-                m_currentGenerator = gen::UntypedGeneratorUP(
-                    new gen::Constant<T>(typedIterator->next()));
-                *shrunkNode = this;
-            } else {
-                // Shrinking exhausted
-                m_currentGenerator = nullptr;
-            }
-        }
-
-        return regenerate<T>();
+        return doGenerate(
+            generator,
+            std::is_copy_constructible<typename Gen::GeneratedType>());
     }
 
     //! Picks a value using the given generator in the context of the current
@@ -102,6 +67,7 @@ public:
         return m_children[*nextChildIndex - 1].generate(generator);
     }
 
+    // TODO this is obviously broken
     //! Returns a list of \c ValueDescriptions from the immediate children of
     //! this node.
     std::vector<std::string> example()
@@ -167,10 +133,10 @@ public:
         , m_children(std::move(other.m_children))
         , m_hasAtom(other.m_hasAtom)
         , m_atom(other.m_atom)
+        , m_shrinkIterator(std::move(other.m_shrinkIterator))
         , m_originalGenerator(std::move(other.m_originalGenerator))
         , m_acceptedGenerator(std::move(other.m_acceptedGenerator))
         , m_currentGenerator(std::move(other.m_currentGenerator))
-        , m_shrinkIterator(std::move(other.m_shrinkIterator))
     {
         adoptChildren();
     }
@@ -182,10 +148,10 @@ public:
         m_children = std::move(rhs.m_children);
         m_hasAtom = rhs.m_hasAtom;
         m_atom = rhs.m_atom;
+        m_shrinkIterator = std::move(rhs.m_shrinkIterator);
         m_originalGenerator = std::move(rhs.m_originalGenerator);
         m_acceptedGenerator = std::move(rhs.m_acceptedGenerator);
         m_currentGenerator = std::move(rhs.m_currentGenerator);
-        m_shrinkIterator = std::move(rhs.m_shrinkIterator);
         adoptChildren();
         return *this;
     }
@@ -304,15 +270,70 @@ private:
         m_shrinkIterator = nullptr;
     }
 
+    template<typename Gen>
+    typename Gen::GeneratedType doGenerate(const Gen &generator, std::true_type)
+    {
+        if (!isFrozen())
+            m_originalGenerator = gen::UntypedGeneratorUP(new Gen(generator));
+
+        typedef typename Gen::GeneratedType T;
+        ImplicitParam<ShrunkNode> shrunkNode;
+        if (shrunkNode.hasBinding() && (*shrunkNode == nullptr)) {
+            if (!m_shrinkIterator) {
+                T value(regenerate<T>());
+                // Did children shrink before us?
+                if (*shrunkNode != nullptr)
+                    return value;
+
+                ImplicitParam<param::NoShrink> noShrink;
+                if (*noShrink)
+                    m_shrinkIterator = shrink::nothing<T>();
+                else
+                    m_shrinkIterator = generator.shrink(std::move(value));
+
+                // We need a fallback accepted generator if shrinking fails
+                if (!m_acceptedGenerator)
+                    m_acceptedGenerator = gen::UntypedGeneratorUP(new Gen(generator));
+            }
+
+            if (m_shrinkIterator->hasNext()) {
+                auto typedIterator =
+                    dynamic_cast<shrink::Iterator<T> *>(m_shrinkIterator.get());
+                assert(typedIterator != nullptr);
+                m_currentGenerator = gen::UntypedGeneratorUP(
+                    new gen::Constant<T>(typedIterator->next()));
+                *shrunkNode = this;
+            } else {
+                // Shrinking exhausted
+                m_currentGenerator = nullptr;
+            }
+        }
+
+        return regenerate<T>();
+    }
+
+    template<typename Gen>
+    typename Gen::GeneratedType doGenerate(const Gen &generator, std::false_type)
+    {
+        m_originalGenerator = gen::UntypedGeneratorUP(new Gen(generator));
+        return regenerate<typename Gen::GeneratedType>();
+    }
+
     typedef std::vector<RoseNode> Children;
     RoseNode *m_parent;
     Children m_children;
     bool m_hasAtom = false;
     RandomEngine::Atom m_atom;
-    gen::UntypedGeneratorUP m_originalGenerator;
-    gen::UntypedGeneratorUP m_acceptedGenerator;
-    gen::UntypedGeneratorUP m_currentGenerator;
     shrink::UntypedIteratorUP m_shrinkIterator;
+
+    // The generator that was used to generate the original value, before
+    // shrinking
+    gen::UntypedGeneratorUP m_originalGenerator;
+    // When a shrunk value is accepted as a valid shrink, a generator for that
+    // value is saved here
+    gen::UntypedGeneratorUP m_acceptedGenerator;
+    // Any temporary values (e.g. when shrinking) are saved as generators here
+    gen::UntypedGeneratorUP m_currentGenerator;
 };
 
 } // namespace detail

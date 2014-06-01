@@ -5,6 +5,14 @@
 
 using namespace rc;
 
+template<typename T>
+class Arbitrary<std::unique_ptr<T>> : public gen::Generator<std::unique_ptr<T>>
+{
+public:
+    std::unique_ptr<T> operator()() const override
+    { return std::unique_ptr<T>(new T(pick<T>())); }
+};
+
 template<typename Iterator>
 void crappyReverse(Iterator begin, Iterator end)
 {
@@ -74,6 +82,10 @@ bool prop_size2(const std::vector<std::map<double, float>> &c)
 
 int main()
 {
-    check(prop_size2);
+    check([](const std::unique_ptr<int> &p) {
+            if (*p > 10)
+                return false;
+            return true;
+        });
     return 0;
 }
