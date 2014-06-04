@@ -4,21 +4,32 @@
 
 namespace rc {
 
-//! A property is a \c Generator<bool>, nifty, huh?
-typedef gen::Generator<bool> Property;
+//! Namespace-level version of `describe`.
+#define DESCRIBE(desc)                                                  \
+    static void RC_UNIQUE(propGroup)();                                 \
+    static detail::StaticInitializer RC_UNIQUE(propGroupInit)(          \
+        ::rc::describe<void (*)()>,                                     \
+        (desc),                                                         \
+        RC_UNIQUE(propGroup));                                          \
+    static void RC_UNIQUE(propGroup)()
 
-//! Describes the parameters for a test.
-struct TestParameters
-{
-    //! The maximum number of successes before deciding a property passes.
-    int maxSuccess = 100;
-    //! The maximum size to generate.
-    size_t maxSize = 100;
-};
+//! Adds a property group.
+//!
+//! @param description  A description of the property group.
+//! @param constructor  A callable which adds the properties of the property
+//!                     group. Most likely a lambda.
+template<typename Constructor>
+void describe(std::string description, Constructor constructor);
 
-//TODO document when done
+//! Adds a property to the current property group.
+//!
+//! @param description  A description of the property.
+//! @param testable     A callable which implements the property.
 template<typename Testable>
-bool check(Testable testable);
+void it(std::string description, Testable testable);
+
+//! Runs the all registered properties.
+void rapidcheck(int argc, const char * const *argv);
 
 }
 

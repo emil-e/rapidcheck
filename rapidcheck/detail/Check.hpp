@@ -1,75 +1,64 @@
 #pragma once
 
-#include "Generator.hpp"
-#include "RandomEngine.hpp"
-#include "ImplicitParam.hpp"
-#include "Rose.hpp"
+#include "Suite.hpp"
+#include "ConsoleDelegate.hpp"
 
 namespace rc {
+namespace detail {
 
-template<typename Gen>
-int doShrink(detail::RoseNode &rootNode, const Gen &generator)
+namespace param {
+
+//! The current `TestGroup`.
+struct CurrentGroup { typedef TestGroup *ValueType; };
+
+} // namespace param
+
+//! Helper class for automatically running a function on initialization.
+class StaticInitializer
 {
-    int numShrinks = 0;
-    while (true) {
-        bool didShrink;
-        int numTries;
-        std::tie(didShrink, numTries) = rootNode.shrink(generator);
-        if (!didShrink)
-            return numShrinks;
+public:
+    //! Runs the given function with the given arguments when instantiated.
+    //!
+    //! @param func    The function to run.
+    //! @param args... The arguments to pass.
+    template<typename Callable, typename ...Args>
+    StaticInitializer(Callable callable, Args ...args)
+    { callable(std::forward<Args>(args)...); }
+};
 
-        numShrinks++;
-    }
-}
+} // namespace detail
 
-void printExample(detail::RoseNode &rootNode)
+template<typename Constructor>
+void describe(std::string description, Constructor constructor)
 {
-    for (const auto &v : rootNode.example())
-        std::cout << v << std::endl;
+    using namespace detail;
+    TestGroup group(std::move(description));
+    ImplicitParam<param::CurrentGroup> currentGroup;
+    currentGroup.let(&group);
+    constructor();
+    TestSuite::defaultSuite().add(std::move(group));
 }
 
 template<typename Testable>
-bool check(Testable testable)
+void it(std::string description, Testable testable)
 {
     using namespace detail;
-
-    TestParameters params;
-    RandomEngine seedEngine;
-
-    auto property(gen::anyInvocation(testable));
-    size_t currentSize = 0;
-    for (int testIndex = 1; testIndex <= params.maxSuccess; testIndex++) {
-        RandomEngine::Atom seed = seedEngine.nextAtom();
-        ImplicitParam<param::RandomEngine> randomEngine;
-        randomEngine.let(RandomEngine());
-        randomEngine->seed(seed);
-
-        ImplicitParam<param::Size> size;
-        size.let(currentSize);
-
-        ImplicitParam<param::NoShrink> noShrink;
-        noShrink.let(false);
-
-        if (!property()) {
-            std::cout << "...Failed!" << std::endl;
-            std::cout << "Shrinking..." << std::flush;
-            RoseNode rootNode;
-            randomEngine->seed(seed);
-            int numShrinks = doShrink(rootNode, property);
-            std::cout << std::endl;
-            std::cout << "Falsifiable, after " << testIndex
-                      << " tests and " << numShrinks << " shrinks:" << std::endl;
-            printExample(rootNode);
-            return false;
-        }
-
-        std::cout << "\r" << testIndex << "/" << params.maxSuccess << std::flush;
-        currentSize = std::min(params.maxSize, currentSize + 1);
-    }
-
-    std::cout << std::endl << "OK, passed " << params.maxSuccess
-              << " tests" << std::endl;
-    return true;
+    ImplicitParam<param::CurrentGroup> currentGroup;
+    assert(currentGroup.hasBinding());
+    auto generator = gen::anyInvocation(testable);
+    static_assert(
+        std::is_same<bool, decltype(generator())>::value,
+        "A property must return bool");
+    (*currentGroup)->add(Property(std::move(description),
+                                  std::move(generator),
+                                  PropertyParams()));
 }
 
+void rapidcheck(int argc, const char * const *argv)
+{
+    using namespace detail;
+    ConsoleDelegate delegate(std::cout);
+    TestSuite::defaultSuite().run(delegate);
 }
+
+} // namespace rc

@@ -140,7 +140,7 @@ class Sequentially : public Iterator<T>
 public:
     typedef std::vector<IteratorUP<T>> Iterators;
 
-    Sequentially(Iterators iterators)
+    Sequentially(Iterators &&iterators)
         : m_iterators(std::move(iterators))
         , m_current(m_iterators.begin())
     {
@@ -190,7 +190,7 @@ class Mapped : public Iterator<
     typename std::result_of<Mapper(T)>::type>
 {
 public:
-    Mapped(IteratorUP<T> iterator, Mapper mapper)
+    Mapped(IteratorUP<T> &&iterator, Mapper mapper)
         : m_iterator(std::move(iterator))
         , m_mapper(std::move(mapper)) {}
 
@@ -205,7 +205,7 @@ private:
 };
 
 template<typename IteratorUP, typename ...IteratorsUP>
-IteratorUP sequentially(IteratorUP iterator, IteratorsUP ...iterators)
+IteratorUP sequentially(IteratorUP &&iterator, IteratorsUP &&...iterators)
 {
     std::vector<IteratorUP> iteratorVec;
     iteratorVec.reserve(1 + sizeof...(IteratorsUP));

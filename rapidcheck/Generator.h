@@ -43,15 +43,40 @@ size_t currentSize();
 //! of collection where there is an associate cost to generating large sizes.
 size_t kReferenceSize = 100;
 
+//! Describes a value and its type.
+class ValueDescription
+{
+public:
+    //! Creates a "null" `ValueDescription`.
+    ValueDescription() = default;
+
+    template<typename T>
+    ValueDescription(const T &value);
+
+    //! Returns the name of the type of this value.
+    std::string typeName() const;
+
+    //! Returns a string representation of this value.
+    std::string stringValue() const;
+
+    //! Returns `true` if this is a "null" `ValueDescription`.
+    bool isNull() const;
+
+private:
+    const std::type_info *m_typeInfo = nullptr;
+    std::string m_stringValue;
+};
+
 //! Base class for generators of all types.
 class UntypedGenerator
 {
 public:
     //! Returns the type info for the generated type.
-    virtual const std::type_info *generatedTypeInfo() const = 0;
+    virtual const std::type_info &generatedTypeInfo() const = 0;
 
-    //! Generates the value and returns a strint representation of it.
-    virtual std::string generateString() const = 0;
+    //! Generates a value and returns a `ValueDescription` of it. This provides
+    //! untyped representation of the value.
+    virtual ValueDescription generateDescription() const = 0;
 
     virtual ~UntypedGenerator() = default;
 };
@@ -59,6 +84,8 @@ public:
 typedef std::unique_ptr<UntypedGenerator> UntypedGeneratorUP;
 
 //! Base class for generators of value of type \c T.
+//!
+//! Note: Instances must be copyable!
 template<typename T>
 class Generator : public UntypedGenerator
 {
@@ -73,8 +100,8 @@ public:
     //! given value. The default impelemtation returns a \c NullIterator.
     virtual shrink::IteratorUP<T> shrink(T value) const;
 
-    const std::type_info *generatedTypeInfo() const override;
-    std::string generateString() const override;
+    const std::type_info &generatedTypeInfo() const override;
+    ValueDescription generateDescription() const override;
 };
 
 //! \c std::unique_ptr to \c Generator<T>.

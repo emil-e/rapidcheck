@@ -11,10 +11,13 @@ namespace rc {
 template<typename Gen>
 typename Gen::GeneratedType pick(Gen generator)
 {
-    if (detail::RoseNode::hasCurrent())
-        return detail::RoseNode::current().pick(generator);
-    else
+    if (detail::RoseNode::hasCurrent()) {
+        return detail::RoseNode::current().pick(
+            gen::GeneratorUP<typename Gen::GeneratedType>(
+                new Gen(std::move(generator))));
+    } else {
         return generator();
+    }
 }
 
 template<typename T>
@@ -46,17 +49,40 @@ size_t currentSize()
 }
 
 template<typename T>
-const std::type_info *Generator<T>::generatedTypeInfo() const
+ValueDescription::ValueDescription(const T &value)
+    : m_typeInfo(&typeid(T))
 {
-    return &typeid(T);
+    std::ostringstream ss;
+    show(value, ss);
+    m_stringValue = ss.str();
+}
+
+std::string ValueDescription::typeName() const
+{
+    if (m_typeInfo == nullptr)
+        return std::string();
+
+    return detail::demangle(m_typeInfo->name());
+}
+
+std::string ValueDescription::stringValue() const
+{ return m_stringValue; }
+
+bool ValueDescription::isNull() const
+{
+    return m_typeInfo == nullptr;
 }
 
 template<typename T>
-std::string Generator<T>::generateString() const
+const std::type_info &Generator<T>::generatedTypeInfo() const
 {
-    std::ostringstream ss;
-    show((*this)(), ss);
-    return ss.str();
+    return typeid(T);
+}
+
+template<typename T>
+ValueDescription Generator<T>::generateDescription() const
+{
+    return ValueDescription((*this)());
 }
 
 template<typename T>

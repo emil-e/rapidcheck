@@ -41,7 +41,7 @@ using IteratorUP = std::unique_ptr<Iterator<T>>;
 //! Returns a \c Iterator which tries the given \c Iterators in
 //! sequence.
 template<typename IteratorUP, typename ...IteratorsUP>
-IteratorUP sequentially(IteratorUP iterator, IteratorsUP ...iterators);
+IteratorUP sequentially(IteratorUP &&iterator, IteratorsUP &&...iterators);
 
 //! Takes an iterate functor and a stop predicate. To yield each new value, the
 //! iterate functor is called with an iterator value and yields a tuple of the

@@ -12,13 +12,34 @@
 namespace rc {
 namespace detail {
 
+//! Thrown to indicate that the requested type was not expected. This can only
+//! happen if generation if what type is requested depends on non-deterministic
+//! factors other than what values were generated before.
+class UnexpectedTypeException : public std::runtime_error
+{
+public:
+    UnexpectedTypeException(const std::type_info &expected,
+                            const std::type_info &actual)
+        : std::runtime_error(
+            "Expected '" + demangle(expected.name())
+            + "' but '" + demangle(actual.name()) + "' was requested")
+        , m_expected(expected)
+        , m_actual(actual)
+    {
+    }
+
+private:
+    const std::type_info &m_expected;
+    const std::type_info &m_actual;
+};
+
 //! Represents the structure of value generation where large complex values are
 //! generated from small simple values. This also means that large values often
 //! can be shrunk by shrinking the small values individually.
 class RoseNode
 {
 public:
-    //! Constructs a new root \c RoseNode.
+    //! Constructs a new root `RoseNode`.
     RoseNode() : RoseNode(nullptr) {}
 
     //! Returns an atom. If one has already been generated, it's reused. If not,
@@ -45,43 +66,33 @@ public:
             child.print(os);
     }
 
-    //! Generates a value in this node using the given generator.
-    template<typename Gen>
-    typename Gen::GeneratedType generate(const Gen &generator)
-    {
-        return doGenerate(
-            generator,
-            std::is_copy_constructible<typename Gen::GeneratedType>());
-    }
-
     //! Picks a value using the given generator in the context of the current
     //! node.
-    template<typename Gen>
-    typename Gen::GeneratedType pick(const Gen &generator)
+    template<typename T>
+    T pick(gen::GeneratorUP<T> &&generator)
     {
-        //std::cout << path() << std::endl;
         ImplicitParam<NextChildIndex> nextChildIndex;
         if (*nextChildIndex >= m_children.size())
             m_children.push_back(RoseNode(this));
         (*nextChildIndex)++;
-        return m_children[*nextChildIndex - 1].generate(generator);
+        return m_children[*nextChildIndex - 1].generate(std::move(generator));
     }
 
-    // TODO this is obviously broken
-    //! Returns a list of \c ValueDescriptions from the immediate children of
+    //! Returns a list of `ValueDescription`s from the immediate children of
     //! this node.
-    std::vector<std::string> example()
+    std::vector<gen::ValueDescription> example()
     {
-        std::vector<std::string> values;
+        // TODO we should capture values during generation instead, somehow...
+        std::vector<gen::ValueDescription> values;
         values.reserve(m_children.size());
         for (auto &child : m_children)
-            values.push_back(child.regenerateString());
+            values.push_back(child.regenerateDescription());
         return values;
     }
 
-    //! Regenerates a string representation of the value of this node or an empty
-    //! if one hasn't been decided.
-    std::string regenerateString()
+    //! Regenerates a string representation of the value of this node or an
+    //! empty if one hasn't been decided.
+    gen::ValueDescription regenerateDescription()
     {
         ImplicitParam<CurrentNode> currentNode;
         currentNode.let(this);
@@ -90,37 +101,36 @@ public:
 
         gen::UntypedGenerator *generator = activeGenerator();
         if (generator != nullptr)
-            return generator->generateString();
+            return generator->generateDescription();
         else
-            return std::string();
+            return gen::ValueDescription();
     }
 
-    //! Tries to find an immediate shrink that yields \c false for the given
-    //! generator.
+    //! Tries to find an immediate shrink that yields the given value.
     //!
     //! @return  A tuple where the first value tells whether the shrinking was
     //!          successful and the second how many shrinks were tried,
     //!          regardless of success.
-    template<typename Gen>
-    std::tuple<bool, int> shrink(const Gen &generator)
+    template<typename T>
+    int shrink(const gen::Generator<T> &generator)
     {
         ImplicitParam<ShrunkNode> shrunkNode;
-        int numTries = 0;
-        bool result = true;
-        while (result) {
-            numTries++;
+        int numShrinks = 0;
+        T desiredValue(generateWith(generator));
+        while (true) {
             shrunkNode.let(nullptr);
-            result = generate(generator);
-            if (*shrunkNode == nullptr)
-                return std::make_tuple(false, numTries);
+            T value(generateWith(generator));
+            if (*shrunkNode == nullptr) {
+                return numShrinks;
+            } else if (value == desiredValue) {
+                (*shrunkNode)->acceptShrink();
+                numShrinks++;
+            }
         }
-
-        (*shrunkNode)->acceptShrink();
-        return std::make_tuple(true, numTries);
     }
 
     //! Returns true if this node is frozen. If a node is frozen, the generator
-    //! passed to \c generate will only be used to infer the type, the actual
+    //! passed to `generate` will only be used to infer the type, the actual
     //! value will come from shrinking or similar.
     bool isFrozen() const
     {
@@ -172,7 +182,7 @@ private:
     struct NextChildIndex { typedef size_t ValueType; };
     struct ShrunkNode { typedef RoseNode *ValueType; };
 
-    //! Constructs a new \c RoseNode with the given parent or \c 0 if it should
+    //! Constructs a new `RoseNode` with the given parent or `0` if it should
     //! have no parent, i.e. is root.
     explicit RoseNode(RoseNode *parent) : m_parent(parent) {}
 
@@ -201,7 +211,7 @@ private:
         return desc;
     }
 
-    //! Returns the index of this node among its sibilings. Returns \c -1 if
+    //! Returns the index of this node among its sibilings. Returns `-1` if
     //! node is root.
     std::ptrdiff_t index() const
     {
@@ -250,15 +260,11 @@ private:
     }
 
     //! Returns the active generator cast to a generator of the given type or
-    //! \c default if there is none or if there is a type mismatch.
+    //! `default` if there is none or if there is a type mismatch.
     template<typename T>
     T regenerate()
     {
-        ImplicitParam<CurrentNode> currentNode;
-        currentNode.let(this);
-        ImplicitParam<NextChildIndex> nextChildIndex;
-        nextChildIndex.let(0);
-        return (*dynamic_cast<gen::Generator<T> *>(activeGenerator()))();
+        return generateWith(*generatorCast<T>(activeGenerator()));
     }
 
     //! Accepts the current shrink value
@@ -270,13 +276,19 @@ private:
         m_shrinkIterator = nullptr;
     }
 
-    template<typename Gen>
-    typename Gen::GeneratedType doGenerate(const Gen &generator, std::true_type)
+    //! Generates a value in this node using the given generator.
+    template<typename T>
+    T generate(gen::GeneratorUP<T> &&generator)
+    {
+        return doGenerate(std::move(generator), std::is_copy_constructible<T>());
+    }
+
+    template<typename T>
+    T doGenerate(gen::GeneratorUP<T> &&generator, std::true_type)
     {
         if (!isFrozen())
-            m_originalGenerator = gen::UntypedGeneratorUP(new Gen(generator));
+            m_originalGenerator = std::move(generator);
 
-        typedef typename Gen::GeneratedType T;
         ImplicitParam<ShrunkNode> shrunkNode;
         if (shrunkNode.hasBinding() && (*shrunkNode == nullptr)) {
             if (!m_shrinkIterator) {
@@ -286,14 +298,14 @@ private:
                     return value;
 
                 ImplicitParam<param::NoShrink> noShrink;
-                if (*noShrink)
+                if (*noShrink) {
+                    // TODO there might be further optimizations here if we can
+                    // smarter with no-shrink
                     m_shrinkIterator = shrink::nothing<T>();
-                else
-                    m_shrinkIterator = generator.shrink(std::move(value));
-
-                // We need a fallback accepted generator if shrinking fails
-                if (!m_acceptedGenerator)
-                    m_acceptedGenerator = gen::UntypedGeneratorUP(new Gen(generator));
+                } else {
+                    m_shrinkIterator = generatorCast<T>(
+                        m_originalGenerator.get())->shrink(std::move(value));
+                }
             }
 
             if (m_shrinkIterator->hasNext()) {
@@ -312,11 +324,35 @@ private:
         return regenerate<T>();
     }
 
-    template<typename Gen>
-    typename Gen::GeneratedType doGenerate(const Gen &generator, std::false_type)
+    template<typename T>
+    T doGenerate(gen::GeneratorUP<T> &&generator, std::false_type)
     {
-        m_originalGenerator = gen::UntypedGeneratorUP(new Gen(generator));
-        return regenerate<typename Gen::GeneratedType>();
+        m_originalGenerator = std::move(generator);
+        return regenerate<T>();
+    }
+
+    template<typename T>
+    T generateWith(const gen::Generator<T> &generator)
+    {
+        ImplicitParam<CurrentNode> currentNode;
+        currentNode.let(this);
+        ImplicitParam<NextChildIndex> nextChildIndex;
+        nextChildIndex.let(0);
+        return generator();
+    }
+
+    template<typename T>
+    static const gen::Generator<T> *generatorCast(
+        const gen::UntypedGenerator *gen)
+    {
+        const auto *typed = dynamic_cast<const gen::Generator<T> *>(gen);
+        if (typed == nullptr) {
+            throw UnexpectedTypeException(
+                typeid(T),
+                gen->generatedTypeInfo());
+        }
+
+        return typed;
     }
 
     typedef std::vector<RoseNode> Children;
