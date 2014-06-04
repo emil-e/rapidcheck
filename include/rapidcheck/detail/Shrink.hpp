@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vector>
-
-#include "Utility.hpp"
+#include "Utility.h"
 
 namespace rc {
 namespace shrink {

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cxxabi.h>
-#include <cstdlib>
+#include <string>
 
 namespace rc {
 namespace detail {
@@ -25,17 +24,7 @@ namespace detail {
 #define RC_UNIQUE(prefix) RC_GLUE(prefix, __LINE__)
 
 //! Demangles a mangled C++
-std::string demangle(const char *name)
-{
-    std::string demangled(name);
-    int status;
-    size_t length;
-    char *buf = abi::__cxa_demangle(name, NULL, &length, &status);
-    if (status == 0)
-        demangled = std::string(buf, length);
-    free(buf);
-    return demangled;
-}
+std::string demangle(const char *name);
 
 //! Base case for `pushBackAll`
 template<typename Collection>
@@ -57,7 +46,7 @@ void pushBackAll(Collection &collection, Item &&item, Items &&...items)
 }
 
 //! Base case for `join`.
-std::string join(const std::string &sep, const std::string str)
+inline std::string join(const std::string &sep, const std::string str)
 {
     return str;
 }

@@ -4,13 +4,11 @@
 #include <iostream>
 #include <stack>
 
-#include "Utility.hpp"
-
 namespace rc {
 namespace detail {
 
 //! Implements something conceptually similar to Lisp dynamic scope or Haskell
-//! implicit function parameter. This class lets you bind values to the
+//! implicit function parameters. This class lets you bind values to the
 //! parameter in a scope and have that value be visible to all readers of the
 //! parameter during the execution of that scope. Instantiations of this class
 //! are parameterized on tag structs which have a typedef member named

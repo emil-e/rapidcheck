@@ -41,7 +41,7 @@ size_t currentSize();
 //! natural limit which is not too expensive to generate should max out at this.
 //! This applies to, for example, generation of numbers but not to the
 //! of collection where there is an associate cost to generating large sizes.
-size_t kReferenceSize = 100;
+constexpr size_t kReferenceSize = 100;
 
 //! Describes a value and its type.
 class ValueDescription
@@ -81,8 +81,6 @@ public:
     virtual ~UntypedGenerator() = default;
 };
 
-typedef std::unique_ptr<UntypedGenerator> UntypedGeneratorUP;
-
 //! Base class for generators of value of type \c T.
 //!
 //! Note: Instances must be copyable!
@@ -103,11 +101,6 @@ public:
     const std::type_info &generatedTypeInfo() const override;
     ValueDescription generateDescription() const override;
 };
-
-//! \c std::unique_ptr to \c Generator<T>.
-template<typename T>
-using GeneratorUP = std::unique_ptr<Generator<T>>;
-
 
 // Generator implementations
 template<typename Gen, typename Predicate> class SuchThat;

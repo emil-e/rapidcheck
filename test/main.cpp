@@ -1,7 +1,7 @@
 #include <iostream>
 #include <map>
 
-#include <rapidcheck/rapidcheck.h>
+#include <rapidcheck.h>
 
 using namespace rc;
 

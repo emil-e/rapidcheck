@@ -1,10 +1,13 @@
 #pragma once
 
 #include <vector>
+#include <sstream>
 
-#include "ImplicitParam.hpp"
-#include "Rose.hpp"
-#include "GenerationParams.hpp"
+#include "rapidcheck/Show.h"
+
+#include "ImplicitParam.h"
+#include "Rose.h"
+#include "GenerationParams.h"
 
 namespace rc {
 
@@ -43,11 +46,6 @@ void sample(size_t sz, Gen generator)
     std::cout << std::endl;
 }
 
-size_t currentSize()
-{
-    return *detail::ImplicitParam<detail::param::Size>();
-}
-
 template<typename T>
 ValueDescription::ValueDescription(const T &value)
     : m_typeInfo(&typeid(T))
@@ -55,22 +53,6 @@ ValueDescription::ValueDescription(const T &value)
     std::ostringstream ss;
     show(value, ss);
     m_stringValue = ss.str();
-}
-
-std::string ValueDescription::typeName() const
-{
-    if (m_typeInfo == nullptr)
-        return std::string();
-
-    return detail::demangle(m_typeInfo->name());
-}
-
-std::string ValueDescription::stringValue() const
-{ return m_stringValue; }
-
-bool ValueDescription::isNull() const
-{
-    return m_typeInfo == nullptr;
 }
 
 template<typename T>
@@ -124,6 +106,7 @@ public:
     T operator()() const override
     {
         auto value(pick(noShrink(resize(kReferenceSize, arbitrary<T>()))));
+        // TODO this might not be correct for INT_MAX and such
         return m_min + value % (m_max - m_min + 1);
     }
 

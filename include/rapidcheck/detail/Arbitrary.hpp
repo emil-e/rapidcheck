@@ -2,8 +2,9 @@
 
 #include <limits>
 #include <type_traits>
+#include <map>
 
-#include "rapidcheck/Check.h"
+#include "RandomEngine.h"
 
 namespace rc {
 

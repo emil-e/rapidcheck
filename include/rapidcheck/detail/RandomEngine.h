@@ -19,17 +19,10 @@ public:
     RandomEngine() = default;
 
     //! Returns the next \c Atom.
-    Atom nextAtom()
-    {
-        return m_distribution(m_randomEngine);
-    }
+    Atom nextAtom();
 
     //! Sets the seed of this random engine.
-    void seed(Atom s)
-    {
-        m_randomEngine.seed(s);
-        m_distribution.reset();
-    }
+    void seed(Atom s);
 
 private:
     std::default_random_engine m_randomEngine;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utility.hpp"
+#include "rapidcheck/detail/Utility.h"
 
 namespace rc {
 namespace detail {
@@ -40,16 +40,10 @@ std::string attr(Attrs ...attrs)
 }
 
 //! Move cursor up `n` lines.
-std::string cursorUp(int n)
-{
-    return "\e[" + std::to_string(n) + "A";
-}
+std::string cursorUp(int n);
 
 //! Move cursor down `n` lines.
-std::string cursorDown(int n)
-{
-    return "\e[" + std::to_string(n) + "B";
-}
+std::string cursorDown(int n);
 
 //! Erase line escape sequence.
 constexpr const char *eraseLine = "\e[K";
@@ -62,6 +56,6 @@ constexpr char cursorHome = '\r';
 //! Resets all settings.
 constexpr const char *reset = "\ec";
 
-} // namespace ansix
+} // namespace ansi
 } // namespace detail
 } // namespace rc

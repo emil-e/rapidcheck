@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Suite.hpp"
-#include "ConsoleDelegate.hpp"
+#include "Suite.h"
 
 namespace rc {
 namespace detail {
@@ -52,13 +51,6 @@ void it(std::string description, Testable testable)
     (*currentGroup)->add(Property(std::move(description),
                                   std::move(generator),
                                   PropertyParams()));
-}
-
-void rapidcheck(int argc, const char * const *argv)
-{
-    using namespace detail;
-    ConsoleDelegate delegate(std::cout);
-    TestSuite::defaultSuite().run(delegate);
 }
 
 } // namespace rc

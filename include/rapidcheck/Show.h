@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <vector>
+
 namespace rc {
 
 //! Outputs a representation of the given value to the given output stream. The
