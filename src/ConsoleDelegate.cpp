@@ -1,7 +1,7 @@
 #include "ConsoleDelegate.h"
 
 #include "rapidcheck/detail/Suite.h"
-#include "Results.h"
+#include "rapidcheck/detail/Results.h"
 #include "AnsiEscape.h"
 
 namespace rc {
@@ -20,13 +20,13 @@ void ConsoleDelegate::onGroupStart(const TestGroup &group)
              << group.description() << std::endl;
 }
 
-void ConsoleDelegate::onPropertyStart(const Property &prop)
+void ConsoleDelegate::onTestStart(const PropertyTest &prop)
 {
     m_output << ansi::attr(ansi::AttrNone)
              << " - " << prop.description() << std::endl;
 }
 
-void ConsoleDelegate::onPropertyTestCase(const Property &prop,
+void ConsoleDelegate::onPropertyTestCase(const PropertyTest &prop,
                                          const TestCase &testCase)
 {
     m_output << ansi::cursorHome << ansi::eraseLine
@@ -34,18 +34,21 @@ void ConsoleDelegate::onPropertyTestCase(const Property &prop,
              << std::flush;
 }
 
-void ConsoleDelegate::onShrinkStart(const Property &prop,
+void ConsoleDelegate::onShrinkStart(const PropertyTest &prop,
                    const TestCase &testCase)
 {
     m_output << ansi::cursorUp(1) << ansi::cursorHome << ansi::eraseLine
              << " - "
-             << ansi::attr(ansi::FgRed) << prop.description() << std::endl
+             << ansi::attr(ansi::FgRed) << prop.description()
+             << ansi::attr(ansi::AttrBold) << ansi::attr(ansi::FgWhite)
+             << " (" << (m_failures.size() + 1)
+             << ")" << std::endl
              << ansi::attr(ansi::AttrNone) << ansi::eraseLine
              << testCase.index << "/" << prop.params().maxSuccess
              << " failed! Shrinking..." << std::flush;
 }
 
-void ConsoleDelegate::onPropertyFinished(const Property &prop,
+void ConsoleDelegate::onPropertyFinished(const PropertyTest &prop,
                         const TestResults &results)
 {
     if (results.result == Result::Success)
@@ -71,7 +74,7 @@ void ConsoleDelegate::onSuiteFinished(const TestSuite &suite)
     }
 }
 
-void ConsoleDelegate::onPropertyFailure(const Property &prop,
+void ConsoleDelegate::onPropertyFailure(const PropertyTest &prop,
                                         const TestResults &results)
 {
     m_failures.emplace_back(prop.description(), results.counterExample);
@@ -83,12 +86,10 @@ void ConsoleDelegate::onPropertyFailure(const Property &prop,
         m_output << " and " << results.numShrinks;
         m_output << (results.numShrinks > 1 ? " shrinks" : " shrink");
     }
-    m_output << ansi::attr(ansi::AttrBold)
-             << " (" << m_failures.size() << ")"
-             << ansi::attr(ansi::AttrNone) << std::endl;
+    m_output << std::endl;
 }
 
-void ConsoleDelegate::onPropertySuccess(const Property &prop,
+void ConsoleDelegate::onPropertySuccess(const PropertyTest &prop,
                                         const TestResults &results)
 {
     m_output << ansi::cursorUp(1) << ansi::cursorHome << ansi::eraseLine

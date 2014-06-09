@@ -61,7 +61,7 @@ std::string join(const std::string &sep,
                  const std::string &str,
                  Strings ...strings)
 {
-    return str + sep + join(strings...);
+    return str + sep + join(sep, strings...);
 }
 
 } // namespace detail

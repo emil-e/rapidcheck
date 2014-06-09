@@ -5,7 +5,7 @@
 namespace rc {
 namespace detail {
 
-UnexpectedTypeException::UnexpectedTypeException(
+UnexpectedType::UnexpectedType(
     const std::type_info &expected,
     const std::type_info &actual)
     : std::runtime_error(

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Suite.h"
+#include "Property.h"
 
 namespace rc {
 namespace detail {
@@ -44,12 +45,8 @@ void it(std::string description, Testable testable)
     using namespace detail;
     ImplicitParam<param::CurrentGroup> currentGroup;
     assert(currentGroup.hasBinding());
-    auto generator = gen::anyInvocation(testable);
-    static_assert(
-        std::is_same<bool, decltype(generator())>::value,
-        "A property must return bool");
-    (*currentGroup)->add(Property(std::move(description),
-                                  std::move(generator),
+    (*currentGroup)->add(PropertyTest(std::move(description),
+                                  toProperty(testable),
                                   PropertyParams()));
 }
 

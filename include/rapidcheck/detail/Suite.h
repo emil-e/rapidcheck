@@ -4,11 +4,12 @@
 #include <string>
 
 #include "rapidcheck/Generator.h"
+#include "Results.h"
 
 namespace rc {
 namespace detail {
 
-class Property;
+class PropertyTest;
 class TestGroup;
 class TestSuite;
 class TestCase;
@@ -34,17 +35,18 @@ public:
     virtual void onGroupStart(const TestGroup &group) = 0;
 
     //! Called when a property starts running.
-    virtual void onPropertyStart(const Property &prop) = 0;
+    virtual void onTestStart(const PropertyTest &prop) = 0;
 
     //! Called after a particular test case has run.
-    virtual void onPropertyTestCase(const Property &prop, const TestCase &testCase) = 0;
+    virtual void onPropertyTestCase(const PropertyTest &prop,
+                                    const TestCase &testCase) = 0;
 
     //! Called on test case failure before shrinking starts.
-    virtual void onShrinkStart(const Property &prop,
+    virtual void onShrinkStart(const PropertyTest &prop,
                                const TestCase &testCase) = 0;
 
     //! Called when a property finishes.
-    virtual void onPropertyFinished(const Property &prop,
+    virtual void onPropertyFinished(const PropertyTest &prop,
                                     const TestResults &results) = 0;
 
     //! Called when a group finishes.
@@ -57,7 +59,7 @@ public:
 };
 
 //! Associates metadata with a generator of type bool
-class Property
+class PropertyTest
 {
 public:
     //! Constructor
@@ -65,12 +67,9 @@ public:
     //! @param description  A description of the property.
     //! @param generator    The generator that implements the property.
     //! @param params       The parameters to use
-    template<typename Gen>
-    Property(std::string description, Gen generator, PropertyParams params)
-        : m_description(std::move(description))
-        , m_generator(gen::GeneratorUP<typename Gen::GeneratedType>(
-                          new Gen(std::move(generator))))
-        , m_params(params) {}
+    PropertyTest(std::string description,
+                 gen::GeneratorUP<Result> &&generator,
+                 PropertyParams params);
 
     //! Runs this property with the given `PropertyParams`.
     TestResults run(TestDelegate &delegate) const;
@@ -84,7 +83,7 @@ public:
 private:
     TestResults doRun(TestDelegate &delegate) const;
 
-    bool runCase(const TestCase &testCase) const;
+    Result runCase(const TestCase &testCase) const;
 
     TestResults shrinkFailingCase(const TestCase &testCase) const;
 
@@ -93,12 +92,12 @@ private:
         -> decltype(callable());
 
     std::string m_description;
-    gen::GeneratorUP<bool> m_generator;
+    gen::GeneratorUP<Result> m_generator;
     PropertyParams m_params;
 };
 
 
-//! Groups together `Property`s and associates metadata
+//! Groups together `PropertyTest`s and associates metadata
 class TestGroup
 {
 public:
@@ -107,8 +106,8 @@ public:
     //! @param description  A description of the group.
     explicit TestGroup(std::string description);
 
-    //! Adds a `Property` to this group.
-    void add(Property &&property);
+    //! Adds a `PropertyTest` to this group.
+    void add(PropertyTest &&property);
 
     //! Runs this group
     //!
@@ -123,7 +122,7 @@ public:
 
 private:
     std::string m_description;
-    std::vector<Property> m_properties;
+    std::vector<PropertyTest> m_propertyTests;
 };
 
 

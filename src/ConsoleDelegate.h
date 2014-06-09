@@ -16,18 +16,18 @@ public:
 
     void onSuiteStart(const TestSuite &suite);
     void onGroupStart(const TestGroup &group) override;
-    void onPropertyStart(const Property &prop) override;
-    void onPropertyTestCase(const Property &prop,
+    void onTestStart(const PropertyTest &prop) override;
+    void onPropertyTestCase(const PropertyTest &prop,
                             const TestCase &testCase) override;
-    void onShrinkStart(const Property &prop, const TestCase &testCase) override;
-    void onPropertyFinished(const Property &prop,
+    void onShrinkStart(const PropertyTest &prop, const TestCase &testCase) override;
+    void onPropertyFinished(const PropertyTest &prop,
                             const TestResults &results) override;
     void onGroupFinished(const TestGroup &group) override;
     void onSuiteFinished(const TestSuite &suite) override;
 
 private:
-    void onPropertyFailure(const Property &prop, const TestResults &results);
-    void onPropertySuccess(const Property &prop, const TestResults &results);
+    void onPropertyFailure(const PropertyTest &prop, const TestResults &results);
+    void onPropertySuccess(const PropertyTest &prop, const TestResults &results);
     void printCounterExample(const std::vector<gen::ValueDescription> &example);
 
     static constexpr const char *indent = "    ";

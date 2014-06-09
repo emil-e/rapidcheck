@@ -11,7 +11,9 @@ add_library(rapidcheck
   src/Rose.cpp
   src/Show.cpp
   src/Suite.cpp
-  src/Utility.cpp)
+  src/Utility.cpp
+  src/Results.cpp
+  src/Assert.cpp)
 
 target_include_directories(rapidcheck PUBLIC include)
 

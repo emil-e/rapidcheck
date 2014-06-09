@@ -207,7 +207,9 @@ IteratorUP sequentially(IteratorUP &&iterator, IteratorsUP &&...iterators)
 {
     std::vector<IteratorUP> iteratorVec;
     iteratorVec.reserve(1 + sizeof...(IteratorsUP));
-    detail::pushBackAll(iteratorVec, std::move(iterator), std::move(iterators...));
+    detail::pushBackAll(iteratorVec,
+                        std::move(iterator),
+                        std::move(iterators)...);
     typedef typename IteratorUP::element_type::ShrunkType T;
     return IteratorUP(new Sequentially<T>(std::move(iteratorVec)));
 }

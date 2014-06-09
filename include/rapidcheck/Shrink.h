@@ -44,7 +44,7 @@ template<typename IteratorUP, typename ...IteratorsUP>
 IteratorUP sequentially(IteratorUP &&iterator, IteratorsUP &&...iterators);
 
 //! Takes an iterate functor and a stop predicate. To yield each new value, the
-//! iterate functor is called with an iterator value and yields a tuple of the
+//! iterate functor is called with an iterator value and yields a pair of the
 //! next shrink as well as a new iterator value. This is repeated until the
 //! predicate returns false for the iterator value.
 //!

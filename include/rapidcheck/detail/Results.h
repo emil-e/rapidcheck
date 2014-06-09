@@ -1,6 +1,15 @@
 #pragma once
 
+#include <cstddef>
+
+#include "rapidcheck/detail/RandomEngine.h"
+
 namespace rc {
+
+namespace gen {
+class ValueDescription;
+} // namespace gen
+
 namespace detail {
 
 //! Describes a particular test case.
@@ -30,6 +39,8 @@ struct TestResults
     //! case.
     std::vector<gen::ValueDescription> counterExample;
 };
+
+std::ostream &operator<<(std::ostream &os, Result result);
 
 } // namespace detail
 } // namespace rc

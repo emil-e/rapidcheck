@@ -117,7 +117,7 @@ const gen::Generator<T> *RoseNode::generatorCast(
 {
     const auto *typed = dynamic_cast<const gen::Generator<T> *>(gen);
     if (typed == nullptr) {
-        throw UnexpectedTypeException(
+        throw UnexpectedType(
             typeid(T),
             gen->generatedTypeInfo());
     }

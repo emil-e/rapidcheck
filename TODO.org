@@ -2,7 +2,10 @@
 * TODO All collection types in STL should be generateable
 * TODO Maybe shrink reals to smaller values as well?
 * TODO Non-determinisim in generation might cause bad casts, report this
-* TODO Print types as well as values for counterexamples
-* TODO Some sort of result structure
+* DONE Print types as well as values for counterexamples
+** TODO Clean up STL types so they're more readable
 * TODO Exception handling
 * TODO Round-robin shrinking
+* TODO Result type should contain more information
+* TODO Move private stuff in public header files to detail headers?
+* TODO What should be the valid return types for properties

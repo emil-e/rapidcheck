@@ -1,22 +1,29 @@
 #include "rapidcheck/detail/Suite.h"
 
-#include "Results.h"
+#include "rapidcheck/detail/Results.h"
 
 namespace rc {
 namespace detail {
 
-TestResults Property::run(TestDelegate &delegate) const
+PropertyTest::PropertyTest(std::string description,
+                           gen::GeneratorUP<Result> &&generator,
+                           PropertyParams params)
+    : m_description(description)
+    , m_generator(std::move(generator))
+    , m_params(params) {}
+
+TestResults PropertyTest::run(TestDelegate &delegate) const
 {
-    delegate.onPropertyStart(*this);
+    delegate.onTestStart(*this);
     TestResults results(doRun(delegate));
     delegate.onPropertyFinished(*this, results);
     return results;
 }
 
-std::string Property::description() const { return m_description; }
-const PropertyParams &Property::params() const { return m_params; }
+std::string PropertyTest::description() const { return m_description; }
+const PropertyParams &PropertyTest::params() const { return m_params; }
 
-TestResults Property::doRun(TestDelegate &delegate) const
+TestResults PropertyTest::doRun(TestDelegate &delegate) const
 {
     using namespace detail;
     TestCase currentCase;
@@ -29,9 +36,9 @@ TestResults Property::doRun(TestDelegate &delegate) const
     {
         currentCase.seed = seedEngine.nextAtom();
 
-        bool success = runCase(currentCase);
+        Result result = runCase(currentCase);
         delegate.onPropertyTestCase(*this, currentCase);
-        if (!success) {
+        if (result == Result::Failure) {
             delegate.onShrinkStart(*this, currentCase);
             return shrinkFailingCase(currentCase);
         }
@@ -43,14 +50,14 @@ TestResults Property::doRun(TestDelegate &delegate) const
     return TestResults();
 }
 
-bool Property::runCase(const TestCase &testCase) const
+Result PropertyTest::runCase(const TestCase &testCase) const
 {
     return withTestCase(testCase, [this]{
         return (*m_generator)();
     });
 }
 
-TestResults Property::shrinkFailingCase(const TestCase &testCase) const
+TestResults PropertyTest::shrinkFailingCase(const TestCase &testCase) const
 {
     return withTestCase(testCase, [&testCase, this]{
         RoseNode rootNode;
@@ -64,7 +71,7 @@ TestResults Property::shrinkFailingCase(const TestCase &testCase) const
 }
 
 template<typename Callable>
-auto Property::withTestCase(const TestCase &testCase, Callable callable) const
+auto PropertyTest::withTestCase(const TestCase &testCase, Callable callable) const
     -> decltype(callable())
 {
     ImplicitParam<param::RandomEngine> randomEngine;
@@ -81,19 +88,19 @@ auto Property::withTestCase(const TestCase &testCase, Callable callable) const
 TestGroup::TestGroup(std::string description)
     : m_description(description) {}
 
-void TestGroup::add(Property &&property)
-{ m_properties.push_back(std::move(property)); }
+void TestGroup::add(PropertyTest &&property)
+{ m_propertyTests.push_back(std::move(property)); }
 
 void TestGroup::run(TestDelegate &delegate)
 {
     delegate.onGroupStart(*this);
-    for (auto &property : m_properties)
+    for (auto &property : m_propertyTests)
         property.run(delegate);
     delegate.onGroupFinished(*this);
 }
 
 int TestGroup::count() const
-{ return m_properties.size(); }
+{ return m_propertyTests.size(); }
 
 std::string TestGroup::description() const { return m_description; }
 

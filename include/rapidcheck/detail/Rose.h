@@ -11,11 +11,11 @@ namespace detail {
 //! Thrown to indicate that the requested type was not expected. This can only
 //! happen if generation if what type is requested depends on non-deterministic
 //! factors other than what values were generated before.
-class UnexpectedTypeException : public std::runtime_error
+class UnexpectedType : public std::runtime_error
 {
 public:
-    UnexpectedTypeException(const std::type_info &expected,
-                            const std::type_info &actual);
+    UnexpectedType(const std::type_info &expected,
+                   const std::type_info &actual);
 
 private:
     const std::type_info &m_expected;

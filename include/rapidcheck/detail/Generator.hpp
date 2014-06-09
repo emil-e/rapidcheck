@@ -8,6 +8,7 @@
 #include "ImplicitParam.h"
 #include "Rose.h"
 #include "GenerationParams.h"
+#include "Quantifier.h"
 
 namespace rc {
 
@@ -16,8 +17,7 @@ typename Gen::GeneratedType pick(Gen generator)
 {
     if (detail::RoseNode::hasCurrent()) {
         return detail::RoseNode::current().pick(
-            gen::GeneratorUP<typename Gen::GeneratedType>(
-                new Gen(std::move(generator))));
+            makeGeneratorUP(std::move(generator)));
     } else {
         return generator();
     }
@@ -97,6 +97,7 @@ private:
     Predicate m_predicate;
 };
 
+// TODO make shrinkable?
 template<typename T>
 class Ranged : public Generator<T>
 {
@@ -105,9 +106,11 @@ public:
 
     T operator()() const override
     {
-        auto value(pick(noShrink(resize(kReferenceSize, arbitrary<T>()))));
-        // TODO this might not be correct for INT_MAX and such
-        return m_min + value % (m_max - m_min + 1);
+        assert(m_max > m_min);
+        // TODO this seems a bit broken
+        typedef typename std::make_unsigned<T>::type Uint;
+        Uint value(pick(noShrink(resize(kReferenceSize, arbitrary<Uint>()))));
+        return m_min + value % (m_max - m_min);
     }
 
 private:
@@ -199,7 +202,7 @@ public:
     typename Multiplexer<Gens...>::GeneratedType operator()() const override
     {
         int n = Multiplexer<Gens...>::numGenerators;
-        auto id = pick(resize(kReferenceSize, ranged<int>(0, n - 1)));
+        auto id = pick(resize(kReferenceSize, ranged<int>(0, n)));
         return m_multiplexer.pickWithId(id);
     }
 
@@ -224,7 +227,7 @@ public:
 
     Coll operator()() const override
     {
-        auto length = pick(ranged<typename Coll::size_type>(0, currentSize()));
+        auto length = pick(ranged<typename Coll::size_type>(0, currentSize() + 1));
         auto gen = noShrink(m_generator);
         Coll coll;
         std::generate_n(std::inserter(coll, coll.end()), length,
@@ -245,52 +248,20 @@ private:
     Gen m_generator;
 };
 
-template<typename MemberFuncPtr> class FunctorHelper;
-
-template<typename Functor, typename Ret, typename ...Args>
-class FunctorHelper<Ret (Functor::*)(Args...) const>
-{
-public:
-    typedef Ret ReturnType;
-
-    explicit FunctorHelper(Functor functor) : m_functor(std::move(functor)) {}
-
-    ReturnType operator()() const
-    { return m_functor(pick<typename std::decay<Args>::type>()...); }
-
-private:
-    Functor m_functor;
-};
-
 template<typename Callable>
 class AnyInvocation : public Generator<
-    typename FunctorHelper<decltype(&Callable::operator())>::ReturnType>
+    typename detail::Quantifier<Callable>::ReturnType>
 {
 public:
-    explicit AnyInvocation(Callable callable) : m_helper(std::move(callable)) {}
+    explicit AnyInvocation(Callable callable)
+        : m_quantifier(std::move(callable)) {}
 
-    typename FunctorHelper<decltype(&Callable::operator())>::ReturnType
+    typename detail::Quantifier<Callable>::ReturnType
     operator()() const override
-    { return m_helper(); }
+    { return m_quantifier(); }
 
 private:
-    FunctorHelper<decltype(&Callable::operator())> m_helper;
-};
-
-template<typename GeneratedType, typename ...Args>
-class AnyInvocation<GeneratedType (*)(Args...)>
-    : public Generator<GeneratedType>
-{
-public:
-    typedef GeneratedType (*Function)(Args...);
-
-    explicit AnyInvocation(Function function) : m_function(function) {}
-
-    GeneratedType operator()() const override
-    { return m_function(pick<typename std::decay<Args>::type>()...); }
-
-private:
-    Function m_function;
+    detail::Quantifier<Callable> m_quantifier;
 };
 
 template<typename T>
@@ -346,7 +317,7 @@ class Character : public Generator<T>
 public:
     T operator()() const override
     {
-        return pick(oneOf(map(ranged<uint8_t>(1, 127),
+        return pick(oneOf(map(ranged<uint8_t>(1, 128),
                               [](uint8_t x){ return static_cast<T>(x); }),
                           nonZero<T>()));
     }
@@ -381,6 +352,27 @@ public:
     }
 };
 
+template<typename Exception, typename Gen, typename Catcher>
+class Rescue : public Generator<typename Gen::GeneratedType>
+{
+public:
+    Rescue(Gen generator, Catcher catcher)
+        : m_generator(generator), m_catcher(catcher) {}
+
+    typename Gen::GeneratedType operator()() const override
+    {
+        try {
+            return m_generator();
+        } catch (const Exception &e) {
+            return m_catcher(e);
+        }
+    }
+
+private:
+    Gen m_generator;
+    Catcher m_catcher;
+};
+
 //
 // Factory functions
 //
@@ -390,7 +382,7 @@ Arbitrary<T> arbitrary() { return Arbitrary<T>(); }
 
 template<typename Generator, typename Predicate>
 SuchThat<Generator, Predicate> suchThat(Generator gen,
-                                                  Predicate pred)
+                                        Predicate pred)
 { return SuchThat<Generator, Predicate>(std::move(gen), std::move(pred)); }
 
 template<typename T>
@@ -432,6 +424,17 @@ Mapped<Gen, Mapper> map(Gen generator, Mapper mapper)
 
 template<typename T>
 Character<T> character() { return Character<T>(); }
+
+template<typename Exception, typename Gen, typename Catcher>
+Rescue<Exception, Gen, Catcher> rescue(Gen generator, Catcher catcher)
+{ return Rescue<Exception, Gen, Catcher>(generator, catcher); }
+
+template<typename Gen>
+GeneratorUP<typename Gen::GeneratedType> makeGeneratorUP(Gen generator)
+{
+    return GeneratorUP<typename Gen::GeneratedType>(
+        new Gen(std::move(generator)));
+}
 
 } // namespace gen
 } // namespace rc

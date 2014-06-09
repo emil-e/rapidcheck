@@ -114,6 +114,7 @@ template<typename T> class Constant;
 template<typename Gen> class NoShrink;
 template<typename Gen, typename Mapper> class Mapped;
 template<typename T> class Character;
+template<typename Exception, typename Gen, typename Catcher> class Rescue;
 
 //! Arbitrary generator for type \c T.
 //!
@@ -182,6 +183,12 @@ Mapped<Gen, Mapper> map(Gen generator, Mapper mapper);
 //! @tparam T  The character type (i.e. char, wchar_t etc.)
 template<typename T>
 Character<T> character();
+
+//! Wraps the given generator and catches any exception of type `Exception` and
+//! translates them to ordinary return values using a catching function which
+//! the exception as an argument and returns the translated value.
+template<typename Exception, typename Gen, typename Catcher>
+Rescue<Exception, Gen, Catcher> rescue(Gen generator, Catcher catcher);
 
 } // namespace gen
 } // namespace rc
