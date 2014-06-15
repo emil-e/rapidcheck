@@ -39,7 +39,7 @@ std::tuple<T, int> RoseNode::shrink(const gen::Generator<T> &generator)
 template<typename T>
 T RoseNode::generateWith(const gen::Generator<T> &generator)
 {
-    ImplicitParam<CurrentNode> currentNode;
+    ImplicitParam<param::CurrentNode> currentNode;
     currentNode.let(this);
     ImplicitParam<NextChildIndex> nextChildIndex;
     nextChildIndex.let(0);

@@ -57,12 +57,6 @@ public:
     //! Move assignment
     RoseNode &operator=(RoseNode &&rhs);
 
-    //! Returns a reference to the current node.
-    static RoseNode &current();
-
-    //! Returns a reference to the current node.
-    static bool hasCurrent();
-
     //! Picks a value using the given generator in the context of the current
     //! node.
     template<typename T>
@@ -83,7 +77,6 @@ private:
     RC_DISABLE_COPY(RoseNode)
 
     // Implicit parameters, see ImplicitParam
-    struct CurrentNode { typedef RoseNode *ValueType; };
     struct NextChildIndex { typedef size_t ValueType; };
     struct ShrunkNode { typedef RoseNode *ValueType; };
 

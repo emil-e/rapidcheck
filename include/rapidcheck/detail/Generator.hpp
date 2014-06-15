@@ -15,8 +15,9 @@ namespace rc {
 template<typename Gen>
 typename Gen::GeneratedType pick(Gen generator)
 {
-    if (detail::RoseNode::hasCurrent()) {
-        return detail::RoseNode::current().pick(
+    detail::ImplicitParam<detail::param::CurrentNode> currentNode;
+    if (currentNode.hasBinding()) {
+        return (*currentNode)->pick(
             makeGeneratorUP(std::move(generator)));
     } else {
         return generator();

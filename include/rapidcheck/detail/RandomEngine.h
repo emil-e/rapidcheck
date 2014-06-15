@@ -31,9 +31,6 @@ private:
 
 namespace param {
 
-//! The current random engine.
-struct RandomEngine { typedef rc::detail::RandomEngine ValueType; };
-
 } // namespace param
 
 } // namespace detail

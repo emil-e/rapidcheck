@@ -17,13 +17,16 @@ public:
 
     T operator()() const override
     {
+        using namespace detail;
+
         size_t size = std::min(gen::currentSize(), gen::kReferenceSize);
-        detail::RandomEngine::Atom r;
+        RandomEngine::Atom r;
         // TODO this switching shouldn't be done here.
-        if (detail::RoseNode::hasCurrent()) {
-            r = detail::RoseNode::current().atom();
+        ImplicitParam<param::CurrentNode> currentNode;
+        if (currentNode.hasBinding()) {
+            r = (*currentNode)->atom();
         } else {
-            detail::ImplicitParam<detail::param::RandomEngine> randomEngine;
+            ImplicitParam<param::RandomEngine> randomEngine;
             r = randomEngine->nextAtom();
         }
 
@@ -32,9 +35,9 @@ public:
         int nBits = (size * std::numeric_limits<T>::digits) / gen::kReferenceSize;
         if (nBits == 0)
             return 0;
-        constexpr detail::RandomEngine::Atom randIntMax =
-            std::numeric_limits<detail::RandomEngine::Atom>::max();
-        detail::RandomEngine::Atom mask = ~((randIntMax - 1) << (nBits - 1));
+        constexpr RandomEngine::Atom randIntMax =
+            std::numeric_limits<RandomEngine::Atom>::max();
+        RandomEngine::Atom mask = ~((randIntMax - 1) << (nBits - 1));
 
         T x = static_cast<T>(r & mask);
         if (std::numeric_limits<T>::is_signed)
@@ -42,7 +45,7 @@ public:
             // Use the topmost bit as the signed bit. Even in the case of a signed
             // 64-bit integer, it won't be used since it actually IS the sign bit.
             constexpr int basicBits =
-                std::numeric_limits<detail::RandomEngine::Atom>::digits;
+                std::numeric_limits<RandomEngine::Atom>::digits;
             x *= ((r >> (basicBits - 1)) == 0) ? 1 : -1;
         }
 
