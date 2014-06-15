@@ -59,6 +59,7 @@ public:
     }
 
     //! Member dereference operator for the contained value.
+    //! TODO can we specialize this somehow for pointers?
     ValueType *operator->()
     {
         return &(**this);

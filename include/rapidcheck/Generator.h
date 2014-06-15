@@ -81,7 +81,7 @@ public:
     virtual ~UntypedGenerator() = default;
 };
 
-//! Base class for generators of value of type \c T.
+//! Base class for generators of value of type `T`.
 //!
 //! Note: Instances must be copyable!
 template<typename T>
@@ -107,6 +107,9 @@ template<typename Gen, typename Predicate> class SuchThat;
 template<typename T> class Ranged;
 template<typename ...Gens> class OneOf;
 template<typename T> class NonZero;
+template<typename T> class Positive;
+template<typename T> class Negative;
+template<typename T> class NonNegative;
 template<typename Coll, typename Gen> class Collection;
 template<typename Gen> class Resized;
 template<typename Callable> class AnyInvocation;
@@ -116,7 +119,7 @@ template<typename Gen, typename Mapper> class Mapped;
 template<typename T> class Character;
 template<typename Exception, typename Gen, typename Catcher> class Rescue;
 
-//! Arbitrary generator for type \c T.
+//! Arbitrary generator for type `T`.
 //!
 //! @tparam T  The generated type.
 template<typename T>
@@ -128,6 +131,10 @@ Arbitrary<T> arbitrary();
 //! @param pred  The predicate that the generated values must satisfy
 template<typename Generator, typename Predicate>
 SuchThat<Generator, Predicate> suchThat(Generator gen, Predicate pred);
+
+//! Convenience wrapper for `suchThat(arbitrary<T>, pred)`.
+template<typename T, typename Predicate>
+SuchThat<Arbitrary<T>, Predicate> suchThat(Predicate pred);
 
 //! Generates an arbitrary value between \c min and \c max. Both \c min and
 //! \c max are included in the range.
@@ -142,11 +149,29 @@ Ranged<T> ranged(T min, T max);
 template<typename ...Gens>
 OneOf<Gens...> oneOf(Gens... generators);
 
-//! Generates a non-zero value of type \c T.
+//! Generates a non-zero value of type `T`.
 //!
 //! @tparam T  An integral type.
 template<typename T>
 NonZero<T> nonZero();
+
+//! Generates a positive value (> 0) of type `T`.
+//!
+//! @tparam T  An integral type.
+template<typename T>
+Positive<T> positive();
+
+//! Generates a negative (< 0) value of type `T`.
+//!
+//! @tparam T  An integral type.
+template<typename T>
+Negative<T> negative();
+
+//! Generates a non-negative (>= 0) value of type `T`.
+//!
+//! @tparam T  An integral type.
+template<typename T>
+NonNegative<T> nonNegative();
 
 //! Generates a collection of the given type using the given generator.
 //!
@@ -178,7 +203,7 @@ NoShrink<Gen> noShrink(Gen generator);
 template<typename Gen, typename Mapper>
 Mapped<Gen, Mapper> map(Gen generator, Mapper mapper);
 
-//! Generates a character of type \c T.
+//! Generates a character of type `T`.
 //!
 //! @tparam T  The character type (i.e. char, wchar_t etc.)
 template<typename T>
@@ -189,6 +214,10 @@ Character<T> character();
 //! the exception as an argument and returns the translated value.
 template<typename Exception, typename Gen, typename Catcher>
 Rescue<Exception, Gen, Catcher> rescue(Gen generator, Catcher catcher);
+
+//! Returns a generator which always generates the same value.
+template<typename T>
+Constant<T> constant(T value);
 
 } // namespace gen
 } // namespace rc

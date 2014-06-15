@@ -16,7 +16,8 @@ template<typename Gen>
 typename Gen::GeneratedType pick(Gen generator)
 {
     detail::ImplicitParam<detail::param::CurrentNode> currentNode;
-    if (currentNode.hasBinding()) {
+    // TODO ugly switching on hasBinding AND nullptr
+    if (currentNode.hasBinding() && (*currentNode != nullptr)) {
         return (*currentNode)->pick(
             makeGeneratorUP(std::move(generator)));
     } else {
@@ -85,7 +86,7 @@ public:
     typename Gen::GeneratedType operator()() const override
     {
         size_t size = currentSize();
-        while (true) {
+        while (true) { // TODO give up sometime
             auto x(pick(noShrink(resize(size, m_generator))));
             if (m_predicate(x))
                 return x;
@@ -211,13 +212,25 @@ private:
     Multiplexer<Gens...> m_multiplexer;
 };
 
-template<typename T>
-class NonZero : public Generator<T>
-{
-public:
-    T operator()() const
-    { return pick(suchThat(arbitrary<T>(), [](T x){ return x != 0; })); }
-};
+// Generators of this form are common, let's not repeat ourselves
+#define IMPLEMENT_SUCH_THAT_GEN(GeneratorName, functionName, predicate) \
+    template<typename T>                                                \
+    class GeneratorName : public Generator<T>                           \
+    {                                                                   \
+    public:                                                             \
+        T operator()() const                                            \
+        { return pick(suchThat<T>([](T x) { return (predicate); })); }  \
+    };                                                                  \
+                                                                        \
+    template<typename T>                                                \
+    GeneratorName<T> functionName() { return GeneratorName<T>(); }
+
+IMPLEMENT_SUCH_THAT_GEN(NonZero, nonZero, x != 0);
+IMPLEMENT_SUCH_THAT_GEN(Positive, positive, x > 0);
+IMPLEMENT_SUCH_THAT_GEN(Negative, negative, x < 0);
+IMPLEMENT_SUCH_THAT_GEN(NonNegative, nonNegative, x >= 0);
+
+#undef IMPLEMENT_SUCH_THAT_GEN
 
 template<typename Coll, typename Gen>
 class Collection : public Generator<Coll>
@@ -276,7 +289,6 @@ private:
     T m_value;
 };
 
-
 template<typename Gen>
 class NoShrink : public Generator<typename Gen::GeneratedType>
 {
@@ -319,7 +331,7 @@ public:
     T operator()() const override
     {
         return pick(oneOf(map(ranged<uint8_t>(1, 128),
-                              [](uint8_t x){ return static_cast<T>(x); }),
+                              [](uint8_t x) { return static_cast<T>(x); }),
                           nonZero<T>()));
     }
 
@@ -386,6 +398,10 @@ SuchThat<Generator, Predicate> suchThat(Generator gen,
                                         Predicate pred)
 { return SuchThat<Generator, Predicate>(std::move(gen), std::move(pred)); }
 
+template<typename T, typename Predicate>
+SuchThat<Arbitrary<T>, Predicate> suchThat(Predicate pred)
+{ return suchThat(arbitrary<T>(), std::move(pred)); }
+
 template<typename T>
 Ranged<T> ranged(T min, T max)
 {
@@ -399,9 +415,6 @@ OneOf<Gens...> oneOf(Gens... generators)
 {
     return OneOf<Gens...>(std::move(generators)...);
 }
-
-template<typename T>
-NonZero<T> nonZero() { return NonZero<T>(); }
 
 template<typename Coll, typename Gen>
 Collection<Coll, Gen> collection(Gen gen)
@@ -428,7 +441,13 @@ Character<T> character() { return Character<T>(); }
 
 template<typename Exception, typename Gen, typename Catcher>
 Rescue<Exception, Gen, Catcher> rescue(Gen generator, Catcher catcher)
-{ return Rescue<Exception, Gen, Catcher>(generator, catcher); }
+{
+    return Rescue<Exception, Gen, Catcher>(std::move(generator),
+                                           std::move(catcher));
+}
+
+template<typename T>
+Constant<T> constant(T value) { return Constant<T>(std::move(value)); }
 
 template<typename Gen>
 GeneratorUP<typename Gen::GeneratedType> makeGeneratorUP(Gen generator)

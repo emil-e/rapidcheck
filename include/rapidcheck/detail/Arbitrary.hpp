@@ -21,9 +21,9 @@ public:
 
         size_t size = std::min(gen::currentSize(), gen::kReferenceSize);
         RandomEngine::Atom r;
-        // TODO this switching shouldn't be done here.
+        // TODO this switching shouldn't be done here. pickAtom?
         ImplicitParam<param::CurrentNode> currentNode;
-        if (currentNode.hasBinding()) {
+        if (currentNode.hasBinding() && (*currentNode != nullptr)) {
             r = (*currentNode)->atom();
         } else {
             ImplicitParam<param::RandomEngine> randomEngine;

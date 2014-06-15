@@ -55,10 +55,8 @@ TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
     RandomEngine seedEngine;
 
     currentCase.size = 0;
-    for (currentCase.index = 1;
-         currentCase.index <= params.maxSuccess;
-         currentCase.index++)
-    {
+    currentCase.index = 1;
+    while (currentCase.index <= params.maxSuccess) {
         currentCase.seed = seedEngine.nextAtom();
 
         CaseResult result = withTestCase(
@@ -67,7 +65,10 @@ TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
 
         if (result.type() == CaseResult::Type::Failure)
             return shrinkFailingCase(property, currentCase);
+        else if(result.type() == CaseResult::Type::Discard)
+            continue;
 
+        currentCase.index++;
         currentCase.size = std::min(params.maxSize, currentCase.size + 1);
         //TODO better size calculation
     }
@@ -75,17 +76,18 @@ TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
     return SuccessResult{ .numTests = currentCase.index };
 }
 
-void assertTrue(bool condition,
-                std::string description,
-                std::string file,
-                int line)
+void throwResultIf(CaseResult::Type type,
+                   bool condition,
+                   std::string description,
+                   std::string file,
+                   int line)
 {
-    if (!condition) {
+    if (condition) {
         throw CaseResult(
-            CaseResult::Type::Failure,
-            file + ":" + std::to_string(line) + ": " + description);
+            type, file + ":" + std::to_string(line) + ": " + description);
     }
 }
+
 
 } // namespace detail
 } // namespace rc

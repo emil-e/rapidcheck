@@ -9,6 +9,9 @@
 * TODO Result type should contain more information
 * TODO Move private stuff in public header files to detail headers?
 * TODO What should be the valid return types for properties
-* TODO Discarding and preconditions
+* TODO Giving up if too many discardings
 * TODO Discard test if suchThat never generates
 * TODO Unsure if generation method should really be operator()
+* TODO Use different seeds when generating
+* TODO Generate element from a collection
+* TODO Shrink nonZero, negative, positive and nonNegative

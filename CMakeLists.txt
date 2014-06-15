@@ -10,8 +10,7 @@ add_library(rapidcheck
   src/Rose.cpp
   src/Show.cpp
   src/Utility.cpp
-  src/Results.cpp
-  src/Assert.cpp)
+  src/Results.cpp)
 
 target_include_directories(rapidcheck PUBLIC include)
 
