@@ -8,7 +8,7 @@ namespace detail {
 void assertThat(std::string description, bool result)
 {
     if (!result)
-        throw Result::Failure;
+        throw CaseResult(CaseResult::Type::Failure);
 }
 
 } // namespace detail

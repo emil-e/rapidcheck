@@ -13,10 +13,8 @@ class FunctorHelper<Ret (Functor::*)(Args...) const>
 public:
     typedef Ret ReturnType;
 
-    explicit FunctorHelper(Functor functor) : m_functor(std::move(functor)) {}
-
-    ReturnType operator()() const
-    { return m_functor(pick<typename std::decay<Args>::type>()...); }
+    explicit FunctorHelper(Functor functor);
+    Ret operator()() const;
 
 private:
     Functor m_functor;
@@ -31,8 +29,7 @@ template<typename Callable>
 class Quantifier : public FunctorHelper<decltype(&Callable::operator())>
 {
 public:
-    explicit Quantifier(Callable callable)
-        : FunctorHelper<decltype(&Callable::operator())>(std::move(callable)) {}
+    explicit Quantifier(Callable callable);
 };
 
 //! Specialization for function pointers.
@@ -43,10 +40,8 @@ public:
     typedef Ret ReturnType;
     typedef ReturnType (*Function)(Args...);
 
-    explicit Quantifier(Function function) : m_function(function) {}
-
-    Ret operator()() const override
-    { return m_function(pick<typename std::decay<Args>::type>()...); }
+    explicit Quantifier(Function function);
+    Ret operator()() const;
 
 private:
     Function m_function;
@@ -54,3 +49,5 @@ private:
 
 } // namespace detail
 } // namespace rc
+
+#include "Quantifier.hpp"

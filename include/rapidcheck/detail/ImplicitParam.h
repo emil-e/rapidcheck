@@ -4,6 +4,8 @@
 #include <iostream>
 #include <stack>
 
+#include "Utility.h"
+
 namespace rc {
 namespace detail {
 

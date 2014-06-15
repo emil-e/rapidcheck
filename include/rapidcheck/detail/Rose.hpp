@@ -18,7 +18,7 @@ T RoseNode::pick(gen::GeneratorUP<T> &&generator)
 }
 
 template<typename T>
-int RoseNode::shrink(const gen::Generator<T> &generator)
+std::tuple<T, int> RoseNode::shrink(const gen::Generator<T> &generator)
 {
     ImplicitParam<ShrunkNode> shrunkNode;
     int numShrinks = 0;
@@ -27,7 +27,7 @@ int RoseNode::shrink(const gen::Generator<T> &generator)
         shrunkNode.let(nullptr);
         T value(generateWith(generator));
         if (*shrunkNode == nullptr) {
-            return numShrinks;
+            return std::make_tuple(value, numShrinks);
         } else if (value == desiredValue) {
             (*shrunkNode)->acceptShrink();
             numShrinks++;

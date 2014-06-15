@@ -1,4 +1,4 @@
-#pragma ocne
+#pragma once
 
 #include "Quantifier.h"
 
@@ -10,12 +10,12 @@ namespace detail {
 //!
 //! TODO better docs
 template<typename Testable>
-class Property : public gen::Generator<Result>
+class Property : public gen::Generator<CaseResult>
 {
 public:
     explicit Property(Testable testable);
 
-    Result operator()() const override;
+    CaseResult operator()() const override;
 private:
 
     Quantifier<Testable> m_quantifier;
@@ -23,7 +23,7 @@ private:
 
 //! Converts `testable` to a property.
 template<typename Testable>
-gen::GeneratorUP<Result> toProperty(Testable testable);
+gen::GeneratorUP<CaseResult> toProperty(Testable testable);
 
 } // namespace detail
 } // namespace rc

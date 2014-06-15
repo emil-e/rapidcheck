@@ -3,37 +3,29 @@
 namespace rc {
 namespace detail {
 
-static inline Result toResult(bool value)
+static inline CaseResult toCaseResult(bool value)
 {
-    return value ? Result::Success : Result::Failure;
+    return value
+        ? CaseResult(CaseResult::Type::Success)
+        : CaseResult(CaseResult::Type::Failure);
 }
 
-//! Helper class to convert different return types to `Result`.
+//! Helper class to convert different return types to `CaseResult`.
 template<typename Callable,
          typename ReturnType = typename std::result_of<Callable()>::type>
-struct ResultHelper
+struct CaseResultHelper
 {
-    static Result resultOf(const Callable &callable)
-    {
-        try {
-            return toResult(callable());
-        } catch (const Result &result) {
-            return result;
-        }
-    }
+    static CaseResult resultOf(const Callable &callable)
+    { return toCaseResult(callable()); }
 };
 
 template<typename Callable>
-struct ResultHelper<Callable, void>
+struct CaseResultHelper<Callable, void>
 {
-    static Result resultOf(const Callable &callable)
+    static CaseResult resultOf(const Callable &callable)
     {
-        try {
-            callable();
-            return Result::Success;
-        } catch (const Result &result) {
-            return result;
-        }
+        callable();
+        return CaseResult(CaseResult::Type::Success);
     }
 };
 
@@ -42,13 +34,23 @@ Property<Testable>::Property(Testable testable)
         : m_quantifier(std::move(testable)) {}
 
 template<typename Testable>
-Result Property<Testable>::operator()() const
-{ return ResultHelper<decltype(m_quantifier)>::resultOf(m_quantifier); }
+CaseResult Property<Testable>::operator()() const
+{
+    try {
+        return CaseResultHelper<decltype(m_quantifier)>::resultOf(m_quantifier);
+    } catch (const CaseResult &result) {
+        return result;
+    } catch (const std::exception &e) {
+        return CaseResult(CaseResult::Type::Failure, e.what());
+    } catch (...) {
+        return CaseResult(CaseResult::Type::Failure, "Unknown exception thrown");
+    }
+}
 
 template<typename Testable>
-gen::GeneratorUP<Result> toProperty(Testable testable)
+gen::GeneratorUP<CaseResult> toProperty(Testable testable)
 {
-    return gen::GeneratorUP<Result>(new Property<Testable>(testable));
+    return gen::GeneratorUP<CaseResult>(new Property<Testable>(testable));
 }
 
 } // namespace detail

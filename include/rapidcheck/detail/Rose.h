@@ -68,13 +68,16 @@ public:
     template<typename T>
     T pick(gen::GeneratorUP<T> &&generator);
 
-    //! Tries to find an immediate shrink that yields the given value.
+    //! First generates using the given generator and then tries to shrink the
+    //! while maintaining the same value.
     //!
-    //! @return  A tuple where the first value tells whether the shrinking was
-    //!          successful and the second how many shrinks were tried,
-    //!          regardless of success.
+    //! @param generator  The generator to shrink.
+    //!
+    //! @return a tuple of the shrunk value and the successful number of shrinks
+    //!
+    //! TODO perhaps return something better than a tuple?
     template<typename T>
-    int shrink(const gen::Generator<T> &generator);
+    std::tuple<T, int> shrink(const gen::Generator<T> &generator);
 
 private:
     RC_DISABLE_COPY(RoseNode)

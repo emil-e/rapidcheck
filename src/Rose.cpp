@@ -5,9 +5,8 @@
 namespace rc {
 namespace detail {
 
-UnexpectedType::UnexpectedType(
-    const std::type_info &expected,
-    const std::type_info &actual)
+UnexpectedType::UnexpectedType(const std::type_info &expected,
+                               const std::type_info &actual)
     : std::runtime_error(
         "Expected '" + demangle(expected.name())
         + "' but '" + demangle(actual.name()) + "' was requested")
