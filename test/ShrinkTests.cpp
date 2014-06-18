@@ -62,3 +62,66 @@ TEST_CASE("shrink::nothing") {
         REQUIRE_FALSE(shrink::nothing<int>()->hasNext());
     }
 }
+
+
+TEST_CASE("shrink::eachElement") {
+    prop("tries shrinking one element at a time",
+         [] {
+             size_t size = pick(gen::ranged<size_t>(0, gen::currentSize() + 1));
+             std::vector<int> elements(size, 2);
+
+             // Two shrinks from each element, first 0 and then 1
+             auto it = shrink::eachElement(
+                 elements,
+                 [](int x) { return shrink::constant<int>({0, 1}); });
+
+             // This means that the number of shrinks should be size * 2
+             for (size_t count = 0; count < (size * 2); count++) {
+                 auto shrunk = it->next();
+                 // Check each element
+                 for (int i = 0; i < shrunk.size(); i++) {
+                     // The current shrunk element is count / 2 since each
+                     // element is shrunk twice
+                     if (i == (count / 2)) {
+                         // The shrunk element is first 0 and then 1
+                         RC_ASSERT(shrunk[i] == (count % 2));
+                     } else {
+                         // The non-shrunk elements are always 2
+                         RC_ASSERT(shrunk[i] == 2);
+                     }
+                 }
+             }
+
+             // Now we should be out of shrinks
+             RC_ASSERT(!it->hasNext());
+         });
+}
+
+TEST_CASE("shrink::removeChunks") {
+    prop("first tries empty collection",
+         [] (const std::vector<int> &elements) {
+             RC_ASSERT(shrink::removeChunks(elements)->next().empty());
+         });
+
+    prop("successively increases size",
+         [] (const std::vector<int> &elements) {
+             auto it = shrink::removeChunks(elements);
+             std::vector<int> c;
+             while (it->hasNext()) {
+                 auto next = it->next();
+                 RC_ASSERT(next.size() >= c.size());
+             }
+         });
+
+    prop("shrinks to a subset of the original",
+         [] (const std::vector<int> &elements) {
+             auto it = shrink::removeChunks(elements);
+             while (it->hasNext()) {
+                 auto shrunk = it->next();
+                 for (int x : shrunk) {
+                     auto result = std::find(elements.begin(), elements.end(), x);
+                     RC_ASSERT(result != elements.end());
+                 }
+             }
+         });
+}

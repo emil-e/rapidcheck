@@ -74,6 +74,20 @@ map(IteratorUP<T> iterator, Mapper mapper);
 template<typename T>
 IteratorUP<T> constant(std::vector<T> constants);
 
+//! Shrinks the given collection by trying to remove successively smaller chunks
+//! of it.
+template<typename T>
+IteratorUP<T> removeChunks(T collection);
+
+//! Tries to shrink each element of the given collection using the given
+//! callable to create iterators.
+//!
+//! @param collection  The collection whose elements to shrink.
+//! @param factory     A callable which returns an `IteratorUP<T>` when given an
+//!                    element to shrink.
+template<typename T, typename IteratorFactory>
+IteratorUP<T> eachElement(T collection, IteratorFactory factory);
+
 } // namespace shrink
 } // namespace rc
 

@@ -117,3 +117,22 @@ TEST_CASE("gen::character") {
         RC_ASSERT(gen::character<char>().shrink(c)->next() == 'a');
     });
 }
+
+TEST_CASE("gen::resize") {
+    prop("changes the generation size",
+         [] (size_t size) {
+             auto generator =
+                 gen::resize(size, gen::lambda([] { return gen::currentSize(); }));
+             cleanRoom([] { RC_ASSERT(pick(generator) == size); });
+         });
+}
+
+struct MyInt { int value };
+
+class DummyGen : public Generator<int>
+{
+public:
+    int operator()() const override { return m_value++; }
+private:
+    int m_value = 0;
+}

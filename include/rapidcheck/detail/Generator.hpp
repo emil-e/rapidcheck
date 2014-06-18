@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "rapidcheck/Show.h"
+#include "rapidcheck/Shrink.h"
 
 #include "ImplicitParam.h"
 #include "Rose.h"
@@ -225,10 +226,10 @@ private:
     template<typename T>                                                \
     GeneratorName<T> functionName() { return GeneratorName<T>(); }
 
-IMPLEMENT_SUCH_THAT_GEN(NonZero, nonZero, x != 0);
-IMPLEMENT_SUCH_THAT_GEN(Positive, positive, x > 0);
-IMPLEMENT_SUCH_THAT_GEN(Negative, negative, x < 0);
-IMPLEMENT_SUCH_THAT_GEN(NonNegative, nonNegative, x >= 0);
+IMPLEMENT_SUCH_THAT_GEN(NonZero, nonZero, x != 0)
+IMPLEMENT_SUCH_THAT_GEN(Positive, positive, x > 0)
+IMPLEMENT_SUCH_THAT_GEN(Negative, negative, x < 0)
+IMPLEMENT_SUCH_THAT_GEN(NonNegative, nonNegative, x >= 0)
 
 #undef IMPLEMENT_SUCH_THAT_GEN
 
@@ -251,11 +252,13 @@ public:
 
     shrink::IteratorUP<Coll> shrink(Coll value) const override
     {
-        return sequentially(
-            shrink::IteratorUP<Coll>(
-                new shrink::RemoveChunks<Coll>(value)),
-            shrink::IteratorUP<Coll>(
-                new shrink::ShrinkElement<Coll, Gen>(value, m_generator)));
+        return shrink::sequentially(
+            shrink::removeChunks(value),
+            shrink::eachElement(
+                value,
+                [=](typename Coll::value_type element) {
+                    return m_generator.shrink(std::move(element));
+                }));
     }
 
 private:
@@ -337,6 +340,7 @@ public:
 
     shrink::IteratorUP<T> shrink(T value) const override
     {
+        // TODO this can probably be better
         std::vector<T> chars;
         switch (value) {
         default:
@@ -384,6 +388,19 @@ public:
 private:
     Gen m_generator;
     Catcher m_catcher;
+};
+
+template<typename Callable>
+class Lambda : public Generator<typename std::result_of<Callable()>::type>
+{
+public:
+    explicit Lambda(Callable callable) : m_callable(std::move(callable)) {}
+
+    typename std::result_of<Callable()>::type
+    operator()() const override { return m_callable(); }
+
+private:
+    Callable m_callable;
 };
 
 //
@@ -448,6 +465,10 @@ Rescue<Exception, Gen, Catcher> rescue(Gen generator, Catcher catcher)
 
 template<typename T>
 Constant<T> constant(T value) { return Constant<T>(std::move(value)); }
+
+template<typename Callable>
+Lambda<Callable> lambda(Callable callable)
+{ return Lambda<Callable>(std::move(callable)); }
 
 template<typename Gen>
 GeneratorUP<typename Gen::GeneratedType> makeGeneratorUP(Gen generator)

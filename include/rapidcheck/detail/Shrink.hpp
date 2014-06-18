@@ -53,17 +53,17 @@ private:
     SizeT m_skipSize;
 };
 
-template<typename T, typename ElementGenerator>
-class ShrinkElement : public Iterator<T>
+template<typename T, typename IteratorFactory>
+class EachElement : public Iterator<T>
 {
 public:
-    ShrinkElement(T collection, ElementGenerator elementGenerator)
+    EachElement(T collection, IteratorFactory factory)
         : m_collection(std::move(collection))
-        , m_elementGenerator(std::move(elementGenerator))
+        , m_factory(std::move(factory))
         , m_shrinkElement(m_collection.begin())
     {
         if (!m_collection.empty()) {
-            m_shrinkIterator = m_elementGenerator.shrink(*m_shrinkElement);
+            m_shrinkIterator = m_factory(*m_shrinkElement);
             advance();
         }
     }
@@ -95,13 +95,13 @@ private:
             m_shrinkElement++;
             if (m_shrinkElement == m_collection.end())
                 break;
-            m_shrinkIterator = m_elementGenerator.shrink(*m_shrinkElement);
+            m_shrinkIterator = m_factory(*m_shrinkElement);
         }
     }
 
     T m_collection;
-    ElementGenerator m_elementGenerator;
-    IteratorUP<typename ElementGenerator::GeneratedType> m_shrinkIterator;
+    IteratorFactory m_factory;
+    IteratorUP<typename T::value_type> m_shrinkIterator;
     typename T::iterator m_shrinkElement;
 };
 
@@ -222,9 +222,9 @@ unfold(I initial, Predicate predicate, Iterate iterate)
 {
     typedef typename decltype(iterate(initial))::first_type T;
     return IteratorUP<T>(new Unfold<T, I, Predicate, Iterate>(
-                                   std::move(initial),
-                                   std::move(predicate),
-                                   std::move(iterate)));
+                          std::move(initial),
+                          std::move(predicate),
+                          std::move(iterate)));
 }
 
 template<typename T>
@@ -235,13 +235,26 @@ template<typename T, typename Mapper>
 IteratorUP<typename std::result_of<Mapper(T)>::type>
 map(IteratorUP<T> iterator, Mapper mapper)
 {
-    return IteratorUP<typename std::result_of<Mapper(T)>::type>(
-        new Mapped<T, Mapper>(std::move(iterator), std::move(mapper)));
+    return IteratorUP<typename std::result_of<Mapper(T)>::type>(new Mapped<T, Mapper>(
+                             std::move(iterator),
+                             std::move(mapper)));
 }
 
 template<typename T>
 IteratorUP<T> constant(std::vector<T> constants)
 { return IteratorUP<T>(new Constant<T>(std::move(constants))); }
+
+template<typename T>
+IteratorUP<T> removeChunks(T collection)
+{ return IteratorUP<T>(new RemoveChunks<T>(std::move(collection))); }
+
+template<typename T, typename IteratorFactory>
+IteratorUP<T> eachElement(T collection, IteratorFactory factory)
+{
+    return IteratorUP<T>(new EachElement<T, IteratorFactory>(
+                          std::move(collection),
+                          std::move(factory)));
+}
 
 } // namespace shrink
 } // namespace rc

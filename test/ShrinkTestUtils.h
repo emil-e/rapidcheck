@@ -22,4 +22,13 @@ T finalShrink(const shrink::IteratorUP<T> &iterator)
     return value;
 }
 
+//! Returns the number of shrinks of the given iterator.
+template<typename T>
+size_t shrinkCount(const shrink::IteratorUP<T> &iterator)
+{
+    size_t n = 0;
+    while (iterator->hasNext()) n++;
+    return n;
+}
+
 } // namespace rc

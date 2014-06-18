@@ -118,6 +118,7 @@ template<typename Gen> class NoShrink;
 template<typename Gen, typename Mapper> class Mapped;
 template<typename T> class Character;
 template<typename Exception, typename Gen, typename Catcher> class Rescue;
+template<typename Callable> class Lambda;
 
 //! Arbitrary generator for type `T`.
 //!
@@ -188,7 +189,7 @@ Collection<Coll, Gen> collection(Gen gen);
 template<typename Gen>
 Resized<Gen> resize(size_t size, Gen gen);
 
-//! Generates values by calling the given callable with randomly generated
+//! Generates values by cwalling the given callable with randomly generated
 //! arguments.
 template<typename Callable>
 AnyInvocation<Callable> anyInvocation(Callable callable);
@@ -218,6 +219,11 @@ Rescue<Exception, Gen, Catcher> rescue(Gen generator, Catcher catcher);
 //! Returns a generator which always generates the same value.
 template<typename T>
 Constant<T> constant(T value);
+
+//! Creates an anonymous generator that uses the given callable as the
+//! generation method.
+template<typename Callable>
+Lambda<Callable> lambda(Callable callable);
 
 } // namespace gen
 } // namespace rc
