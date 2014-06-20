@@ -24,8 +24,8 @@ struct Invoker<Callable, ReturnType, Arg, Args...>
     invoke(const Callable &callable)
     {
         auto arg(pick<typename std::decay<Arg>::type>());
-        auto curried = [&] (typename std::decay<Args>::type &...args) {
-            callable(std::forward<Arg>(arg), std::forward<Args>(args)...);
+        auto curried = [&] (Args &&...args) {
+            return callable(std::move(arg), std::move(args)...);
         };
         return Invoker<decltype(curried), ReturnType, Args...>::invoke(curried);
     }

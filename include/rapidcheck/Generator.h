@@ -100,6 +100,9 @@ public:
 
     const std::type_info &generatedTypeInfo() const override;
     ValueDescription generateDescription() const override;
+
+    static_assert(!std::is_same<T, void>::value,
+                  "Generated type cannot be void");
 };
 
 // Generator implementations
