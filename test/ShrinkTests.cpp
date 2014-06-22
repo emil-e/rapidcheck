@@ -1,7 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck.h>
 
-#include "ShrinkTestUtils.h"
+#include "Utils.h"
+#include "Meta.h"
 
 using namespace rc;
 
@@ -11,8 +12,8 @@ TEST_CASE("shrink::sequentially") {
              int split = xs.empty() ? 0 : pick(gen::ranged<size_t>(0, xs.size()));
              shrink::IteratorUP<int> it(
                  shrink::sequentially(
-                     shrink::constant(std::vector<int>{xs.begin(), xs.begin() + split}),
-                     shrink::constant(std::vector<int>{xs.begin() + split, xs.end()})));
+                     shrink::constant<int>({xs.begin(), xs.begin() + split}),
+                     shrink::constant<int>({xs.begin() + split, xs.end()})));
 
              RC_ASSERT(takeAll(it) == xs);
          });
@@ -124,4 +125,38 @@ TEST_CASE("shrink::removeChunks") {
                  }
              }
          });
+}
+
+struct ShrinkTowardsProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "first tries target immediately",
+            [] (T target) {
+                T value = pick(gen::suchThat(
+                                   gen::arbitrary<T>(),
+                                   [=] (T x) { return x != target; }));
+                auto it = shrink::towards(value, target);
+                RC_ASSERT(it->hasNext());
+                RC_ASSERT(it->next() == target);
+            });
+
+        templatedProp<T>(
+            "tries an adjacent value last",
+            [] (T target) {
+                T value = pick(gen::suchThat(
+                                   gen::arbitrary<T>(),
+                                   [=] (T x) { return x != target; }));
+                auto it = shrink::towards(value, target);
+                T fin = finalShrink(it);
+                T diff = (value > target) ? (value - fin) : (fin - value);
+                RC_ASSERT(diff == 1);
+            });
+    }
+};
+
+TEST_CASE("shrink::towards") {
+    meta::forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
 }

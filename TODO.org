@@ -2,8 +2,6 @@
 * TODO All collection types in STL should be generateable
 * TODO Maybe shrink reals to smaller values as well?
 * TODO Non-determinisim in generation might cause bad casts, report this
-* DONE Print types as well as values for counterexamples
-** TODO Clean up STL types so they're more readable
 * TODO Exception handling
 * TODO Round-robin shrinking
 * TODO Result type should contain more information
@@ -16,3 +14,7 @@
 * TODO Generate element from a collection
 * TODO Shrink nonZero, negative, positive and nonNegative
 * TODO Default values for ImplicitParam
+* TODO Assertion macros have an extra '!'
+* TODO Adjustable test parameters... flags?
+* TODO Size should perhaps be int instead of size_t
+* TODO Better size calculation

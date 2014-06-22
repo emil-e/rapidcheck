@@ -1,35 +1,15 @@
 #include <catch.hpp>
 #include <rapidcheck.h>
 
-#include "ShrinkTestUtils.h"
+#include "Utils.h"
+#include "Meta.h"
 
 using namespace rc;
-
-template<typename Callable>
-auto cleanRoom(const Callable &callable) -> decltype(callable())
-{
-    using namespace detail;
-
-    ImplicitParam<param::Size> size;
-    if (!size.hasBinding())
-        size.let(0);
-
-    ImplicitParam<param::NoShrink> noShrink;
-
-    ImplicitParam<param::RandomEngine> randomEngine;
-    randomEngine.let(RandomEngine());
-    randomEngine->seed(pick<RandomEngine::Atom>());
-
-    ImplicitParam<param::CurrentNode> currentNode;
-    currentNode.let(nullptr);
-
-    return callable();
-}
 
 TEST_CASE("gen::suchThat") {
     prop("never generates values not satisfying the predicate",
          [] (int max) {
-             cleanRoom([=] {
+             testEnv([=] {
                  int x = pick(gen::suchThat<int>(
                                   [=](int x) { return x < max; }));
                  RC_ASSERT(x < max);
@@ -37,31 +17,50 @@ TEST_CASE("gen::suchThat") {
          });
 }
 
+struct RangedProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "never generates values outside of range", [] {
+                int min = pick<int>();
+                int max = pick(gen::suchThat<int>(
+                                   [=](int x) { return x > min; }));
+                int x = testEnv([=]{ return pick(gen::ranged(min, max)); });
+                RC_ASSERT((x >= min) && (x < max));
+            });
+    }
+};
+
+struct SignedRangedProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "sometimes generates negative values if in range", [] {
+                int min = pick(gen::negative<int>());
+                int max = pick(gen::positive<int>());
+                testEnv([=] {
+                    while (true)
+                        RC_SUCCEED_IF(pick(gen::ranged(min, max)) < 0);
+                });
+
+                return false;
+            });
+    }
+};
+
 TEST_CASE("gen::ranged") {
-    prop("never generates values outside of range", [] {
-        int min = pick<int>();
-        int max = pick(gen::suchThat<int>(
-                           [=](int x) { return x > min; }));
-        int x = cleanRoom([=]{ return pick(gen::ranged(min, max)); });
-        RC_ASSERT((x >= min) && (x < max));
-    });
-
-    prop("sometimes generates negative values if in range", [] {
-        int min = pick(gen::negative<int>());
-        int max = pick(gen::positive<int>());
-        cleanRoom([=] {
-            while (true)
-                RC_SUCCEED_IF(pick(gen::ranged(min, max)) < 0);
-        });
-
-        return false;
-    });
+    meta::forEachType<RangedProperties, RC_NUMERIC_TYPES>();
+    meta::forEachType<SignedRangedProperties, RC_SIGNED_TYPES>();
 }
 
 TEST_CASE("gen::oneOf") {
     prop("only uses the given generators",
          [] (int a, int b, int c) {
-             cleanRoom([=] {
+             testEnv([=] {
                  int value = pick(gen::oneOf(gen::constant(a),
                                              gen::constant(b),
                                              gen::constant(c)));
@@ -71,9 +70,9 @@ TEST_CASE("gen::oneOf") {
              });
          });
 
-    prop("all values are eventually generated",
+    prop("all generators are eventually used",
          [] (int a, int b, int c) {
-             cleanRoom([=] {
+             testEnv([=] {
                  while (true) {
                      int value = pick(gen::oneOf(gen::constant(a),
                                                  gen::constant(b),
@@ -101,34 +100,71 @@ TEST_CASE("gen::oneOf") {
          });
 }
 
+struct NonZeroProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>("never generates zero", [] {
+            testEnv([] { RC_ASSERT(pick(gen::nonZero<T>()) != 0); });
+        });
+    }
+};
+
+
+struct PositiveProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>("never generates non-positive", [] {
+            testEnv([] { RC_ASSERT(pick(gen::positive<T>()) > 0); });
+        });
+    }
+};
+
+struct NegativeProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>("never generates non-negative", [] {
+            testEnv([] { RC_ASSERT(pick(gen::negative<T>()) < 0); });
+        });
+    }
+};
+
+struct NonNegativeProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>("never generates negative", [] {
+            testEnv([] { RC_ASSERT(pick(gen::nonNegative<T>()) >= 0); });
+        });
+    }
+};
+
 TEST_CASE("gen::nonZero") {
-    prop("never generates zero", [] {
-        cleanRoom([] { RC_ASSERT(pick(gen::nonZero<int>()) != 0); });
-    });
+    meta::forEachType<NonZeroProperties, RC_NUMERIC_TYPES>();
 }
 
 TEST_CASE("gen::positive") {
-    prop("never generates non-positive", [] {
-        cleanRoom([] { RC_ASSERT(pick(gen::positive<int>()) > 0); });
-    });
+    meta::forEachType<PositiveProperties, RC_NUMERIC_TYPES>();
 }
 
 TEST_CASE("gen::negative") {
-    prop("never generates non-negative", [] {
-        cleanRoom([] { RC_ASSERT(pick(gen::negative<int>()) < 0); });
-    });
+    meta::forEachType<NegativeProperties, RC_SIGNED_TYPES>();
 }
 
 TEST_CASE("gen::nonNegative") {
-    prop("never generates negative", [] {
-        cleanRoom([] { RC_ASSERT(pick(gen::nonNegative<int>()) >= 0); });
-    });
+    meta::forEachType<NonNegativeProperties, RC_NUMERIC_TYPES>();
 }
 
 TEST_CASE("gen::collection") {
     prop("uses the given generator for elements",
          [] (int x) {
-             cleanRoom([=] {
+             testEnv([=] {
                  auto elements =
                      pick(gen::collection<std::vector<int>>(gen::constant(x)));
                  for (int e : elements)
@@ -137,7 +173,7 @@ TEST_CASE("gen::collection") {
          });
 
     SECTION("generates empty collections for 0 size") {
-        cleanRoom([] {
+        testEnv([] {
             auto coll = pick(gen::resize(0, gen::collection<std::vector<int>>(
                                              gen::arbitrary<int>())));
             REQUIRE(coll.empty());
@@ -150,7 +186,7 @@ TEST_CASE("gen::resize") {
          [] (size_t size) {
              auto generator =
                  gen::resize(size, gen::lambda([] { return gen::currentSize(); }));
-             cleanRoom([&] { RC_ASSERT(pick(generator) == size); });
+             testEnv([&] { RC_ASSERT(pick(generator) == size); });
          });
 }
 
@@ -187,7 +223,7 @@ void show(MyConstInt x, std::ostream &os) { os << x.value; }
 
 
 TEST_CASE("gen::anyInvocation") {
-    cleanRoom([] {
+    testEnv([] {
         SECTION("generates arguments in listing order") {
             pick(gen::anyInvocation(
                      [] (MyIncInt a, MyIncInt b, MyIncInt c) {
@@ -215,7 +251,7 @@ TEST_CASE("gen::anyInvocation") {
 }
 
 TEST_CASE("gen::noShrink") {
-    cleanRoom([] {
+    testEnv([] {
         SECTION("sets the NoShrink parameter") {
             detail::ImplicitParam<detail::param::NoShrink> noShrink;
             noShrink.let(false);
@@ -230,7 +266,7 @@ TEST_CASE("gen::noShrink") {
 TEST_CASE("gen::map") {
     prop("maps a generated values from one type to another",
          [] (int input) {
-             cleanRoom([=] {
+             testEnv([=] {
                  std::string str(pick(
                      gen::map(gen::constant(input),
                               [] (int x) { return std::to_string(x); })));
@@ -241,7 +277,7 @@ TEST_CASE("gen::map") {
 
 TEST_CASE("gen::character") {
     prop("never generates null characters", [] {
-        cleanRoom([] { RC_ASSERT(pick(gen::character<char>()) != '\0'); });
+        testEnv([] { RC_ASSERT(pick(gen::character<char>()) != '\0'); });
     });
 
     SECTION("does not shrink 'a'") {
@@ -258,7 +294,7 @@ TEST_CASE("gen::character") {
 TEST_CASE("gen::rescue") {
     prop("converts exceptions to generated values",
          [] (int x) {
-             cleanRoom([=] {
+             testEnv([=] {
                  auto generator = gen::lambda([=] {
                      throw std::to_string(x);
                      return std::string("");
@@ -272,6 +308,28 @@ TEST_CASE("gen::rescue") {
                               })));
 
                  RC_ASSERT(str == std::to_string(x));
+             });
+         });
+}
+
+TEST_CASE("gen::constant") {
+    prop("always returns the constant value",
+         [] (int x) {
+             testEnv([=] {
+                 auto generator = gen::constant(x);
+                 for (int i = 0; i < gen::currentSize(); i++)
+                     RC_ASSERT(pick(generator) == x);
+             });
+         });
+}
+
+TEST_CASE("gen::lambda") {
+    prop("generates the return value of the given callable",
+         [] (int x) {
+             testEnv([=] {
+                 auto generator = gen::lambda([=] { return x; });
+                 for (int i = 0; i < gen::currentSize(); i++)
+                     RC_ASSERT(pick(generator) == x);
              });
          });
 }

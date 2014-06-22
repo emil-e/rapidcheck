@@ -6,8 +6,8 @@ namespace detail {
 static inline CaseResult toCaseResult(bool value)
 {
     return value
-        ? CaseResult(CaseResult::Type::Success)
-        : CaseResult(CaseResult::Type::Failure);
+        ? CaseResult(CaseResult::Type::Success, "returned true")
+        : CaseResult(CaseResult::Type::Failure, "returned false");
 }
 
 //! Helper class to convert different return types to `CaseResult`.

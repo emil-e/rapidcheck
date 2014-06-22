@@ -214,22 +214,19 @@ private:
 };
 
 // Generators of this form are common, let's not repeat ourselves
-#define IMPLEMENT_SUCH_THAT_GEN(GeneratorName, functionName, predicate) \
+#define IMPLEMENT_SUCH_THAT_GEN(GeneratorName, predicate)               \
     template<typename T>                                                \
     class GeneratorName : public Generator<T>                           \
     {                                                                   \
     public:                                                             \
         T operator()() const                                            \
         { return pick(suchThat<T>([](T x) { return (predicate); })); }  \
-    };                                                                  \
-                                                                        \
-    template<typename T>                                                \
-    GeneratorName<T> functionName() { return GeneratorName<T>(); }
+    };
 
-IMPLEMENT_SUCH_THAT_GEN(NonZero, nonZero, x != 0)
-IMPLEMENT_SUCH_THAT_GEN(Positive, positive, x > 0)
-IMPLEMENT_SUCH_THAT_GEN(Negative, negative, x < 0)
-IMPLEMENT_SUCH_THAT_GEN(NonNegative, nonNegative, x >= 0)
+IMPLEMENT_SUCH_THAT_GEN(NonZero, x != 0)
+IMPLEMENT_SUCH_THAT_GEN(Positive, x > 0)
+IMPLEMENT_SUCH_THAT_GEN(Negative, x < 0)
+IMPLEMENT_SUCH_THAT_GEN(NonNegative, x >= 0)
 
 #undef IMPLEMENT_SUCH_THAT_GEN
 
@@ -432,6 +429,26 @@ OneOf<Gens...> oneOf(Gens... generators)
 {
     return OneOf<Gens...>(std::move(generators)...);
 }
+
+template<typename T>
+NonZero<T> nonZero()
+{ return NonZero<T>(); }
+
+template<typename T>
+Positive<T> positive()
+{ return Positive<T>(); }
+
+template<typename T>
+Negative<T> negative()
+{
+    static_assert(std::is_signed<T>::value,
+                  "gen::negative can only be used for signed types");
+    return Negative<T>();
+}
+
+template<typename T>
+NonNegative<T> nonNegative()
+{ return NonNegative<T>(); }
 
 template<typename Coll, typename Gen>
 Collection<Coll, Gen> collection(Gen gen)

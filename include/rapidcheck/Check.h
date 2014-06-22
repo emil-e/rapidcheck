@@ -52,6 +52,7 @@ void prop(const std::string &description, Testable testable)
         INFO(resultMessage(result) << "\n");
 
         FailureResult failure;
+        GaveUpResult gaveUp;
         if (result.match(failure)) {
             std::string counterExample;
             for (const auto &desc : failure.counterExample) {
@@ -60,6 +61,8 @@ void prop(const std::string &description, Testable testable)
             }
             INFO(counterExample);
             FAIL("Property failed: " << failure.description);
+        } else if (result.match(gaveUp)) {
+            FAIL("Gave up after " << gaveUp.numTests << " successful tests");
         }
     }
 }

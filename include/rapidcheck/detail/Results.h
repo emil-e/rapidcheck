@@ -52,12 +52,14 @@ private:
     std::string m_description;
 };
 
+//! Indicates a successful property.
 struct SuccessResult
 {
     //! The number of tests run.
     int numTests;
 };
 
+//! Indicates that a property failed.
 struct FailureResult
 {
     //! The failing test case.
@@ -70,8 +72,15 @@ struct FailureResult
     std::vector<gen::ValueDescription> counterExample;
 };
 
+//! Indicates that more test cases than allowed were discarded.
+struct GaveUpResult
+{
+    //! The number of tests that were run.
+    int numTests;
+};
+
 //! Describes the circumstances around the result of a test.
-typedef Variant<SuccessResult, FailureResult> TestResult;
+typedef Variant<SuccessResult, FailureResult, GaveUpResult> TestResult;
 
 //! Returns a short message describing the given test results.
 std::string resultMessage(const TestResult &result);

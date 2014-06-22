@@ -45,6 +45,8 @@ struct TestParams
     int maxSuccess = 100;
     //! The maximum size to generate.
     size_t maxSize = 100;
+    //! The maximum allowed number of discarded tests per successful test.
+    int maxDiscardRatio = 10;
 };
 
 TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
@@ -54,6 +56,8 @@ TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
     TestCase currentCase;
     RandomEngine seedEngine;
 
+    int maxDiscard = params.maxDiscardRatio * params.maxSuccess;
+    int numDiscarded = 0;
     currentCase.size = 0;
     currentCase.index = 1;
     while (currentCase.index <= params.maxSuccess) {
@@ -63,13 +67,17 @@ TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
             currentCase,
             [&]{ return (*property)(); });
 
-        if (result.type() == CaseResult::Type::Failure)
+        if (result.type() == CaseResult::Type::Failure) {
             return shrinkFailingCase(property, currentCase);
-        else if(result.type() == CaseResult::Type::Discard)
+        } else if(result.type() == CaseResult::Type::Discard) {
+            numDiscarded++;
+            if (numDiscarded > maxDiscard)
+                return GaveUpResult { .numTests = currentCase.index };
             continue;
+        }
 
         currentCase.index++;
-        currentCase.size = std::min(params.maxSize, currentCase.size + 1);
+        currentCase.size = (currentCase.size + 1) % (params.maxSize + 1);
         //TODO better size calculation
     }
 

@@ -1,11 +1,13 @@
 #pragma once
 
+#include <type_traits>
+
 #include "Variant.h"
 
 namespace rc {
 namespace detail {
 
-template<typename ...Args>
+template<typename ...Types>
 struct IndexHelper;
 
 template<>
@@ -15,44 +17,44 @@ struct IndexHelper<>
     static constexpr int indexOf() { return -1; }
 };
 
-template<typename First, typename ...Args>
-struct IndexHelper<First, Args...>
+template<typename First, typename ...Types>
+struct IndexHelper<First, Types...>
 {
     template<typename T>
     static constexpr int indexOf()
     {
         return std::is_same<First, T>::value
-            ? 0
-            : IndexHelper<Args...>::template indexOf<T>() + 1;
+            ? sizeof...(Types)
+            : IndexHelper<Types...>::template indexOf<T>();
     }
 };
 
-template<typename ...Args>
+template<typename ...Types>
 template<typename T>
-Variant<Args...>::Variant(T value)
+Variant<Types...>::Variant(T value)
     : m_copy([](void *v) -> void * { return new T(*static_cast<T *>(v)); })
     , m_delete([](void *v){ delete static_cast<T *>(v); })
     , m_typeIndex(indexOfType<T>())
     , m_value(new T(std::move(value)))
 { static_assert(indexOfType<T>() != -1, "T is not a valid type of this variant"); }
 
-template<typename ...Args>
-Variant<Args...>::Variant(const Variant<Args...> &other)
+template<typename ...Types>
+Variant<Types...>::Variant(const Variant<Types...> &other)
     : m_copy(other.m_copy)
     , m_delete(other.m_delete)
     , m_typeIndex(other.m_typeIndex)
     , m_value(m_copy(other.m_value)) {}
 
-template<typename ...Args>
-Variant<Args...>::Variant(Variant<Args...> &&other)
+template<typename ...Types>
+Variant<Types...>::Variant(Variant<Types...> &&other)
     : m_copy(other.m_copy)
     , m_delete(other.m_delete)
     , m_typeIndex(other.m_typeIndex)
     , m_value(other.m_value)
 { other.m_value = nullptr; }
 
-template<typename ...Args>
-Variant<Args...> &Variant<Args...>::operator=(const Variant<Args...> &rhs)
+template<typename ...Types>
+Variant<Types...> &Variant<Types...>::operator=(const Variant<Types...> &rhs)
 {
     m_copy = rhs.m_copy;
     m_delete = rhs.m_delete;
@@ -60,8 +62,8 @@ Variant<Args...> &Variant<Args...>::operator=(const Variant<Args...> &rhs)
     m_value = m_copy(rhs.m_value);
 }
 
-template<typename ...Args>
-Variant<Args...> &Variant<Args...>::operator=(Variant<Args...> &&rhs)
+template<typename ...Types>
+Variant<Types...> &Variant<Types...>::operator=(Variant<Types...> &&rhs)
 {
     m_copy = rhs.m_copy;
     m_delete = rhs.m_delete;
@@ -70,9 +72,9 @@ Variant<Args...> &Variant<Args...>::operator=(Variant<Args...> &&rhs)
     rhs.m_value = nullptr;
 }
 
-template<typename ...Args>
+template<typename ...Types>
 template<typename T>
-bool Variant<Args...>::match(T &value) const
+bool Variant<Types...>::match(T &value) const
 {
     static_assert(indexOfType<T>() != -1,
                   "T is not a valid type of this variant");
@@ -84,23 +86,23 @@ bool Variant<Args...>::match(T &value) const
     return true;
 }
 
-template<typename ...Args>
+template<typename ...Types>
 template<typename T>
-bool Variant<Args...>::is() const
+bool Variant<Types...>::is() const
 {
     static_assert(indexOfType<T>() != -1,
                   "T is not a valid type of this variant");
     return m_typeIndex == indexOfType<T>();
 }
 
-template<typename ...Args>
-Variant<Args...>::~Variant() { m_delete(m_value); }
+template<typename ...Types>
+Variant<Types...>::~Variant() { m_delete(m_value); }
 
-template<typename ...Args>
+template<typename ...Types>
 template<typename T>
-constexpr int Variant<Args...>::indexOfType()
+constexpr int Variant<Types...>::indexOfType()
 {
-    return IndexHelper<Args...>::template indexOf<T>();
+    return IndexHelper<Types...>::template indexOf<T>();
 }
 
 } // namespace detail

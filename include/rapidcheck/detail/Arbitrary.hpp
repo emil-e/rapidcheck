@@ -54,10 +54,13 @@ public:
 
     shrink::IteratorUP<T> shrink(T value) const override
     {
-        return shrink::unfold(
-            value,
-            [=](T i) { return i != 0; },
-            [=](T i) { return std::make_pair(static_cast<T>(value - i), i / 2); });
+        std::vector<T> constants;
+        if (value < 0)
+            constants.push_back(-value);
+
+        return shrink::sequentially(
+            shrink::constant(constants),
+            shrink::towards(value, static_cast<T>(0)));
     }
 };
 
@@ -70,19 +73,19 @@ public:
     {
         int64_t i = pick(gen::arbitrary<int64_t>());
         T x = static_cast<T>(i) / std::numeric_limits<int64_t>::max();
-        return std::pow<T>(2.0, gen::currentSize()) * x;
+        return std::pow<T>(1.2, gen::currentSize()) * x;
     }
 
     shrink::IteratorUP<T> shrink(T value) const override
     {
         std::vector<T> constants;
 
+        if (value < 0)
+            constants.push_back(-value);
+
         T truncated = std::trunc(value);
         if (std::abs(truncated) < std::abs(value))
             constants.push_back(truncated);
-
-        if (value < 0)
-            constants.push_back(-value);
 
         return shrink::constant(constants);
     }
@@ -99,7 +102,18 @@ class Arbitrary<bool> : public gen::Generator<bool>
 {
 public:
     bool operator()() const override
-    { return (pick(resize(gen::kReferenceSize, gen::arbitrary<uint8_t>())) & 0x1) == 0; }
+    {
+        return (pick(gen::resize(gen::kReferenceSize,
+                                 gen::arbitrary<uint8_t>())) & 0x1) == 0;
+    }
+
+    shrink::IteratorUP<bool> shrink(bool value)
+    {
+        if (value)
+            return shrink::constant<bool>({false});
+        else
+            return shrink::nothing<bool>();
+    }
 };
 
 template<typename T1, typename T2>

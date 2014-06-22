@@ -256,5 +256,17 @@ IteratorUP<T> eachElement(T collection, IteratorFactory factory)
                           std::move(factory)));
 }
 
+template<typename T>
+IteratorUP<T> towards(T value, T target)
+{
+    return shrink::unfold(
+        (value > target) ? (value - target) : (target - value),
+        [=](T i) { return i != 0; },
+        [=](T i) {
+            T next = (value > target) ? (value - i) : (value + i);
+            return std::make_pair(next, i / 2);
+        });
+}
+
 } // namespace shrink
 } // namespace rc

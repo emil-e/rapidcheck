@@ -88,6 +88,13 @@ IteratorUP<T> removeChunks(T collection);
 template<typename T, typename IteratorFactory>
 IteratorUP<T> eachElement(T collection, IteratorFactory factory);
 
+//! Shrinks towards an integral value.
+//!
+//! @param value   The value to shrink.
+//! @param target  The integer to shrink towards.
+template<typename T>
+IteratorUP<T> towards(T value, T target);
+
 } // namespace shrink
 } // namespace rc
 
