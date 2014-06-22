@@ -400,6 +400,41 @@ private:
     Callable m_callable;
 };
 
+template<typename ...Gens>
+class TupleOf;
+
+template<>
+class TupleOf<> : public Generator<std::tuple<>>
+{
+public:
+    std::tuple<> operator()() const override { return std::tuple<>(); }
+};
+
+template<typename Gen, typename ...Gens>
+class TupleOf<Gen, Gens...>
+    : public Generator<std::tuple<typename Gen::GeneratedType,
+                                  typename Gens::GeneratedType...>>
+{
+public:
+    typedef std::tuple<typename Gen::GeneratedType,
+                       typename Gens::GeneratedType...> TupleType;
+
+    TupleOf(Gen headGenerator, Gens ...tailGenerators)
+        : m_headGenerator(std::move(headGenerator))
+        , m_tailGenerator(std::move(tailGenerators)...) {}
+
+    TupleType operator()() const override
+    {
+        return std::tuple_cat(
+            std::tuple<typename Gen::GeneratedType>(pick(m_headGenerator)),
+            pick(m_tailGenerator));
+    }
+
+private:
+    Gen m_headGenerator;
+    TupleOf<Gens...> m_tailGenerator;
+};
+
 //
 // Factory functions
 //
@@ -493,6 +528,10 @@ GeneratorUP<typename Gen::GeneratedType> makeGeneratorUP(Gen generator)
     return GeneratorUP<typename Gen::GeneratedType>(
         new Gen(std::move(generator)));
 }
+
+template<typename ...Gens>
+TupleOf<Gens...> tupleOf(Gens ...generators)
+{ return TupleOf<Gens...>(std::move(generators)...); }
 
 } // namespace gen
 } // namespace rc

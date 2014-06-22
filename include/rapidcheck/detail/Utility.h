@@ -64,5 +64,37 @@ std::string join(const std::string &sep,
     return str + sep + join(sep, strings...);
 }
 
+template<typename TupleT, typename ...Types>
+struct TupleTailHelper;
+
+template<typename TupleT>
+struct TupleTailHelper<TupleT>
+{
+    static std::tuple<> tail(const TupleT &tuple)
+    { return std::tuple<>(); }
+};
+
+template<typename TupleT, typename Type, typename ...Types>
+struct TupleTailHelper<TupleT, Type, Types...>
+{
+    static std::tuple<Type, Types...> tail(const TupleT &tuple)
+    {
+        constexpr size_t tailHead =
+            std::tuple_size<TupleT>::value - (sizeof...(Types) + 1);
+        return std::tuple_cat(
+            std::make_tuple(std::get<tailHead>(tuple)),
+            TupleTailHelper<TupleT, Types...>::tail(tuple));
+    }
+};
+
+//! Returns a copy of the given tuple without the first element.
+template<typename Type, typename ...Types>
+std::tuple<Types...> tupleTail(const std::tuple<Type, Types...> &tuple)
+{
+    return TupleTailHelper<std::tuple<Type, Types...>, Types...>::tail(tuple);
+}
+
+// TODO separate into header and implementation file
+
 } // namespace detail
 } // namespace rc

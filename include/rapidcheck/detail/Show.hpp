@@ -4,6 +4,8 @@
 #include <string>
 #include <iomanip>
 
+#include "Utility.h"
+
 namespace rc {
 
 template<typename T>
@@ -68,6 +70,45 @@ template<typename T>
 void show(const std::unique_ptr<T> &p, std::ostream &os)
 {
     show(p.get(), os);
+}
+
+namespace detail {
+
+template<typename ...Types>
+struct TupleHelper;
+
+template<>
+struct TupleHelper<>
+{
+    static void show(const std::tuple<> &tuple, std::ostream &os) {}
+};
+
+template<typename Type>
+struct TupleHelper<Type>
+{
+    static void show(const std::tuple<Type> &tuple, std::ostream &os)
+    { show(std::get<0>(tuple), os); }
+};
+
+template<typename T1, typename T2, typename ...Types>
+struct TupleHelper<T1, T2, Types...>
+{
+    static void show(const std::tuple<T1, T2, Types...> &tuple, std::ostream &os)
+    {
+        show(std::get<0>(tuple), os);
+        os << ", ";
+        TupleHelper<T2, Types...>::show(detail::tupleTail(tuple), os);
+    }
+};
+
+} // namespace detail
+
+template<typename ...Types>
+void show(const std::tuple<Types...> &tuple, std::ostream &os)
+{
+    os << "(";
+    detail::TupleHelper<Types...>::show(tuple, os);
+    os << ")";
 }
 
 } // namespace rc

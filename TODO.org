@@ -18,3 +18,4 @@
 * TODO Adjustable test parameters... flags?
 * TODO Size should perhaps be int instead of size_t
 * TODO Better size calculation
+* TODO Test non-copyables

@@ -333,3 +333,14 @@ TEST_CASE("gen::lambda") {
              });
          });
 }
+
+TEST_CASE("gen::tupleOf") {
+    prop("uses the provided generators",
+         [] {
+             auto tuple = pick(gen::tupleOf(gen::constant(1),
+                                            gen::constant(2),
+                                            gen::constant(3),
+                                            gen::constant(4)));
+             RC_ASSERT(tuple == std::make_tuple(1, 2, 3, 4));
+         });
+}
