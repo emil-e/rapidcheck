@@ -74,30 +74,31 @@ void show(const std::unique_ptr<T> &p, std::ostream &os)
 
 namespace detail {
 
-template<typename ...Types>
+template<typename TupleT,
+         std::size_t I = std::tuple_size<TupleT>::value>
 struct TupleHelper;
 
-template<>
-struct TupleHelper<>
+template<size_t I>
+struct TupleHelper<std::tuple<>, I>
 {
-    static void show(const std::tuple<> &tuple, std::ostream &os) {}
+    static void showTuple(const std::tuple<> &tuple, std::ostream &os) {}
 };
 
-template<typename Type>
-struct TupleHelper<Type>
+template<typename TupleT>
+struct TupleHelper<TupleT, 1>
 {
-    static void show(const std::tuple<Type> &tuple, std::ostream &os)
-    { show(std::get<0>(tuple), os); }
+    static void showTuple(const TupleT &tuple, std::ostream &os)
+    { show(std::get<std::tuple_size<TupleT>::value - 1>(tuple), os); }
 };
 
-template<typename T1, typename T2, typename ...Types>
-struct TupleHelper<T1, T2, Types...>
+template<typename TupleT, std::size_t I>
+struct TupleHelper
 {
-    static void show(const std::tuple<T1, T2, Types...> &tuple, std::ostream &os)
+    static void showTuple(const TupleT &tuple, std::ostream &os)
     {
-        show(std::get<0>(tuple), os);
+        show(std::get<std::tuple_size<TupleT>::value - I>(tuple), os);
         os << ", ";
-        TupleHelper<T2, Types...>::show(detail::tupleTail(tuple), os);
+        TupleHelper<TupleT, I - 1>::showTuple(tuple, os);
     }
 };
 
@@ -107,7 +108,7 @@ template<typename ...Types>
 void show(const std::tuple<Types...> &tuple, std::ostream &os)
 {
     os << "(";
-    detail::TupleHelper<Types...>::show(tuple, os);
+    detail::TupleHelper<std::tuple<Types...>>::showTuple(tuple, os);
     os << ")";
 }
 

@@ -87,4 +87,33 @@ size_t shrinkCount(const shrink::IteratorUP<T> &iterator)
     return n;
 }
 
+struct MyNonCopyable
+{
+    static constexpr int genValue = 1337;
+    int value;
+
+    MyNonCopyable() = default;
+    MyNonCopyable(const MyNonCopyable &) = delete;
+    MyNonCopyable &operator=(const MyNonCopyable &) = delete;
+    MyNonCopyable(MyNonCopyable &&) = default;
+    MyNonCopyable &operator=(MyNonCopyable &&) = default;
+};
+
+template<>
+class Arbitrary<MyNonCopyable> : public gen::Generator<MyNonCopyable>
+{
+public:
+    MyNonCopyable operator()() const override
+    {
+        MyNonCopyable x;
+        x.value = MyNonCopyable::genValue;
+        return x;
+    }
+};
+
+inline void show(const MyNonCopyable &x, std::ostream &os)
+{
+    os << x.value;
+}
+
 } // namespace rc

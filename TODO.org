@@ -19,3 +19,5 @@
 * TODO Size should perhaps be int instead of size_t
 * TODO Better size calculation
 * TODO Test non-copyables
+* TODO suchThat, map, and other generators should have shrink()
+* TODO Replace pick with operator T()

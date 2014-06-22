@@ -2,6 +2,7 @@
 
 #include "ImplicitParam.h"
 #include "GenerationParams.h"
+#include "Traits.h"
 #include "rapidcheck/Generator.h"
 
 namespace rc {
@@ -51,7 +52,7 @@ T RoseNode::generateWith(const gen::Generator<T> &generator)
 template<typename T>
 T RoseNode::generate(gen::GeneratorUP<T> &&generator)
 {
-    return doGenerate(std::move(generator), std::is_copy_constructible<T>());
+    return doGenerate(std::move(generator), IsCopyConstructible<T>());
 }
 
 template<typename T>
