@@ -118,10 +118,10 @@ public:
 
 template<typename ...Types>
 class Arbitrary<std::tuple<Types...>>
-    : public gen::TupleOf<decltype(gen::arbitrary<Types>())...>
+    : public gen::TupleOf<Arbitrary<Types>...>
 {
 public:
-    Arbitrary() : gen::TupleOf<decltype(gen::arbitrary<Types>())...>(
+    Arbitrary() : gen::TupleOf<Arbitrary<Types>...>(
             gen::arbitrary<Types>()...) {}
 };
 
@@ -143,15 +143,13 @@ public:
     }
 };
 
+// Base template class for collection types
 template<typename Coll, typename ValueType>
-class ArbitraryCollection : public gen::Generator<Coll>
+class ArbitraryCollection : public gen::Collection<Coll, Arbitrary<ValueType>>
 {
 public:
-    Coll operator()() const override
-    { return pick(gen::collection<Coll>(gen::arbitrary<ValueType>())); }
-
-    shrink::IteratorUP<Coll> shrink(Coll value) const override
-    { return gen::collection<Coll>(gen::arbitrary<ValueType>()).shrink(value); }
+    ArbitraryCollection() : gen::Collection<Coll, Arbitrary<ValueType>>(
+        gen::arbitrary<ValueType>()) {}
 };
 
 // std::vector
@@ -168,16 +166,13 @@ class Arbitrary<std::map<Key, T, Compare, Alloc>>
 // std::basic_string
 template<typename T, typename Traits, typename Alloc>
 class Arbitrary<std::basic_string<T, Traits, Alloc>>
-    : public gen::Generator<std::basic_string<T, Traits, Alloc>>
+    : public gen::Collection<std::basic_string<T, Traits, Alloc>, gen::Character<T>>
 {
 public:
     typedef std::basic_string<T, Traits, Alloc> StringType;
 
-    StringType operator()() const override
-    { return pick(gen::collection<StringType>(gen::character<T>())); }
-
-    shrink::IteratorUP<StringType> shrink(StringType value) const override
-    { return gen::collection<StringType>(gen::character<T>()).shrink(value); }
+    Arbitrary() : gen::Collection<StringType, gen::Character<T>>(
+        gen::character<T>()) {}
 };
 
 } // namespace rc
