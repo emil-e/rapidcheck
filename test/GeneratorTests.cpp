@@ -360,4 +360,40 @@ TEST_CASE("gen::tupleOf") {
                  RC_ASSERT(std::get<3>(tuple).value = MyNonCopyable::genValue);
              });
          });
+
+    prop("shrinks one element at a time",
+         [] (const std::tuple<int, int, int> &tuple) {
+             auto it = gen::tupleOf(gen::arbitrary<int>(),
+                                    gen::arbitrary<int>(),
+                                    gen::arbitrary<int>()).shrink(tuple);
+
+             auto eit = gen::arbitrary<int>().shrink(std::get<0>(tuple));
+             while (eit->hasNext()) {
+                 RC_ASSERT(it->hasNext());
+                 auto expected = std::make_tuple(eit->next(),
+                                                 std::get<1>(tuple),
+                                                 std::get<2>(tuple));
+                 RC_ASSERT(it->next() == expected);
+             }
+
+             eit = gen::arbitrary<int>().shrink(std::get<1>(tuple));
+             while (eit->hasNext()) {
+                 RC_ASSERT(it->hasNext());
+                 auto expected = std::make_tuple(std::get<0>(tuple),
+                                                 eit->next(),
+                                                 std::get<2>(tuple));
+                 RC_ASSERT(it->next() == expected);
+             }
+
+             eit = gen::arbitrary<int>().shrink(std::get<2>(tuple));
+             while (eit->hasNext()) {
+                 RC_ASSERT(it->hasNext());
+                 auto expected = std::make_tuple(std::get<0>(tuple),
+                                                 std::get<1>(tuple),
+                                                 eit->next());
+                 RC_ASSERT(it->next() == expected);
+             }
+
+             RC_ASSERT(!it->hasNext());
+         });
 }

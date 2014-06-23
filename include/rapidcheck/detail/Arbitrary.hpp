@@ -116,6 +116,15 @@ public:
     }
 };
 
+template<typename ...Types>
+class Arbitrary<std::tuple<Types...>>
+    : public gen::TupleOf<decltype(gen::arbitrary<Types>())...>
+{
+public:
+    Arbitrary() : gen::TupleOf<decltype(gen::arbitrary<Types>())...>(
+            gen::arbitrary<Types>()...) {}
+};
+
 template<typename T1, typename T2>
 class Arbitrary<std::pair<T1, T2>> : public gen::Generator<std::pair<T1, T2>>
 {

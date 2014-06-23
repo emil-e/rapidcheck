@@ -410,6 +410,8 @@ public:
     std::tuple<> operator()() const override { return std::tuple<>(); }
 };
 
+#define IMPLEMENT_CONDITIONAL
+
 template<typename Gen, typename ...Gens>
 class TupleOf<Gen, Gens...>
     : public Generator<std::tuple<typename Gen::GeneratedType,
@@ -418,6 +420,8 @@ class TupleOf<Gen, Gens...>
 public:
     typedef std::tuple<typename Gen::GeneratedType,
                        typename Gens::GeneratedType...> TupleType;
+    typedef typename Gen::GeneratedType TupleHead;
+    typedef std::tuple<typename Gens::GeneratedType...> TupleTail;
 
     TupleOf(Gen headGenerator, Gens ...tailGenerators)
         : m_headGenerator(std::move(headGenerator))
@@ -430,7 +434,34 @@ public:
             pick(m_tailGenerator));
     }
 
+    shrink::IteratorUP<TupleType> shrink(TupleType value) const override
+    { return shrink(value, detail::IsCopyConstructible<TupleType>()); }
+
 private:
+    shrink::IteratorUP<TupleType> shrink(const TupleType &value,
+                                         std::false_type) const
+    { return shrink::nothing<TupleType>(); }
+
+    shrink::IteratorUP<TupleType> shrink(const TupleType &value,
+                                         std::true_type) const
+    {
+        // Shrink the head and map it by append the unshrunk tail,
+        // then shrink the tail and map it by prepending the unshrink head.
+        return shrink::sequentially(
+            shrink::map(m_headGenerator.shrink(std::get<0>(value)),
+                        [=] (const TupleHead &x) -> TupleType {
+                            return std::tuple_cat(
+                                std::tuple<TupleHead>(x),
+                                detail::tupleTail(value));
+                        }),
+            shrink::map(m_tailGenerator.shrink(detail::tupleTail(value)),
+                        [=] (const TupleTail &x) -> TupleType {
+                            return std::tuple_cat(
+                                std::tuple<TupleHead>(std::get<0>(value)),
+                                x);
+                        }));
+    }
+
     Gen m_headGenerator;
     TupleOf<Gens...> m_tailGenerator;
 };
