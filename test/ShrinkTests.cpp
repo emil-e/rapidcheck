@@ -65,37 +65,30 @@ TEST_CASE("shrink::nothing") {
 }
 
 
+struct EachElementProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        typedef typename T::value_type Element;
+
+        templatedProp<T>(
+            "the container size stays the same",
+            [] (const T &elements) {
+                auto egen = gen::arbitrary<Element>();
+                auto it = shrink::eachElement(
+                    elements,
+                    [=] (const Element &x) { return egen.shrink(x); });
+
+                auto size = containerSize(elements);
+                while (it->hasNext())
+                    RC_ASSERT(containerSize(it->next()) == size);
+            });
+    }
+};
+
 TEST_CASE("shrink::eachElement") {
-    prop("tries shrinking one element at a time",
-         [] {
-             size_t size = pick(gen::ranged<size_t>(0, gen::currentSize() + 1));
-             std::vector<int> elements(size, 2);
-
-             // Two shrinks from each element, first 0 and then 1
-             auto it = shrink::eachElement(
-                 elements,
-                 [](int x) { return shrink::constant<int>({0, 1}); });
-
-             // This means that the number of shrinks should be size * 2
-             for (size_t count = 0; count < (size * 2); count++) {
-                 auto shrunk = it->next();
-                 // Check each element
-                 for (int i = 0; i < shrunk.size(); i++) {
-                     // The current shrunk element is count / 2 since each
-                     // element is shrunk twice
-                     if (i == (count / 2)) {
-                         // The shrunk element is first 0 and then 1
-                         RC_ASSERT(shrunk[i] == (count % 2));
-                     } else {
-                         // The non-shrunk elements are always 2
-                         RC_ASSERT(shrunk[i] == 2);
-                     }
-                 }
-             }
-
-             // Now we should be out of shrinks
-             RC_ASSERT(!it->hasNext());
-         });
+    meta::forEachType<EachElementProperties, RC_GENERIC_CONTAINERS(int)>();
 }
 
 TEST_CASE("shrink::removeChunks") {

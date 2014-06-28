@@ -7,71 +7,6 @@
 #include "Utility.h"
 
 namespace rc {
-
-template<typename T>
-void show(const T &value, std::ostream &os)
-{
-    os << value;
-}
-
-template<typename T1, typename T2>
-void show(const std::pair<T1, T2> &pair, std::ostream &os)
-{
-    os << "(";
-    show(pair.first, os);
-    os << ", ";
-    show(pair.second, os);
-    os << ")";
-}
-
-template<typename Iterator>
-void showCollection(const std::string &prefix,
-                    const std::string &suffix,
-                    Iterator begin,
-                    Iterator end,
-                    std::ostream &os)
-{
-    os << prefix;
-    if (begin != end) {
-        show(*begin, os);
-        for (auto it = ++begin; it != end; it++) {
-            os << ", ";
-            show(*it, os);
-        }
-    }
-    os << suffix;
-}
-
-template<typename T, typename Alloc>
-void show(const std::vector<T, Alloc> &vec, std::ostream &os)
-{
-    showCollection("[", "]", vec.begin(), vec.end(), os);
-}
-
-template<typename Key,
-         typename T,
-         typename Compare,
-         typename Allocator>
-void show(const std::map<Key, T, Compare, Allocator> &m, std::ostream &os)
-{
-    showCollection("{", "}", m.begin(), m.end(), os);
-}
-
-template<typename T>
-void show(T *p, std::ostream &os)
-{
-    show(*p, os);
-    auto flags = os.flags();
-    os << " (" << std::hex << std::showbase << p << ")";
-    os.flags(flags);
-}
-
-template<typename T>
-void show(const std::unique_ptr<T> &p, std::ostream &os)
-{
-    show(p.get(), os);
-}
-
 namespace detail {
 
 template<typename TupleT,
@@ -104,12 +39,160 @@ struct TupleHelper
 
 } // namespace detail
 
+template<typename T>
+void show(const T &value, std::ostream &os)
+{
+    os << value;
+}
+
+
+template<typename T>
+void show(T *p, std::ostream &os)
+{
+    show(*p, os);
+    auto flags = os.flags();
+    os << " (" << std::hex << std::showbase << p << ")";
+    os.flags(flags);
+}
+
+template<typename T>
+void show(const std::unique_ptr<T> &p, std::ostream &os)
+{
+    show(p.get(), os);
+}
+
+template<typename T1, typename T2>
+void show(const std::pair<T1, T2> &pair, std::ostream &os)
+{
+    os << "(";
+    show(pair.first, os);
+    os << ", ";
+    show(pair.second, os);
+    os << ")";
+}
+
 template<typename ...Types>
 void show(const std::tuple<Types...> &tuple, std::ostream &os)
 {
     os << "(";
     detail::TupleHelper<std::tuple<Types...>>::showTuple(tuple, os);
     os << ")";
+}
+
+template<typename Collection>
+void showCollection(const std::string &prefix,
+                    const std::string &suffix,
+                    const Collection &collection,
+                    std::ostream &os)
+{
+    os << prefix;
+    auto cbegin = begin(collection);
+    auto cend = end(collection);
+    if (cbegin != cend) {
+        show(*cbegin, os);
+        for (auto it = ++cbegin; it != cend; it++) {
+            os << ", ";
+            show(*it, os);
+        }
+    }
+    os << suffix;
+}
+
+template<typename T, typename Allocator>
+void show(const std::vector<T, Allocator> &value, std::ostream &os)
+{
+    showCollection("[", "]", value, os);
+}
+
+template<typename T, typename Allocator>
+void show(const std::deque<T, Allocator> &value, std::ostream &os)
+{
+    showCollection("[", "]", value, os);
+}
+
+template<typename T, typename Allocator>
+void show(const std::forward_list<T, Allocator> &value, std::ostream &os)
+{
+    showCollection("[", "]", value, os);
+}
+
+template<typename T, typename Allocator>
+void show(const std::list<T, Allocator> &value, std::ostream &os)
+{
+    showCollection("[", "]", value, os);
+}
+
+template<typename Key, typename Compare, typename Allocator>
+void show(const std::set<Key, Compare, Allocator> &value, std::ostream &os)
+{
+    showCollection("{", "}", value, os);
+}
+
+template<typename Key,
+         typename T,
+         typename Compare,
+         typename Allocator>
+void show(const std::map<Key, T, Compare, Allocator> &value, std::ostream &os)
+{
+    showCollection("{", "}", value, os);
+}
+
+template<typename Key, typename Compare, typename Allocator>
+void show(const std::multiset<Key, Compare, Allocator> &value, std::ostream &os)
+{
+    showCollection("{", "}", value, os);
+}
+
+template<typename Key,
+         typename T,
+         typename Compare,
+         typename Allocator>
+void show(const std::multimap<Key, T, Compare, Allocator> &value, std::ostream &os)
+{
+    showCollection("{", "}", value, os);
+}
+
+
+template<typename Key,
+         typename Hash,
+         typename KeyEqual,
+         typename Allocator>
+void show(const std::unordered_set<Key, Hash, KeyEqual, Allocator> &value,
+          std::ostream &os)
+{
+    showCollection("{", "}", value, os);
+}
+
+template<typename Key,
+         typename T,
+         typename Hash,
+         typename KeyEqual,
+         typename Allocator>
+void show(const std::unordered_map<Key, T, Hash, KeyEqual, Allocator> &value,
+          std::ostream &os)
+{
+    showCollection("{", "}", value, os);
+}
+
+template<typename Key,
+         typename Hash,
+         typename KeyEqual,
+         typename Allocator>
+void show(const std::unordered_multiset<Key, Hash, KeyEqual, Allocator> &value,
+          std::ostream &os)
+{
+    showCollection("{", "}", value, os);
+}
+
+template<typename Key,
+         typename T,
+         typename Hash,
+         typename KeyEqual,
+         typename Allocator>
+void show(const std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator> &value,
+          std::ostream &os)
+{
+    showCollection("{", "}", value, os);
 }
 
 } // namespace rc

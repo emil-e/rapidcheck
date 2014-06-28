@@ -1,13 +1,10 @@
-* TODO Tuple generation and shrinking
 * TODO All collection types in STL should be generateable
 * TODO Maybe shrink reals to smaller values as well?
 * TODO Non-determinisim in generation might cause bad casts, report this
 * TODO Exception handling
-* TODO Round-robin shrinking
 * TODO Result type should contain more information
 * TODO Move private stuff in public header files to detail headers?
 * TODO What should be the valid return types for properties
-* TODO Giving up if too many discardings
 * TODO Discard test if suchThat never generates
 * TODO Unsure if generation method should really be operator()
 * TODO Use different seeds when generating
@@ -21,3 +18,9 @@
 * TODO Test non-copyables
 * TODO suchThat, map, and other generators should have shrink()
 * TODO Replace pick with operator T()
+* TODO Create GeneratedT<T> typedef to clean up some code
+* TODO Static tests for
+* TODO Fixed size collection generation
+* TODO Test that collection shrinker tries all possible combinations of removing elements
+* TODO Implement std::pair in terms of std::tuple
+* TODO Implement std::array

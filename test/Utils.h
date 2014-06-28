@@ -24,6 +24,20 @@ namespace rc {
 
 #define RC_NUMERIC_TYPES RC_REAL_TYPES, RC_INTEGRAL_TYPES
 
+#define RC_GENERIC_CONTAINERS(T)                            \
+    std::vector<T>,                                         \
+    std::deque<T>,                                          \
+    std::forward_list<T>,                                   \
+    std::list<T>,                                           \
+    std::set<T>,                                            \
+    std::map<T, T>,                                         \
+    std::multiset<T>,                                       \
+    std::multimap<T, T>,                                    \
+    std::unordered_set<T>,                                  \
+    std::unordered_map<T, T>,                               \
+    std::unordered_multiset<T>,                             \
+    std::unordered_multimap<T, T>
+
 template<typename T, typename Testable>
 void templatedProp(const std::string &description, Testable testable)
 {
@@ -87,33 +101,36 @@ size_t shrinkCount(const shrink::IteratorUP<T> &iterator)
     return n;
 }
 
-struct MyNonCopyable
+//! Returns true if there is a shrink in the given shrink iterator that
+//! satisfies the given predicate.
+template<typename T, typename Predicate>
+bool hasShrinkSuchThat(const shrink::IteratorUP<T> &iterator,
+                       Predicate predicate)
 {
-    static constexpr int genValue = 1337;
-    int value;
-
-    MyNonCopyable() = default;
-    MyNonCopyable(const MyNonCopyable &) = delete;
-    MyNonCopyable &operator=(const MyNonCopyable &) = delete;
-    MyNonCopyable(MyNonCopyable &&) = default;
-    MyNonCopyable &operator=(MyNonCopyable &&) = default;
-};
-
-template<>
-class Arbitrary<MyNonCopyable> : public gen::Generator<MyNonCopyable>
-{
-public:
-    MyNonCopyable operator()() const override
-    {
-        MyNonCopyable x;
-        x.value = MyNonCopyable::genValue;
-        return x;
+    while (iterator->hasNext()) {
+        if (predicate(iterator->next()))
+            return true;
     }
-};
 
-inline void show(const MyNonCopyable &x, std::ostream &os)
+    return false;
+}
+
+//! So that we in templated tests can compare map pairs with their non-const-key
+//! equivalents.
+template<typename T1, typename T2>
+bool operator==(const std::pair<const T1, T2> &lhs,
+                const std::pair<T1, T2> &rhs)
 {
-    os << x.value;
+    return (lhs.first == rhs.first) && (lhs.second == rhs.second);
+}
+
+//! Returns the size of the given container by counting them through iterators.
+template<typename T>
+typename T::size_type containerSize(const T &container) {
+    typename T::size_type size = 0;
+    for (auto it = begin(container); it != end(container); it++)
+        size++;
+    return size;
 }
 
 } // namespace rc

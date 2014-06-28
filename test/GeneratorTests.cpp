@@ -3,6 +3,7 @@
 
 #include "Utils.h"
 #include "Meta.h"
+#include "MyNonCopyable.h"
 
 using namespace rc;
 
@@ -161,24 +162,55 @@ TEST_CASE("gen::nonNegative") {
     meta::forEachType<NonNegativeProperties, RC_NUMERIC_TYPES>();
 }
 
-TEST_CASE("gen::collection") {
-    prop("uses the given generator for elements",
-         [] (int x) {
-             testEnv([=] {
-                 auto elements =
-                     pick(gen::collection<std::vector<int>>(gen::constant(x)));
-                 for (int e : elements)
-                     RC_ASSERT(e == x);
-             });
-         });
+struct CollectionTests
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "uses the given generator for elements",
+            [] (typename T::value_type x) {
+                testEnv([=] {
+                    auto elements =
+                        pick(gen::collection<T>(gen::constant(x)));
+                    for (const typename T::value_type &e : elements)
+                        RC_ASSERT(e == x);
+                });
+            });
 
-    SECTION("generates empty collections for 0 size") {
-        testEnv([] {
-            auto coll = pick(gen::resize(0, gen::collection<std::vector<int>>(
-                                             gen::arbitrary<int>())));
-            REQUIRE(coll.empty());
-        });
+        TEMPLATED_SECTION(T, "generates empty collections for 0 size") {
+            testEnv([] {
+                auto egen =
+                    gen::arbitrary<typename T::value_type>();
+                auto coll = pick(gen::resize(0, gen::collection<T>(egen)));
+                REQUIRE(coll.empty());
+            });
+        }
     }
+};
+
+struct NonCopyableCollectionTests
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "works with non-copyable types",
+            [] {
+                testEnv([] {
+                    auto egen = gen::arbitrary<typename T::value_type>();
+                    auto coll = pick(gen::collection<T>(egen));
+                    for (const auto &x : coll)
+                        RC_ASSERT(x == pick(egen));
+                });
+            });
+    }
+};
+
+TEST_CASE("gen::collection") {
+    meta::forEachType<CollectionTests, RC_GENERIC_CONTAINERS(int)>();
+    meta::forEachType<NonCopyableCollectionTests,
+                      RC_GENERIC_CONTAINERS(MyNonCopyable)>();
 }
 
 TEST_CASE("gen::resize") {
@@ -346,20 +378,19 @@ TEST_CASE("gen::tupleOf") {
              });
          });
 
-    prop("works with non-copyable types",
-         [] {
-             testEnv([] {
-                 auto tuple = pick(
-                     gen::tupleOf(gen::arbitrary<MyNonCopyable>(),
-                                  gen::arbitrary<MyNonCopyable>(),
-                                  gen::arbitrary<MyNonCopyable>(),
-                                  gen::arbitrary<MyNonCopyable>()));
-                 RC_ASSERT(std::get<0>(tuple).value = MyNonCopyable::genValue);
-                 RC_ASSERT(std::get<1>(tuple).value = MyNonCopyable::genValue);
-                 RC_ASSERT(std::get<2>(tuple).value = MyNonCopyable::genValue);
-                 RC_ASSERT(std::get<3>(tuple).value = MyNonCopyable::genValue);
-             });
-         });
+    SECTION("works with non-copyable types") {
+        testEnv([] {
+            auto tuple = pick(
+                gen::tupleOf(gen::arbitrary<MyNonCopyable>(),
+                             gen::arbitrary<MyNonCopyable>(),
+                             gen::arbitrary<MyNonCopyable>(),
+                             gen::arbitrary<MyNonCopyable>()));
+            RC_ASSERT(std::get<0>(tuple).value == MyNonCopyable::genValue);
+            RC_ASSERT(std::get<1>(tuple).value == MyNonCopyable::genValue);
+            RC_ASSERT(std::get<2>(tuple).value == MyNonCopyable::genValue);
+            RC_ASSERT(std::get<3>(tuple).value == MyNonCopyable::genValue);
+        });
+    }
 
     prop("shrinks one element at a time",
          [] (const std::tuple<int, int, int> &tuple) {

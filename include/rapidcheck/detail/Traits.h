@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <queue>
 #include <deque>
+#include <stack>
 
 namespace rc {
 namespace detail {

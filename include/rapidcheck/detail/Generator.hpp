@@ -10,6 +10,7 @@
 #include "Rose.h"
 #include "GenerationParams.h"
 #include "Quantifier.h"
+#include "CollectionBuilder.h"
 
 namespace rc {
 
@@ -230,35 +231,44 @@ IMPLEMENT_SUCH_THAT_GEN(NonNegative, x >= 0)
 
 #undef IMPLEMENT_SUCH_THAT_GEN
 
-template<typename Coll, typename Gen>
-class Collection : public Generator<Coll>
+template<typename Container, typename Gen>
+class Collection : public Generator<Container>
 {
 public:
     explicit Collection(Gen generator)
         : m_generator(std::move(generator)) {}
 
-    Coll operator()() const override
+    Container operator()() const override
     {
-        auto length = pick(ranged<typename Coll::size_type>(0, currentSize() + 1));
-        auto gen = noShrink(m_generator);
-        Coll coll;
-        std::generate_n(std::inserter(coll, coll.end()), length,
-                      [&]{ return pick(gen); });
-        return coll;
+        auto length = pick(ranged<typename Container::size_type>(0, currentSize() + 1));
+        detail::CollectionBuilder<Container> builder;
+        for (int i = 0; i < length; i++)
+            builder.append(pick(noShrink(m_generator)));
+        return std::move(builder.collection());
     }
 
-    shrink::IteratorUP<Coll> shrink(Coll value) const override
+    shrink::IteratorUP<Container> shrink(Container value) const override
+    { return shrink(value, detail::IsCopyConstructible<Container>()); }
+
+private:
+    shrink::IteratorUP<Container> shrink(const Container &value,
+                                         std::false_type) const
+    {
+        return shrink::nothing<Container>();
+    }
+
+    shrink::IteratorUP<Container> shrink(const Container &value,
+                                         std::true_type) const
     {
         return shrink::sequentially(
             shrink::removeChunks(value),
             shrink::eachElement(
                 value,
-                [=](typename Coll::value_type element) {
+                [=](typename Container::value_type element) {
                     return m_generator.shrink(std::move(element));
                 }));
     }
 
-private:
     Gen m_generator;
 };
 
@@ -419,51 +429,73 @@ class TupleOf<Gen, Gens...>
 {
 public:
     typedef std::tuple<typename Gen::GeneratedType,
-                       typename Gens::GeneratedType...> TupleType;
-    typedef typename Gen::GeneratedType TupleHead;
-    typedef std::tuple<typename Gens::GeneratedType...> TupleTail;
+                       typename Gens::GeneratedType...> TupleT;
+    typedef typename Gen::GeneratedType HeadT;
+    typedef std::tuple<typename Gens::GeneratedType...> TailT;
 
     TupleOf(Gen headGenerator, Gens ...tailGenerators)
         : m_headGenerator(std::move(headGenerator))
         , m_tailGenerator(std::move(tailGenerators)...) {}
 
-    TupleType operator()() const override
+    TupleT operator()() const override
     {
         return std::tuple_cat(
             std::tuple<typename Gen::GeneratedType>(pick(m_headGenerator)),
             pick(m_tailGenerator));
     }
 
-    shrink::IteratorUP<TupleType> shrink(TupleType value) const override
-    { return shrink(value, detail::IsCopyConstructible<TupleType>()); }
+    shrink::IteratorUP<TupleT> shrink(TupleT value) const override
+    { return shrink(value, detail::IsCopyConstructible<TupleT>()); }
 
 private:
-    shrink::IteratorUP<TupleType> shrink(const TupleType &value,
+    shrink::IteratorUP<TupleT> shrink(const TupleT &value,
                                          std::false_type) const
-    { return shrink::nothing<TupleType>(); }
+    { return shrink::nothing<TupleT>(); }
 
-    shrink::IteratorUP<TupleType> shrink(const TupleType &value,
+    shrink::IteratorUP<TupleT> shrink(const TupleT &value,
                                          std::true_type) const
     {
         // Shrink the head and map it by append the unshrunk tail,
         // then shrink the tail and map it by prepending the unshrink head.
         return shrink::sequentially(
             shrink::map(m_headGenerator.shrink(std::get<0>(value)),
-                        [=] (const TupleHead &x) -> TupleType {
+                        [=] (const HeadT &x) -> TupleT {
                             return std::tuple_cat(
-                                std::tuple<TupleHead>(x),
+                                std::tuple<HeadT>(x),
                                 detail::tupleTail(value));
                         }),
             shrink::map(m_tailGenerator.shrink(detail::tupleTail(value)),
-                        [=] (const TupleTail &x) -> TupleType {
+                        [=] (const TailT &x) -> TupleT {
                             return std::tuple_cat(
-                                std::tuple<TupleHead>(std::get<0>(value)),
+                                std::tuple<HeadT>(std::get<0>(value)),
                                 x);
                         }));
     }
 
     Gen m_headGenerator;
     TupleOf<Gens...> m_tailGenerator;
+};
+
+template<typename Gen1, typename Gen2>
+class PairOf : public Generator<std::pair<typename Gen1::GeneratedType,
+                                          typename Gen2::GeneratedType>>
+{
+public:
+    typedef typename std::pair<typename Gen1::GeneratedType,
+                               typename Gen2::GeneratedType> PairT;
+
+    PairOf(Gen1 generator1, Gen2 generator2)
+        : m_generator(std::move(generator1),
+                      std::move(generator2)) {}
+
+    PairT operator()() const override
+    {
+        auto x = m_generator();
+        return PairT(std::move(std::get<0>(x)), std::move(std::get<1>(x)));
+    }
+
+private:
+    TupleOf<Gen1, Gen2> m_generator;
 };
 
 //
@@ -563,6 +595,10 @@ GeneratorUP<typename Gen::GeneratedType> makeGeneratorUP(Gen generator)
 template<typename ...Gens>
 TupleOf<Gens...> tupleOf(Gens ...generators)
 { return TupleOf<Gens...>(std::move(generators)...); }
+
+template<typename Gen1, typename Gen2>
+PairOf<Gen1, Gen2> tupleOf(Gen1 generator1, Gen2 generator2)
+{ return PairOf<Gen1, Gen2>(std::move(generator1), std::move(generator2)); }
 
 } // namespace gen
 } // namespace rc

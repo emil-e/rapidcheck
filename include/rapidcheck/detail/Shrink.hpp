@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Utility.h"
+#include "CollectionBuilder.h"
+#include "Traits.h"
 
 namespace rc {
 namespace shrink {
@@ -13,96 +15,109 @@ public:
     T next() { for (;;); } // Should never happen
 };
 
-template<typename T>
-class RemoveChunks : public Iterator<T>
+template<typename Container>
+class RemoveChunks : public Iterator<Container>
 {
 public:
-    typedef typename T::size_type SizeT;
+    static_assert(detail::IsCopyConstructible<Container>::value,
+                  "Element type must be copy constructible");
 
-    RemoveChunks(T collection)
+    typedef typename Container::size_type SizeT;
+
+    RemoveChunks(Container collection)
         : m_collection(std::move(collection))
         , m_skipStart(0)
-        , m_skipSize(m_collection.size()) {}
+        , m_skipSize(std::numeric_limits<SizeT>::max())
+        , m_maxStart(0) {}
 
     bool hasNext() const override
     { return m_skipSize != 0; }
 
-    T next() override
+    Container next() override
     {
-        T shrunk;
+        detail::CollectionBuilder<Container> builder;
         SizeT i = 0;
         SizeT skipEnd = m_skipStart + m_skipSize;
         for (const auto &element : m_collection) {
             if ((i < m_skipStart) || (i >= skipEnd))
-                shrunk.insert(shrunk.end(), element);
+                builder.append(element);
             i++;
         }
+        m_skipSize = std::min(i, m_skipSize);
 
         m_skipStart++;
-        if ((m_skipStart + m_skipSize) > m_collection.size()) {
+        if (m_skipStart >= m_maxStart) {
             m_skipStart = 0;
             m_skipSize--;
+            m_maxStart++;
         }
 
-        return shrunk;
+        return std::move(builder.collection());
     }
 
 private:
-    T m_collection;
+    Container m_collection;
     SizeT m_skipStart;
     SizeT m_skipSize;
+    SizeT m_maxStart;
 };
 
-template<typename T, typename IteratorFactory>
-class EachElement : public Iterator<T>
+template<typename Container, typename IteratorFactory>
+class EachElement : public Iterator<Container>
 {
 public:
-    EachElement(T collection, IteratorFactory factory)
+    static_assert(detail::IsCopyConstructible<Container>::value,
+                  "Element type must be copy constructible");
+    
+    typedef typename std::result_of<
+        IteratorFactory(typename Container::value_type)>::type ElementIteratorT;
+
+    EachElement(Container collection, IteratorFactory factory)
         : m_collection(std::move(collection))
         , m_factory(std::move(factory))
         , m_shrinkElement(m_collection.begin())
     {
         if (!m_collection.empty()) {
-            m_shrinkIterator = m_factory(*m_shrinkElement);
+            m_elementIterator = m_factory(*m_shrinkElement);
             advance();
         }
     }
 
     bool hasNext() const override
-    { return !m_collection.empty() && m_shrinkIterator->hasNext(); }
+    { return !m_collection.empty() && m_elementIterator->hasNext(); }
 
-    T next() override
+    Container next() override
     {
-        T shrunk;
+        detail::CollectionBuilder<Container> builder;
         for (auto it = m_collection.begin(); it != m_collection.end(); it++)
         {
             if (it == m_shrinkElement)
-                shrunk.insert(shrunk.end(), m_shrinkIterator->next());
+                builder.append(m_elementIterator->next());
             else
-                shrunk.insert(shrunk.end(), *it);
+                builder.append(*it);
         }
 
         advance();
-        return shrunk;
+        return std::move(builder.collection());
     }
 
 private:
     void advance()
     {
-        while (!m_shrinkIterator->hasNext() &&
+        while (!m_elementIterator->hasNext() &&
                (m_shrinkElement != m_collection.end()))
         {
             m_shrinkElement++;
             if (m_shrinkElement == m_collection.end())
                 break;
-            m_shrinkIterator = m_factory(*m_shrinkElement);
+            m_elementIterator = m_factory(*m_shrinkElement);
         }
     }
 
-    T m_collection;
+    Container m_collection;
     IteratorFactory m_factory;
-    IteratorUP<typename T::value_type> m_shrinkIterator;
-    typename T::iterator m_shrinkElement;
+    ElementIteratorT m_elementIterator;
+    typename Container::iterator m_shrinkElement;
 };
 
 template<typename T,

@@ -126,21 +126,16 @@ public:
 };
 
 template<typename T1, typename T2>
-class Arbitrary<std::pair<T1, T2>> : public gen::Generator<std::pair<T1, T2>>
+class Arbitrary<std::pair<T1, T2>>
+    : public gen::PairOf<Arbitrary<detail::DecayT<T1>>,
+                         Arbitrary<detail::DecayT<T2>>>
 {
 public:
-    std::pair<T1, T2> operator()() const override
-    { return std::make_pair(pick<T1>(), pick<T2>()); }
-
-    shrink::IteratorUP<std::pair<T1, T2>>
-    shrink(std::pair<T1, T2> pair) const override
-    {
-        return shrink::sequentially(
-            shrink::map(gen::arbitrary<T1>().shrink(pair.first),
-                      [=](T1 x) { return std::make_pair(x, pair.second); }),
-            shrink::map(gen::arbitrary<T2>().shrink(pair.second),
-                      [=](T2 x) { return std::make_pair(pair.first, x); }));
-    }
+    Arbitrary()
+        : gen::PairOf<Arbitrary<detail::DecayT<T1>>,
+                      Arbitrary<detail::DecayT<T2>>>(
+            gen::arbitrary<detail::DecayT<T1>>(),
+            gen::arbitrary<detail::DecayT<T2>>()) {}
 };
 
 // Base template class for collection types
@@ -148,29 +143,83 @@ template<typename Coll, typename ValueType>
 class ArbitraryCollection : public gen::Collection<Coll, Arbitrary<ValueType>>
 {
 public:
-    ArbitraryCollection() : gen::Collection<Coll, Arbitrary<ValueType>>(
-        gen::arbitrary<ValueType>()) {}
+    typedef gen::Collection<Coll, Arbitrary<ValueType>> CollectionGen;
+    ArbitraryCollection() : CollectionGen(gen::arbitrary<ValueType>()) {}
 };
 
 // std::vector
-template<typename T, typename Alloc>
-class Arbitrary<std::vector<T, Alloc>>
-    : public ArbitraryCollection<std::vector<T, Alloc>, T> {};
+template<typename T, typename Allocator>
+class Arbitrary<std::vector<T, Allocator>>
+    : public ArbitraryCollection<std::vector<T, Allocator>, T> {};
+
+// std::deque
+template<typename T, typename Allocator>
+class Arbitrary<std::deque<T, Allocator>>
+    : public ArbitraryCollection<std::deque<T, Allocator>, T> {};
+
+// std::forward_list
+template<typename T, typename Allocator>
+class Arbitrary<std::forward_list<T, Allocator>>
+    : public ArbitraryCollection<std::forward_list<T, Allocator>, T> {};
+
+// std::list
+template<typename T, typename Allocator>
+class Arbitrary<std::list<T, Allocator>>
+    : public ArbitraryCollection<std::list<T, Allocator>, T> {};
+
+// std::set
+template<typename Key, typename Compare, typename Allocator>
+class Arbitrary<std::set<Key, Compare, Allocator>>
+    : public ArbitraryCollection<std::set<Key, Compare, Allocator>, Key> {};
 
 // std::map
-template<typename Key, typename T, typename Compare, typename Alloc>
-class Arbitrary<std::map<Key, T, Compare, Alloc>>
-    : public ArbitraryCollection<std::map<Key, T, Compare, Alloc>,
+template<typename Key, typename T, typename Compare, typename Allocator>
+class Arbitrary<std::map<Key, T, Compare, Allocator>>
+    : public ArbitraryCollection<std::map<Key, T, Compare, Allocator>,
+                                 std::pair<Key, T>> {};
+
+// std::multiset
+template<typename Key, typename Compare, typename Allocator>
+class Arbitrary<std::multiset<Key, Compare, Allocator>>
+    : public ArbitraryCollection<std::multiset<Key, Compare, Allocator>, Key> {};
+
+// std::multimap
+template<typename Key, typename T, typename Compare, typename Allocator>
+class Arbitrary<std::multimap<Key, T, Compare, Allocator>>
+    : public ArbitraryCollection<std::multimap<Key, T, Compare, Allocator>,
+                                 std::pair<Key, T>> {};
+
+// std::unordered_set
+template<typename Key, typename Hash, typename KeyEqual, typename Allocator>
+class Arbitrary<std::unordered_set<Key, Hash, KeyEqual, Allocator>>
+    : public ArbitraryCollection<std::unordered_set<Key, Hash, KeyEqual, Allocator>,
+                                 Key> {};
+
+// std::unordered_map
+template<typename Key, typename T, typename Hash, typename KeyEqual, typename Allocator>
+class Arbitrary<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>>
+    : public ArbitraryCollection<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>,
+                                 std::pair<Key, T>> {};
+
+// std::unordered_multiset
+template<typename Key, typename Hash, typename KeyEqual, typename Allocator>
+class Arbitrary<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>>
+    : public ArbitraryCollection<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>,
+                                 Key> {};
+
+// std::unordered_multimap
+template<typename Key, typename T, typename Hash, typename KeyEqual, typename Allocator>
+class Arbitrary<std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>>
+    : public ArbitraryCollection<std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>,
                                  std::pair<Key, T>> {};
 
 // std::basic_string
-template<typename T, typename Traits, typename Alloc>
-class Arbitrary<std::basic_string<T, Traits, Alloc>>
-    : public gen::Collection<std::basic_string<T, Traits, Alloc>, gen::Character<T>>
+template<typename T, typename Traits, typename Allocator>
+class Arbitrary<std::basic_string<T, Traits, Allocator>>
+    : public gen::Collection<std::basic_string<T, Traits, Allocator>, gen::Character<T>>
 {
 public:
-    typedef std::basic_string<T, Traits, Alloc> StringType;
-
+    typedef std::basic_string<T, Traits, Allocator> StringType;
     Arbitrary() : gen::Collection<StringType, gen::Character<T>>(
         gen::character<T>()) {}
 };
