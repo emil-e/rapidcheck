@@ -247,3 +247,28 @@ struct ShrinkTowardsProperties
 TEST_CASE("shrink::towards") {
     meta::forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
 }
+
+TEST_CASE("shrink::filter") {
+    prop("if the predicate always returns true, yields the same as the original",
+         [] (const std::vector<int> &shrinks) {
+             auto it = shrink::filter(shrink::constant(shrinks),
+                                      [] (int x) { return true; });
+             RC_ASSERT(takeAll(it) == shrinks);
+         });
+
+    prop("if the predicate always returns false, yields nothing",
+         [] (const std::vector<int> &shrinks) {
+             auto it = shrink::filter(shrink::constant(shrinks),
+                                      [] (int x) { return false; });
+             RC_ASSERT(!it->hasNext());
+         });
+
+    prop("never returns an item which does not satisfy the predicate",
+         [] (const std::vector<int> &shrinks) {
+             auto max = pick(gen::positive<int>());
+             auto it = shrink::filter(shrink::constant(shrinks),
+                                      [=] (int x) { return x < max; });
+             while (it->hasNext())
+                 RC_ASSERT(it->next() < max);
+         });
+}
