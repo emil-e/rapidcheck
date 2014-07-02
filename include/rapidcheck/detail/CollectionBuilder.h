@@ -3,6 +3,8 @@
 #include <forward_list>
 #include <map>
 #include <unordered_map>
+#include <set>
+#include <unordered_set>
 
 namespace rc {
 namespace detail {
@@ -12,8 +14,9 @@ template<typename Collection>
 class CollectionBuilder
 {
 public:
-    //! Inserts an element at the end of the collection.
-    void append(typename Collection::value_type value);
+    //! Inserts an element at the end of the collection. Returns true if the
+    //! item was successfully added or false if it was not.
+    bool add(typename Collection::value_type value);
 
     //! Returns a reference to the collection.
     Collection &collection();
@@ -30,7 +33,7 @@ public:
     typedef std::forward_list<T, Allocator> ListT;
 
     CollectionBuilder();
-    void append(T value);
+    bool add(T value);
     std::forward_list<T, Allocator> &collection();
 
 private:
@@ -44,11 +47,23 @@ class MapBuilder
 {
 public:
     template<typename PairT>
-    void append(PairT &&pair);
+    bool add(PairT pair);
     Map &collection();
 
 private:
     Map m_map;
+};
+
+//! Base class for set specializations.
+template<typename Set>
+class SetBuilder
+{
+public:
+    bool add(typename Set::key_type key);
+    Set &collection();
+
+private:
+    Set m_set;
 };
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -76,6 +91,19 @@ template<typename Key,
          typename Allocator>
 class CollectionBuilder<std::unordered_multimap<Key, T, Hash,KeyEqual, Allocator>>
     : public MapBuilder<std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>>
+{
+};
+
+template<typename Key, typename Compare, typename Allocator>
+class CollectionBuilder<std::set<Key, Compare, Allocator>>
+    : public SetBuilder<std::set<Key, Compare, Allocator>> {};
+
+template<typename Key,
+         typename Hash,
+         typename KeyEqual,
+         typename Allocator>
+class CollectionBuilder<std::unordered_set<Key, Hash, KeyEqual, Allocator>>
+    : public SetBuilder<std::unordered_set<Key, Hash, KeyEqual, Allocator>>
 {
 };
 

@@ -70,19 +70,76 @@ struct EachElementProperties
     template<typename T>
     static void exec()
     {
-        typedef typename T::value_type Element;
+        typedef DeepDecayT<typename T::value_type> Element;
+        static auto smallValue = gen::scale(0.1, gen::arbitrary<Element>());
+        static auto smallValues = gen::collection<T>(smallValue);
 
         templatedProp<T>(
             "the container size stays the same",
-            [] (const T &elements) {
-                auto egen = gen::arbitrary<Element>();
+            [&] {
+                auto elements = pick(smallValues);
                 auto it = shrink::eachElement(
                     elements,
-                    [=] (const Element &x) { return egen.shrink(x); });
+                    [&] (const Element &x) { return smallValue.shrink(x); });
 
                 auto size = containerSize(elements);
-                while (it->hasNext())
+                while (it->hasNext()) {
                     RC_ASSERT(containerSize(it->next()) == size);
+                }
+            });
+
+        TEMPLATED_SECTION(T, "has no shrinks for empty collections") {
+            auto it = shrink::eachElement(
+                T(),
+                [] (const Element &x) {
+                    return gen::arbitrary<Element>().shrink(x);
+                });
+            REQUIRE(!it->hasNext());
+        }
+
+        templatedProp<T>(
+            "has no shrinks if elements have no shrinks",
+            [] {
+                auto it = shrink::eachElement(
+                    pick(smallValues),
+                    [] (const Element &x) {
+                        return shrink::nothing<Element>();
+                    });
+                RC_ASSERT(!it->hasNext());
+            });
+
+        templatedProp<T>(
+            "the number of shrinks is never greater than the sum of the "
+            "shrink counts for the iterators of the elements",
+            [] {
+                auto elements = pick(smallValues);
+                auto it = shrink::eachElement(
+                    elements,
+                    [&] (const Element &x) { return smallValue.shrink(x); });
+
+                std::size_t count = 0;
+                for (const auto &element : elements)
+                    count += shrinkCount(smallValue.shrink(element));
+                RC_ASSERT(shrinkCount(it) <= count);
+            });
+
+        templatedProp<T>(
+            "for every shrink, a value is replaced with one of its possible "
+            "shrinks",
+            [] {
+                auto elements = pick(smallValues);
+                auto it = shrink::eachElement(
+                    elements,
+                    [&] (const Element &x) { return smallValue.shrink(x); });
+
+                while (it->hasNext()) {
+                    auto shrunk = it->next();
+                    auto added = setDifference<Element>(shrunk, elements);
+                    auto removed = setDifference<Element>(elements, shrunk);
+                    RC_ASSERT(added.size() == 1);
+                    RC_ASSERT(removed.size() == 1);
+                    RC_ASSERT(hasShrink(smallValue.shrink(removed[0]), added[0]));
+                }
             });
     }
 };
@@ -91,33 +148,70 @@ TEST_CASE("shrink::eachElement") {
     meta::forEachType<EachElementProperties, RC_GENERIC_CONTAINERS(int)>();
 }
 
+struct RemoveChunksProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        typedef DeepDecayT<typename T::value_type> Element;
+        static auto smallValue =
+            gen::scale(0.1, gen::arbitrary<typename T::value_type>());
+        static auto smallValues = gen::collection<T>(smallValue);
+        static auto fewSmallValues = gen::scale(0.25, smallValues);
+
+        templatedProp<T>(
+            "first tries empty collection",
+            [] {
+                RC_ASSERT(shrink::removeChunks(pick(smallValues))->next().empty());
+            });
+
+        templatedProp<T>(
+            "successively increases in size for each shrink",
+            [] {
+                auto it = shrink::removeChunks(pick(fewSmallValues));
+                T c;
+                while (it->hasNext()) {
+                    auto next = it->next();
+                    RC_ASSERT(containerSize(next) >= containerSize(c));
+                    c = std::move(next);
+                }
+            });
+
+        templatedProp<T>(
+            "shrinks to a subset of the original",
+            [] {
+                auto elements = pick(fewSmallValues);
+                auto it = shrink::removeChunks(elements);
+                while (it->hasNext()) {
+                    auto diff(setDifference<Element>(it->next(), elements));
+                    RC_ASSERT(diff.size() == 0);
+                }
+            });
+
+        templatedProp<T>(
+            "every removal of consecutive elements is a possible shrink",
+            [] {
+                auto elements = pick(fewSmallValues);
+                auto size = containerSize(elements);
+                int begin = pick(gen::ranged<int>(0, size));
+                int end = pick(gen::ranged<int>(begin, size));
+
+                detail::CollectionBuilder<T> builder;
+                int i = 0;
+                for (const auto &x : elements) {
+                    if ((i < begin) && (i >= end))
+                        builder.add(x);
+                    i++;
+                }
+
+                auto it = shrink::removeChunks(elements);
+                RC_ASSERT(hasShrink(it, builder.collection()));
+            });
+    }
+};
+
 TEST_CASE("shrink::removeChunks") {
-    prop("first tries empty collection",
-         [] (const std::vector<int> &elements) {
-             RC_ASSERT(shrink::removeChunks(elements)->next().empty());
-         });
-
-    prop("successively increases size",
-         [] (const std::vector<int> &elements) {
-             auto it = shrink::removeChunks(elements);
-             std::vector<int> c;
-             while (it->hasNext()) {
-                 auto next = it->next();
-                 RC_ASSERT(next.size() >= c.size());
-             }
-         });
-
-    prop("shrinks to a subset of the original",
-         [] (const std::vector<int> &elements) {
-             auto it = shrink::removeChunks(elements);
-             while (it->hasNext()) {
-                 auto shrunk = it->next();
-                 for (int x : shrunk) {
-                     auto result = std::find(elements.begin(), elements.end(), x);
-                     RC_ASSERT(result != elements.end());
-                 }
-             }
-         });
+    meta::forEachType<RemoveChunksProperties, RC_GENERIC_CONTAINERS(int)>();
 }
 
 struct ShrinkTowardsProperties

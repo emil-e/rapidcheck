@@ -110,7 +110,10 @@ public:
 
     T operator()() const override
     {
-        assert(m_max > m_min);
+        assert(m_max >= m_min);
+        if (m_max == m_min)
+            return m_max;
+
         // TODO this seems a bit broken
         typedef typename std::make_unsigned<T>::type Uint;
         Uint value(pick(noShrink(resize(kReferenceSize, arbitrary<Uint>()))));
@@ -122,23 +125,52 @@ private:
 };
 
 template<typename Gen>
-class Resized : public Generator<typename Gen::GeneratedType>
+class Resize : public Generator<typename Gen::GeneratedType>
 {
 public:
-    Resized(size_t size, Gen generator)
+    Resize(size_t size, Gen generator)
         : m_size(size), m_generator(std::move(generator)) {}
 
     typename Gen::GeneratedType operator()() const override
     {
         detail::ImplicitParam<detail::param::Size> size;
         size.let(m_size);
-        return pick(m_generator);
+        return m_generator();
     }
+
+    shrink::IteratorUP<typename Gen::GeneratedType>
+    shrink(typename Gen::GeneratedType value) const override
+    { return m_generator.shrink(value); }
 
 private:
     size_t m_size;
     Gen m_generator;
 };
+
+
+template<typename Gen>
+class Scale : public Generator<typename Gen::GeneratedType>
+{
+public:
+    Scale(double scale, Gen generator)
+        : m_scale(scale), m_generator(std::move(generator)) {}
+
+    typename Gen::GeneratedType operator()() const override
+    {
+        detail::ImplicitParam<detail::param::Size> size;
+        size.let(*size * m_scale);
+        return m_generator();
+    }
+
+    shrink::IteratorUP<typename Gen::GeneratedType>
+    shrink(typename Gen::GeneratedType value) const override
+    { return m_generator.shrink(value); }
+
+private:
+    double m_scale;
+    Gen m_generator;
+};
+
 
 // Helper class for OneOf to be able to have a collection of generators of
 // different types
@@ -243,7 +275,7 @@ public:
         auto length = pick(ranged<typename Container::size_type>(0, currentSize() + 1));
         detail::CollectionBuilder<Container> builder;
         for (int i = 0; i < length; i++)
-            builder.append(pick(noShrink(m_generator)));
+            builder.add(pick(noShrink(m_generator)));
         return std::move(builder.collection());
     }
 
@@ -449,26 +481,26 @@ public:
 
 private:
     shrink::IteratorUP<TupleT> shrink(const TupleT &value,
-                                         std::false_type) const
+                                      std::false_type) const
     { return shrink::nothing<TupleT>(); }
 
     shrink::IteratorUP<TupleT> shrink(const TupleT &value,
-                                         std::true_type) const
+                                      std::true_type) const
     {
         // Shrink the head and map it by append the unshrunk tail,
         // then shrink the tail and map it by prepending the unshrink head.
         return shrink::sequentially(
             shrink::map(m_headGenerator.shrink(std::get<0>(value)),
-                        [=] (const HeadT &x) -> TupleT {
+                        [=] (HeadT &&x) -> TupleT {
                             return std::tuple_cat(
-                                std::tuple<HeadT>(x),
+                                std::tuple<HeadT>(std::move(x)),
                                 detail::tupleTail(value));
                         }),
             shrink::map(m_tailGenerator.shrink(detail::tupleTail(value)),
-                        [=] (const TailT &x) -> TupleT {
+                        [=] (TailT &&x) -> TupleT {
                             return std::tuple_cat(
                                 std::tuple<HeadT>(std::get<0>(value)),
-                                x);
+                                std::move(x));
                         }));
     }
 
@@ -481,8 +513,9 @@ class PairOf : public Generator<std::pair<typename Gen1::GeneratedType,
                                           typename Gen2::GeneratedType>>
 {
 public:
-    typedef typename std::pair<typename Gen1::GeneratedType,
-                               typename Gen2::GeneratedType> PairT;
+    typedef typename Gen1::GeneratedType T1;
+    typedef typename Gen1::GeneratedType T2;
+    typedef typename std::pair<T1, T2> PairT;
 
     PairOf(Gen1 generator1, Gen2 generator2)
         : m_generator(std::move(generator1),
@@ -491,7 +524,19 @@ public:
     PairT operator()() const override
     {
         auto x = m_generator();
-        return PairT(std::move(std::get<0>(x)), std::move(std::get<1>(x)));
+        return PairT(std::move(std::get<0>(x)),
+                     std::move(std::get<1>(x)));
+    }
+
+    shrink::IteratorUP<PairT> shrink(PairT value) const override
+    {
+        return shrink::map(
+            m_generator.shrink(std::tuple<T1, T2>(std::move(value.first),
+                                                  std::move(value.second))),
+            [] (std::tuple<T1, T2> &&x) {
+                return PairT(std::move(std::get<0>(x)),
+                             std::move(std::get<1>(x)));
+            });
     }
 
 private:
@@ -553,8 +598,12 @@ Collection<Coll, Gen> collection(Gen gen)
 { return Collection<Coll, Gen>(std::move(gen)); }
 
 template<typename Gen>
-Resized<Gen> resize(size_t size, Gen gen)
-{ return Resized<Gen>(size, std::move(gen)); }
+Resize<Gen> resize(size_t size, Gen gen)
+{ return Resize<Gen>(size, std::move(gen)); }
+
+template<typename Gen>
+Scale<Gen> scale(double scale, Gen gen)
+{ return Scale<Gen>(scale, std::move(gen)); }
 
 template<typename Callable>
 AnyInvocation<Callable> anyInvocation(Callable callable)

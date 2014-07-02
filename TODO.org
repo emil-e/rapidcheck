@@ -24,3 +24,7 @@
 * TODO Test that collection shrinker tries all possible combinations of removing elements
 * TODO Implement std::pair in terms of std::tuple
 * TODO Implement std::array
+* TODO Tests for shrink::filter
+* TODO Shrinker implementation classes to detail namespace
+* TODO catch.hpp-like sections for setup and teardown, perhaps?
+* TODO Move test utils implementations to source file

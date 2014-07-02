@@ -4,6 +4,9 @@
 #include "CollectionBuilder.h"
 #include "Traits.h"
 
+#include "rapidcheck/Show.h"
+#include <iostream>
+
 namespace rc {
 namespace shrink {
 
@@ -40,7 +43,7 @@ public:
         SizeT skipEnd = m_skipStart + m_skipSize;
         for (const auto &element : m_collection) {
             if ((i < m_skipStart) || (i >= skipEnd))
-                builder.append(element);
+                builder.add(element);
             i++;
         }
         m_skipSize = std::min(i, m_skipSize);
@@ -68,55 +71,68 @@ class EachElement : public Iterator<Container>
 public:
     static_assert(detail::IsCopyConstructible<Container>::value,
                   "Element type must be copy constructible");
-    
+
     typedef typename std::result_of<
-        IteratorFactory(typename Container::value_type)>::type ElementIteratorT;
+        IteratorFactory(typename Container::value_type)>::type::element_type::ShrunkType
+        ElementT;
 
     EachElement(Container collection, IteratorFactory factory)
         : m_collection(std::move(collection))
         , m_factory(std::move(factory))
         , m_shrinkElement(m_collection.begin())
-    {
-        if (!m_collection.empty()) {
-            m_elementIterator = m_factory(*m_shrinkElement);
-            advance();
-        }
-    }
+    { advance(); }
 
     bool hasNext() const override
-    { return !m_collection.empty() && m_elementIterator->hasNext(); }
+    { return m_shrinkElement != m_collection.end(); }
 
     Container next() override
     {
-        detail::CollectionBuilder<Container> builder;
-        for (auto it = m_collection.begin(); it != m_collection.end(); it++)
-        {
-            if (it == m_shrinkElement)
-                builder.append(m_elementIterator->next());
-            else
-                builder.append(*it);
-        }
-
+        Container c(std::move(m_next));
         advance();
-        return std::move(builder.collection());
+        return std::move(c);
     }
 
 private:
     void advance()
     {
-        while (!m_elementIterator->hasNext() &&
-               (m_shrinkElement != m_collection.end()))
-        {
-            m_shrinkElement++;
-            if (m_shrinkElement == m_collection.end())
-                break;
-            m_elementIterator = m_factory(*m_shrinkElement);
+        while (m_shrinkElement != m_collection.end()) {
+            if (tryAdvance())
+                return;
         }
     }
 
+    bool tryAdvance()
+    {
+        detail::CollectionBuilder<Container> builder;
+        for (auto it = m_collection.begin(); it != m_collection.end(); it++)
+        {
+            if (it == m_shrinkElement) {
+                if (!m_elementIterator)
+                    m_elementIterator = m_factory(*it);
+
+                if (m_elementIterator->hasNext()) {
+                    if (!builder.add(m_elementIterator->next()))
+                        return false;
+                    else
+                        continue;
+                } else {
+                    m_elementIterator = nullptr;
+                    m_shrinkElement++;
+                }
+            }
+
+            if (!builder.add(*it))
+                return false;
+        }
+
+        m_next = std::move(builder.collection());
+        return true;
+    }
+
     Container m_collection;
+    Container m_next;
     IteratorFactory m_factory;
-    ElementIteratorT m_elementIterator;
+    IteratorUP<ElementT> m_elementIterator;
     typename Container::iterator m_shrinkElement;
 };
 
@@ -217,6 +233,45 @@ private:
     Mapper m_mapper;
 };
 
+template<typename T, typename Predicate>
+class Filter : public Iterator<T>
+{
+public:
+    Filter(IteratorUP<T> &&iterator, Predicate predicate)
+        : m_iterator(std::move(iterator))
+        , m_predicate(std::move(predicate))
+    { advance(); }
+
+    bool hasNext() const override { return bool(m_next); }
+
+    T next() override
+    {
+        T next(std::move(*m_next));
+        advance();
+        return std::move(next);
+    }
+
+private:
+    void advance()
+    {
+        while (m_iterator->hasNext()) {
+            if (m_next)
+                *m_next = m_iterator->next();
+            else
+                m_next = std::unique_ptr<T>(new T(m_iterator->next()));
+
+            if (m_predicate(*m_next))
+                return;
+        }
+
+        m_next = nullptr;
+    }
+
+    IteratorUP<T> m_iterator;
+    std::unique_ptr<T> m_next;
+    Predicate m_predicate;
+};
+
 template<typename IteratorUP, typename ...IteratorsUP>
 IteratorUP sequentially(IteratorUP &&iterator, IteratorsUP &&...iterators)
 {
@@ -281,6 +336,14 @@ IteratorUP<T> towards(T value, T target)
             T next = (value > target) ? (value - i) : (value + i);
             return std::make_pair(next, i / 2);
         });
+}
+
+template<typename T, typename Predicate>
+IteratorUP<T> filter(IteratorUP<T> &&iterator, Predicate predicate)
+{
+    return IteratorUP<T>(new Filter<T, Predicate>(
+                             std::move(iterator),
+                             std::move(predicate)));
 }
 
 } // namespace shrink

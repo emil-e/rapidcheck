@@ -95,6 +95,11 @@ IteratorUP<T> eachElement(T collection, IteratorFactory factory);
 template<typename T>
 IteratorUP<T> towards(T value, T target);
 
+//! Returns an iterator which wraps the given iterator but only yields the
+//! values for which the given predicate returns true.
+template<typename T, typename Predicate>
+IteratorUP<T> filter(IteratorUP<T> &&iterator, Predicate predicate);
+
 } // namespace shrink
 } // namespace rc
 

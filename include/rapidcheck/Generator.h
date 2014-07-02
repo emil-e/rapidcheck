@@ -114,7 +114,8 @@ template<typename T> class Positive;
 template<typename T> class Negative;
 template<typename T> class NonNegative;
 template<typename Container, typename Gen> class Collection;
-template<typename Gen> class Resized;
+template<typename Gen> class Resize;
+template<typename Gen> class Scale;
 template<typename Callable> class AnyInvocation;
 template<typename T> class Constant;
 template<typename Gen> class NoShrink;
@@ -192,7 +193,14 @@ Collection<Coll, Gen> collection(Gen gen);
 //!
 //! @param gen  The generator to wrap.
 template<typename Gen>
-Resized<Gen> resize(size_t size, Gen gen);
+Resize<Gen> resize(size_t size, Gen gen);
+
+//! Returns a version of the given generator that scales the generation size
+//! according to the given factory.
+//!
+//! @param gen  The generator to wrap.
+template<typename Gen>
+Scale<Gen> scale(double scale, Gen gen);
 
 //! Generates values by cwalling the given callable with randomly generated
 //! arguments.

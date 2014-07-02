@@ -127,5 +127,9 @@ template<typename T1, typename T2>
 struct IsCopyConstructible<std::pair<T1, T2>>
     : public IsCopyConstructible<std::tuple<T1, T2>> {};
 
+//! Convenience wrapper over std::decay
+template<typename T>
+using DecayT = typename std::decay<T>::type;
+
 } // namespace detail
 } // namespace rc

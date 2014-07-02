@@ -26,10 +26,6 @@ namespace detail {
 //! Demangles a mangled C++
 std::string demangle(const char *name);
 
-//! Convenience wrapper over std::decay
-template<typename T>
-using DecayT = typename std::decay<T>::type;
-
 //! Base case for `pushBackAll`
 template<typename Collection>
 void pushBackAll(Collection &collection)
