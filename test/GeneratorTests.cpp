@@ -428,3 +428,46 @@ TEST_CASE("gen::tupleOf") {
              RC_ASSERT(!it->hasNext());
          });
 }
+
+
+TEST_CASE("gen::pairOf") {
+    prop("uses the provided generators",
+         [] {
+             testEnv([] {
+                 auto pair = pick(gen::pairOf(gen::constant(1),
+                                               gen::constant(2)));
+                 RC_ASSERT(pair == std::make_pair(1, 2));
+             });
+         });
+
+    SECTION("works with non-copyable types") {
+        testEnv([] {
+            auto pair = pick(gen::pairOf(gen::arbitrary<MyNonCopyable>(),
+                                          gen::arbitrary<MyNonCopyable>()));
+            RC_ASSERT(pair.first.value == MyNonCopyable::genValue);
+            RC_ASSERT(pair.second.value == MyNonCopyable::genValue);
+        });
+    }
+
+    prop("shrinks one element at a time",
+         [] (const std::pair<int, int> &pair) {
+             auto it = gen::pairOf(gen::arbitrary<int>(),
+                                    gen::arbitrary<int>()).shrink(pair);
+
+             auto eit = gen::arbitrary<int>().shrink(pair.first);
+             while (eit->hasNext()) {
+                 RC_ASSERT(it->hasNext());
+                 auto expected = std::make_pair(eit->next(), pair.second);
+                 RC_ASSERT(it->next() == expected);
+             }
+
+             eit = gen::arbitrary<int>().shrink(pair.second);
+             while (eit->hasNext()) {
+                 RC_ASSERT(it->hasNext());
+                 auto expected = std::make_pair(pair.first, eit->next());
+                 RC_ASSERT(it->next() == expected);
+             }
+
+             RC_ASSERT(!it->hasNext());
+         });
+}

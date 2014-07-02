@@ -646,7 +646,7 @@ TupleOf<Gens...> tupleOf(Gens ...generators)
 { return TupleOf<Gens...>(std::move(generators)...); }
 
 template<typename Gen1, typename Gen2>
-PairOf<Gen1, Gen2> tupleOf(Gen1 generator1, Gen2 generator2)
+PairOf<Gen1, Gen2> pairOf(Gen1 generator1, Gen2 generator2)
 { return PairOf<Gen1, Gen2>(std::move(generator1), std::move(generator2)); }
 
 } // namespace gen
