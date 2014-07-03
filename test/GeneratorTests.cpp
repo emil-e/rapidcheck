@@ -208,7 +208,10 @@ struct NonCopyableCollectionTests
 };
 
 TEST_CASE("gen::collection") {
-    meta::forEachType<CollectionTests, RC_GENERIC_CONTAINERS(int)>();
+    meta::forEachType<CollectionTests,
+                      RC_GENERIC_CONTAINERS(int),
+                      std::string,
+                      std::wstring>();
     meta::forEachType<NonCopyableCollectionTests,
                       RC_GENERIC_CONTAINERS(MyNonCopyable)>();
 }

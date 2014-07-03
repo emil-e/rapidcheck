@@ -195,4 +195,11 @@ void show(const std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator> &valu
     showCollection("{", "}", value, os);
 }
 
+template<typename CharT, typename Traits, typename Allocator>
+void show(const std::basic_string<CharT, Traits, Allocator> &value,
+          std::ostream &os)
+{
+    showCollection("\"", "\"", value, os);
+}
+
 } // namespace rc

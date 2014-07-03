@@ -145,7 +145,10 @@ struct EachElementProperties
 };
 
 TEST_CASE("shrink::eachElement") {
-    meta::forEachType<EachElementProperties, RC_GENERIC_CONTAINERS(int)>();
+    meta::forEachType<EachElementProperties,
+                      RC_GENERIC_CONTAINERS(int),
+                      std::string,
+                      std::wstring>();
 }
 
 struct RemoveChunksProperties
@@ -211,7 +214,10 @@ struct RemoveChunksProperties
 };
 
 TEST_CASE("shrink::removeChunks") {
-    meta::forEachType<RemoveChunksProperties, RC_GENERIC_CONTAINERS(int)>();
+    meta::forEachType<RemoveChunksProperties,
+                      RC_GENERIC_CONTAINERS(int),
+                      std::string,
+                      std::wstring>();
 }
 
 struct ShrinkTowardsProperties
