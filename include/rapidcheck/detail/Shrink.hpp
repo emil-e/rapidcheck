@@ -4,6 +4,8 @@
 #include "CollectionBuilder.h"
 #include "Traits.h"
 
+#include <iostream>
+
 namespace rc {
 namespace shrink {
 
@@ -26,9 +28,10 @@ public:
 
     RemoveChunks(Container collection)
         : m_collection(std::move(collection))
+        , m_size(std::distance(begin(m_collection), end(m_collection)))
         , m_skipStart(0)
-        , m_skipSize(std::numeric_limits<SizeT>::max())
-        , m_maxStart(0) {}
+        , m_skipSize(m_size)
+    {}
 
     bool hasNext() const override
     { return m_skipSize != 0; }
@@ -43,13 +46,11 @@ public:
                 builder.add(element);
             i++;
         }
-        m_skipSize = std::min(i, m_skipSize);
 
         m_skipStart++;
-        if (m_skipStart >= m_maxStart) {
+        if (skipEnd >= m_size) {
             m_skipStart = 0;
             m_skipSize--;
-            m_maxStart++;
         }
 
         return std::move(builder.collection());
@@ -57,9 +58,9 @@ public:
 
 private:
     Container m_collection;
+    SizeT m_size;
     SizeT m_skipStart;
     SizeT m_skipSize;
-    SizeT m_maxStart;
 };
 
 template<typename Container, typename IteratorFactory>

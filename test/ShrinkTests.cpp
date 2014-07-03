@@ -194,10 +194,16 @@ struct RemoveChunksProperties
         templatedProp<T>(
             "every removal of consecutive elements is a possible shrink",
             [] {
-                auto elements = pick(fewSmallValues);
+                // TODO non-empty generator
+                auto elements = pick(
+                    gen::suchThat(
+                        fewSmallValues,
+                        [] (const T &x) {
+                            return std::distance(begin(x), end(x)) != 0;
+                        }));
                 auto size = containerSize(elements);
-                int begin = pick(gen::ranged<int>(0, size));
-                int end = pick(gen::ranged<int>(begin, size));
+                int begin = pick(gen::ranged<int>(0, size - 1));
+                int end = pick(gen::ranged<int>(begin + 1, size));
 
                 detail::CollectionBuilder<T> builder;
                 int i = 0;
@@ -209,6 +215,14 @@ struct RemoveChunksProperties
 
                 auto it = shrink::removeChunks(elements);
                 RC_ASSERT(hasShrink(it, builder.collection()));
+            });
+
+        templatedProp<T>(
+            "never yields the original value",
+            [] {
+                auto elements = pick(fewSmallValues);
+                auto it = shrink::removeChunks(elements);
+                RC_ASSERT(!hasShrink(it, elements));
             });
     }
 };
@@ -263,9 +277,9 @@ TEST_CASE("shrink::filter") {
          });
 
     prop("if the predicate always returns false, yields nothing",
-         [] (const std::vector<int> &shrinks) {
+         [] (const std::vector<std::string> &shrinks) {
              auto it = shrink::filter(shrink::constant(shrinks),
-                                      [] (int x) { return false; });
+                                      [] (const std::string &x) { return false; });
              RC_ASSERT(!it->hasNext());
          });
 
