@@ -44,7 +44,7 @@ struct TestParams
     //! The maximum number of successes before deciding a property passes.
     int maxSuccess = 100;
     //! The maximum size to generate.
-    size_t maxSize = 100;
+    int maxSize = 100;
     //! The maximum allowed number of discarded tests per successful test.
     int maxDiscardRatio = 10;
 };

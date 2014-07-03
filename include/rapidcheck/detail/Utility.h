@@ -79,7 +79,7 @@ struct TupleTailHelper<TupleT, Type, Types...>
 {
     static std::tuple<Type, Types...> tail(const TupleT &tuple)
     {
-        constexpr size_t tailHead =
+        constexpr std::size_t tailHead =
             std::tuple_size<TupleT>::value - (sizeof...(Types) + 1);
         return std::tuple_cat(
             std::make_tuple(std::get<tailHead>(tuple)),

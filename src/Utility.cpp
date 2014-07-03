@@ -10,7 +10,7 @@ std::string demangle(const char *name)
 {
     std::string demangled(name);
     int status;
-    size_t length;
+    std::size_t length;
     char *buf = abi::__cxa_demangle(name, NULL, &length, &status);
     if (status == 0)
         demangled = std::string(buf, length);

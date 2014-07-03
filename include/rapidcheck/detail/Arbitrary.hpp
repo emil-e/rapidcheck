@@ -19,7 +19,7 @@ public:
     {
         using namespace detail;
 
-        size_t size = std::min(gen::currentSize(), gen::kReferenceSize);
+        int size = std::min(gen::currentSize(), gen::kReferenceSize);
         RandomEngine::Atom r;
         // TODO this switching shouldn't be done here. pickAtom?
         ImplicitParam<param::CurrentNode> currentNode;

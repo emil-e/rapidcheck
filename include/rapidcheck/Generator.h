@@ -31,17 +31,17 @@ namespace gen {
 //! @param sz         The size to sample.
 //! @param generator  The generator.
 template<typename Gen>
-void sample(size_t sz, Gen generator);
+void sample(int sz, Gen generator);
 
 //! Returns the current size that is being generated.
-size_t currentSize();
+int currentSize();
 
 //! The reference size. This is not a max limit on the generator size parameter
 //! but serves as a guideline. In general, genenerators for which there is a
 //! natural limit which is not too expensive to generate should max out at this.
 //! This applies to, for example, generation of numbers but not to the
 //! of collection where there is an associate cost to generating large sizes.
-constexpr size_t kReferenceSize = 100;
+constexpr int kReferenceSize = 100;
 
 //! Describes a value and its type.
 class ValueDescription
@@ -193,7 +193,7 @@ Collection<Coll, Gen> collection(Gen gen);
 //!
 //! @param gen  The generator to wrap.
 template<typename Gen>
-Resize<Gen> resize(size_t size, Gen gen);
+Resize<Gen> resize(int size, Gen gen);
 
 //! Returns a version of the given generator that scales the generation size
 //! according to the given factory.

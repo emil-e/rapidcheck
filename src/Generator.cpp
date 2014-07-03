@@ -3,7 +3,7 @@
 namespace rc {
 namespace gen {
 
-size_t currentSize()
+int currentSize()
 {
     return *detail::ImplicitParam<detail::param::Size>();
 }

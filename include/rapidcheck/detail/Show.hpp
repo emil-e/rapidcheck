@@ -13,7 +13,7 @@ template<typename TupleT,
          std::size_t I = std::tuple_size<TupleT>::value>
 struct TupleHelper;
 
-template<size_t I>
+template<std::size_t I>
 struct TupleHelper<std::tuple<>, I>
 {
     static void showTuple(const std::tuple<> &tuple, std::ostream &os) {}

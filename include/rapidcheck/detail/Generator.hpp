@@ -36,7 +36,7 @@ T pick()
 namespace gen {
 
 template<typename Gen>
-void sample(size_t sz, Gen generator)
+void sample(int sz, Gen generator)
 {
     using namespace detail;
 
@@ -87,7 +87,7 @@ public:
 
     typename Gen::GeneratedType generate() const override
     {
-        size_t size = currentSize();
+        int size = currentSize();
         while (true) { // TODO give up sometime
             auto x(pick(noShrink(resize(size, m_generator))));
             if (m_predicate(x))
@@ -128,7 +128,7 @@ template<typename Gen>
 class Resize : public Generator<typename Gen::GeneratedType>
 {
 public:
-    Resize(size_t size, Gen generator)
+    Resize(int size, Gen generator)
         : m_size(size), m_generator(std::move(generator)) {}
 
     typename Gen::GeneratedType generate() const override
@@ -143,7 +143,7 @@ public:
     { return m_generator.shrink(value); }
 
 private:
-    size_t m_size;
+    int m_size;
     Gen m_generator;
 };
 
@@ -598,7 +598,7 @@ Collection<Coll, Gen> collection(Gen gen)
 { return Collection<Coll, Gen>(std::move(gen)); }
 
 template<typename Gen>
-Resize<Gen> resize(size_t size, Gen gen)
+Resize<Gen> resize(int size, Gen gen)
 { return Resize<Gen>(size, std::move(gen)); }
 
 template<typename Gen>

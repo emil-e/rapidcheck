@@ -9,7 +9,7 @@ class RoseNode;
 namespace param {
 
 //! The current generation size.
-struct Size { typedef size_t ValueType; };
+struct Size { typedef int ValueType; };
 
 //! Disable shrinking for generators in scope.
 struct NoShrink { typedef int ValueType; };

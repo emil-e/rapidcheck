@@ -4,9 +4,6 @@
 #include "CollectionBuilder.h"
 #include "Traits.h"
 
-#include "rapidcheck/Show.h"
-#include <iostream>
-
 namespace rc {
 namespace shrink {
 

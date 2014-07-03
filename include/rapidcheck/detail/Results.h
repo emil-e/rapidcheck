@@ -15,7 +15,7 @@ struct TestCase
     //! The test case index.
     int index = 0;
     //! The used size.
-    size_t size = 0;
+    int size = 0;
     //! The used seed.
     RandomEngine::Atom seed = 0;
 };
