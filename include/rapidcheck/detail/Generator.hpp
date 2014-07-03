@@ -23,7 +23,7 @@ typename Gen::GeneratedType pick(Gen generator)
         return (*currentNode)->pick(
             makeGeneratorUP(std::move(generator)));
     } else {
-        return generator();
+        return generator.generate();
     }
 }
 
@@ -68,7 +68,7 @@ const std::type_info &Generator<T>::generatedTypeInfo() const
 template<typename T>
 ValueDescription Generator<T>::generateDescription() const
 {
-    return ValueDescription((*this)());
+    return ValueDescription(generate());
 }
 
 template<typename T>
@@ -85,7 +85,7 @@ public:
         : m_generator(std::move(generator))
         , m_predicate(std::move(predicate)) {}
 
-    typename Gen::GeneratedType operator()() const override
+    typename Gen::GeneratedType generate() const override
     {
         size_t size = currentSize();
         while (true) { // TODO give up sometime
@@ -108,7 +108,7 @@ class Ranged : public Generator<T>
 public:
     Ranged(T min, T max) : m_min(min), m_max(max) {}
 
-    T operator()() const override
+    T generate() const override
     {
         assert(m_max >= m_min);
         if (m_max == m_min)
@@ -131,11 +131,11 @@ public:
     Resize(size_t size, Gen generator)
         : m_size(size), m_generator(std::move(generator)) {}
 
-    typename Gen::GeneratedType operator()() const override
+    typename Gen::GeneratedType generate() const override
     {
         detail::ImplicitParam<detail::param::Size> size;
         size.let(m_size);
-        return m_generator();
+        return m_generator.generate();
     }
 
     shrink::IteratorUP<typename Gen::GeneratedType>
@@ -155,11 +155,11 @@ public:
     Scale(double scale, Gen generator)
         : m_scale(scale), m_generator(std::move(generator)) {}
 
-    typename Gen::GeneratedType operator()() const override
+    typename Gen::GeneratedType generate() const override
     {
         detail::ImplicitParam<detail::param::Size> size;
         size.let(*size * m_scale);
-        return m_generator();
+        return m_generator.generate();
     }
 
     shrink::IteratorUP<typename Gen::GeneratedType>
@@ -235,7 +235,7 @@ class OneOf : public Generator<typename Multiplexer<Gens...>::GeneratedType>
 public:
     OneOf(Gens... generators) : m_multiplexer(std::move(generators)...) {}
 
-    typename Multiplexer<Gens...>::GeneratedType operator()() const override
+    typename Multiplexer<Gens...>::GeneratedType generate() const override
     {
         int n = Multiplexer<Gens...>::numGenerators;
         auto id = pick(resize(kReferenceSize, ranged<int>(0, n)));
@@ -252,7 +252,7 @@ private:
     class GeneratorName : public Generator<T>                           \
     {                                                                   \
     public:                                                             \
-        T operator()() const                                            \
+        T generate() const                                            \
         { return pick(suchThat<T>([](T x) { return (predicate); })); }  \
     };
 
@@ -270,7 +270,7 @@ public:
     explicit Collection(Gen generator)
         : m_generator(std::move(generator)) {}
 
-    Container operator()() const override
+    Container generate() const override
     {
         auto length = pick(ranged<typename Container::size_type>(0, currentSize() + 1));
         detail::CollectionBuilder<Container> builder;
@@ -313,7 +313,7 @@ public:
         : m_quantifier(std::move(callable)) {}
 
     typename detail::Quantifier<Callable>::ReturnType
-    operator()() const override
+    generate() const override
     { return m_quantifier(); }
 
 private:
@@ -325,7 +325,7 @@ class Constant : public Generator<T>
 {
 public:
     explicit Constant(T value) : m_value(std::move(value)) {}
-    T operator()() const override { return m_value; }
+    T generate() const override { return m_value; }
 
 private:
     T m_value;
@@ -336,7 +336,7 @@ class NoShrink : public Generator<typename Gen::GeneratedType>
 {
 public:
     explicit NoShrink(Gen generator) : m_generator(std::move(generator)) {}
-    typename Gen::GeneratedType operator()() const override
+    typename Gen::GeneratedType generate() const override
     {
         detail::ImplicitParam<detail::param::NoShrink> noShrink;
         noShrink.let(true);
@@ -359,7 +359,7 @@ public:
         : m_generator(std::move(generator))
         , m_mapper(std::move(mapper)) {}
 
-    T operator()() const override { return m_mapper(pick(m_generator)); }
+    T generate() const override { return m_mapper(pick(m_generator)); }
 
 private:
     Gen m_generator;
@@ -370,7 +370,7 @@ template<typename T>
 class Character : public Generator<T>
 {
 public:
-    T operator()() const override
+    T generate() const override
     {
         return pick(oneOf(map(ranged<uint8_t>(1, 128),
                               [](uint8_t x) { return static_cast<T>(x); }),
@@ -415,10 +415,10 @@ public:
     Rescue(Gen generator, Catcher catcher)
         : m_generator(generator), m_catcher(catcher) {}
 
-    typename Gen::GeneratedType operator()() const override
+    typename Gen::GeneratedType generate() const override
     {
         try {
-            return m_generator();
+            return m_generator.generate();
         } catch (const Exception &e) {
             return m_catcher(e);
         }
@@ -436,7 +436,7 @@ public:
     explicit Lambda(Callable callable) : m_callable(std::move(callable)) {}
 
     typename std::result_of<Callable()>::type
-    operator()() const override { return m_callable(); }
+    generate() const override { return m_callable(); }
 
 private:
     Callable m_callable;
@@ -449,7 +449,7 @@ template<>
 class TupleOf<> : public Generator<std::tuple<>>
 {
 public:
-    std::tuple<> operator()() const override { return std::tuple<>(); }
+    std::tuple<> generate() const override { return std::tuple<>(); }
 };
 
 #define IMPLEMENT_CONDITIONAL
@@ -469,7 +469,7 @@ public:
         : m_headGenerator(std::move(headGenerator))
         , m_tailGenerator(std::move(tailGenerators)...) {}
 
-    TupleT operator()() const override
+    TupleT generate() const override
     {
         return std::tuple_cat(
             std::tuple<typename Gen::GeneratedType>(pick(m_headGenerator)),
@@ -521,9 +521,9 @@ public:
         : m_generator(std::move(generator1),
                       std::move(generator2)) {}
 
-    PairT operator()() const override
+    PairT generate() const override
     {
-        auto x = m_generator();
+        auto x = m_generator.generate();
         return PairT(std::move(std::get<0>(x)),
                      std::move(std::get<1>(x)));
     }

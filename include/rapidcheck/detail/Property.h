@@ -15,7 +15,7 @@ class Property : public gen::Generator<CaseResult>
 public:
     explicit Property(Testable testable);
 
-    CaseResult operator()() const override;
+    CaseResult generate() const override;
 private:
 
     Quantifier<Testable> m_quantifier;

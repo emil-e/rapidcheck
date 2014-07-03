@@ -232,7 +232,7 @@ template<>
 class Arbitrary<MyIncInt> : public gen::Generator<MyIncInt>
 {
 public:
-    MyIncInt operator()() const override
+    MyIncInt generate() const override
     { return MyIncInt { m_value++ }; }
 
 private:
@@ -250,7 +250,7 @@ template<>
 class Arbitrary<MyConstInt> : public gen::Generator<MyConstInt>
 {
 public:
-    MyConstInt operator()() const override
+    MyConstInt generate() const override
     { return MyConstInt { 1337 }; }
 };
 

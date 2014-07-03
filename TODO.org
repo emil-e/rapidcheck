@@ -6,7 +6,6 @@
 * TODO Move private stuff in public header files to detail headers?
 * TODO What should be the valid return types for properties
 * TODO Discard test if suchThat never generates
-* TODO Unsure if generation method should really be operator()
 * TODO Use different seeds when generating
 * TODO Generate element from a collection
 * TODO Shrink nonZero, negative, positive and nonNegative
@@ -17,7 +16,6 @@
 * TODO Better size calculation
 * TODO Test non-copyables
 * TODO suchThat, map, and other generators should have shrink()
-* TODO Replace pick with operator T()
 * TODO Create GeneratedT<T> typedef to clean up some code
 * TODO Static tests for
 * TODO Fixed size collection generation

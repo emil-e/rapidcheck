@@ -44,7 +44,7 @@ T RoseNode::generateWith(const gen::Generator<T> &generator)
     currentNode.let(this);
     ImplicitParam<NextChildIndex> nextChildIndex;
     nextChildIndex.let(0);
-    return generator();
+    return generator.generate();
 }
 
 

@@ -92,7 +92,7 @@ public:
     typedef T GeneratedType;
 
     //! Generates a value.
-    virtual T operator()() const = 0;
+    virtual T generate() const = 0;
 
     //! Returns a \c ShrinkIterator which yields the possible shrinks for the
     //! given value. The default impelemtation returns a \c NullIterator.

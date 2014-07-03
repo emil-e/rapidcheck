@@ -34,7 +34,7 @@ Property<Testable>::Property(Testable testable)
         : m_quantifier(std::move(testable)) {}
 
 template<typename Testable>
-CaseResult Property<Testable>::operator()() const
+CaseResult Property<Testable>::generate() const
 {
     try {
         return CaseResultHelper<decltype(m_quantifier)>::resultOf(m_quantifier);

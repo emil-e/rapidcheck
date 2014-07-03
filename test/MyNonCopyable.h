@@ -24,7 +24,7 @@ template<>
 class Arbitrary<MyNonCopyable> : public gen::Generator<MyNonCopyable>
 {
 public:
-    MyNonCopyable operator()() const override
+    MyNonCopyable generate() const override
     {
         MyNonCopyable x;
         x.value = MyNonCopyable::genValue;

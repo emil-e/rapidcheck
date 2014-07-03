@@ -65,7 +65,7 @@ TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
 
         CaseResult result = withTestCase(
             currentCase,
-            [&]{ return (*property)(); });
+            [&]{ return property->generate(); });
 
         if (result.type() == CaseResult::Type::Failure) {
             return shrinkFailingCase(property, currentCase);

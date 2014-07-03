@@ -15,7 +15,7 @@ public:
     static_assert(std::is_integral<T>::value,
                   "No specialization of Arbitrary for type");
 
-    T operator()() const override
+    T generate() const override
     {
         using namespace detail;
 
@@ -69,7 +69,7 @@ template<typename T>
 class ArbitraryReal : public gen::Generator<T>
 {
 public:
-    T operator()() const override
+    T generate() const override
     {
         int64_t i = pick(gen::arbitrary<int64_t>());
         T x = static_cast<T>(i) / std::numeric_limits<int64_t>::max();
@@ -101,7 +101,7 @@ template<>
 class Arbitrary<bool> : public gen::Generator<bool>
 {
 public:
-    bool operator()() const override
+    bool generate() const override
     {
         return (pick(gen::resize(gen::kReferenceSize,
                                  gen::arbitrary<uint8_t>())) & 0x1) == 0;
