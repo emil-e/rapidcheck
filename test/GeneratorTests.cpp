@@ -218,7 +218,8 @@ TEST_CASE("gen::collection") {
 
 TEST_CASE("gen::resize") {
     prop("changes the generation size",
-         [] (size_t size) {
+         [] {
+             auto size = pick(gen::positive<int>());
              auto generator =
                  gen::resize(size, gen::lambda([] { return gen::currentSize(); }));
              testEnv([&] { RC_ASSERT(pick(generator) == size); });
