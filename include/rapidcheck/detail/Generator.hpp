@@ -21,7 +21,8 @@ typename Gen::GeneratedType pick(Gen generator)
     // TODO ugly switching on hasBinding AND nullptr
     if (currentNode.hasBinding() && (*currentNode != nullptr)) {
         return (*currentNode)->pick(
-            makeGeneratorUP(std::move(generator)));
+            gen::GeneratorUP<typename Gen::GeneratedType>(
+                new Gen(std::move(generator))));
     } else {
         return generator.generate();
     }
@@ -633,13 +634,6 @@ Constant<T> constant(T value) { return Constant<T>(std::move(value)); }
 template<typename Callable>
 Lambda<Callable> lambda(Callable callable)
 { return Lambda<Callable>(std::move(callable)); }
-
-template<typename Gen>
-GeneratorUP<typename Gen::GeneratedType> makeGeneratorUP(Gen generator)
-{
-    return GeneratorUP<typename Gen::GeneratedType>(
-        new Gen(std::move(generator)));
-}
 
 template<typename ...Gens>
 TupleOf<Gens...> tupleOf(Gens ...generators)

@@ -23,18 +23,31 @@ auto withTestCase(const TestCase &testCase, Callable callable)
 }
 
 
-TestResult shrinkFailingCase(const gen::GeneratorUP<CaseResult> &property,
+TestResult shrinkFailingCase(gen::GeneratorUP<CaseResult> &&property,
                              const TestCase &testCase)
 {
     return withTestCase(testCase, [&]{
         RoseNode rootNode;
+        rootNode.setGenerator(std::move(property));
+
         FailureResult result;
         result.failingCase = testCase;
-        auto shrinkResult = rootNode.shrink(*property);
-        result.description = std::get<0>(shrinkResult).description();
-        result.numShrinks = std::get<1>(shrinkResult);
-        result.counterExample = rootNode.example();
-        return result;
+        result.numShrinks = 0;
+
+        bool didShrink = true;
+        while (true) {
+            CaseResult shrinkResult(rootNode.nextShrink<CaseResult>(didShrink));
+            if (didShrink) {
+                if (shrinkResult.type() == CaseResult::Type::Failure) {
+                    rootNode.acceptShrink();
+                    result.numShrinks++;
+                }
+            } else {
+                result.description = shrinkResult.description();
+                result.counterExample = rootNode.example();
+                return result;
+            }
+        }
     });
 }
 
@@ -49,7 +62,7 @@ struct TestParams
     int maxDiscardRatio = 10;
 };
 
-TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
+TestResult checkProperty(gen::GeneratorUP<CaseResult> &&property)
 {
     using namespace detail;
     TestParams params;
@@ -68,7 +81,7 @@ TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property)
             [&]{ return property->generate(); });
 
         if (result.type() == CaseResult::Type::Failure) {
-            return shrinkFailingCase(property, currentCase);
+            return shrinkFailingCase(std::move(property), currentCase);
         } else if(result.type() == CaseResult::Type::Discard) {
             numDiscarded++;
             if (numDiscarded > maxDiscard)

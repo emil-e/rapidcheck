@@ -28,28 +28,43 @@ private:
 class RoseNode
 {
 public:
-    //! Constructs a new root `RoseNode`.
-    RoseNode();
+    RoseNode(RoseNode *parent = nullptr);
+
+    //! Picks a value using the given generator in the context of this
+    //! `RoseNode`.
+    template<typename T>
+    T pick(gen::GeneratorUP<T> &&generator);
+
+    //! Generates a value in the context of this node using the given generator.
+    template<typename T>
+    void setGenerator(gen::GeneratorUP<T> &&generator);
+
+    //! Returns the current value which may be be generated or fixed.
+    template<typename T>
+    T currentValue();
+
+    //! Returns the current value which may be be generated or fixed.
+    gen::ValueDescription currentDescription();
+
+    //! Returns the next shrink of this `RoseNode`.
+    //!
+    //! @param didShrink  Set to `true` if there was another shrink or `false`
+    //!                   if exhausted.
+    //!
+    //! @return  The shrunk value.
+    template<typename T>
+    T nextShrink(bool &didShrink);
+
+    //! Accepts the current shrink.
+    void acceptShrink();
 
     //! Returns an atom. If one has already been generated, it's reused. If not,
     //! a new one is generated.
     RandomEngine::Atom atom();
 
-    //! Outputs the tree structure to the given output stream for debugging.
-    void print(std::ostream &os);
-
-    //! Returns a list of `ValueDescription`s from the immediate children of
-    //! this node.
+    //! Returns a vector of `ValueDescription`s describing the current values of
+    //! the direct children.
     std::vector<gen::ValueDescription> example();
-
-    //! Regenerates a string representation of the value of this node or an
-    //! empty if one hasn't been decided.
-    gen::ValueDescription regenerateDescription();
-
-    //! Returns true if this node is frozen. If a node is frozen, the generator
-    //! passed to `generate` will only be used to infer the type, the actual
-    //! value will come from shrinking or similar.
-    bool isFrozen() const;
 
     //! Move constructor.
     RoseNode(RoseNode &&other);
@@ -57,95 +72,46 @@ public:
     //! Move assignment
     RoseNode &operator=(RoseNode &&rhs);
 
-    //! Picks a value using the given generator in the context of the current
-    //! node.
-    template<typename T>
-    T pick(gen::GeneratorUP<T> &&generator);
-
-    //! First generates using the given generator and then tries to shrink the
-    //! while maintaining the same value.
-    //!
-    //! @param generator  The generator to shrink.
-    //!
-    //! @return a tuple of the shrunk value and the successful number of shrinks
-    //!
-    //! TODO perhaps return something better than a tuple?
-    template<typename T>
-    std::tuple<T, int> shrink(const gen::Generator<T> &generator);
-
 private:
     RC_DISABLE_COPY(RoseNode)
 
-    // Implicit parameters, see ImplicitParam
-    struct NextChildIndex { typedef size_t ValueType; };
-    struct ShrunkNode { typedef RoseNode *ValueType; };
+    template<typename T>
+    T nextShrink(bool &didShrink, std::true_type);
 
-    //! Constructs a new `RoseNode` with the given parent or `0` if it should
-    //! have no parent, i.e. is root.
-    explicit RoseNode(RoseNode *parent);
+    template<typename T>
+    T nextShrink(bool &didShrink, std::false_type);
 
-    //! Returns the depth of this node.
-    int depth() const;
+    template<typename T>
+    T nextShrinkChildren(bool &didShrink);
 
-    //! Sets the parent of all children to this node.
+    gen::UntypedGenerator *currentGenerator() const;
+
+    template<typename T>
+    static gen::Generator<T> *generatorCast(gen::UntypedGenerator *gen);
+
+    template<typename T>
+    static shrink::Iterator<T> *iteratorCast(
+        const shrink::UntypedIteratorUP &it);
+
     void adoptChildren();
 
-    //! Returns a description of this node.
-    std::string description() const;
+    std::string debugDescription() const;
+    std::string debugPath() const;
+    std::string debugIndexPath() const;
+    int depth() const;
+    int index() const;
 
-    //! Returns the index of this node among its sibilings. Returns `-1` if
-    //! node is root.
-    std::ptrdiff_t index() const;
-
-    //! Returns a string describing the path to this node from the root node.
-    std::string path();
-
-    //! Returns the active generator.
-    gen::UntypedGenerator *activeGenerator() const;
-
-    //! Returns the name of the active generator
-    std::string generatorName() const;
-
-    //! Accepts the current shrink value
-    void acceptShrink();
-
-    //! Returns the active generator cast to a generator of the given type or
-    //! `default` if there is none or if there is a type mismatch.
-    template<typename T>
-    T regenerate();
-
-    //! Generates a value in this node using the given generator.
-    template<typename T>
-    T generate(gen::GeneratorUP<T> &&generator);
-
-    template<typename T>
-    T doGenerate(gen::GeneratorUP<T> &&generator, std::true_type);
-
-    template<typename T>
-    T doGenerate(gen::GeneratorUP<T> &&generator, std::false_type);
-
-    template<typename T>
-    T generateWith(const gen::Generator<T> &generator);
-
-    template<typename T>
-    static const gen::Generator<T> *generatorCast(
-        const gen::UntypedGenerator *gen);
-
-    typedef std::vector<RoseNode> Children;
     RoseNode *m_parent;
-    Children m_children;
+    std::vector<RoseNode> m_children;
+    std::size_t m_nextChild = 0;
+    std::size_t m_shrinkChildren = 0;
+
     bool m_hasAtom = false;
     RandomEngine::Atom m_atom;
     shrink::UntypedIteratorUP m_shrinkIterator;
-
-    // The generator that was used to generate the original value, before
-    // shrinking
-    gen::UntypedGeneratorUP m_originalGenerator;
-    // When a shrunk value is accepted as a valid shrink, a generator for that
-    // value is saved here
-    gen::UntypedGeneratorUP m_acceptedGenerator;
-    // Any temporary values (e.g. when shrinking) are saved as generators here
+    gen::UntypedGeneratorUP m_canonicalGenerator;
     gen::UntypedGeneratorUP m_currentGenerator;
+    gen::UntypedGeneratorUP m_acceptedGenerator;
 };
 
 } // namespace detail

@@ -20,7 +20,7 @@ namespace rc {
 namespace detail {
 
 //! Checks the given property and returns the results.
-TestResult checkProperty(const gen::GeneratorUP<CaseResult> &property);
+TestResult checkProperty(gen::GeneratorUP<CaseResult> &&property);
 
 //! Throws a result of the given type if `condition` is false.
 //!

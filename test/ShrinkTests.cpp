@@ -281,6 +281,9 @@ TEST_CASE("shrink::filter") {
              auto it = shrink::filter(shrink::constant(shrinks),
                                       [] (const std::string &x) { return false; });
              RC_ASSERT(!it->hasNext());
+
+             std::set<std::string> set(begin(shrinks), end(shrinks));
+             return set.size() == shrinks.size();
          });
 
     prop("never returns an item which does not satisfy the predicate",

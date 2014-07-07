@@ -13,7 +13,32 @@ UnexpectedType::UnexpectedType(const std::type_info &expected,
     , m_expected(expected)
     , m_actual(actual) {}
 
-RoseNode::RoseNode() : RoseNode(nullptr) {}
+RoseNode::RoseNode(RoseNode *parent)
+    : m_parent(parent) {}
+
+gen::ValueDescription RoseNode::currentDescription()
+{
+    ImplicitParam<param::CurrentNode> currentNode;
+    currentNode.let(this);
+    return currentGenerator()->generateDescription();
+}
+
+void RoseNode::acceptShrink()
+{
+    if (m_shrinkIterator) {
+        m_shrinkIterator = nullptr;
+        m_acceptedGenerator = std::move(m_currentGenerator);
+
+        // Since we accepted a shrink value from the iterator, the values of the
+        // children no longer have any relation to this value won't even be used
+        // so we might as well get rid of them.
+        m_children.clear();
+    } else {
+        int i = m_shrinkChildren - 1;
+        assert(i <= m_children.size());
+        m_children[i].acceptShrink();
+    }
+}
 
 RandomEngine::Atom RoseNode::atom()
 {
@@ -26,54 +51,25 @@ RandomEngine::Atom RoseNode::atom()
     return m_atom;
 }
 
-void RoseNode::print(std::ostream &os)
-{
-    for (int i = 0; i < depth(); i++)
-        os << "  ";
-    os << "- " << description() << std::endl;
-
-    for (auto &child : m_children)
-        child.print(os);
-}
-
 std::vector<gen::ValueDescription> RoseNode::example()
 {
-    // TODO we should capture values during generation instead, somehow...
-    std::vector<gen::ValueDescription> values;
-    values.reserve(m_children.size());
+    std::vector<gen::ValueDescription> example;
     for (auto &child : m_children)
-        values.push_back(child.regenerateDescription());
-    return values;
-}
-
-gen::ValueDescription RoseNode::regenerateDescription()
-{
-    ImplicitParam<param::CurrentNode> currentNode;
-    currentNode.let(this);
-    ImplicitParam<NextChildIndex> nextChildIndex;
-    nextChildIndex.let(0);
-
-    gen::UntypedGenerator *generator = activeGenerator();
-    if (generator != nullptr)
-        return generator->generateDescription();
-    else
-        return gen::ValueDescription();
-}
-
-bool RoseNode::isFrozen() const
-{
-    return bool(m_acceptedGenerator);
+        example.push_back(child.currentDescription());
+    return example;
 }
 
 RoseNode::RoseNode(RoseNode &&other)
     : m_parent(other.m_parent)
     , m_children(std::move(other.m_children))
+    , m_shrinkChildren(std::move(other.m_shrinkChildren))
+    , m_nextChild(other.m_nextChild)
     , m_hasAtom(other.m_hasAtom)
     , m_atom(other.m_atom)
     , m_shrinkIterator(std::move(other.m_shrinkIterator))
-    , m_originalGenerator(std::move(other.m_originalGenerator))
-    , m_acceptedGenerator(std::move(other.m_acceptedGenerator))
+    , m_canonicalGenerator(std::move(other.m_canonicalGenerator))
     , m_currentGenerator(std::move(other.m_currentGenerator))
+    , m_acceptedGenerator(std::move(other.m_acceptedGenerator))
 {
     adoptChildren();
 }
@@ -82,24 +78,67 @@ RoseNode &RoseNode::operator=(RoseNode &&rhs)
 {
     m_parent = rhs.m_parent;
     m_children = std::move(rhs.m_children);
+    m_shrinkChildren = std::move(rhs.m_shrinkChildren);
+    m_nextChild = rhs.m_nextChild;
     m_hasAtom = rhs.m_hasAtom;
     m_atom = rhs.m_atom;
     m_shrinkIterator = std::move(rhs.m_shrinkIterator);
-    m_originalGenerator = std::move(rhs.m_originalGenerator);
-    m_acceptedGenerator = std::move(rhs.m_acceptedGenerator);
+    m_canonicalGenerator = std::move(rhs.m_canonicalGenerator);
     m_currentGenerator = std::move(rhs.m_currentGenerator);
+    m_acceptedGenerator = std::move(rhs.m_acceptedGenerator);
     adoptChildren();
     return *this;
 }
 
-RoseNode::RoseNode(RoseNode *parent) : m_parent(parent) {}
+std::string RoseNode::debugDescription() const
+{
+    auto generator = currentGenerator();
+    std::string desc;
+    if (generator == nullptr)
+        desc += "<null>";
+    else
+        desc += demangle(typeid(*generator).name());
+    desc += "[" + std::to_string(index()) + "]";
+    return desc;
+}
+
+std::string RoseNode::debugPath() const
+{
+    if (m_parent == nullptr)
+        return "/";
+    else
+        return m_parent->debugPath() + " " + debugDescription() + " /";
+}
+
+std::string RoseNode::debugIndexPath() const
+{
+    if (m_parent == nullptr)
+        return "/";
+    else
+        return m_parent->debugIndexPath() + std::to_string(index()) + "/";
+}
 
 int RoseNode::depth() const
 {
     if (m_parent == nullptr)
         return 0;
+    else
+        return m_parent->depth() + 1;
+}
 
-    return m_parent->depth() + 1;
+int RoseNode::index() const
+{
+    if (m_parent == nullptr) {
+        return 0;
+    } else {
+        auto &parentChildren = m_parent->m_children;
+        auto it = std::find_if(
+            parentChildren.begin(), parentChildren.end(),
+            [this] (const RoseNode &n) {
+                return &n == this;
+            });
+        return it - parentChildren.begin();
+    }
 }
 
 void RoseNode::adoptChildren()
@@ -108,63 +147,14 @@ void RoseNode::adoptChildren()
         child.m_parent = this;
 }
 
-std::string RoseNode::description() const
-{
-    std::string desc(generatorName());
-    if (m_parent != nullptr)
-        desc += "[" + std::to_string(index()) + "]";
-    return desc;
-}
-
-std::ptrdiff_t RoseNode::index() const
-{
-    if (m_parent == nullptr)
-        return -1;
-
-    auto &siblings = m_parent->m_children;
-    auto it = std::find_if(
-        siblings.begin(),
-        siblings.end(),
-        [this](const RoseNode &node){ return &node == this; });
-
-    return it - siblings.begin();
-}
-
-std::string RoseNode::path()
-{
-    if (m_parent == nullptr)
-        return "/ " + description() + "\n";
-    else
-        return m_parent->path() + "/ " + description() + "\n";
-}
-
-gen::UntypedGenerator *RoseNode::activeGenerator() const
+gen::UntypedGenerator *RoseNode::currentGenerator() const
 {
     if (m_currentGenerator)
         return m_currentGenerator.get();
     else if (m_acceptedGenerator)
         return m_acceptedGenerator.get();
-    else if (m_originalGenerator)
-        return m_originalGenerator.get();
     else
-        return nullptr;
-}
-
-std::string RoseNode::generatorName() const
-{
-    auto gen = activeGenerator();
-    if (gen == nullptr)
-        return std::string();
-    else
-        return demangle(typeid(*gen).name());
-}
-
-void RoseNode::acceptShrink()
-{
-    if (!m_currentGenerator)
-        return;
-    m_acceptedGenerator = std::move(m_currentGenerator);
-    m_shrinkIterator = nullptr;
+        return m_canonicalGenerator.get();
 }
 
 } // namespace detail
