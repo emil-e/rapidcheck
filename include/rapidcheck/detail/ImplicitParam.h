@@ -37,24 +37,16 @@ public:
         m_isBinding = true;
     }
 
-    //! Checks whether this implicit parameter has a binding.
-    bool hasBinding() const
-    {
-        return !values().empty();
-    }
-
     //! Returns a reference to the bound value. The value can be changed
     //! without introducing a new binding.
     ValueType &operator*()
     {
-        assert(hasBinding());
         return values().top();
     }
 
     //! Returns a const reference to the bound value.
     const ValueType &operator*() const
     {
-        assert(hasBinding());
         return values().top();
     }
 
@@ -82,6 +74,8 @@ private:
     {
         // TODO needs thread local
         static StackT valueStack;
+        if (valueStack.empty())
+            valueStack.push(Param::defaultValue());
         return valueStack;
     }
 

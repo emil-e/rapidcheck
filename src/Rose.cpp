@@ -44,7 +44,7 @@ RandomEngine::Atom RoseNode::atom()
 {
     if (!m_hasAtom) {
         ImplicitParam<param::RandomEngine> randomEngine;
-        m_atom = randomEngine->nextAtom();
+        m_atom = (*randomEngine)->nextAtom();
         m_hasAtom = true;
     }
 

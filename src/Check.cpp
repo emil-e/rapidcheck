@@ -12,8 +12,9 @@ auto withTestCase(const TestCase &testCase, Callable callable)
     -> decltype(callable())
 {
     ImplicitParam<param::RandomEngine> randomEngine;
-    randomEngine.let(RandomEngine());
-    randomEngine->seed(testCase.seed);
+    RandomEngine engine;
+    engine.seed(testCase.seed);
+    randomEngine.let(&engine);
     ImplicitParam<param::Size> size;
     size.let(testCase.size);
     ImplicitParam<param::NoShrink> noShrink;

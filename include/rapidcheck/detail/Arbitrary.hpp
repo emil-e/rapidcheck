@@ -23,11 +23,11 @@ public:
         RandomEngine::Atom r;
         // TODO this switching shouldn't be done here. pickAtom?
         ImplicitParam<param::CurrentNode> currentNode;
-        if (currentNode.hasBinding() && (*currentNode != nullptr)) {
+        if (*currentNode != nullptr) {
             r = (*currentNode)->atom();
         } else {
             ImplicitParam<param::RandomEngine> randomEngine;
-            r = randomEngine->nextAtom();
+            r = (*randomEngine)->nextAtom();
         }
 
         // We vary the size by using different number of bits. This way, we can be

@@ -18,8 +18,7 @@ template<typename Gen>
 typename Gen::GeneratedType pick(Gen generator)
 {
     detail::ImplicitParam<detail::param::CurrentNode> currentNode;
-    // TODO ugly switching on hasBinding AND nullptr
-    if (currentNode.hasBinding() && (*currentNode != nullptr)) {
+    if (*currentNode != nullptr) {
         return (*currentNode)->pick(
             gen::GeneratorUP<typename Gen::GeneratedType>(
                 new Gen(std::move(generator))));
@@ -45,7 +44,8 @@ void sample(int sz, Gen generator)
     size.let(sz);
 
     ImplicitParam<param::RandomEngine> randomEngine;
-    randomEngine.let(RandomEngine());
+    RandomEngine engine;
+    randomEngine.let(&engine);
 
     show(generator(), std::cout);
     std::cout << std::endl;
