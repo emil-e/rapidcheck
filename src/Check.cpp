@@ -84,8 +84,11 @@ TestResult checkProperty(gen::GeneratorUP<CaseResult> &&property)
             return shrinkFailingCase(std::move(property), currentCase);
         } else if(result.type() == CaseResult::Type::Discard) {
             numDiscarded++;
-            if (numDiscarded > maxDiscard)
-                return GaveUpResult { .numTests = currentCase.index };
+            if (numDiscarded > maxDiscard) {
+                return GaveUpResult {
+                    .numTests = currentCase.index,
+                    .description = result.description() };
+            }
             continue;
         }
 

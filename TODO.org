@@ -21,3 +21,9 @@
 * TODO Shrinker implementation classes to detail namespace
 * TODO catch.hpp-like sections for setup and teardown, perhaps?
 * TODO Move test utils implementations to source file
+* TODO All generation params into single struct?
+* TODO noShrink, resize et al. are a bit cumbersome sometimes
+* TODO Prevent trying forever to generate impossible values
+* TODO Create showType function which can be specialized to show human friendly type names
+* TODO kReferenceSize should be kNominalSize
+* TODO Use gen::vector for gen::collection?

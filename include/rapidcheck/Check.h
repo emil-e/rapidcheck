@@ -62,6 +62,7 @@ void prop(const std::string &description, Testable testable)
             INFO(counterExample);
             FAIL("Property failed: " << failure.description);
         } else if (result.match(gaveUp)) {
+            INFO(gaveUp.description);
             FAIL("Gave up after " << gaveUp.numTests << " successful tests");
         }
     }

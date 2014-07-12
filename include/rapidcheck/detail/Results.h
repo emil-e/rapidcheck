@@ -77,6 +77,9 @@ struct GaveUpResult
 {
     //! The number of tests that were run.
     int numTests;
+
+    //! A description of the reason for giving up.
+    std::string description;
 };
 
 //! Describes the circumstances around the result of a test.

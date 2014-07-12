@@ -40,6 +40,8 @@ CaseResult Property<Testable>::generate() const
         return CaseResultHelper<decltype(m_quantifier)>::resultOf(m_quantifier);
     } catch (const CaseResult &result) {
         return result;
+    } catch (const gen::GenerationFailure &e) {
+        return CaseResult(CaseResult::Type::Discard, e.what());
     } catch (const std::exception &e) {
         return CaseResult(CaseResult::Type::Failure, e.what());
     } catch (...) {

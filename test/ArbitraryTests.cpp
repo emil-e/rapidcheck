@@ -1,8 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck.h>
 
-#include "Utils.h"
-#include "Meta.h"
+#include "util/Util.h"
+#include "util/Meta.h"
 
 using namespace rc;
 

@@ -88,12 +88,17 @@ public:
 
     typename Gen::GeneratedType generate() const override
     {
-        int size = currentSize();
+        auto startSize = currentSize();
+        auto size = startSize;
         while (true) { // TODO give up sometime
             auto x(pick(noShrink(resize(size, m_generator))));
             if (m_predicate(x))
                 return x;
             size++;
+            if ((size - startSize) > 100) {
+                throw GenerationFailure(
+                    "Gave up trying to generate value satisfying predicate");
+            }
         }
     }
 
@@ -141,7 +146,7 @@ public:
 
     shrink::IteratorUP<typename Gen::GeneratedType>
     shrink(typename Gen::GeneratedType value) const override
-    { return m_generator.shrink(value); }
+    { return m_generator.shrink(std::move(value)); }
 
 private:
     int m_size;
@@ -165,7 +170,7 @@ public:
 
     shrink::IteratorUP<typename Gen::GeneratedType>
     shrink(typename Gen::GeneratedType value) const override
-    { return m_generator.shrink(value); }
+    { return m_generator.shrink(std::move(value)); }
 
 private:
     double m_scale;
@@ -265,6 +270,62 @@ IMPLEMENT_SUCH_THAT_GEN(NonNegative, x >= 0)
 #undef IMPLEMENT_SUCH_THAT_GEN
 
 template<typename Container, typename Gen>
+class Vector : public Generator<Container>
+{
+public:
+    explicit Vector(std::size_t size, Gen generator)
+        : m_size(size)
+        , m_generator(std::move(generator)) {}
+
+    Container generate() const override
+    {
+        detail::CollectionBuilder<Container> builder;
+        auto gen = noShrink(m_generator);
+        for (int i = 0; i < m_size; i++) {
+            // Gradually increase size for every failed adding attempt to
+            // increase likelihood that we get a "successful" value the next
+            // time
+            auto startSize = gen::currentSize();
+            auto currentSize = startSize;
+            while (!builder.add(pick(resize(currentSize, gen)))) {
+                currentSize++;
+                if ((currentSize - startSize) > 100) {
+                    std::string msg;
+                    msg += "Gave up trying to generate value that can be added to ";
+                    msg += "container of type '";
+                    msg += detail::demangle(typeid(Container).name()) + "'";
+                    throw GenerationFailure(msg);
+                }
+            }
+        }
+        return std::move(builder.collection());
+    }
+
+    shrink::IteratorUP<Container> shrink(Container value) const override
+    { return shrink(value, detail::IsCopyConstructible<Container>()); }
+
+private:
+    shrink::IteratorUP<Container> shrink(const Container &value,
+                                         std::false_type) const
+    {
+        return shrink::nothing<Container>();
+    }
+
+    shrink::IteratorUP<Container> shrink(const Container &value,
+                                         std::true_type) const
+    {
+        return shrink::eachElement(
+            value,
+            [=](typename Container::value_type element) {
+                return m_generator.shrink(std::move(element));
+            });
+    }
+
+    std::size_t m_size;
+    Gen m_generator;
+};
+
+template<typename Container, typename Gen>
 class Collection : public Generator<Container>
 {
 public:
@@ -273,9 +334,10 @@ public:
 
     Container generate() const override
     {
-        auto length = pick(ranged<typename Container::size_type>(0, currentSize() + 1));
+        typedef typename Container::size_type SizeT;
+        auto size = pick(ranged<SizeT>(0, currentSize() + 1));
         detail::CollectionBuilder<Container> builder;
-        for (int i = 0; i < length; i++)
+        for (int i = 0; i < size; i++)
             builder.add(pick(noShrink(m_generator)));
         return std::move(builder.collection());
     }
@@ -515,7 +577,7 @@ class PairOf : public Generator<std::pair<typename Gen1::GeneratedType,
 {
 public:
     typedef typename Gen1::GeneratedType T1;
-    typedef typename Gen1::GeneratedType T2;
+    typedef typename Gen2::GeneratedType T2;
     typedef typename std::pair<T1, T2> PairT;
 
     PairOf(Gen1 generator1, Gen2 generator2)
@@ -593,6 +655,10 @@ Negative<T> negative()
 template<typename T>
 NonNegative<T> nonNegative()
 { return NonNegative<T>(); }
+
+template<typename Container, typename Gen>
+Vector<Container, Gen> vector(std::size_t size, Gen gen)
+{ return Vector<Container, Gen>(size, std::move(gen)); }
 
 template<typename Coll, typename Gen>
 Collection<Coll, Gen> collection(Gen gen)

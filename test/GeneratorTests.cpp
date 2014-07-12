@@ -1,9 +1,9 @@
 #include <catch.hpp>
 #include <rapidcheck.h>
 
-#include "Utils.h"
-#include "Meta.h"
-#include "MyNonCopyable.h"
+#include "util/Util.h"
+#include "util/Meta.h"
+#include "util/Predictable.h"
 
 using namespace rc;
 
@@ -162,6 +162,66 @@ TEST_CASE("gen::nonNegative") {
     meta::forEachType<NonNegativeProperties, RC_NUMERIC_TYPES>();
 }
 
+struct VectorTests
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "uses the given generator for elements",
+            [] {
+                auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
+                testEnv([=] {
+                    auto egen = gen::arbitrary<typename T::value_type>();
+                    auto elements = pick(gen::vector<T>(size, egen));
+                    for (const auto &e : elements)
+                        RC_ASSERT(isArbitraryPredictable(e));
+                });
+            });
+
+        templatedProp<T>(
+            "generates collections of the given size",
+            [] {
+                auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
+                testEnv([=] {
+                    auto egen = gen::arbitrary<typename T::value_type>();
+                    auto elements = pick(gen::vector<T>(size, egen));
+                    auto actualSize = std::distance(begin(elements),
+                                                    end(elements));
+                    RC_ASSERT(actualSize == size);
+                });
+            });
+    }
+};
+
+struct NonCopyableVectorTests
+{
+    template<typename T>
+    static void exec()
+    {
+        typedef typename T::value_type Element;
+
+        templatedProp<T>(
+            "works with non-copyable types",
+            [] {
+                auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
+                testEnv([=] {
+                    auto coll = pick(gen::vector<T>(size, gen::arbitrary<Element>()));
+                    for (const auto &e : coll)
+                        RC_ASSERT(isArbitraryPredictable(e));
+                });
+            });
+    }
+};
+
+TEST_CASE("gen::vector") {
+    meta::forEachType<VectorTests,
+                      RC_GENERIC_CONTAINERS(Predictable),
+                      std::basic_string<Predictable>>();
+    meta::forEachType<NonCopyableVectorTests,
+                      RC_GENERIC_CONTAINERS(NonCopyable)>();
+}
+
 struct CollectionTests
 {
     template<typename T>
@@ -169,12 +229,13 @@ struct CollectionTests
     {
         templatedProp<T>(
             "uses the given generator for elements",
-            [] (typename T::value_type x) {
+            [] {
                 testEnv([=] {
-                    auto elements =
-                        pick(gen::collection<T>(gen::constant(x)));
-                    for (const typename T::value_type &e : elements)
-                        RC_ASSERT(e == x);
+                    auto elements = pick(
+                        gen::collection<T>(
+                            gen::arbitrary<typename T::value_type>()));
+                    for (const auto &e : elements)
+                        RC_ASSERT(isArbitraryPredictable(e));
                 });
             });
 
@@ -200,8 +261,8 @@ struct NonCopyableCollectionTests
                 testEnv([] {
                     auto egen = gen::arbitrary<typename T::value_type>();
                     auto coll = pick(gen::collection<T>(egen));
-                    for (const auto &x : coll)
-                        RC_ASSERT(x == pick(egen));
+                    for (const auto &e : coll)
+                        RC_ASSERT(isArbitraryPredictable(e));
                 });
             });
     }
@@ -209,11 +270,10 @@ struct NonCopyableCollectionTests
 
 TEST_CASE("gen::collection") {
     meta::forEachType<CollectionTests,
-                      RC_GENERIC_CONTAINERS(int),
-                      std::string,
-                      std::wstring>();
+                      RC_GENERIC_CONTAINERS(Predictable),
+                      std::basic_string<Predictable>>();
     meta::forEachType<NonCopyableCollectionTests,
-                      RC_GENERIC_CONTAINERS(MyNonCopyable)>();
+                      RC_GENERIC_CONTAINERS(NonCopyable)>();
 }
 
 TEST_CASE("gen::resize") {
@@ -385,14 +445,14 @@ TEST_CASE("gen::tupleOf") {
     SECTION("works with non-copyable types") {
         testEnv([] {
             auto tuple = pick(
-                gen::tupleOf(gen::arbitrary<MyNonCopyable>(),
-                             gen::arbitrary<MyNonCopyable>(),
-                             gen::arbitrary<MyNonCopyable>(),
-                             gen::arbitrary<MyNonCopyable>()));
-            RC_ASSERT(std::get<0>(tuple).value == MyNonCopyable::genValue);
-            RC_ASSERT(std::get<1>(tuple).value == MyNonCopyable::genValue);
-            RC_ASSERT(std::get<2>(tuple).value == MyNonCopyable::genValue);
-            RC_ASSERT(std::get<3>(tuple).value == MyNonCopyable::genValue);
+                gen::tupleOf(gen::constant(std::string("foobar")),
+                             gen::constant(123),
+                             gen::arbitrary<NonCopyable>(),
+                             gen::arbitrary<NonCopyable>()));
+            RC_ASSERT(std::get<0>(tuple) == "foobar");
+            RC_ASSERT(std::get<1>(tuple) == 123);
+            RC_ASSERT(isArbitraryPredictable(std::get<2>(tuple)));
+            RC_ASSERT(isArbitraryPredictable(std::get<3>(tuple)));
         });
     }
 
@@ -439,17 +499,17 @@ TEST_CASE("gen::pairOf") {
          [] {
              testEnv([] {
                  auto pair = pick(gen::pairOf(gen::constant(1),
-                                               gen::constant(2)));
+                                              gen::constant(2)));
                  RC_ASSERT(pair == std::make_pair(1, 2));
              });
          });
 
     SECTION("works with non-copyable types") {
         testEnv([] {
-            auto pair = pick(gen::pairOf(gen::arbitrary<MyNonCopyable>(),
-                                          gen::arbitrary<MyNonCopyable>()));
-            RC_ASSERT(pair.first.value == MyNonCopyable::genValue);
-            RC_ASSERT(pair.second.value == MyNonCopyable::genValue);
+            auto pair = pick(gen::pairOf(gen::constant(std::string("foobar")),
+                                         gen::arbitrary<NonCopyable>()));
+            RC_ASSERT(pair.first == "foobar");
+            RC_ASSERT(isArbitraryPredictable(pair.second));
         });
     }
 

@@ -26,6 +26,13 @@ template<typename T> class Arbitrary;
 
 namespace gen {
 
+//! Thrown to indicate that an appropriate value couldn't be generated.
+class GenerationFailure : public std::runtime_error
+{
+public:
+    explicit GenerationFailure(std::string msg);
+};
+
 //! Prints a sample value to stdout for the given generator.
 //!
 //! @param sz         The size to sample.
@@ -40,7 +47,8 @@ int currentSize();
 //! but serves as a guideline. In general, genenerators for which there is a
 //! natural limit which is not too expensive to generate should max out at this.
 //! This applies to, for example, generation of numbers but not to the
-//! of collection where there is an associate cost to generating large sizes.
+//! generation of collection where there is an associated cost to generating
+//! large collections.
 constexpr int kReferenceSize = 100;
 
 //! Describes a value and its type.
@@ -113,6 +121,7 @@ template<typename T> class NonZero;
 template<typename T> class Positive;
 template<typename T> class Negative;
 template<typename T> class NonNegative;
+template<typename Container, typename Gen> class Vector;
 template<typename Container, typename Gen> class Collection;
 template<typename Gen> class Resize;
 template<typename Gen> class Scale;
@@ -180,14 +189,25 @@ Negative<T> negative();
 template<typename T>
 NonNegative<T> nonNegative();
 
+//! Generates a collection of the given size and of type `T` using the given
+//! generator.
+//!
+//! @param size  The size to generate.
+//! @param gen   The generator to use.
+//!
+//! @tparam Container  The collection type.
+//! @tparam Gen        The generator type.
+template<typename Container, typename Gen>
+Vector<Container, Gen> vector(std::size_t size, Gen gen);
+
 //! Generates a collection of the given type using the given generator.
 //!
 //! @param gen  The generator to use.
 //!
-//! @tparam C          The collection type.
-//! @tparam Generator  The generator type.
-template<typename Coll, typename Gen>
-Collection<Coll, Gen> collection(Gen gen);
+//! @tparam Container  The collection type.
+//! @tparam Gen        The generator type.
+template<typename Container, typename Gen>
+Collection<Container, Gen> collection(Gen gen);
 
 //! Returns a version of the given generator that always uses the specified size.
 //!
