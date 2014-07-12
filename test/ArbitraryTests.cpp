@@ -9,17 +9,15 @@ using namespace rc;
 template<typename T, typename Predicate>
 void generatesSuchThat(const Predicate &pred)
 {
-    testEnv([&] {
-        auto generator = gen::resize(50, gen::arbitrary<T>());
-        while (true) {
-            T x = pick(generator);
-            if (pred(x)) {
-                SUCCEED("Generated value that satisfied predicate");
-                return;
-            }
+    auto generator = gen::noShrink(gen::resize(50, gen::arbitrary<T>()));
+    while (true) {
+        T x = pick(generator);
+        if (pred(x)) {
+            RC_SUCCEED("Generated value that satisfied predicate");
+            return;
         }
-        FAIL("The impossible happened...");
-    });
+    }
+    RC_FAIL("The impossible happened...");
 }
 
 struct NumericProperties
@@ -30,9 +28,9 @@ struct NumericProperties
         templatedProp<T>(
             "generates only zero when size is zero",
             [] {
-                testEnv([] {
-                    RC_ASSERT(pick(gen::resize(0, gen::arbitrary<T>())) == 0);
-                });
+                auto value =
+                    pick(gen::noShrink(gen::resize(0, gen::arbitrary<T>())));
+                RC_ASSERT(value == 0);
             });
     }
 };
@@ -42,13 +40,17 @@ struct SignedProperties
     template<typename T>
     static void exec()
     {
-        TEMPLATED_SECTION(T, "generates positive values") {
-            generatesSuchThat<T>([] (T x) { return x > 0; });
-        }
+        templatedProp<T>(
+            "generates positive values",
+            [] {
+                generatesSuchThat<T>([] (T x) { return x > 0; });
+            });
 
-        TEMPLATED_SECTION(T, "generates negative values") {
-            generatesSuchThat<T>([] (T x) { return x < 0; });
-        }
+        templatedProp<T>(
+            "generates negative values",
+            [] {
+                generatesSuchThat<T>([] (T x) { return x < 0; });
+            });
 
         templatedProp<T>(
             "shrinks negative values to their positive equivalent",
@@ -95,19 +97,18 @@ TEST_CASE("gen::arbitrary<T> (reals)") {
 }
 
 TEST_CASE("gen::arbitrary<bool>") {
-    SECTION("generates both true and false") {
-        testEnv([] {
-            while (true) {
-                if (pick<bool>())
-                    break;
-            }
+    prop("generates both true and false",
+         [] {
+             while (true) {
+                 if (pick(gen::noShrink(gen::arbitrary<bool>())))
+                     break;
+             }
 
-            while (true) {
-                if (!pick<bool>())
-                    break;
-            }
-        });
-    }
+             while (true) {
+                 if (!pick<bool>())
+                     break;
+             }
+         });
 
     SECTION("shrinks 'true' to 'false'") {
         auto it = gen::arbitrary<bool>().shrink(true);

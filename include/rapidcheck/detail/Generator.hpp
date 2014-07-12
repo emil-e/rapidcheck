@@ -687,6 +687,7 @@ Mapped<Gen, Mapper> map(Gen generator, Mapper mapper)
 template<typename T>
 Character<T> character() { return Character<T>(); }
 
+// TODO deduce exception type
 template<typename Exception, typename Gen, typename Catcher>
 Rescue<Exception, Gen, Catcher> rescue(Gen generator, Catcher catcher)
 {
