@@ -16,7 +16,7 @@ UnexpectedType::UnexpectedType(const std::type_info &expected,
 RoseNode::RoseNode(RoseNode *parent)
     : m_parent(parent) {}
 
-gen::ValueDescription RoseNode::currentDescription()
+ValueDescription RoseNode::currentDescription()
 {
     ImplicitParam<param::CurrentNode> currentNode;
     currentNode.let(this);
@@ -51,9 +51,9 @@ RandomEngine::Atom RoseNode::atom()
     return m_atom;
 }
 
-std::vector<gen::ValueDescription> RoseNode::example()
+std::vector<ValueDescription> RoseNode::example()
 {
-    std::vector<gen::ValueDescription> example;
+    std::vector<ValueDescription> example;
     for (auto &child : m_children)
         example.push_back(child.currentDescription());
     return example;

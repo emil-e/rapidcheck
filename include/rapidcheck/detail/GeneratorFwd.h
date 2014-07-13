@@ -5,7 +5,6 @@
 namespace rc {
 namespace gen {
 
-class ValueDescription;
 class UntypedGenerator;
 template<typename T> class Generator;
 

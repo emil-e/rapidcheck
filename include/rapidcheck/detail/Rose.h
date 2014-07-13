@@ -1,8 +1,10 @@
 #pragma once
 
-#include "RandomEngine.h"
-#include "GeneratorFwd.h"
-#include "Utility.h"
+#include "rapidcheck/detail/RandomEngine.h"
+#include "rapidcheck/detail/GeneratorFwd.h"
+#include "rapidcheck/detail/Utility.h"
+#include "rapidcheck/detail/Results.h"
+#include "rapidcheck/detail/ValueDescription.h"
 #include "rapidcheck/Shrink.h"
 
 namespace rc {
@@ -22,9 +24,7 @@ private:
     const std::type_info &m_actual;
 };
 
-//! Represents the structure of value generation where large complex values are
-//! generated from small simple values. This also means that large values often
-//! can be shrunk by shrinking the small values individually.
+//! Internal class used by `Rose`.
 class RoseNode
 {
 public:
@@ -44,7 +44,7 @@ public:
     T currentValue();
 
     //! Returns the current value which may be be generated or fixed.
-    gen::ValueDescription currentDescription();
+    ValueDescription currentDescription();
 
     //! Returns the next shrink of this `RoseNode`.
     //!
@@ -64,7 +64,7 @@ public:
 
     //! Returns a vector of `ValueDescription`s describing the current values of
     //! the direct children.
-    std::vector<gen::ValueDescription> example();
+    std::vector<ValueDescription> example();
 
     //! Move constructor.
     RoseNode(RoseNode &&other);
@@ -112,6 +112,42 @@ private:
     gen::UntypedGeneratorUP m_canonicalGenerator;
     gen::UntypedGeneratorUP m_currentGenerator;
     gen::UntypedGeneratorUP m_acceptedGenerator;
+};
+
+//! Used to implement implicit shrinking of the generation tree. Values are
+//! implicitly shrunk from the leaves working up to the root.
+template<typename T>
+class Rose
+{
+public:
+    //! Constructor.
+    //!
+    //! @param generator  The generator to use.
+    //! @param testCase   The test case to use.
+    Rose(gen::GeneratorUP<T> &&generator, const TestCase &testCase);
+
+    //! Returns the current value.
+    T currentValue();
+
+    //! Returns the next shrink of this `Rose`.
+    //!
+    //! @param didShrink  Set to `true` if there was another shrink or `false`
+    //!                   if exhausted.
+    //!
+    //! @return  The shrunk value.
+    T nextShrink(bool &didShrink);
+
+    //! Accepts the current shrink.
+    void acceptShrink();
+
+    //! Returns a vector of `ValueDescription`s describing the current values of
+    //! the direct children.
+    std::vector<ValueDescription> example();
+
+private:
+    RoseNode m_root;
+    TestCase m_testCase;
+    RandomEngine m_randomEngine;
 };
 
 } // namespace detail

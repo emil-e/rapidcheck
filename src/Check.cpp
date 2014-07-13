@@ -23,33 +23,28 @@ auto withTestCase(const TestCase &testCase, Callable callable)
     return callable();
 }
 
-
 TestResult shrinkFailingCase(gen::GeneratorUP<CaseResult> &&property,
                              const TestCase &testCase)
 {
-    return withTestCase(testCase, [&]{
-        RoseNode rootNode;
-        rootNode.setGenerator(std::move(property));
+    Rose<CaseResult> rose(std::move(property), testCase);
+    FailureResult result;
+    result.failingCase = testCase;
+    result.numShrinks = 0;
 
-        FailureResult result;
-        result.failingCase = testCase;
-        result.numShrinks = 0;
-
-        bool didShrink = true;
-        while (true) {
-            CaseResult shrinkResult(rootNode.nextShrink<CaseResult>(didShrink));
-            if (didShrink) {
-                if (shrinkResult.type() == CaseResult::Type::Failure) {
-                    rootNode.acceptShrink();
-                    result.numShrinks++;
-                }
-            } else {
-                result.description = shrinkResult.description();
-                result.counterExample = rootNode.example();
-                return result;
+    bool didShrink = true;
+    while (true) {
+        CaseResult shrinkResult(rose.nextShrink(didShrink));
+        if (didShrink) {
+            if (shrinkResult.type() == CaseResult::Type::Failure) {
+                rose.acceptShrink();
+                result.numShrinks++;
             }
+        } else {
+            result.description = shrinkResult.description();
+            result.counterExample = rose.example();
+            return result;
         }
-    });
+    }
 }
 
 //! Describes the parameters for a test.

@@ -52,24 +52,15 @@ void sample(int sz, Gen generator)
 }
 
 template<typename T>
-ValueDescription::ValueDescription(const T &value)
-    : m_typeInfo(&typeid(T))
-{
-    std::ostringstream ss;
-    show(value, ss);
-    m_stringValue = ss.str();
-}
-
-template<typename T>
 const std::type_info &Generator<T>::generatedTypeInfo() const
 {
     return typeid(T);
 }
 
 template<typename T>
-ValueDescription Generator<T>::generateDescription() const
+detail::ValueDescription Generator<T>::generateDescription() const
 {
-    return ValueDescription(generate());
+    return detail::ValueDescription(generate());
 }
 
 template<typename T>

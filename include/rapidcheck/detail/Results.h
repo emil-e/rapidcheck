@@ -4,7 +4,7 @@
 
 #include "rapidcheck/detail/RandomEngine.h"
 #include "rapidcheck/detail/Variant.h"
-#include "rapidcheck/Generator.h"
+#include "rapidcheck/detail/ValueDescription.h"
 
 namespace rc {
 namespace detail {
@@ -69,7 +69,7 @@ struct FailureResult
     //! The number of shrinks performed.
     int numShrinks;
     //! The counterexample.
-    std::vector<gen::ValueDescription> counterExample;
+    std::vector<ValueDescription> counterExample;
 };
 
 //! Indicates that more test cases than allowed were discarded.

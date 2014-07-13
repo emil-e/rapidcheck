@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Shrink.h"
+#include "detail/ValueDescription.h"
 
 namespace rc {
 
@@ -51,30 +52,6 @@ int currentSize();
 //! large collections.
 constexpr int kReferenceSize = 100;
 
-//! Describes a value and its type.
-class ValueDescription
-{
-public:
-    //! Creates a "null" `ValueDescription`.
-    ValueDescription() = default;
-
-    template<typename T>
-    ValueDescription(const T &value);
-
-    //! Returns the name of the type of this value.
-    std::string typeName() const;
-
-    //! Returns a string representation of this value.
-    std::string stringValue() const;
-
-    //! Returns `true` if this is a "null" `ValueDescription`.
-    bool isNull() const;
-
-private:
-    const std::type_info *m_typeInfo = nullptr;
-    std::string m_stringValue;
-};
-
 //! Base class for generators of all types.
 class UntypedGenerator
 {
@@ -84,7 +61,7 @@ public:
 
     //! Generates a value and returns a `ValueDescription` of it. This provides
     //! untyped representation of the value.
-    virtual ValueDescription generateDescription() const = 0;
+    virtual detail::ValueDescription generateDescription() const = 0;
 
     virtual ~UntypedGenerator() = default;
 };
@@ -107,7 +84,7 @@ public:
     virtual shrink::IteratorUP<T> shrink(T value) const;
 
     const std::type_info &generatedTypeInfo() const override;
-    ValueDescription generateDescription() const override;
+    detail::ValueDescription generateDescription() const override;
 
     static_assert(!std::is_same<T, void>::value,
                   "Generated type cannot be void");

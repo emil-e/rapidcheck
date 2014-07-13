@@ -138,5 +138,49 @@ shrink::Iterator<T> *RoseNode::iteratorCast(
     return typed;
 }
 
+template<typename T>
+Rose<T>::Rose(gen::GeneratorUP<T> &&generator, const TestCase &testCase)
+    : m_testCase(testCase)
+{
+    m_randomEngine.seed(testCase.seed);
+    m_root.setGenerator(std::move(generator));
+    // Initialize the tree with the test case.
+    currentValue();
+}
+
+template<typename T>
+T Rose<T>::currentValue()
+{
+    ImplicitParam<param::RandomEngine> randomEngine;
+    randomEngine.let(&m_randomEngine);
+    ImplicitParam<param::Size> size;
+    size.let(m_testCase.size);
+
+    return m_root.currentValue<T>();
+}
+
+template<typename T>
+T Rose<T>::nextShrink(bool &didShrink)
+{
+    ImplicitParam<param::RandomEngine> randomEngine;
+    randomEngine.let(&m_randomEngine);
+    ImplicitParam<param::Size> size;
+    size.let(m_testCase.size);
+
+    return m_root.nextShrink<T>(didShrink);
+}
+
+template<typename T>
+void Rose<T>::acceptShrink()
+{
+    return m_root.acceptShrink();
+}
+
+template<typename T>
+std::vector<ValueDescription> Rose<T>::example()
+{
+    return m_root.example();
+}
+
 } // namespace detail
 } // namespace rc
