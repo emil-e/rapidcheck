@@ -45,7 +45,9 @@ T RoseNode::currentValue()
 
 template<typename T>
 T RoseNode::nextShrink(bool &didShrink)
-{ return nextShrink<T>(didShrink, IsCopyConstructible<T>()); }
+{
+    return nextShrink<T>(didShrink, IsCopyConstructible<T>());
+}
 
 // For copy-constructible types
 template<typename T>
@@ -88,7 +90,7 @@ T RoseNode::nextShrink(bool &didShrink, std::true_type)
         // Exhausted
         didShrink = false;
         // Replace with shrink::nothing since that is likely smaller than the
-        // existing.
+        // existing iterator.
         m_shrinkIterator = shrink::nothing<T>();
         m_currentGenerator = nullptr;
         return currentValue<T>();
@@ -136,6 +138,16 @@ shrink::Iterator<T> *RoseNode::iteratorCast(
     if (typed == nullptr)
         throw UnexpectedType(typeid(shrink::Iterator<T>), typeid(it));
     return typed;
+}
+
+template<typename T>
+template<typename Gen>
+Rose<T>::Rose(Gen generator, const TestCase &testCase)
+    : Rose(gen::GeneratorUP<T>(new Gen(std::move(generator))), testCase)
+{
+    static_assert(
+        std::is_same<T, typename Gen::GeneratedType>::value,
+        "Generated type of generator must be the same as T");
 }
 
 template<typename T>

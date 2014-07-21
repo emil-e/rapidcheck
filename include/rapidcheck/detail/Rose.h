@@ -126,6 +126,13 @@ public:
     //! @param testCase   The test case to use.
     Rose(gen::GeneratorUP<T> &&generator, const TestCase &testCase);
 
+    //! Constructor.
+    //!
+    //! @param generator  The generator to use.
+    //! @param testCase   The test case to use.
+    template<typename Gen>
+    Rose(Gen generator, const TestCase &testCase);
+
     //! Returns the current value.
     T currentValue();
 

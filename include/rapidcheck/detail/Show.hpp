@@ -40,9 +40,16 @@ struct TupleHelper
 } // namespace detail
 
 template<typename T>
+struct Show
+{
+    static void show(const T &value, std::ostream &os)
+    { os << value; }
+};
+
+template<typename T>
 void show(const T &value, std::ostream &os)
 {
-    os << value;
+    Show<T>::show(value, os);
 }
 
 

@@ -16,3 +16,4 @@ add_library(rapidcheck
 target_include_directories(rapidcheck PUBLIC include)
 
 add_subdirectory(test)
+add_subdirectory(examples)

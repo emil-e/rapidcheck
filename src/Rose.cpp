@@ -92,12 +92,11 @@ RoseNode &RoseNode::operator=(RoseNode &&rhs)
 
 std::string RoseNode::debugDescription() const
 {
-    auto generator = currentGenerator();
     std::string desc;
-    if (generator == nullptr)
+    if (!m_canonicalGenerator)
         desc += "<null>";
     else
-        desc += demangle(typeid(*generator).name());
+        desc += demangle(typeid(*m_canonicalGenerator).name());
     desc += "[" + std::to_string(index()) + "]";
     return desc;
 }

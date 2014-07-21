@@ -11,6 +11,8 @@
 
 namespace rc {
 
+template<typename T> struct Show;
+
 //! Outputs a representation of the given value to the given output stream. The
 //! default is to use \c operator<< but you can override this representation by
 //! providing overloads for different types.
