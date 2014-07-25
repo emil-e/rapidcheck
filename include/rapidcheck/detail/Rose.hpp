@@ -5,6 +5,13 @@
 #include "Traits.h"
 #include "rapidcheck/Generator.h"
 
+template<typename T>
+void doShow(const T &value, std::ostream &os)
+{
+    using namespace rc;
+    show(value, os);
+}
+
 namespace rc {
 namespace detail {
 
@@ -19,11 +26,12 @@ T RoseNode::pick(gen::GeneratorUP<T> &&generator)
     auto &child = m_children[i];
     // TODO we should probably not set this every time
     child.setGenerator(std::move(generator));
-    if (i == (m_shrinkChildren - 1)) {
+    ImplicitParam<ShrinkMode> shrinkMode;
+    if (*shrinkMode && (i == m_shrinkChild)) {
         bool didShrink;
         T value(child.nextShrink<T>(didShrink));
         if (!didShrink)
-            m_shrinkChildren = i + 2;
+            m_shrinkChild++;
         return std::move(value);
     } else {
         return child.currentValue<T>();
@@ -37,29 +45,27 @@ void RoseNode::setGenerator(gen::GeneratorUP<T> &&generator)
 template<typename T>
 T RoseNode::currentValue()
 {
-    ImplicitParam<param::CurrentNode> currentNode;
-    currentNode.let(this);
-    m_nextChild = 0;
-    return generatorCast<T>(currentGenerator())->generate();
+    ImplicitParam<ShrinkMode> shrinkMode;
+    shrinkMode.let(false);
+    return generate<T>();
 }
 
 template<typename T>
 T RoseNode::nextShrink(bool &didShrink)
 {
-    return nextShrink<T>(didShrink, IsCopyConstructible<T>());
+    ImplicitParam<param::NoShrink> noShrink;
+    if (*noShrink) {
+        didShrink = false;
+        return currentValue<T>();
+    } else {
+        return nextShrink<T>(didShrink, IsCopyConstructible<T>());
+    }
 }
 
 // For copy-constructible types
 template<typename T>
 T RoseNode::nextShrink(bool &didShrink, std::true_type)
 {
-    // If shrinking is disabled, we can just return the current value.
-    ImplicitParam<param::NoShrink> noShrink;
-    if (*noShrink) {
-        didShrink = false;
-        return currentValue<T>();
-    }
-
     if (!m_shrinkIterator) {
         // If we don't have a shrink iterator, shrink the children first.
         T value(nextShrinkChildren<T>(didShrink));
@@ -68,6 +74,7 @@ T RoseNode::nextShrink(bool &didShrink, std::true_type)
             return std::move(value);
 
         // Otherwise, we should make a shrink iterator
+        // The already generated value is a last restort, set as accepted.
         m_acceptedGenerator = gen::GeneratorUP<T>(new gen::Constant<T>(value));
         // Always use the canonical generator to make a shrink iterator
         auto typedCanonical = generatorCast<T>(m_canonicalGenerator.get());
@@ -112,11 +119,20 @@ T RoseNode::nextShrink(bool &didShrink, std::false_type)
 template<typename T>
 T RoseNode::nextShrinkChildren(bool &didShrink)
 {
-    // Set this to at least 1 to enable shrinking of children.
-    m_shrinkChildren = std::max<std::size_t>(1, m_shrinkChildren);
-    T value(currentValue<T>());
-    didShrink = m_shrinkChildren <= m_nextChild;
+    ImplicitParam<ShrinkMode> shrinkMode;
+    shrinkMode.let(true);
+    T value(generate<T>());
+    didShrink = m_shrinkChild < m_nextChild;
     return std::move(value);
+}
+
+template<typename T>
+T RoseNode::generate()
+{
+    ImplicitParam<param::CurrentNode> currentNode;
+    currentNode.let(this);
+    m_nextChild = 0;
+    return generatorCast<T>(currentGenerator())->generate();
 }
 
 template<typename T>

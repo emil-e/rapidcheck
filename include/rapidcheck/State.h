@@ -14,12 +14,18 @@ public:
     typedef Sut SutT;
 
     //! Returns the state resulting from applying this command to the given
-    //! state.
-    virtual State nextState(const State &state) const = 0;
+    //! state. Default implementation simply returns the given state.
+    //!
+    //! Assert preconditions using `RC_PRE`. If preconditions do not hold,
+    //! command will be discarded and a new one will be generated.
+    virtual State nextState(const State &s0) const;
 
     //! Applies this command to the given system under test assuming it has the
-    //! given state.
-    virtual void run(const State &state, Sut &sut) const = 0;
+    //! given state. Default implementation does nothing.
+    //!
+    //! Use rapidcheck assertion macros to check that the system behaves
+    //! properly.
+    virtual void run(const State &s0, Sut &sut) const;
 
     //! Outputs a human readable representation of the command to the given
     //! output stream.

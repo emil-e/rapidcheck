@@ -52,6 +52,10 @@ void show(const T &value, std::ostream &os)
     Show<T>::show(value, os);
 }
 
+void show(uint8_t value, std::ostream &os)
+{
+    os << int(value);
+}
 
 template<typename T>
 void show(T *p, std::ostream &os)

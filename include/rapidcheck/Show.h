@@ -22,6 +22,9 @@ template<typename T> struct Show;
 template<typename T>
 void show(const T &value, std::ostream &os);
 
+//! Displays a byte as an integer.
+static inline void show(uint8_t value, std::ostream &os);
+
 //! Displays `*p` along with address.
 template<typename T>
 void show(T *p, std::ostream &os);

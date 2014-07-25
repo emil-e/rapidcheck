@@ -17,8 +17,6 @@ auto withTestCase(const TestCase &testCase, Callable callable)
     randomEngine.let(&engine);
     ImplicitParam<param::Size> size;
     size.let(testCase.size);
-    ImplicitParam<param::NoShrink> noShrink;
-    noShrink.let(false);
 
     return callable();
 }

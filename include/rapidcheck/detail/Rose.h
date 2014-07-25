@@ -75,6 +75,11 @@ public:
 private:
     RC_DISABLE_COPY(RoseNode)
 
+    struct ShrinkMode {
+        typedef int ValueType;
+        static int defaultValue() { return 0; }
+    };
+
     template<typename T>
     T nextShrink(bool &didShrink, std::true_type);
 
@@ -83,6 +88,9 @@ private:
 
     template<typename T>
     T nextShrinkChildren(bool &didShrink);
+
+    template<typename T>
+    T generate();
 
     gen::UntypedGenerator *currentGenerator() const;
 
@@ -104,7 +112,7 @@ private:
     RoseNode *m_parent;
     std::vector<RoseNode> m_children;
     std::size_t m_nextChild = 0;
-    std::size_t m_shrinkChildren = 0;
+    std::size_t m_shrinkChild = 0;
 
     bool m_hasAtom = false;
     RandomEngine::Atom m_atom;

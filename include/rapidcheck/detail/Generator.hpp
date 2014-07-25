@@ -391,6 +391,9 @@ private:
     T m_value;
 };
 
+// First of all overrides param::Shrink so that children do not implicitly
+// shrink but since it also does not implement `shrink` which means it
+// does not itself shrink
 template<typename Gen>
 class NoShrink : public Generator<typename Gen::GeneratedType>
 {
@@ -400,7 +403,7 @@ public:
     {
         detail::ImplicitParam<detail::param::NoShrink> noShrink;
         noShrink.let(true);
-        return pick(m_generator);
+        return m_generator.generate();
     }
 
 private:

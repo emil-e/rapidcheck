@@ -34,9 +34,8 @@ void RoseNode::acceptShrink()
         // so we might as well get rid of them.
         m_children.clear();
     } else {
-        int i = m_shrinkChildren - 1;
-        assert(i <= m_children.size());
-        m_children[i].acceptShrink();
+        assert(m_shrinkChild < m_children.size());
+        m_children[m_shrinkChild].acceptShrink();
     }
 }
 
@@ -62,7 +61,7 @@ std::vector<ValueDescription> RoseNode::example()
 RoseNode::RoseNode(RoseNode &&other)
     : m_parent(other.m_parent)
     , m_children(std::move(other.m_children))
-    , m_shrinkChildren(std::move(other.m_shrinkChildren))
+    , m_shrinkChild(std::move(other.m_shrinkChild))
     , m_nextChild(other.m_nextChild)
     , m_hasAtom(other.m_hasAtom)
     , m_atom(other.m_atom)
@@ -78,7 +77,7 @@ RoseNode &RoseNode::operator=(RoseNode &&rhs)
 {
     m_parent = rhs.m_parent;
     m_children = std::move(rhs.m_children);
-    m_shrinkChildren = std::move(rhs.m_shrinkChildren);
+    m_shrinkChild = std::move(rhs.m_shrinkChild);
     m_nextChild = rhs.m_nextChild;
     m_hasAtom = rhs.m_hasAtom;
     m_atom = rhs.m_atom;

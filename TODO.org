@@ -28,3 +28,5 @@
 * TODO kReferenceSize should be kNominalSize
 * TODO Use gen::vector for gen::collection?
 * TODO Default RandomEngine
+* TODO Show.h... clean it up
+* TODO Test Rose movability in state test

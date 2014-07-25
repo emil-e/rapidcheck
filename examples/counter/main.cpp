@@ -32,18 +32,18 @@ struct CounterModel
 
 struct Inc : public state::Command<CounterModel, Counter>
 {
-    CounterModel nextState(const CounterModel &state) const override
+    CounterModel nextState(const CounterModel &s0) const override
     {
-        CounterModel newState(state);
-        newState.value++;
-        return newState;
+        CounterModel s1(s0);
+        s1.value++;
+        return s1;
     }
 
-    void run(const CounterModel &state, Counter &counter) const override
+    void run(const CounterModel &s0, Counter &counter) const override
     {
         auto prev = counter.get();
         counter.inc();
-        RC_ASSERT(counter.get() == (state.value + 1));
+        RC_ASSERT(counter.get() == (s0.value + 1));
     }
 };
 
@@ -52,9 +52,9 @@ struct Dec : public state::Command<CounterModel, Counter>
     CounterModel nextState(const CounterModel &state) const override
     {
         RC_PRE(state.value > 0);
-        CounterModel newState(state);
-        newState.value--;
-        return newState;
+        CounterModel s1(state);
+        s1.value--;
+        return s1;
     }
 
     void run(const CounterModel &state, Counter &counter) const override
