@@ -150,8 +150,8 @@ public:
 
     T next() override
     {
-        std::pair<T, I> result(m_iterate(m_it));
-        m_it = result.second;
+        std::pair<T, I> result(m_iterate(std::move(m_it)));
+        m_it = std::move(result.second);
         return result.first;
     }
 

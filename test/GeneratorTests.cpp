@@ -276,7 +276,9 @@ TEST_CASE("gen::resize") {
          });
 }
 
-// Hackish always increasing type for testing generatinon ordering
+// Always increasing type for testing generatinon ordering. Note that thi is
+// very much a hack but it will catch regressions where arguments are not
+// generated in the correct order.
 struct IncInt { int value; };
 
 template<>
@@ -284,13 +286,11 @@ class Arbitrary<IncInt> : public gen::Generator<IncInt>
 {
 public:
     IncInt generate() const override
-    { return IncInt { m_value++ }; }
-
-private:
-    static int m_value;
+    {
+        static int value = 0;
+        return IncInt { value++ };
+    }
 };
-
-int Arbitrary<IncInt>::m_value = 0;
 
 void show(IncInt x, std::ostream &os) { os << x.value; }
 
@@ -343,6 +343,8 @@ TEST_CASE("gen::noShrink") {
              })));
              RC_ASSERT(wasNoShrink);
          });
+
+    // TODO test the fact that explicit shrinking is blocked as well
 }
 
 TEST_CASE("gen::map") {

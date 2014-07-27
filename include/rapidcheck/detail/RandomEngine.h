@@ -29,9 +29,5 @@ private:
     std::uniform_int_distribution<uint64_t> m_distribution;
 };
 
-namespace param {
-
-} // namespace param
-
 } // namespace detail
 } // namespace rc

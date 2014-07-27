@@ -29,4 +29,5 @@
 * TODO Use gen::vector for gen::collection?
 * TODO Default RandomEngine
 * TODO Show.h... clean it up
-* TODO Test Rose movability in state test
+* TODO Better syntax for generation of commands
+* TODO Generator for unique values
