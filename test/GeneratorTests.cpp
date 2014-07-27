@@ -344,7 +344,12 @@ TEST_CASE("gen::noShrink") {
              RC_ASSERT(wasNoShrink);
          });
 
-    // TODO test the fact that explicit shrinking is blocked as well
+    prop("blocks explicit shrinking",
+         [] {
+             auto generator = gen::arbitrary<int>();
+             auto value = pick(generator);
+             RC_ASSERT(!gen::noShrink(generator).shrink(value)->hasNext());
+         });
 }
 
 TEST_CASE("gen::map") {
