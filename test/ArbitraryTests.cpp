@@ -3,6 +3,7 @@
 
 #include "util/Util.h"
 #include "util/Meta.h"
+#include "util/Predictable.h"
 
 using namespace rc;
 
@@ -121,4 +122,25 @@ TEST_CASE("gen::arbitrary<bool>") {
         auto it = gen::arbitrary<bool>().shrink(false);
         REQUIRE(!it->hasNext());
     }
+}
+
+struct CollectionTests
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "uses the correct arbitrary instance",
+            [] {
+                auto values = pick(gen::arbitrary<T>());
+                for (const auto &value : values)
+                    RC_ASSERT(isArbitraryPredictable(value));
+            });
+    }
+};
+
+TEST_CASE("gen::arbitrary for containers") {
+    meta::forEachType<CollectionTests,
+                      RC_GENERIC_CONTAINERS(Predictable),
+                      RC_GENERIC_CONTAINERS(NonCopyable)>();
 }

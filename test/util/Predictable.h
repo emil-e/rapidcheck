@@ -23,7 +23,9 @@ struct NonCopyable : public Predictable
     NonCopyable &operator=(NonCopyable &&) = default;
 };
 
-bool operator<(const Predictable &lhs, const Predictable &rhs)
+// TODO source file!
+
+static inline bool operator<(const Predictable &lhs, const Predictable &rhs)
 {
     if (lhs.value == rhs.value)
         return lhs.extra < rhs.extra;
@@ -31,20 +33,20 @@ bool operator<(const Predictable &lhs, const Predictable &rhs)
     return lhs.value < rhs.value;
 }
 
-bool operator==(const Predictable &lhs, const Predictable &rhs)
+static inline bool operator==(const Predictable &lhs, const Predictable &rhs)
 {
     return
         (lhs.value == rhs.value) &&
         (lhs.extra == rhs.extra);
 }
 
-void show(const Predictable &value, std::ostream &os)
+static inline void show(const Predictable &value, std::ostream &os)
 {
     show(value.value, os);
     os << " (" << value.extra << ")";
 }
 
-void show(const NonCopyable &value, std::ostream &os)
+static inline void show(const NonCopyable &value, std::ostream &os)
 {
     show(value.value, os);
     os << " (" << value.extra << ")";
@@ -78,10 +80,10 @@ public:
 // These overloads are useful to test if a value was generated using the
 // appropriate `Arbitrary` specialization.
 
-bool isArbitraryPredictable(const Predictable &value)
+static inline bool isArbitraryPredictable(const Predictable &value)
 { return value.value == Predictable::predictableValue; }
 
-bool isArbitraryPredictable(
+static inline bool isArbitraryPredictable(
     const std::pair<const Predictable, Predictable> &value)
 {
     return
