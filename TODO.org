@@ -1,33 +1,26 @@
-* TODO All collection types in STL should be generateable
 * TODO Maybe shrink reals to smaller values as well?
 * TODO Non-determinisim in generation might cause bad casts, report this
 * TODO Exception handling
-* TODO Result type should contain more information
-* TODO Move private stuff in public header files to detail headers?
-* TODO What should be the valid return types for properties
-* TODO Discard test if suchThat never generates
+* TODO Better strategy for when to give up generating
 * TODO Use different seeds when generating
 * TODO Generate element from a collection
 * TODO Shrink nonZero, negative, positive and nonNegative
-* TODO Default values for ImplicitParam
 * TODO Assertion macros have an extra '!'
 * TODO Adjustable test parameters... flags?
 * TODO Better size calculation
 * TODO suchThat, map, and other generators should have shrink()
 * TODO Create GeneratedT<T> typedef to clean up some code
 * TODO Static tests for traits
-* TODO Fixed size collection generation
 * TODO Implement std::array
 * TODO Shrinker implementation classes to detail namespace
 * TODO catch.hpp-like sections for setup and teardown, perhaps?
 * TODO Move test utils implementations to source file
 * TODO All generation params into single struct?
 * TODO noShrink, resize et al. are a bit cumbersome sometimes
-* TODO Prevent trying forever to generate impossible values
 * TODO Create showType function which can be specialized to show human friendly type names
-* TODO kReferenceSize should be kNominalSize
-* TODO Use gen::vector for gen::collection?
 * TODO Default RandomEngine
 * TODO Show.h... clean it up
 * TODO Better syntax for generation of commands
 * TODO Generator for unique values
+* TODO Tests for arbitrary collections
+* TODO Should noShrink for collections be the default?
