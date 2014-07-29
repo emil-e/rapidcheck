@@ -15,12 +15,12 @@
 namespace rc {
 
 template<typename Gen>
-typename Gen::GeneratedType pick(Gen generator)
+GeneratedT<Gen> pick(Gen generator)
 {
     detail::ImplicitParam<detail::param::CurrentNode> currentNode;
     if (*currentNode != nullptr) {
         return (*currentNode)->pick(
-            gen::GeneratorUP<typename Gen::GeneratedType>(
+            gen::GeneratorUP<GeneratedT<Gen>>(
                 new Gen(std::move(generator))));
     } else {
         return generator.generate();
@@ -70,14 +70,14 @@ shrink::IteratorUP<T> Generator<T>::shrink(T value) const
 }
 
 template<typename Gen, typename Predicate>
-class SuchThat : public Generator<typename Gen::GeneratedType>
+class SuchThat : public Generator<GeneratedT<Gen>>
 {
 public:
     SuchThat(Gen generator, Predicate predicate)
         : m_generator(std::move(generator))
         , m_predicate(std::move(predicate)) {}
 
-    typename Gen::GeneratedType generate() const override
+    GeneratedT<Gen> generate() const override
     {
         auto startSize = currentSize();
         auto size = startSize;
@@ -128,21 +128,21 @@ private:
 };
 
 template<typename Gen>
-class Resize : public Generator<typename Gen::GeneratedType>
+class Resize : public Generator<GeneratedT<Gen>>
 {
 public:
     Resize(int size, Gen generator)
         : m_size(size), m_generator(std::move(generator)) {}
 
-    typename Gen::GeneratedType generate() const override
+    GeneratedT<Gen> generate() const override
     {
         detail::ImplicitParam<detail::param::Size> size;
         size.let(m_size);
         return m_generator.generate();
     }
 
-    shrink::IteratorUP<typename Gen::GeneratedType>
-    shrink(typename Gen::GeneratedType value) const override
+    shrink::IteratorUP<GeneratedT<Gen>>
+                       shrink(GeneratedT<Gen> value) const override
     { return m_generator.shrink(std::move(value)); }
 
 private:
@@ -152,21 +152,21 @@ private:
 
 
 template<typename Gen>
-class Scale : public Generator<typename Gen::GeneratedType>
+class Scale : public Generator<GeneratedT<Gen>>
 {
 public:
     Scale(double scale, Gen generator)
         : m_scale(scale), m_generator(std::move(generator)) {}
 
-    typename Gen::GeneratedType generate() const override
+    GeneratedT<Gen> generate() const override
     {
         detail::ImplicitParam<detail::param::Size> size;
         size.let(*size * m_scale);
         return m_generator.generate();
     }
 
-    shrink::IteratorUP<typename Gen::GeneratedType>
-    shrink(typename Gen::GeneratedType value) const override
+    shrink::IteratorUP<GeneratedT<Gen>>
+    shrink(GeneratedT<Gen> value) const override
     { return m_generator.shrink(std::move(value)); }
 
 private:
@@ -184,21 +184,21 @@ template<typename Gen, typename ...Gens>
 class Multiplexer<Gen, Gens...>
 {
 public:
-    typedef typename Gen::GeneratedType GeneratedType;
+    typedef GeneratedT<Gen> GeneratedType;
     static constexpr int numGenerators = sizeof...(Gens) + 1;
 
     static_assert(
         std::is_same<
-            typename Gen::GeneratedType,
+        GeneratedT<Gen>,
             typename std::tuple_element<0,
-                std::tuple<typename Gens::GeneratedType...>>::type>::value,
+            std::tuple<GeneratedT<Gens>...>>::type>::value,
         "All generators must have the same result type");
 
     Multiplexer(Gen generator, Gens... generators)
         : m_generator(std::move(generator))
         , m_multiplexer(std::move(generators)...) {}
 
-    typename Gen::GeneratedType pickWithId(int id) const
+    GeneratedT<Gen> pickWithId(int id) const
     {
         if (id == myId)
             return pick(m_generator);
@@ -217,13 +217,13 @@ template<typename Gen>
 class Multiplexer<Gen>
 {
 public:
-    typedef typename Gen::GeneratedType GeneratedType;
+    typedef GeneratedT<Gen> GeneratedType;
     static constexpr int numGenerators = 1;
 
     Multiplexer(Gen generator)
         : m_generator(std::move(generator)) {}
 
-    typename Gen::GeneratedType pickWithId(int id) const
+    GeneratedT<Gen> pickWithId(int id) const
     { return pick(m_generator); }
 
 private:
@@ -233,12 +233,12 @@ private:
 };
 
 template<typename ...Gens>
-class OneOf : public Generator<typename Multiplexer<Gens...>::GeneratedType>
+class OneOf : public Generator<GeneratedT<Multiplexer<Gens...>>>
 {
 public:
     OneOf(Gens... generators) : m_multiplexer(std::move(generators)...) {}
 
-    typename Multiplexer<Gens...>::GeneratedType generate() const override
+    GeneratedT<Multiplexer<Gens...>> generate() const override
     {
         int n = Multiplexer<Gens...>::numGenerators;
         auto id = pick(resize(kNominalSize, ranged<int>(0, n)));
@@ -395,11 +395,11 @@ private:
 // shrink but since it also does not implement `shrink` which means it
 // does not itself shrink
 template<typename Gen>
-class NoShrink : public Generator<typename Gen::GeneratedType>
+class NoShrink : public Generator<GeneratedT<Gen>>
 {
 public:
     explicit NoShrink(Gen generator) : m_generator(std::move(generator)) {}
-    typename Gen::GeneratedType generate() const override
+    GeneratedT<Gen> generate() const override
     {
         detail::ImplicitParam<detail::param::NoShrink> noShrink;
         noShrink.let(true);
@@ -412,11 +412,11 @@ private:
 
 template<typename Gen, typename Mapper>
 class Mapped : public Generator<
-    typename std::result_of<Mapper(typename Gen::GeneratedType)>::type>
+    typename std::result_of<Mapper(GeneratedT<Gen>)>::type>
 {
 public:
     typedef typename
-        std::result_of<Mapper(typename Gen::GeneratedType)>::type T;
+    std::result_of<Mapper(GeneratedT<Gen>)>::type T;
 
     Mapped(Gen generator, Mapper mapper)
         : m_generator(std::move(generator))
@@ -472,13 +472,13 @@ public:
 };
 
 template<typename Exception, typename Gen, typename Catcher>
-class Rescue : public Generator<typename Gen::GeneratedType>
+class Rescue : public Generator<GeneratedT<Gen>>
 {
 public:
     Rescue(Gen generator, Catcher catcher)
         : m_generator(generator), m_catcher(catcher) {}
 
-    typename Gen::GeneratedType generate() const override
+    GeneratedT<Gen> generate() const override
     {
         try {
             return m_generator.generate();
@@ -519,14 +519,14 @@ public:
 
 template<typename Gen, typename ...Gens>
 class TupleOf<Gen, Gens...>
-    : public Generator<std::tuple<typename Gen::GeneratedType,
-                                  typename Gens::GeneratedType...>>
+    : public Generator<std::tuple<GeneratedT<Gen>,
+                                  GeneratedT<Gens>...>>
 {
 public:
-    typedef std::tuple<typename Gen::GeneratedType,
-                       typename Gens::GeneratedType...> TupleT;
-    typedef typename Gen::GeneratedType HeadT;
-    typedef std::tuple<typename Gens::GeneratedType...> TailT;
+    typedef std::tuple<GeneratedT<Gen>,
+                       GeneratedT<Gens>...> TupleT;
+    typedef GeneratedT<Gen> HeadT;
+    typedef std::tuple<GeneratedT<Gens>...> TailT;
 
     TupleOf(Gen headGenerator, Gens ...tailGenerators)
         : m_headGenerator(std::move(headGenerator))
@@ -535,7 +535,7 @@ public:
     TupleT generate() const override
     {
         return std::tuple_cat(
-            std::tuple<typename Gen::GeneratedType>(pick(m_headGenerator)),
+            std::tuple<GeneratedT<Gen>>(pick(m_headGenerator)),
             pick(m_tailGenerator));
     }
 
@@ -572,12 +572,12 @@ private:
 };
 
 template<typename Gen1, typename Gen2>
-class PairOf : public Generator<std::pair<typename Gen1::GeneratedType,
-                                          typename Gen2::GeneratedType>>
+class PairOf : public Generator<std::pair<GeneratedT<Gen1>,
+                                          GeneratedT<Gen2>>>
 {
 public:
-    typedef typename Gen1::GeneratedType T1;
-    typedef typename Gen2::GeneratedType T2;
+    typedef GeneratedT<Gen1> T1;
+    typedef GeneratedT<Gen2> T2;
     typedef typename std::pair<T1, T2> PairT;
 
     PairOf(Gen1 generator1, Gen2 generator2)

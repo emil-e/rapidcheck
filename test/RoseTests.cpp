@@ -65,15 +65,15 @@ public:
 // std::vector
 template<typename Gen>
 class VectorGen
-    : public gen::Generator<std::vector<typename Gen::GeneratedType>>
+    : public gen::Generator<std::vector<GeneratedT<Gen>>>
 {
 public:
     explicit VectorGen(std::vector<Gen> generators)
         : m_generators(std::move(generators)) {}
 
-    std::vector<typename Gen::GeneratedType> generate() const override
+    std::vector<GeneratedT<Gen>> generate() const override
     {
-        std::vector<typename Gen::GeneratedType> value;
+        std::vector<GeneratedT<Gen>> value;
         for (const auto &gen : m_generators)
             value.push_back(pick(gen));
 
@@ -108,10 +108,10 @@ public:
 // So we can have multiple generators of the same type but where some of them
 // do not shrink
 template<typename Gen>
-class OptionalShrink : public gen::Generator<typename Gen::GeneratedType>
+class OptionalShrink : public gen::Generator<GeneratedT<Gen>>
 {
 public:
-    typedef typename Gen::GeneratedType T;
+    typedef GeneratedT<Gen> T;
 
     OptionalShrink(Gen generator, bool shrink)
         : m_generator(std::move(generator))
@@ -318,7 +318,7 @@ TEST_CASE("Rose") {
              generators[i] = noShrinkGen;
              VectorGen<decltype(shrinkGen)> generator(generators);
 
-             Rose<typename decltype(generator)::GeneratedType> rose(generator, testCase);
+             Rose<GeneratedT<decltype(generator)>> rose(generator, testCase);
              auto original = rose.currentValue();
              bool didShrink = true;
              while (didShrink)

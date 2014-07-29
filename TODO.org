@@ -9,7 +9,6 @@
 * TODO Adjustable test parameters... flags?
 * TODO Better size calculation
 * TODO suchThat, map, and other generators should have shrink()
-* TODO Create GeneratedT<T> typedef to clean up some code
 * TODO Static tests for traits
 * TODO Implement std::array
 * TODO Shrinker implementation classes to detail namespace

@@ -162,7 +162,7 @@ Rose<T>::Rose(Gen generator, const TestCase &testCase)
     : Rose(gen::GeneratorUP<T>(new Gen(std::move(generator))), testCase)
 {
     static_assert(
-        std::is_same<T, typename Gen::GeneratedType>::value,
+        std::is_same<T, GeneratedT<Gen>>::value,
         "Generated type of generator must be the same as T");
 }
 
