@@ -19,7 +19,7 @@ public:
     {
         using namespace detail;
 
-        int size = std::min(gen::currentSize(), gen::kReferenceSize);
+        int size = std::min(gen::currentSize(), gen::kNominalSize);
         RandomEngine::Atom r;
         // TODO this switching shouldn't be done here. pickAtom?
         ImplicitParam<param::CurrentNode> currentNode;
@@ -32,7 +32,7 @@ public:
 
         // We vary the size by using different number of bits. This way, we can be
         // that the max value can also be generated.
-        int nBits = (size * std::numeric_limits<T>::digits) / gen::kReferenceSize;
+        int nBits = (size * std::numeric_limits<T>::digits) / gen::kNominalSize;
         if (nBits == 0)
             return 0;
         constexpr RandomEngine::Atom randIntMax =
@@ -103,7 +103,7 @@ class Arbitrary<bool> : public gen::Generator<bool>
 public:
     bool generate() const override
     {
-        return (pick(gen::resize(gen::kReferenceSize,
+        return (pick(gen::resize(gen::kNominalSize,
                                  gen::arbitrary<uint8_t>())) & 0x1) == 0;
     }
 

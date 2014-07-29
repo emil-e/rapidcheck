@@ -50,7 +50,7 @@ int currentSize();
 //! This applies to, for example, generation of numbers but not to the
 //! generation of collection where there is an associated cost to generating
 //! large collections.
-constexpr int kReferenceSize = 100;
+constexpr int kNominalSize = 100;
 
 //! Base class for generators of all types.
 class UntypedGenerator

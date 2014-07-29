@@ -119,7 +119,7 @@ public:
 
         // TODO this seems a bit broken
         typedef typename std::make_unsigned<T>::type Uint;
-        Uint value(pick(noShrink(resize(kReferenceSize, arbitrary<Uint>()))));
+        Uint value(pick(noShrink(resize(kNominalSize, arbitrary<Uint>()))));
         return m_min + value % (m_max - m_min);
     }
 
@@ -241,7 +241,7 @@ public:
     typename Multiplexer<Gens...>::GeneratedType generate() const override
     {
         int n = Multiplexer<Gens...>::numGenerators;
-        auto id = pick(resize(kReferenceSize, ranged<int>(0, n)));
+        auto id = pick(resize(kNominalSize, ranged<int>(0, n)));
         return m_multiplexer.pickWithId(id);
     }
 
