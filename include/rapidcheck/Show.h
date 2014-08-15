@@ -103,7 +103,6 @@ template<typename Key,
 void show(const std::unordered_map<Key, T, Hash, KeyEqual, Allocator> &value,
           std::ostream &os);
 
-
 template<typename Key,
          typename T,
          typename Hash,

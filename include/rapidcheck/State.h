@@ -35,9 +35,6 @@ public:
 };
 
 template<typename State, typename Sut>
-void show(const Command<State, Sut> &command, std::ostream &os);
-
-template<typename State, typename Sut>
 using CommandSP = std::shared_ptr<Command<State, Sut>>;
 
 //! Tests a stateful system. This function has assertion semantics (i.e. a

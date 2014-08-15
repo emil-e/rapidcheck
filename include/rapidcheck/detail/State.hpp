@@ -14,10 +14,6 @@ template<typename State, typename Sut>
 void Command<State, Sut>::show(std::ostream &os) const
 { os << detail::demangle(typeid(*this).name()); }
 
-template<typename State, typename Sut>
-void show(const Command<State, Sut> &command, std::ostream &os)
-{ command.show(os); }
-
 //! Collection of commands.
 template<typename CommandT>
 class Commands
@@ -130,13 +126,11 @@ void check(State initialState,
     commands.run(initialState, sut);
 }
 
-} // namespace state
-
 template<typename CommandT>
-struct Show<state::Commands<CommandT>>
+void show(const state::Commands<CommandT> &commands, std::ostream &os)
 {
-    static void show(const state::Commands<CommandT> &commands, std::ostream &os)
-    { commands.show(os); }
-};
+    commands.show(os);
+}
 
+} // namespace state
 } // namespace rc
