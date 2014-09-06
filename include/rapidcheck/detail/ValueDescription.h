@@ -25,7 +25,7 @@ public:
     bool isNull() const;
 
 private:
-    const std::type_info *m_typeInfo = nullptr;
+    std::string m_typeName;
     std::string m_stringValue;
 };
 

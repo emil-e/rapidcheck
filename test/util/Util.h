@@ -41,14 +41,14 @@ namespace rc {
 template<typename T, typename Testable>
 void templatedProp(const std::string &description, Testable testable)
 {
-    prop(description + " (" + detail::demangle(typeid(T).name()) + ")",
+    prop(description + " (" + detail::typeToString<T>() + ")",
          testable);
 }
 
 
 #define TEMPLATED_SECTION(tparam, description)  \
     SECTION(std::string(description) + " (" +   \
-            detail::demangle(typeid(T).name()) + ")")
+            detail::typeToString<tparam>() + ")")
 
 //! Retrieves all elements from the iterator and returns them as a vector.
 template<typename T>

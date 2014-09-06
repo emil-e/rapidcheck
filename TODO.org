@@ -23,3 +23,4 @@
 * TODO Generator for unique values
 * TODO Tests for arbitrary collections
 * TODO Should noShrink for collections be the default?
+* TODO non-copyable tests for arbitrary collections

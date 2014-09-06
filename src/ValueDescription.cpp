@@ -4,20 +4,13 @@ namespace rc {
 namespace detail {
 
 std::string ValueDescription::typeName() const
-{
-    if (m_typeInfo == nullptr)
-        return std::string();
-
-    return detail::demangle(m_typeInfo->name());
-}
+{ return m_typeName; }
 
 std::string ValueDescription::stringValue() const
 { return m_stringValue; }
 
 bool ValueDescription::isNull() const
-{
-    return m_typeInfo == nullptr;
-}
+{ return m_typeName.empty(); }
 
 } // namespace detail
 } // namespace rc

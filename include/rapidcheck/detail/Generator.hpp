@@ -11,6 +11,7 @@
 #include "GenerationParams.h"
 #include "Quantifier.h"
 #include "CollectionBuilder.h"
+#include "ShowType.h"
 
 namespace rc {
 
@@ -287,11 +288,12 @@ public:
             while (!builder.add(pick(resize(currentSize, gen)))) {
                 currentSize++;
                 if ((currentSize - startSize) > 100) {
-                    std::string msg;
-                    msg += "Gave up trying to generate value that can be added to ";
-                    msg += "container of type '";
-                    msg += detail::demangle(typeid(Container).name()) + "'";
-                    throw GenerationFailure(msg);
+                    std::ostringstream msg;
+                    msg << "Gave up trying to generate value that can be added";
+                    msg << "to container of type '";
+                    detail::showType<Container>(msg);
+                    msg << "'";
+                    throw GenerationFailure(msg.str());
                 }
             }
         }
