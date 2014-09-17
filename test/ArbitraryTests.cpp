@@ -135,7 +135,6 @@ struct CollectionTests
                 auto values = pick(gen::arbitrary<T>());
                 for (const auto &value : values)
                     RC_ASSERT(isArbitraryPredictable(value));
-                RC_FAIL("CRAP!");
             });
     }
 };
