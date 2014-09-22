@@ -15,9 +15,9 @@
 * Move test utils implementations to source file
 * All generation params into single struct?
 * noShrink, resize et al. are a bit cumbersome sometimes
-* Create showType function which can be specialized to show human friendly type names
 * Default RandomEngine
 * Better syntax for generation of commands
-* Generator for unique values
+* Generator for unique collections
 * Tests for arbitrary collections
 * Should noShrink for collections be the default?
+* Tests for CollectionBuilder
