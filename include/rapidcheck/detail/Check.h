@@ -1,18 +1,10 @@
 #pragma once
 
-#define RC_UNCONDITIONAL_RESULT(ResultType, msg)                \
-    ::rc::detail::throwResultIf(                                \
-        ::rc::detail::CaseResult::Type::ResultType,             \
-        true,                                                   \
-        msg,                                                    \
-        __FILE__,                                               \
-        __LINE__)
-
-#define RC_CONDITIONAL_RESULT(ResultType, condition)                   \
+#define RC_CONDITIONAL_RESULT(ResultType, condition, msg)              \
     ::rc::detail::throwResultIf(                                       \
         ::rc::detail::CaseResult::Type::ResultType,                    \
         (condition),                                                   \
-        #condition,                                                    \
+        msg,                                                           \
         __FILE__,                                                      \
         __LINE__)
 
