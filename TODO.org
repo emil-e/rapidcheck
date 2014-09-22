@@ -1,26 +1,23 @@
-* TODO Maybe shrink reals to smaller values as well?
-* TODO Non-determinisim in generation might cause bad casts, report this
-* TODO Exception handling
-* TODO Better strategy for when to give up generating
-* TODO Use different seeds when generating
-* TODO Generate element from a collection
-* TODO Shrink nonZero, negative, positive and nonNegative
-* TODO Assertion macros have an extra '!'
-* TODO Adjustable test parameters... flags?
-* TODO Better size calculation
-* TODO suchThat, map, and other generators should have shrink()
-* TODO Static tests for traits
-* TODO Implement std::array
-* TODO Shrinker implementation classes to detail namespace
-* TODO catch.hpp-like sections for setup and teardown, perhaps?
-* TODO Move test utils implementations to source file
-* TODO All generation params into single struct?
-* TODO noShrink, resize et al. are a bit cumbersome sometimes
-* TODO Create showType function which can be specialized to show human friendly type names
-* TODO Default RandomEngine
-* TODO Show.h... clean it up
-* TODO Better syntax for generation of commands
-* TODO Generator for unique values
-* TODO Tests for arbitrary collections
-* TODO Should noShrink for collections be the default?
-* TODO non-copyable tests for arbitrary collections
+* Maybe shrink reals to smaller values as well?
+* Non-determinisim in generation might cause bad casts, report this
+* Exception handling
+* Better strategy for when to give up generating
+* Use different seeds when generating
+* Generate element from a collection
+* Shrink nonZero, negative, positive and nonNegative
+* Assertion macros have an extra '!'
+* Adjustable test parameters... flags?
+* Better size calculation
+* suchThat, map, and other generators should have shrink()
+* Static tests for traits
+* Implement std::array
+* Shrinker implementation classes to detail namespace
+* Move test utils implementations to source file
+* All generation params into single struct?
+* noShrink, resize et al. are a bit cumbersome sometimes
+* Create showType function which can be specialized to show human friendly type names
+* Default RandomEngine
+* Better syntax for generation of commands
+* Generator for unique values
+* Tests for arbitrary collections
+* Should noShrink for collections be the default?
