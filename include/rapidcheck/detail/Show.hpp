@@ -206,4 +206,10 @@ void show(const std::basic_string<CharT, Traits, Allocator> &value,
     showCollection("\"", "\"", value, os);
 }
 
+template<typename T, std::size_t N>
+void show(const std::array<T, N> &value, std::ostream &os)
+{
+    showCollection("[", "]", value, os);
+}
+
 } // namespace rc

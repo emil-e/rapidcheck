@@ -142,5 +142,7 @@ struct CollectionTests
 TEST_CASE("gen::arbitrary for containers") {
     meta::forEachType<CollectionTests,
                       RC_GENERIC_CONTAINERS(Predictable),
-                      RC_GENERIC_CONTAINERS(NonCopyable)>();
+                      RC_GENERIC_CONTAINERS(NonCopyable),
+                      std::array<Predictable, 100>,
+                      std::array<NonCopyable, 100>>();
 }

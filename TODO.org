@@ -10,7 +10,6 @@
 * Better size calculation
 * suchThat, map, and other generators should have shrink()
 * Static tests for traits
-* Implement std::array
 * Shrinker implementation classes to detail namespace
 * Move test utils implementations to source file
 * All generation params into single struct?

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <sstream>
+#include <array>
 
 #include "rapidcheck/Show.h"
 #include "rapidcheck/Shrink.h"
@@ -361,6 +362,50 @@ private:
                 [=](typename Container::value_type element) {
                     return m_generator.shrink(std::move(element));
                 }));
+    }
+
+    Gen m_generator;
+};
+
+// Specialization for std::array. T must be default constructible.
+template<typename T, std::size_t N, typename Gen>
+class Collection<std::array<T, N>, Gen> : public Generator<std::array<T, N>>
+{
+public:
+    typedef std::array<T, N> ArrayT;
+
+    static_assert(std::is_default_constructible<T>::value,
+                  "T must be default constructible.");
+
+    explicit Collection(Gen generator)
+        : m_generator(std::move(generator)) {}
+
+    ArrayT generate() const override
+    {
+        ArrayT array;
+        for (std::size_t i = 0; i < N; i++)
+            array[i] = pick(noShrink(m_generator));
+        return std::move(array);
+    }
+
+    shrink::IteratorUP<ArrayT> shrink(ArrayT value) const override
+    { return shrink(value, detail::IsCopyConstructible<ArrayT>()); }
+
+private:
+    shrink::IteratorUP<ArrayT> shrink(const ArrayT &value,
+                                      std::false_type) const
+    {
+        return shrink::nothing<ArrayT>();
+    }
+
+    shrink::IteratorUP<ArrayT> shrink(const ArrayT &value,
+                                      std::true_type) const
+    {
+        return shrink::eachElement(
+            value,
+            [=](typename ArrayT::value_type element) {
+                return m_generator.shrink(std::move(element));
+            });
     }
 
     Gen m_generator;

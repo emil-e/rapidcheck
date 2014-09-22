@@ -34,11 +34,27 @@ public:
 
     CollectionBuilder();
     bool add(T value);
-    std::forward_list<T, Allocator> &collection();
+    ListT &collection();
 
 private:
     ListT m_collection;
     typename ListT::iterator m_iterator;
+};
+
+//! Specialization for `std::array`
+template<typename T, std::size_t N>
+class CollectionBuilder<std::array<T, N>>
+{
+public:
+    typedef std::array<T, N> ArrayT;
+
+    CollectionBuilder();
+    bool add(T value);
+    ArrayT &collection();
+
+private:
+    ArrayT m_array;
+    typename ArrayT::iterator m_iterator;
 };
 
 //! Base class for map specializations.

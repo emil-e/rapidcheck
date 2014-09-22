@@ -171,6 +171,17 @@ struct ShowType<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>>
     }
 };
 
+template<typename T, std::size_t N>
+struct ShowType<std::array<T, N>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::array<";
+        detail::showType<T>(os);
+        os << ", " << N << ">";
+    }
+};
+
 template<typename T>
 void showType(std::ostream &os)
 {

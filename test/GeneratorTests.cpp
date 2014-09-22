@@ -260,7 +260,19 @@ TEST_CASE("gen::collection") {
                       RC_GENERIC_CONTAINERS(Predictable),
                       std::basic_string<Predictable>>();
     meta::forEachType<NonCopyableCollectionTests,
-                      RC_GENERIC_CONTAINERS(NonCopyable)>();
+                      RC_GENERIC_CONTAINERS(NonCopyable),
+                      std::array<NonCopyable, 100>>();
+
+    // Can't use CollectionTests since that tests for size which is fixed for
+    // std::array
+    prop("works with std::array",
+         [] {
+             typedef std::array<Predictable, 100> ArrayT;
+             auto egen = gen::arbitrary<Predictable>();
+             auto coll = pick(gen::noShrink(gen::collection<ArrayT>(egen)));
+             for (const auto &e : coll)
+                 RC_ASSERT(isArbitraryPredictable(e));
+         });
 }
 
 TEST_CASE("gen::resize") {

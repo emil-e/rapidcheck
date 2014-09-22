@@ -147,6 +147,7 @@ struct EachElementProperties
 TEST_CASE("shrink::eachElement") {
     meta::forEachType<EachElementProperties,
                       RC_GENERIC_CONTAINERS(int),
+                      std::array<int, 100>,
                       std::string,
                       std::wstring>();
 }

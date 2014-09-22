@@ -224,4 +224,9 @@ public:
         gen::character<T>()) {}
 };
 
+// std::array
+template<typename T, std::size_t N>
+class Arbitrary<std::array<T, N>>
+    : public ArbitraryCollection<std::array<T, N>, T> {};
+
 } // namespace rc

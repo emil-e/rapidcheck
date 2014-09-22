@@ -118,6 +118,9 @@ template<typename Key,
 void show(const std::unordered_multiset<Key, Hash, KeyEqual, Allocator> &value,
           std::ostream &os);
 
+template<typename T, std::size_t N>
+void show(const std::array<T, N> &value, std::ostream &os);
+
 } // namespace rc
 
 #include "detail/Show.hpp"
