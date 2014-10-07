@@ -5,7 +5,6 @@
 * Use different seeds when generating
 * Generate element from a collection
 * Shrink nonZero, negative, positive and nonNegative
-* Assertion macros have an extra '!'
 * Adjustable test parameters... flags?
 * Better size calculation
 * suchThat, map, and other generators should have shrink()
@@ -20,3 +19,5 @@
 * Tests for arbitrary collections
 * Should noShrink for collections be the default?
 * Tests for CollectionBuilder
+* Test discarding behavior
+* Accepted generator bug? Shouldn't be set unconditionally?

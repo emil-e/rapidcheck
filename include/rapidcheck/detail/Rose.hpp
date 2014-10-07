@@ -73,6 +73,9 @@ T RoseNode::nextShrink(bool &didShrink, std::true_type)
         if (didShrink)
             return std::move(value);
 
+        // TODO this seems funny... what if we already have an accepted value?
+        //      This is set unconditionally and we WILL get here if we accept a
+        //      value, right?
         // Otherwise, we should make a shrink iterator
         // The already generated value is a last restort, set as accepted.
         m_acceptedGenerator = gen::GeneratorUP<T>(new gen::Constant<T>(value));
