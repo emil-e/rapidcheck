@@ -1,0 +1,25 @@
+- Maybe shrink reals to smaller values as well?
+- Non-determinisim in generation might cause bad casts, report this
+- Exception handling
+- Better strategy for when to give up generating
+- Use different seeds when generating
+- Generate element from a collection
+- Shrink nonZero, negative, positive and nonNegative
+- Adjustable test parameters... flags?
+- Better size calculation
+- suchThat, map, and other generators should have shrink()
+- Static tests for traits
+- Shrinker implementation classes to detail namespace
+- Move test utils implementations to source file
+- All generation params into single struct?
+- noShrink, resize et al. are a bit cumbersome sometimes
+- Default RandomEngine
+- Better syntax for generation of commands
+- Generator for unique collections
+- Tests for arbitrary collections
+- Should noShrink for collections be the default?
+- Tests for CollectionBuilder
+- Test discarding behavior
+- Accepted generator bug? Shouldn't be set unconditionally?
+- Assumptions about mutability in copied values... dangerous? For example, shared pointers are copied...
+- Make pick() a member function
