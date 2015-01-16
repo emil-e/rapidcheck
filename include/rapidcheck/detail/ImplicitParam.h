@@ -66,7 +66,6 @@ public:
 
 private:
     RC_DISABLE_COPY(ImplicitParam)
-    RC_DISABLE_MOVE(ImplicitParam)
 
     typedef std::stack<ValueType, std::vector<ValueType>> StackT;
 
