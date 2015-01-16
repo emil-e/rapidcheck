@@ -3,7 +3,9 @@ add_executable(rapidcheck_tests
   ShrinkTests.cpp
   GeneratorTests.cpp
   ArbitraryTests.cpp
-  RoseTests.cpp)
+  RoseTests.cpp
+  VariantTests.cpp
+  AnyTests.cpp)
 
 target_link_libraries(rapidcheck_tests rapidcheck)
 target_include_directories(rapidcheck_tests PRIVATE ../ext/catch/include)

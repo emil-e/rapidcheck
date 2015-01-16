@@ -11,7 +11,8 @@ add_library(rapidcheck
   src/Show.cpp
   src/Utility.cpp
   src/ValueDescription.cpp
-  src/Results.cpp)
+  src/Results.cpp
+  src/Any.cpp)
 
 target_include_directories(rapidcheck PUBLIC include)
 
