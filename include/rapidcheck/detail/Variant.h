@@ -11,7 +11,7 @@ class Variant
 public:
     //! Constructs a new `Variant` containing the specified value.
     template<typename T>
-    Variant(T value);
+    Variant(T &&value);
 
     //! Copy constructor.
     Variant(const Variant &other);
