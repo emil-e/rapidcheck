@@ -21,17 +21,17 @@ auto withTestCase(const TestCase &testCase, Callable callable)
     return callable();
 }
 
-TestResult shrinkFailingCase(gen::GeneratorUP<CaseResult> &&property,
+TestResult shrinkFailingCase(const gen::Generator<CaseResult> &property,
                              const TestCase &testCase)
 {
-    Rose<CaseResult> rose(std::move(property), testCase);
+    Rose<CaseResult> rose(property, testCase);
     FailureResult result;
     result.failingCase = testCase;
     result.numShrinks = 0;
 
     bool didShrink = true;
     while (true) {
-        CaseResult shrinkResult(rose.nextShrink(didShrink));
+        CaseResult shrinkResult(rose.nextShrink(property, didShrink));
         if (didShrink) {
             if (shrinkResult.type() == CaseResult::Type::Failure) {
                 rose.acceptShrink();
@@ -39,7 +39,7 @@ TestResult shrinkFailingCase(gen::GeneratorUP<CaseResult> &&property,
             }
         } else {
             result.description = shrinkResult.description();
-            result.counterExample = rose.example();
+            result.counterExample = rose.example(property);
             return result;
         }
     }
@@ -56,7 +56,7 @@ struct TestParams
     int maxDiscardRatio = 10;
 };
 
-TestResult checkProperty(gen::GeneratorUP<CaseResult> &&property)
+TestResult checkProperty(const gen::Generator<CaseResult> &property)
 {
     using namespace detail;
     TestParams params;
@@ -72,10 +72,10 @@ TestResult checkProperty(gen::GeneratorUP<CaseResult> &&property)
 
         CaseResult result = withTestCase(
             currentCase,
-            [&]{ return property->generate(); });
+            [&]{ return property.generate(); });
 
         if (result.type() == CaseResult::Type::Failure) {
-            return shrinkFailingCase(std::move(property), currentCase);
+            return shrinkFailingCase(property, currentCase);
         } else if(result.type() == CaseResult::Type::Discard) {
             numDiscarded++;
             if (numDiscarded > maxDiscard) {

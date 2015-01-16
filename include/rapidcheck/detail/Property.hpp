@@ -50,9 +50,9 @@ CaseResult Property<Testable>::generate() const
 }
 
 template<typename Testable>
-gen::GeneratorUP<CaseResult> toProperty(Testable testable)
+Property<Testable> toProperty(Testable testable)
 {
-    return gen::GeneratorUP<CaseResult>(new Property<Testable>(testable));
+    return Property<Testable>(testable);
 }
 
 } // namespace detail

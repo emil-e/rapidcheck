@@ -16,17 +16,14 @@
 
 namespace rc {
 
-template<typename Gen>
-GeneratedT<Gen> pick(Gen generator)
+template<typename T>
+T pick(const gen::Generator<T> &generator)
 {
     detail::ImplicitParam<detail::param::CurrentNode> currentNode;
-    if (*currentNode != nullptr) {
-        return (*currentNode)->pick(
-            gen::GeneratorUP<GeneratedT<Gen>>(
-                new Gen(std::move(generator))));
-    } else {
+    if (*currentNode != nullptr)
+        return (*currentNode)->pick(generator);
+    else
         return generator.generate();
-    }
 }
 
 template<typename T>

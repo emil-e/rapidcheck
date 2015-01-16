@@ -150,20 +150,33 @@ struct RoseModel
     bool didShrink;
 };
 
-struct CurrentValue
+struct RoseCommand
     : public state::Command<RoseModel, detail::Rose<RoseModel::ValueT>>
 {
+    RoseCommand(const gen::Generator<RoseModel::ValueT> *generator)
+        : m_generator(generator) {}
+
+    const gen::Generator<RoseModel::ValueT> *m_generator;
+};
+
+struct CurrentValue : public RoseCommand
+{
+    CurrentValue(const gen::Generator<RoseModel::ValueT> *generator)
+        : RoseCommand(generator) {}
+
     void run(const RoseModel &s0,
              detail::Rose<RoseModel::ValueT> &rose) const override
     {
-        auto value(rose.currentValue());
+        auto value(rose.currentValue(*m_generator));
         RC_ASSERT(value == s0.currentValue);
     }
 };
 
-struct NextShrink
-    : public state::Command<RoseModel, detail::Rose<RoseModel::ValueT>>
+struct NextShrink : public RoseCommand
 {
+    NextShrink(const gen::Generator<RoseModel::ValueT> *generator)
+        : RoseCommand(generator) {}
+
     RoseModel nextState(const RoseModel &s0) const override
     {
         RoseModel s1(s0);
@@ -196,7 +209,7 @@ struct NextShrink
              detail::Rose<RoseModel::ValueT> &rose) const override
     {
         bool didShrink;
-        auto value(rose.nextShrink(didShrink));
+        auto value(rose.nextShrink(*m_generator, didShrink));
 
         RoseModel s1(nextState(s0));
         RC_ASSERT(value == s1.currentValue);
@@ -204,9 +217,11 @@ struct NextShrink
     }
 };
 
-struct AcceptShrink
-    : public state::Command<RoseModel, detail::Rose<RoseModel::ValueT>>
+struct AcceptShrink : public RoseCommand
 {
+    AcceptShrink(const gen::Generator<RoseModel::ValueT> *generator)
+        : RoseCommand(generator) {}
+
     RoseModel nextState(const RoseModel &s0) const override
     {
         RC_PRE(s0.didShrink);
@@ -261,22 +276,22 @@ TEST_CASE("Rose") {
              }
 
              Rose<RoseModel::ValueT> rose(generator, testCase);
-             state::check(s0, rose, [] (const RoseModel &model) {
+             state::check(s0, rose, [&] (const RoseModel &model) {
                  switch (pick(gen::ranged(0, 3))) {
                  case 0:
                      return state::CommandSP<
                          RoseModel,
-                         Rose<RoseModel::ValueT>>(new CurrentValue());
+                         Rose<RoseModel::ValueT>>(new CurrentValue(&generator));
 
                  case 1:
                      return state::CommandSP<
                          RoseModel,
-                         Rose<RoseModel::ValueT>>(new NextShrink());
+                         Rose<RoseModel::ValueT>>(new NextShrink(&generator));
 
                  case 2:
                      return state::CommandSP<
                          RoseModel,
-                         Rose<RoseModel::ValueT>>(new AcceptShrink());
+                         Rose<RoseModel::ValueT>>(new AcceptShrink(&generator));
                  }
 
                  return state::CommandSP<
@@ -289,14 +304,15 @@ TEST_CASE("Rose") {
          [] (const TestCase &testCase) {
              auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
              std::vector<ErraticSum> generators(size);
-             Rose<std::vector<int>> rose(VectorGen<ErraticSum>(generators), testCase);
+             auto generator = VectorGen<ErraticSum>(generators);
+             Rose<std::vector<int>> rose(generator, testCase);
 
              bool success = true;
-             auto original = rose.currentValue();
+             auto original = rose.currentValue(generator);
              for (int p = 0; p < original.size(); p++) {
                  for (int n = 0; n < 10; n++) {
                      bool didShrink;
-                     auto shrink = rose.nextShrink(didShrink);
+                     auto shrink = rose.nextShrink(generator, didShrink);
                      for (int i = 0; i < original.size(); i++) {
                          if (i != p)
                              success = success && (original[i] == shrink[i]);
@@ -319,9 +335,9 @@ TEST_CASE("Rose") {
              VectorGen<decltype(shrinkGen)> generator(generators);
 
              Rose<GeneratedT<decltype(generator)>> rose(generator, testCase);
-             auto original = rose.currentValue();
+             auto original = rose.currentValue(generator);
              bool didShrink = true;
              while (didShrink)
-                 RC_ASSERT(rose.nextShrink(didShrink)[i] == original[i]);
+                 RC_ASSERT(rose.nextShrink(generator, didShrink)[i] == original[i]);
          });
 }

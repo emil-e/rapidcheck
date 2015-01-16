@@ -23,7 +23,7 @@ private:
 
 //! Converts `testable` to a property.
 template<typename Testable>
-gen::GeneratorUP<CaseResult> toProperty(Testable testable);
+Property<Testable> toProperty(Testable testable);
 
 } // namespace detail
 } // namespace rc

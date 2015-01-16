@@ -5,6 +5,7 @@
 #include "rapidcheck/detail/Utility.h"
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/ValueDescription.h"
+#include "rapidcheck/detail/Any.h"
 #include "rapidcheck/Shrink.h"
 
 namespace rc {
@@ -33,27 +34,26 @@ public:
     //! Picks a value using the given generator in the context of this
     //! `RoseNode`.
     template<typename T>
-    T pick(gen::GeneratorUP<T> &&generator);
-
-    //! Generates a value in the context of this node using the given generator.
-    template<typename T>
-    void setGenerator(gen::GeneratorUP<T> &&generator);
+    T pick(const gen::Generator<T> &generator);
 
     //! Returns the current value which may be be generated or fixed.
+    //!
+    //! @param generator  The generator in use.
     template<typename T>
-    T currentValue();
+    T currentValue(const gen::Generator<T> &generator);
 
     //! Returns the current value which may be be generated or fixed.
-    ValueDescription currentDescription();
+    ValueDescription currentDescription(const gen::UntypedGenerator &generator);
 
     //! Returns the next shrink of this `RoseNode`.
     //!
+    //! @param generator  The generator in use.
     //! @param didShrink  Set to `true` if there was another shrink or `false`
     //!                   if exhausted.
     //!
     //! @return  The shrunk value.
     template<typename T>
-    T nextShrink(bool &didShrink);
+    T nextShrink(const gen::Generator<T> &generator, bool &didShrink);
 
     //! Accepts the current shrink.
     void acceptShrink();
@@ -64,7 +64,8 @@ public:
 
     //! Returns a vector of `ValueDescription`s describing the current values of
     //! the direct children.
-    std::vector<ValueDescription> example();
+    std::vector<ValueDescription> example(
+        const gen::UntypedGenerator &generator);
 
     //! Move constructor.
     RoseNode(RoseNode &&other);
@@ -81,21 +82,20 @@ private:
     };
 
     template<typename T>
-    T nextShrink(bool &didShrink, std::true_type);
+    T nextShrink(const gen::Generator<T> &generator,
+                 bool &didShrink,
+                 std::true_type);
 
     template<typename T>
-    T nextShrink(bool &didShrink, std::false_type);
+    T nextShrink(const gen::Generator<T> &generator,
+                 bool &didShrink,
+                 std::false_type);
 
     template<typename T>
-    T nextShrinkChildren(bool &didShrink);
+    T nextShrinkChildren(const gen::Generator<T> &generator, bool &didShrink);
 
     template<typename T>
-    T generate();
-
-    gen::UntypedGenerator *currentGenerator() const;
-
-    template<typename T>
-    static gen::Generator<T> *generatorCast(gen::UntypedGenerator *gen);
+    T generate(const gen::Generator<T> &generator);
 
     template<typename T>
     static shrink::Iterator<T> *iteratorCast(
@@ -117,9 +117,8 @@ private:
     bool m_hasAtom = false;
     RandomEngine::Atom m_atom;
     shrink::UntypedIteratorUP m_shrinkIterator;
-    gen::UntypedGeneratorUP m_canonicalGenerator;
-    gen::UntypedGeneratorUP m_currentGenerator;
-    gen::UntypedGeneratorUP m_acceptedGenerator;
+    Any m_currentValue;
+    Any m_acceptedValue;
 };
 
 //! Used to implement implicit shrinking of the generation tree. Values are
@@ -132,17 +131,10 @@ public:
     //!
     //! @param generator  The generator to use.
     //! @param testCase   The test case to use.
-    Rose(gen::GeneratorUP<T> &&generator, const TestCase &testCase);
-
-    //! Constructor.
-    //!
-    //! @param generator  The generator to use.
-    //! @param testCase   The test case to use.
-    template<typename Gen>
-    Rose(Gen generator, const TestCase &testCase);
+    Rose(const gen::Generator<T> &generator, const TestCase &testCase);
 
     //! Returns the current value.
-    T currentValue();
+    T currentValue(const gen::Generator<T> &generator);
 
     //! Returns the next shrink of this `Rose`.
     //!
@@ -150,14 +142,15 @@ public:
     //!                   if exhausted.
     //!
     //! @return  The shrunk value.
-    T nextShrink(bool &didShrink);
+    T nextShrink(const gen::Generator<T> &generator, bool &didShrink);
 
     //! Accepts the current shrink.
     void acceptShrink();
 
     //! Returns a vector of `ValueDescription`s describing the current values of
     //! the direct children.
-    std::vector<ValueDescription> example();
+    std::vector<ValueDescription> example(
+        const gen::UntypedGenerator &generator);
 
 private:
     RoseNode m_root;

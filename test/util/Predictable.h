@@ -9,7 +9,7 @@ namespace rc {
 struct Predictable
 {
     static constexpr int predictableValue = 1337;
-    int value;
+    int value; // TODO provide some default value here?
     int extra;
 };
 
