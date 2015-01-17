@@ -33,14 +33,12 @@ public:
 
     //! Picks a value using the given generator in the context of this
     //! `RoseNode`.
-    template<typename T>
-    T pick(const gen::Generator<T> &generator);
+    Any pick(const gen::Generator<Any> &generator);
 
     //! Returns the current value which may be be generated or fixed.
     //!
     //! @param generator  The generator in use.
-    template<typename T>
-    T currentValue(const gen::Generator<T> &generator);
+    Any currentValue(const gen::Generator<Any> &generator);
 
     //! Returns the current value which may be be generated or fixed.
     ValueDescription currentDescription(const gen::UntypedGenerator &generator);
@@ -52,8 +50,7 @@ public:
     //!                   if exhausted.
     //!
     //! @return  The shrunk value.
-    template<typename T>
-    T nextShrink(const gen::Generator<T> &generator, bool &didShrink);
+    Any nextShrink(const gen::Generator<Any> &generator, bool &didShrink);
 
     //! Accepts the current shrink.
     void acceptShrink();
@@ -81,28 +78,10 @@ private:
         static int defaultValue() { return 0; }
     };
 
-    template<typename T>
-    T nextShrink(const gen::Generator<T> &generator,
-                 bool &didShrink,
-                 std::true_type);
-
-    template<typename T>
-    T nextShrink(const gen::Generator<T> &generator,
-                 bool &didShrink,
-                 std::false_type);
-
-    template<typename T>
-    T nextShrinkChildren(const gen::Generator<T> &generator, bool &didShrink);
-
-    template<typename T>
-    T generate(const gen::Generator<T> &generator);
-
-    template<typename T>
-    static shrink::Iterator<T> *iteratorCast(
-        const shrink::UntypedIteratorUP &it);
-
+    Any nextShrinkChildren(const gen::Generator<Any> &generator,
+                           bool &didShrink);
+    Any generate(const gen::Generator<Any> &generator);
     void adoptChildren();
-
     std::string debugDescription() const;
     std::string debugPath() const;
     std::string debugIndexPath() const;
@@ -116,7 +95,7 @@ private:
 
     bool m_hasAtom = false;
     RandomEngine::Atom m_atom;
-    shrink::UntypedIteratorUP m_shrinkIterator;
+    shrink::IteratorUP<Any> m_shrinkIterator;
     Any m_currentValue;
     Any m_acceptedValue;
 };

@@ -1,18 +1,10 @@
 #pragma once
 
-#include <vector>
-#include <sstream>
-#include <array>
-
-#include "rapidcheck/Show.h"
-#include "rapidcheck/Shrink.h"
-
+#include "ErasedGenerator.h"
 #include "ImplicitParam.h"
-#include "Rose.h"
 #include "GenerationParams.h"
+#include "Rose.h"
 #include "Quantifier.h"
-#include "CollectionBuilder.h"
-#include "ShowType.h"
 
 namespace rc {
 
@@ -20,10 +12,13 @@ template<typename T>
 T pick(const gen::Generator<T> &generator)
 {
     detail::ImplicitParam<detail::param::CurrentNode> currentNode;
-    if (*currentNode != nullptr)
-        return (*currentNode)->pick(generator);
-    else
+    if (*currentNode != nullptr) {
+        return std::move(
+            (*currentNode)->pick(
+                detail::ErasedGenerator<T>(generator)).template get<T>());
+    } else {
         return generator.generate();
+    }
 }
 
 template<typename T>

@@ -39,6 +39,7 @@ int currentSize();
 constexpr int kNominalSize = 100;
 
 //! Base class for generators of all types.
+//! TODO do we really need this now?
 class UntypedGenerator
 {
 public:

@@ -1,24 +1,23 @@
 #pragma once
 
 #include "ValueDescription.h"
+#include "Traits.h"
 
 namespace rc {
 namespace detail {
 
+class AbstractAnyImpl;
+
 //! Variant class that can hold a value of any type.
-class Any {
+class Any
+{
 public:
     //! Constructs a new null `Any`.
     Any();
 
     //! Constructs a new `Any` with the given value.
     template<typename T>
-    Any(T &&value);
-
-    //! Assignment operator to copy or move a value of type `T` into this
-    //! `Any`.
-    template<typename T>
-    Any &operator=(T &&rhs);
+    static Any of(T &&value);
 
     //! Resets this `Any` to null.
     void reset();
@@ -39,16 +38,23 @@ public:
     //! Returns `true` if this `Any` is non-null.
     operator bool() const;
 
+    //! Returns `true` if this `Any` is copyable. Non-copyable `Any` will throw
+    //! an exception if a copy is attempted.
+    //!
+    //! Maybe copy should be explicit?
+    bool isCopyable() const;
+
+    //! Throws if `other` is not copyable.
+    Any(const Any &other);
+
+    //! Throws if `other` is not copyable.
+    Any &operator=(const Any &other);
+
     Any(Any &&other);
     Any &operator=(Any &&rhs);
-    ~Any();
 
 private:
-    RC_DISABLE_COPY(Any)
-
-    void *m_value;
-    void (*m_delete)(void *);
-    ValueDescription (*m_describe)(void *);
+    std::unique_ptr<AbstractAnyImpl> m_impl;
 };
 
 } // namespace detail

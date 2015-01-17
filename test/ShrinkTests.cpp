@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck.h>
 
+#include <array>
+
 #include "util/Util.h"
 #include "util/Meta.h"
 

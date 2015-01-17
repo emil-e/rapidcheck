@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/Generator.h"
+
 namespace rc {
 
 //! Useful utility class for testing that `Arbitrary` is actually used. The key

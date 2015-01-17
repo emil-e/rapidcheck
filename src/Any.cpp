@@ -3,36 +3,39 @@
 namespace rc {
 namespace detail {
 
-Any::Any() { reset(); }
+Any::Any() {}
+
+Any::Any(const Any &other)
+    : m_impl(other.m_impl
+             ? other.m_impl->copy()
+             : nullptr) {}
 
 Any::Any(Any &&other)
-    : m_value(other.m_value)
-    , m_delete(other.m_delete)
-    , m_describe(other.m_describe)
-{ other.m_value = nullptr; }
+    : m_impl(other.m_impl.release()) {}
 
-void Any::reset()
+Any &Any::operator=(const Any &rhs)
 {
-    m_value = nullptr;
-    m_delete = [](void *){};
-    m_describe = [](void *){ return ValueDescription(); };
+    if (rhs.m_impl)
+        m_impl = rhs.m_impl->copy();
+    else
+        m_impl.reset();
+    return *this;
 }
 
 Any &Any::operator=(Any &&rhs)
 {
-    m_delete(m_value);
-    m_value = rhs.m_value;
-    m_delete = rhs.m_delete;
-    m_describe = rhs.m_describe;
-    rhs.m_value = nullptr;
+    m_impl.reset(rhs.m_impl.release());
     return *this;
 }
 
-ValueDescription Any::describe() const { return m_describe(m_value); }
+void Any::reset() { m_impl.reset(); }
 
-Any::operator bool() const { return m_value != nullptr; }
+ValueDescription Any::describe() const
+{ return m_impl ? m_impl->describe() : ValueDescription(); }
 
-Any::~Any() { m_delete(m_value); }
+Any::operator bool() const { return static_cast<bool>(m_impl); }
+
+bool Any::isCopyable() const { return !m_impl || m_impl->isCopyable(); }
 
 } // namespace detail
 } // namespace rc

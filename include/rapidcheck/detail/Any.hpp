@@ -5,38 +5,57 @@
 namespace rc {
 namespace detail {
 
-namespace {
-
-template<typename T>
-void deleteValue(void *p) { delete static_cast<T *>(p); }
-
-template<typename T>
-ValueDescription describeValue(void *p)
-{ return ValueDescription(*static_cast<T *>(p)); }
-
-}
-
-template<typename T>
-Any::Any(T &&value)
-    : m_value(new T(std::forward<T>(value)))
-    , m_delete(deleteValue<DecayT<T>>)
-    , m_describe(describeValue<DecayT<T>>) {}
-
-template<typename T>
-Any &Any::operator=(T &&rhs)
+class AbstractAnyImpl
 {
-    m_delete(m_value);
-    m_value = new DecayT<T>(std::forward<T>(rhs));
-    m_delete = deleteValue<DecayT<T>>;
-    m_describe = describeValue<DecayT<T>>;
-    return *this;
+public:
+    virtual void *get() = 0;
+    virtual bool isCopyable() const = 0;
+    virtual std::unique_ptr<AbstractAnyImpl> copy() const = 0;
+    virtual ValueDescription describe() const = 0;
+};
+
+template<typename T>
+class AnyImpl : public AbstractAnyImpl
+{
+public:
+    template<typename ValueT>
+    AnyImpl(ValueT &&value)
+        : m_value(std::forward<ValueT>(value)) {}
+
+    void *get() { return &m_value; }
+
+    bool isCopyable() const { return IsCopyConstructible<T>::value; }
+
+    std::unique_ptr<AbstractAnyImpl> copy() const
+    { return copy(IsCopyConstructible<T>()); }
+
+    ValueDescription describe() const { return ValueDescription(m_value); }
+
+private:
+    std::unique_ptr<AbstractAnyImpl> copy(std::true_type) const
+    { return std::unique_ptr<AbstractAnyImpl>(new AnyImpl<T>(*this)); }
+
+    // TODO better error message
+    std::unique_ptr<AbstractAnyImpl> copy(std::false_type) const
+    { throw std::runtime_error("Not copyable"); }
+
+    T m_value;
+};
+
+//! Constructs a new `Any` with the given value.
+template<typename T>
+Any Any::of(T &&value)
+{
+    Any any;
+    any.m_impl.reset(new AnyImpl<DecayT<T>>(std::forward<T>(value)));
+    return any;
 }
 
 template<typename T>
-const T &Any::get() const { return *static_cast<T *>(m_value); }
+const T &Any::get() const { return *static_cast<T *>(m_impl->get()); }
 
 template<typename T>
-T &Any::get() { return *static_cast<T *>(m_value); }
+T &Any::get() { return *static_cast<T *>(m_impl->get()); }
 
 } // namespace detail
 } // namespace rc

@@ -10,7 +10,8 @@ namespace detail {
 //! useful to reduce template instantiation in internal code that deals with
 //! generators.
 template<typename T>
-class ErasedGenerator : public gen::Generator<Any> {
+class ErasedGenerator : public gen::Generator<Any>
+{
 public:
     ErasedGenerator(const gen::Generator<T> &generator);
     Any generate() const;
