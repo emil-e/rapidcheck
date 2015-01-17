@@ -23,3 +23,5 @@
 - Accepted generator bug? Shouldn't be set unconditionally?
 - Assumptions about mutability in copied values... dangerous? For example, shared pointers are copied...
 - Make pick() a member function
+- Make default show() not depending on operator<<
+- showing() method and support class for nicer integration with operator<<
