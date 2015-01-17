@@ -559,8 +559,6 @@ public:
     std::tuple<> generate() const override { return std::tuple<>(); }
 };
 
-#define IMPLEMENT_CONDITIONAL
-
 template<typename Gen, typename ...Gens>
 class TupleOf<Gen, Gens...>
     : public Generator<std::tuple<GeneratedT<Gen>,
