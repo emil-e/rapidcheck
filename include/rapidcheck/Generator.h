@@ -38,26 +38,9 @@ int currentSize();
 //! large collections.
 constexpr int kNominalSize = 100;
 
-//! Base class for generators of all types.
-//! TODO do we really need this now?
-class UntypedGenerator
-{
-public:
-    //! Returns the type info for the generated type.
-    virtual const std::type_info &generatedTypeInfo() const = 0;
-
-    //! Generates a value and returns a `ValueDescription` of it. This provides
-    //! untyped representation of the value.
-    virtual detail::ValueDescription generateDescription() const = 0;
-
-    virtual ~UntypedGenerator() = default;
-};
-
 //! Base class for generators of value of type `T`.
-//!
-//! Note: Instances must be copyable!
 template<typename T>
-class Generator : public UntypedGenerator
+class Generator
 {
 public:
     //! The generated type.
@@ -70,8 +53,7 @@ public:
     //! given value. The default impelemtation returns a \c NullIterator.
     virtual shrink::IteratorUP<T> shrink(T value) const;
 
-    const std::type_info &generatedTypeInfo() const override;
-    detail::ValueDescription generateDescription() const override;
+    ~Generator() = default;
 
     static_assert(!std::is_same<T, void>::value,
                   "Generated type cannot be void");

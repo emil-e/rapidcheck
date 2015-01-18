@@ -51,20 +51,6 @@ Any RoseNode::currentValue(const gen::Generator<Any> &generator)
     }
 }
 
-ValueDescription RoseNode::currentDescription(
-    const gen::UntypedGenerator &generator)
-{
-    if (m_currentValue) {
-        return m_currentValue.describe();
-    } else if (m_acceptedValue) {
-        return m_acceptedValue.describe();
-    } else {
-        ImplicitParam<param::CurrentNode> currentNode;
-        currentNode.let(this);
-        return generator.generateDescription();
-    }
-}
-
 Any RoseNode::nextShrink(const gen::Generator<Any> &generator,
                          bool &didShrink)
 {
@@ -164,7 +150,7 @@ RandomEngine::Atom RoseNode::atom()
 }
 
 std::vector<ValueDescription> RoseNode::example(
-    const gen::UntypedGenerator &generator)
+    const gen::Generator<Any> &generator)
 {
     std::vector<ValueDescription> example;
     // TODO this needs to be fixed

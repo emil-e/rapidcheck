@@ -40,9 +40,6 @@ public:
     //! @param generator  The generator in use.
     Any currentValue(const gen::Generator<Any> &generator);
 
-    //! Returns the current value which may be be generated or fixed.
-    ValueDescription currentDescription(const gen::UntypedGenerator &generator);
-
     //! Returns the next shrink of this `RoseNode`. This is the result of
     //! doing a single single shrink operation on a single descendant.
     //!
@@ -62,8 +59,7 @@ public:
 
     //! Returns a vector of `ValueDescription`s describing the current values of
     //! the direct children.
-    std::vector<ValueDescription> example(
-        const gen::UntypedGenerator &generator);
+    std::vector<ValueDescription> example(const gen::Generator<Any> &generator);
 
     //! Move constructor.
     RoseNode(RoseNode &&other);
@@ -131,8 +127,7 @@ public:
 
     //! Returns a vector of `ValueDescription`s describing the current values of
     //! the direct children.
-    std::vector<ValueDescription> example(
-        const gen::UntypedGenerator &generator);
+    std::vector<ValueDescription> example(const gen::Generator<T> &generator);
 
 private:
     RoseNode m_root;

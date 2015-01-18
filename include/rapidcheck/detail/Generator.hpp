@@ -46,18 +46,6 @@ void sample(int sz, Gen generator)
 }
 
 template<typename T>
-const std::type_info &Generator<T>::generatedTypeInfo() const
-{
-    return typeid(T);
-}
-
-template<typename T>
-detail::ValueDescription Generator<T>::generateDescription() const
-{
-    return detail::ValueDescription(generate());
-}
-
-template<typename T>
 shrink::IteratorUP<T> Generator<T>::shrink(T value) const
 {
     return shrink::nothing<T>();

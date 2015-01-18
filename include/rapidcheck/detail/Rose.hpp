@@ -57,14 +57,14 @@ void Rose<T>::acceptShrink()
 
 template<typename T>
 std::vector<ValueDescription> Rose<T>::example(
-    const gen::UntypedGenerator &generator)
+    const gen::Generator<T> &generator)
 {
     ImplicitParam<param::RandomEngine> randomEngine;
     randomEngine.let(&m_randomEngine);
     ImplicitParam<param::Size> size;
     size.let(m_testCase.size);
 
-    return m_root.example(generator);
+    return m_root.example(detail::ErasedGenerator<T>(generator));
 }
 
 } // namespace detail
