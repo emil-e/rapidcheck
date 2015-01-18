@@ -33,8 +33,10 @@ public:
     ValueDescription describe() const { return ValueDescription(m_value); }
 
 private:
+    RC_DISABLE_COPY(AnyImpl)
+
     std::unique_ptr<AbstractAnyImpl> copy(std::true_type) const
-    { return std::unique_ptr<AbstractAnyImpl>(new AnyImpl<T>(*this)); }
+    { return std::unique_ptr<AbstractAnyImpl>(new AnyImpl<T>(m_value)); }
 
     // TODO better error message
     std::unique_ptr<AbstractAnyImpl> copy(std::false_type) const
