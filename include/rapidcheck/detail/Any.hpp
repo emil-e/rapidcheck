@@ -12,6 +12,7 @@ public:
     virtual bool isCopyable() const = 0;
     virtual std::unique_ptr<AbstractAnyImpl> copy() const = 0;
     virtual ValueDescription describe() const = 0;
+    virtual ~AbstractAnyImpl() = default;
 };
 
 template<typename T>
