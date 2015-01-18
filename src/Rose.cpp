@@ -1,5 +1,7 @@
 #include "rapidcheck/detail/Rose.h"
 
+#include <cassert>
+
 #include "rapidcheck/Generator.h"
 
 namespace rc {
@@ -39,10 +41,8 @@ Any RoseNode::pick(const gen::Generator<Any> &generator)
 Any RoseNode::currentValue(const gen::Generator<Any> &generator)
 {
     if (m_currentValue) {
-        // TODO copy-safe?
         return m_currentValue;
     } else if (m_acceptedValue) {
-        // TODO copy-safe?
         return m_acceptedValue;
     } else {
         ImplicitParam<ShrinkMode> shrinkMode;
@@ -68,39 +68,65 @@ ValueDescription RoseNode::currentDescription(
 Any RoseNode::nextShrink(const gen::Generator<Any> &generator,
                          bool &didShrink)
 {
-    // Is shrinking is disabled, just return the current value
+    // If shrinking is disabled, just return the current value
     ImplicitParam<param::NoShrink> noShrink;
     if (*noShrink) {
         didShrink = false;
         return currentValue(generator);
     }
 
-    if (!m_shrinkIterator) {
-        if (!m_acceptedValue) {
-            // If we don't have a shrink iterator, shrink the children first.
-            Any value(nextShrinkChildren(generator, didShrink));
-            // If any child did shrink, then we shouldn't shrink ourselves just yet.
-            // Also, we cannot shrink non-copyable values.
-            if (didShrink || !value.isCopyable())
-                return value;
-
-            // TODO this seems funny... what if we already have an accepted value?
-            //      This is set unconditionally and we WILL get here if we accept a
-            //      value, right?
-            // TODO test for this!
-            // Otherwise, we should make a shrink iterator
-            // The already generated value is a last restort, set as accepted.
-            m_acceptedValue = value;
-            m_shrinkIterator = generator.shrink(std::move(value));
-
-            // Since the value of every child is now fixed, the number of
-            // children won't change so we can get rid of any unused ones.
-            m_children.resize(m_nextChild);
-        } else {
-            m_shrinkIterator = generator.shrink(currentValue(generator));
-        }
+    if (m_shrinkIterator) {
+        // We have a shrink iterator, shrink next self
+        return nextShrinkSelf(generator, didShrink);
     }
 
+    if (m_acceptedValue) {
+        // We have a previosly accepted value but no shrink iterator, that
+        // means we want to start shrinking again from the accepted value.
+        m_shrinkIterator = generator.shrink(m_acceptedValue);
+        return nextShrinkSelf(generator, didShrink);
+    }
+
+    // We don't have a shrink iterator so we want to shrink children
+    // first
+    Any value(nextShrinkChildren(generator, didShrink));
+    if (didShrink) {
+        // One of the children shrunk and we only want a single change
+        // for every invocation of this method, return immediately with
+        // value.
+        return value;
+    }
+
+    if (!value.isCopyable()) {
+        // Value is not copyable so we cannot shrink it.
+        // Since the value of every child is now fixed, the number
+        // of children won't change so we can get rid of any unused
+        // ones.
+        m_children.resize(m_nextChild);
+        return value;
+    }
+
+    // Children did not shrink and the value we got is copyable
+    // so we should now shrink this node!
+
+    // Since none of the children did shrink, all of them are
+    // based accepted values and thus, the value resulting from
+    // these is acceptable too so initialize the accepted value
+    // with that.
+    m_acceptedValue = value;
+
+    // Since we now have an accepted value, the children are
+    // useless so clear them.
+    m_children.clear();
+
+    // Start shrinking!
+    m_shrinkIterator = generator.shrink(std::move(value));
+    return nextShrinkSelf(generator, didShrink);
+}
+
+Any RoseNode::nextShrinkSelf(const gen::Generator<Any> &generator,
+                             bool &didShrink)
+{
     if (m_shrinkIterator->hasNext()) {
         // Current iterator still has more shrinks, use that.
         didShrink = true;
@@ -108,25 +134,18 @@ Any RoseNode::nextShrink(const gen::Generator<Any> &generator,
         return m_currentValue;
     } else {
         // Exhausted
-        didShrink = false;
-        // Replace with shrink::nothing since that is likely smaller than the
-        // existing iterator.
-        m_shrinkIterator = shrink::nothing<Any>();
         m_currentValue.reset();
-        return currentValue(generator);
+        didShrink = false;
+        return m_acceptedValue;
     }
 }
 
 void RoseNode::acceptShrink()
 {
     if (m_shrinkIterator) {
-        m_shrinkIterator = nullptr;
+        assert(!!m_currentValue);
         m_acceptedValue = std::move(m_currentValue);
-
-        // Since we accepted a shrink value from the iterator, the values of the
-        // children no longer have any relation to this value won't even be used
-        // so we might as well get rid of them.
-        m_children.clear();
+        m_shrinkIterator.reset();
     } else {
         assert(m_shrinkChild < m_children.size());
         m_children[m_shrinkChild].acceptShrink();
@@ -178,8 +197,8 @@ Any RoseNode::generate(const gen::Generator<Any> &generator)
 RoseNode::RoseNode(RoseNode &&other)
     : m_parent(other.m_parent)
     , m_children(std::move(other.m_children))
-    , m_shrinkChild(std::move(other.m_shrinkChild))
     , m_nextChild(other.m_nextChild)
+    , m_shrinkChild(other.m_shrinkChild)
     , m_hasAtom(other.m_hasAtom)
     , m_atom(other.m_atom)
     , m_shrinkIterator(std::move(other.m_shrinkIterator))
@@ -193,8 +212,8 @@ RoseNode &RoseNode::operator=(RoseNode &&rhs)
 {
     m_parent = rhs.m_parent;
     m_children = std::move(rhs.m_children);
-    m_shrinkChild = std::move(rhs.m_shrinkChild);
     m_nextChild = rhs.m_nextChild;
+    m_shrinkChild = rhs.m_shrinkChild;
     m_hasAtom = rhs.m_hasAtom;
     m_atom = rhs.m_atom;
     m_shrinkIterator = std::move(rhs.m_shrinkIterator);

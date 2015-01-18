@@ -43,7 +43,8 @@ public:
     //! Returns the current value which may be be generated or fixed.
     ValueDescription currentDescription(const gen::UntypedGenerator &generator);
 
-    //! Returns the next shrink of this `RoseNode`.
+    //! Returns the next shrink of this `RoseNode`. This is the result of
+    //! doing a single single shrink operation on a single descendant.
     //!
     //! @param generator  The generator in use.
     //! @param didShrink  Set to `true` if there was another shrink or `false`
@@ -78,6 +79,8 @@ private:
         static int defaultValue() { return 0; }
     };
 
+    Any nextShrinkSelf(const gen::Generator<Any> &generator,
+                       bool &didShrink);
     Any nextShrinkChildren(const gen::Generator<Any> &generator,
                            bool &didShrink);
     Any generate(const gen::Generator<Any> &generator);
