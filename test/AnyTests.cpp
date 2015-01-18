@@ -110,6 +110,13 @@ TEST_CASE("Any") {
             anyint.get<int>()++;
             REQUIRE(anyint.get<int>() == 101);
         }
+
+        SECTION("works as a move source") {
+            std::string str("foobar");
+            Any any = Any::of(str);
+            std::string dest(std::move(any.get<std::string>()));
+            REQUIRE(str == dest);
+        }
     }
 
     SECTION("describe") {
