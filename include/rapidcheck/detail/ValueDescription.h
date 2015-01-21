@@ -24,10 +24,15 @@ public:
     //! Returns `true` if this is a "null" `ValueDescription`.
     bool isNull() const;
 
+    bool operator==(const ValueDescription &rhs) const;
+    bool operator!=(const ValueDescription &rhs) const;
+
 private:
     std::string m_typeName;
     std::string m_stringValue;
 };
+
+std::ostream &operator<<(std::ostream &os, const ValueDescription &value);
 
 } // namespace detail
 } // namespace rc

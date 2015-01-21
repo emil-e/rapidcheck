@@ -4,8 +4,6 @@
 #include <string>
 #include <iomanip>
 
-#include "Utility.h"
-
 namespace rc {
 namespace detail {
 
@@ -37,12 +35,34 @@ struct TupleHelper
     }
 };
 
+template<typename T, typename = decltype(std::cout << std::declval<T>())>
+std::true_type supportsOstreamOperatorTest(const T &);
+std::false_type supportsOstreamOperatorTest(...);
+
+template<typename T>
+using SupportsOstreamOperator = decltype(supportsOstreamOperatorTest(
+                                             std::declval<T>()));
+
+template<typename T>
+void showDefault(const T &value, std::ostream &os, std::true_type)
+{
+    os << value;
+}
+
+template<typename T>
+void showDefault(const T &value, std::ostream &os, std::false_type)
+{
+    os << "<\?\?\?>";
+}
+
 } // namespace detail
+
+struct Foo {};
 
 template<typename T>
 void show(const T &value, std::ostream &os)
 {
-    os << value;
+    detail::showDefault(value, os, detail::SupportsOstreamOperator<T>());
 }
 
 void show(uint8_t value, std::ostream &os)

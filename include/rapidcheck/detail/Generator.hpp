@@ -1,12 +1,17 @@
 #pragma once
 
-#include "ErasedGenerator.h"
 #include "ImplicitParam.h"
 #include "GenerationParams.h"
-#include "Rose.h"
+#include "RoseNode.h"
 #include "Quantifier.h"
+#include "ErasedGenerator.h"
 
 namespace rc {
+namespace detail {
+
+template<typename T> class ErasedGenerator;
+
+} // namespace detail
 
 template<typename T>
 T pick(const gen::Generator<T> &generator)
@@ -15,7 +20,7 @@ T pick(const gen::Generator<T> &generator)
     if (*currentNode != nullptr) {
         return std::move(
             (*currentNode)->pick(
-                detail::ErasedGenerator<T>(generator)).template get<T>());
+                detail::ErasedGenerator<T>(&generator)).template get<T>());
     } else {
         return generator.generate();
     }

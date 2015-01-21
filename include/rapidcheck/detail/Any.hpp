@@ -1,6 +1,10 @@
 #pragma once
 
+#include <cassert>
+
+#include "Utility.h"
 #include "Traits.h"
+#include "ValueDescription.h"
 
 namespace rc {
 namespace detail {
@@ -12,6 +16,7 @@ public:
     virtual bool isCopyable() const = 0;
     virtual std::unique_ptr<AbstractAnyImpl> copy() const = 0;
     virtual ValueDescription describe() const = 0;
+    virtual const std::type_info &typeInfo() const = 0;
     virtual ~AbstractAnyImpl() = default;
 };
 
@@ -23,14 +28,18 @@ public:
     AnyImpl(ValueT &&value)
         : m_value(std::forward<ValueT>(value)) {}
 
-    void *get() { return &m_value; }
+    void *get() override { return &m_value; }
 
-    bool isCopyable() const { return IsCopyConstructible<T>::value; }
+    bool isCopyable() const override { return IsCopyConstructible<T>::value; }
 
-    std::unique_ptr<AbstractAnyImpl> copy() const
+    std::unique_ptr<AbstractAnyImpl> copy() const override
     { return copy(IsCopyConstructible<T>()); }
 
-    ValueDescription describe() const { return ValueDescription(m_value); }
+    ValueDescription describe() const override
+    { return ValueDescription(m_value); }
+
+    const std::type_info &typeInfo() const override
+    { return typeid(T); }
 
 private:
     RC_DISABLE_COPY(AnyImpl)
@@ -55,7 +64,12 @@ Any Any::of(T &&value)
 }
 
 template<typename T>
-const T &Any::get() const { return *static_cast<T *>(m_impl->get()); }
+const T &Any::get() const
+{
+    assert(m_impl);
+    assert(&m_impl->typeInfo() == &typeid(T));
+    return *static_cast<T *>(m_impl->get());
+}
 
 template<typename T>
 T &Any::get() { return *static_cast<T *>(m_impl->get()); }

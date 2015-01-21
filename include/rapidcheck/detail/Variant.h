@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Any.h"
+
 namespace rc {
 namespace detail {
 
@@ -13,38 +15,21 @@ public:
     template<typename T>
     Variant(T &&value);
 
-    //! Copy constructor.
-    Variant(const Variant &other);
-
-    //! Move constructor.
-    Variant(Variant &&other);
-
-    //! Copy assignment.
-    Variant &operator=(const Variant &rhs);
-
-    //! Move assignment.
-    Variant &operator=(Variant &&rhs);
+    //! Returns `true` if this variant has type `T`.
+    template<typename T>
+    bool is() const;
 
     //! If this variant is of type `T`, assigns the value of the variant to
     //! `value` and return `true`.
     template<typename T>
     bool match(T &value) const;
 
-    //! Returns `true` if this variant has type `T`.
-    template<typename T>
-    bool is() const;
-
-    //! Destructor.
-    ~Variant();
-
 private:
     template<typename T>
-    static constexpr int indexOfType();
+    static constexpr std::ptrdiff_t indexOfType();
 
-    void *(*m_copy)(void *);
-    void (*m_delete)(void *);
-    int m_typeIndex;
-    void *m_value;
+    std::ptrdiff_t m_typeIndex;
+    Any m_value;
 };
 
 } // namespace detail

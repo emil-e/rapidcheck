@@ -1,10 +1,5 @@
 #pragma once
 
-#include "ImplicitParam.h"
-#include "GenerationParams.h"
-#include "Traits.h"
-#include "rapidcheck/Generator.h"
-
 template<typename T>
 void doShow(const T &value, std::ostream &os)
 {
@@ -16,37 +11,35 @@ namespace rc {
 namespace detail {
 
 template<typename T>
-Rose<T>::Rose(const gen::Generator<T> &generator, const TestCase &testCase)
-    : m_testCase(testCase)
+Rose<T>::Rose(const gen::Generator<T> *generator, const TestCase &testCase)
+    : m_generator(generator)
+    , m_testCase(testCase)
 {
     m_randomEngine.seed(testCase.seed);
     // Initialize the tree with the test case.
-    currentValue(generator);
+    currentValue();
 }
 
 template<typename T>
-T Rose<T>::currentValue(const gen::Generator<T> &generator)
+T Rose<T>::currentValue()
 {
     ImplicitParam<param::RandomEngine> randomEngine;
     randomEngine.let(&m_randomEngine);
     ImplicitParam<param::Size> size;
     size.let(m_testCase.size);
 
-    return m_root.currentValue(
-        detail::ErasedGenerator<T>(generator)).template get<T>();
+    return m_root.currentValue(m_generator).template get<T>();
 }
 
 template<typename T>
-T Rose<T>::nextShrink(const gen::Generator<T> &generator, bool &didShrink)
+T Rose<T>::nextShrink(bool &didShrink)
 {
     ImplicitParam<param::RandomEngine> randomEngine;
     randomEngine.let(&m_randomEngine);
     ImplicitParam<param::Size> size;
     size.let(m_testCase.size);
 
-    return m_root.nextShrink(
-        detail::ErasedGenerator<T>(generator),
-        didShrink).template get<T>();
+    return m_root.nextShrink(m_generator, didShrink).template get<T>();
 }
 
 template<typename T>
@@ -56,15 +49,14 @@ void Rose<T>::acceptShrink()
 }
 
 template<typename T>
-std::vector<ValueDescription> Rose<T>::example(
-    const gen::Generator<T> &generator)
+std::vector<ValueDescription> Rose<T>::example()
 {
     ImplicitParam<param::RandomEngine> randomEngine;
     randomEngine.let(&m_randomEngine);
     ImplicitParam<param::Size> size;
     size.let(m_testCase.size);
 
-    return m_root.example(detail::ErasedGenerator<T>(generator));
+    return m_root.example(m_generator);
 }
 
 } // namespace detail

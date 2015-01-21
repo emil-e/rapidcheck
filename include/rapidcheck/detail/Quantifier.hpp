@@ -1,7 +1,5 @@
 #pragma once
 
-#include "rapidcheck/Generator.h"
-
 namespace rc {
 namespace detail {
 

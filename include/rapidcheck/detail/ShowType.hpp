@@ -1,5 +1,15 @@
 #pragma once
 
+#include <vector>
+#include <deque>
+#include <forward_list>
+#include <list>
+#include <set>
+#include <unordered_set>
+#include <unordered_map>
+
+#include "Utility.h"
+
 namespace rc {
 namespace detail {
 

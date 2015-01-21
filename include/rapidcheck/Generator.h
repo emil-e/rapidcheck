@@ -1,7 +1,8 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "Shrink.h"
-#include "detail/ValueDescription.h"
 
 namespace rc {
 

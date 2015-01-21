@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <vector>
+#include <memory>
 
 namespace rc {
 namespace shrink {

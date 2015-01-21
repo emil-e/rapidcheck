@@ -31,7 +31,10 @@ Any &Any::operator=(Any &&rhs)
 void Any::reset() { m_impl.reset(); }
 
 ValueDescription Any::describe() const
-{ return m_impl ? m_impl->describe() : ValueDescription(); }
+{
+    assert(m_impl);
+    return m_impl ? m_impl->describe() : ValueDescription();
+}
 
 Any::operator bool() const { return static_cast<bool>(m_impl); }
 

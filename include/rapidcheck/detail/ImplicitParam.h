@@ -1,13 +1,14 @@
 #pragma once
 
-#include <cassert>
-#include <iostream>
 #include <stack>
+#include <vector>
 
 #include "Utility.h"
 
 namespace rc {
 namespace detail {
+
+// TODO separate into h/hpp files
 
 //! Implements something conceptually similar to Lisp dynamic scope or Haskell
 //! implicit function parameters. This class lets you bind values to the

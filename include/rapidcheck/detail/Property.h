@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Quantifier.h"
+#include "rapidcheck/Generator.h"
 
 namespace rc {
 namespace detail {

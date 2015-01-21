@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Utility.h"
-#include "CollectionBuilder.h"
-#include "Traits.h"
-
 #include <iostream>
+
+#include "Traits.h"
+#include "CollectionBuilder.h"
+#include "Utility.h"
 
 namespace rc {
 namespace shrink {

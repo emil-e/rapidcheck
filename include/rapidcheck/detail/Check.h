@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GeneratorFwd.h"
+
 #define RC_CONDITIONAL_RESULT(ResultType, condition, msg)              \
     ::rc::detail::throwResultIf(                                       \
         ::rc::detail::CaseResult::Type::ResultType,                    \

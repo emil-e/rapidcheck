@@ -1,5 +1,8 @@
 #include "rapidcheck/Show.h"
 
+#include <string>
+#include <iostream>
+
 namespace rc {
 
 void show(const std::string &value, std::ostream &os)

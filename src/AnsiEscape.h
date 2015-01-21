@@ -1,7 +1,5 @@
 #pragma once
 
-#include "rapidcheck/detail/Utility.h"
-
 namespace rc {
 namespace detail {
 namespace ansi {

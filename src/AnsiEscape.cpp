@@ -1,4 +1,4 @@
-#include "rapidcheck/Show.h"
+#include <string>
 
 namespace rc {
 namespace detail {

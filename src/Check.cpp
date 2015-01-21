@@ -1,6 +1,8 @@
 #include "rapidcheck/Check.h"
 
+#include "rapidcheck/Generator.h"
 #include "rapidcheck/detail/ImplicitParam.h"
+#include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/GenerationParams.h"
 #include "rapidcheck/detail/Rose.h"
 
@@ -24,14 +26,14 @@ auto withTestCase(const TestCase &testCase, Callable callable)
 TestResult shrinkFailingCase(const gen::Generator<CaseResult> &property,
                              const TestCase &testCase)
 {
-    Rose<CaseResult> rose(property, testCase);
+    Rose<CaseResult> rose(&property, testCase);
     FailureResult result;
     result.failingCase = testCase;
     result.numShrinks = 0;
 
     bool didShrink = true;
     while (true) {
-        CaseResult shrinkResult(rose.nextShrink(property, didShrink));
+        CaseResult shrinkResult(rose.nextShrink(didShrink));
         if (didShrink) {
             if (shrinkResult.type() == CaseResult::Type::Failure) {
                 rose.acceptShrink();
@@ -39,7 +41,7 @@ TestResult shrinkFailingCase(const gen::Generator<CaseResult> &property,
             }
         } else {
             result.description = shrinkResult.description();
-            result.counterExample = rose.example(property);
+            result.counterExample = rose.example();
             return result;
         }
     }

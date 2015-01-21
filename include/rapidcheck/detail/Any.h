@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ValueDescription.h"
-#include "Traits.h"
+#include <memory>
 
 namespace rc {
 namespace detail {
 
+class ValueDescription;
 class AbstractAnyImpl;
 
 //! Variant class that can hold a value of any type.

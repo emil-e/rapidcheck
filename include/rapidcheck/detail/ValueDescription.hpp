@@ -3,7 +3,6 @@
 #include <sstream>
 
 #include "rapidcheck/Show.h"
-
 #include "ShowType.h"
 
 namespace rc {

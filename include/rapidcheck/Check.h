@@ -1,10 +1,8 @@
 #pragma once
 
-#include "detail/GeneratorFwd.h"
-#include "detail/Results.h"
-#include "detail/Property.h"
-
-#include "detail/Check.h"
+#include "rapidcheck/detail/Results.h"
+#include "rapidcheck/detail/Check.h"
+#include "rapidcheck/detail/Property.h"
 
 //! TODO move to separate header
 #if defined(SECTION) && defined(FAIL)
@@ -19,7 +17,9 @@
                                                    #condition)
 
 //! Unconditionally fails the current test case with the given message.
-#define RC_FAIL(msg) RC_CONDITIONAL_RESULT(Failure, true, (msg))
+#define RC_FAIL(msg) RC_CONDITIONAL_RESULT(Failure,                     \
+                                           true,                        \
+                                           (msg))
 
 //! Succeed if the given condition is true.
 #define RC_SUCCEED_IF(condition) RC_CONDITIONAL_RESULT(Success,         \
@@ -27,13 +27,17 @@
                                                        #condition)
 
 //! Unconditionally succeed with the given message.
-#define RC_SUCCEED(msg) RC_CONDITIONAL_RESULT(Success, true, msg)
+#define RC_SUCCEED(msg) RC_CONDITIONAL_RESULT(Success,             \
+                                              true,                \
+                                              msg)
 
 //! Discards the current test case if the given condition is false.
-#define RC_PRE(condition) RC_CONDITIONAL_RESULT(Discard, !(condition), #condition)
+#define RC_PRE(condition) RC_CONDITIONAL_RESULT(Discard,             \
+                                                !(condition),        \
+                                                #condition)
 
 //! Discards the current test case with the given description.
-#define RC_DISCARD(msg) RC_CONDITIONAL_RESULT(Discard, true, (msg))
+#define RC_DISCARD(msg) RC_CONDITIONAL_RESULT(rc::detail::CaseResult::Type::Discard, true, (msg))
 
 namespace rc {
 

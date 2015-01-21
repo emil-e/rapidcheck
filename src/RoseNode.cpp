@@ -1,19 +1,33 @@
 #include "rapidcheck/detail/Rose.h"
 
-#include <cassert>
-
-#include "rapidcheck/Generator.h"
-
 namespace rc {
 namespace detail {
 
-UnexpectedType::UnexpectedType(const std::type_info &expected,
-                               const std::type_info &actual)
-    : std::runtime_error(
-        "Expected '" + demangle(expected.name())
-        + "' but '" + demangle(actual.name()) + "' was requested")
-    , m_expected(expected)
-    , m_actual(actual) {}
+class RoseNode::Observer
+{
+public:
+    virtual void pickedValue(const RoseNode &node, const Any &value) = 0;
+};
+
+// Used by example() to capture direct sub values of current node
+class RoseNode::ExampleObserver : public RoseNode::Observer
+{
+public:
+    ExampleObserver(const RoseNode *node)
+        : m_node(node) {}
+
+    void pickedValue(const RoseNode &node, const Any &value) override
+    {
+        if (node.parent() == m_node)
+            m_descriptions.push_back(value.describe());
+    }
+
+    std::vector<ValueDescription> descriptions() { return m_descriptions; }
+
+private:
+    std::vector<ValueDescription> m_descriptions;
+    const RoseNode *m_node;
+};
 
 RoseNode::RoseNode(RoseNode *parent)
     : m_parent(parent) {}
@@ -27,15 +41,20 @@ Any RoseNode::pick(const gen::Generator<Any> &generator)
 
     auto &child = m_children[i];
     ImplicitParam<ShrinkMode> shrinkMode;
+    Any value;
     if (*shrinkMode && (i == m_shrinkChild)) {
         bool didShrink;
-        Any value(child.nextShrink(generator, didShrink));
+        value = child.nextShrink(generator, didShrink);
         if (!didShrink)
             m_shrinkChild++;
-        return std::move(value);
     } else {
-        return child.currentValue(generator);
+        value = child.currentValue(generator);
     }
+
+    ImplicitParam<CurrentObserver> currentObserver;
+    if (*currentObserver != nullptr)
+        (*currentObserver)->pickedValue(child, value);
+    return value;
 }
 
 Any RoseNode::currentValue(const gen::Generator<Any> &generator)
@@ -75,11 +94,14 @@ Any RoseNode::nextShrink(const gen::Generator<Any> &generator,
 
     // We don't have a shrink iterator so we want to shrink children
     // first
-    Any value(nextShrinkChildren(generator, didShrink));
-    if (didShrink) {
+    bool childShrunk;
+    Any value = nextShrinkChildren(generator, childShrunk);
+
+    if (childShrunk) {
         // One of the children shrunk and we only want a single change
         // for every invocation of this method, return immediately with
         // value.
+        didShrink = true;
         return value;
     }
 
@@ -89,24 +111,20 @@ Any RoseNode::nextShrink(const gen::Generator<Any> &generator,
         // of children won't change so we can get rid of any unused
         // ones.
         m_children.resize(m_nextChild);
+        didShrink = false;
         return value;
     }
 
     // Children did not shrink and the value we got is copyable
     // so we should now shrink this node!
+    m_shrinkIterator = generator.shrink(value);
+    if (!m_shrinkIterator->hasNext()) {
+        // No shrinks for this value, just return the original value
+        didShrink = false;
+        return value;
+    }
 
-    // Since none of the children did shrink, all of them are
-    // based accepted values and thus, the value resulting from
-    // these is acceptable too so initialize the accepted value
-    // with that.
-    m_acceptedValue = value;
-
-    // Since we now have an accepted value, the children are
-    // useless so clear them.
-    m_children.clear();
-
-    // Start shrinking!
-    m_shrinkIterator = generator.shrink(std::move(value));
+    // Otherwise, try to shrink self, finally
     return nextShrinkSelf(generator, didShrink);
 }
 
@@ -122,7 +140,7 @@ Any RoseNode::nextShrinkSelf(const gen::Generator<Any> &generator,
         // Exhausted
         m_currentValue.reset();
         didShrink = false;
-        return m_acceptedValue;
+        return currentValue(generator);
     }
 }
 
@@ -131,6 +149,11 @@ void RoseNode::acceptShrink()
     if (m_shrinkIterator) {
         assert(!!m_currentValue);
         m_acceptedValue = std::move(m_currentValue);
+
+        // Since we now have an accepted value, the children are
+        // useless so clear them.
+        m_children.clear();
+
         m_shrinkIterator.reset();
     } else {
         assert(m_shrinkChild < m_children.size());
@@ -152,12 +175,15 @@ RandomEngine::Atom RoseNode::atom()
 std::vector<ValueDescription> RoseNode::example(
     const gen::Generator<Any> &generator)
 {
-    std::vector<ValueDescription> example;
-    // TODO this needs to be fixed
-    // for (auto &child : m_children)
-    //     example.push_back(child.currentDescription());
-    return example;
+    ImplicitParam<CurrentObserver> currentObserver;
+    ExampleObserver observer(this);
+    currentObserver.let(&observer);
+    currentValue(generator);
+    return std::move(observer.descriptions());
 }
+
+const RoseNode *RoseNode::parent() const
+{ return m_parent; }
 
 // Returns the next shrink by shrinking the children or the currently accepted
 // if there are no more possible shrinks of the children. `didShrink` is set to
@@ -165,11 +191,21 @@ std::vector<ValueDescription> RoseNode::example(
 Any RoseNode::nextShrinkChildren(const gen::Generator<Any> &generator,
                                  bool &didShrink)
 {
+    if (isChildrenExhausted()) {
+        didShrink = false;
+        return currentValue(generator);
+    }
+
     ImplicitParam<ShrinkMode> shrinkMode;
     shrinkMode.let(true);
     Any value(generate(generator));
-    didShrink = m_shrinkChild < m_nextChild;
+    didShrink = !isChildrenExhausted();
     return value;
+}
+
+bool RoseNode::isChildrenExhausted() const
+{
+    return m_shrinkChild >= m_nextChild;
 }
 
 Any RoseNode::generate(const gen::Generator<Any> &generator)

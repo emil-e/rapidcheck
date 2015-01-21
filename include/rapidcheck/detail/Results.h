@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cstddef>
-
-#include "rapidcheck/detail/RandomEngine.h"
-#include "rapidcheck/detail/Variant.h"
-#include "rapidcheck/detail/ValueDescription.h"
+#include "RandomEngine.h"
+#include "ValueDescription.h"
+#include "Variant.h"
 
 namespace rc {
 namespace detail {

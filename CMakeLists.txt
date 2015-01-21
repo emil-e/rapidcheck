@@ -7,7 +7,7 @@ add_library(rapidcheck
   src/Check.cpp
   src/Generator.cpp
   src/RandomEngine.cpp
-  src/Rose.cpp
+  src/RoseNode.cpp
   src/Show.cpp
   src/Utility.cpp
   src/ValueDescription.cpp
