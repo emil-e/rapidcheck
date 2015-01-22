@@ -260,6 +260,34 @@ struct AcceptShrink : public RoseCommand
     }
 };
 
+class TripleConstantGen : public gen::Generator<std::string>
+{
+public:
+    TripleConstantGen(const std::string &a,
+                      const std::string &b,
+                      const std::string &c)
+        : m_a(a), m_b(b), m_c(c) {}
+
+    std::string generate() const override
+    {
+        std::string ret;
+        ret += rc::pick(gen::constant(m_a));
+        ret += rc::pick(gen::constant(m_b));
+        ret += rc::pick(gen::constant(m_c));
+        return ret;
+    }
+
+    shrink::IteratorUP<std::string> shrink(std::string value) const override
+    {
+        return shrink::constant<std::string>({ std::string("foobar") });
+    }
+
+private:
+    std::string m_a;
+    std::string m_b;
+    std::string m_c;
+};
+
 TEST_CASE("Rose") {
     using namespace detail;
 
@@ -369,4 +397,41 @@ TEST_CASE("Rose") {
              while (didShrink)
                  RC_ASSERT(rose.nextShrink(didShrink)[i] == original[i]);
          });
+
+    SECTION("example") {
+        prop("correctly generates examples when not shrunk",
+             [] (const TestCase &testCase,
+                 std::string a,
+                 std::string b,
+                 std::string c)
+             {
+                 TripleConstantGen generator(a, b, c);
+                 Rose<decltype(generator)::GeneratedType> rose(&generator, testCase);
+                 auto example(rose.example());
+                 // show(example, std::cout);
+                 // std::cout << std::endl;
+                 RC_ASSERT(example.size() == 3);
+                 RC_ASSERT(example[0] == ValueDescription(a));
+                 RC_ASSERT(example[1] == ValueDescription(b));
+                 RC_ASSERT(example[2] == ValueDescription(c));
+             });
+
+        prop("generates empty example if shrunk",
+             [] (const TestCase &testCase,
+                 std::string a,
+                 std::string b,
+                 std::string c)
+             {
+                 TripleConstantGen generator(a, b, c);
+                 Rose<decltype(generator)::GeneratedType> rose(&generator, testCase);
+
+                 bool didShrink;
+                 auto shrunk = rose.nextShrink(didShrink);
+                 RC_ASSERT(shrunk == "foobar");
+                 RC_ASSERT(didShrink);
+
+                 auto example(rose.example());
+                 RC_ASSERT(example.size() == 0);
+             });
+    }
 }
