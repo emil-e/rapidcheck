@@ -39,7 +39,9 @@ public:
     RandomEngine::Atom atom();
 
     //! Returns a vector of `ValueDescription`s describing the current values of
-    //! the direct children.
+    //! the direct children. If this node has been shrunk, this method returns
+    //! an empty array since theey no longer make up the value of the
+    //! root.
     std::vector<ValueDescription> example(const gen::Generator<Any> &generator);
 
     //! Returns the parent node or `nullptr` if there is none.

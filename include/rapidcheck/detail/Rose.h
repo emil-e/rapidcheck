@@ -18,22 +18,16 @@ public:
     //! @param testCase   The test case to use.
     Rose(const gen::Generator<T> *generator, const TestCase &testCase);
 
-    //! Returns the current value.
+    //! See `RoseNode::currentValue`
     T currentValue();
 
-    //! Returns the next shrink of this `Rose`.
-    //!
-    //! @param didShrink  Set to `true` if there was another shrink or `false`
-    //!                   if exhausted.
-    //!
-    //! @return  The shrunk value.
+    //! See `RoseNode::nextShrink`
     T nextShrink(bool &didShrink);
 
-    //! Accepts the current shrink.
+    //! See `RoseNode::acceptShrink`
     void acceptShrink();
 
-    //! Returns a vector of `ValueDescription`s describing the current values of
-    //! the direct children.
+    //! See `RoseNode::example`
     std::vector<ValueDescription> example();
 
 private:
