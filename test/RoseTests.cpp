@@ -333,7 +333,7 @@ TEST_CASE("Rose") {
          [] (const TestCase &testCase) {
              auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
              std::vector<ErraticSum> generators(size);
-             auto generator = VectorGen<ErraticSum>(generators);
+             auto generator = gen::scale(0.1, VectorGen<ErraticSum>(generators));
              Rose<std::vector<int>> rose(&generator, testCase);
 
              bool success = true;
