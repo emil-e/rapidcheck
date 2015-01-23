@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#include <rapidcheck.h>
+#include <rapidcheck-catch.h>
 
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/Rose.h"
@@ -359,6 +359,7 @@ TEST_CASE("Rose") {
 
     prop("shrinking of one value does not affect other unrelated values",
          [] (const TestCase &testCase) {
+             // TODO this test is a bit hard to understand, document or refactor
              auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
              std::vector<ErraticSum> generators(size);
              auto generator = gen::scale(0.1, VectorGen<ErraticSum>(generators));

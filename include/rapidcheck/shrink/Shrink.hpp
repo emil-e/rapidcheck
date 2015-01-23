@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include "Traits.h"
-#include "CollectionBuilder.h"
-#include "Utility.h"
+#include "rapidcheck/detail/Traits.h"
+#include "rapidcheck/detail/CollectionBuilder.h"
+#include "rapidcheck/detail/Utility.h"
 
 namespace rc {
 namespace shrink {

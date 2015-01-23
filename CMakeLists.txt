@@ -3,16 +3,17 @@ project(rapidcheck)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -std=c++11")
 
 add_library(rapidcheck
-  src/AnsiEscape.cpp
-  src/Check.cpp
-  src/Generator.cpp
-  src/RandomEngine.cpp
-  src/RoseNode.cpp
+  src/detail/AnsiEscape.cpp
+  src/detail/Check.cpp
+  src/gen/Generator.cpp
+  src/detail/RandomEngine.cpp
+  src/detail/RoseNode.cpp
   src/Show.cpp
-  src/Utility.cpp
-  src/ValueDescription.cpp
-  src/Results.cpp
-  src/Any.cpp)
+  src/detail/Utility.cpp
+  src/detail/ValueDescription.cpp
+  src/detail/Results.cpp
+  src/detail/Any.cpp
+  src/detail/Assertions.cpp)
 
 target_include_directories(rapidcheck PUBLIC include)
 

@@ -27,3 +27,4 @@
 - showing() method and support class for nicer integration with operator<<
 - type checking in Any
 - assert strategy
+- move as much as possible from include to src, Rose and RoseNode should be possible to move there

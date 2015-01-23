@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ImplicitParam.h"
-#include "GenerationParams.h"
-#include "RoseNode.h"
-#include "Quantifier.h"
-#include "ErasedGenerator.h"
+#include "rapidcheck/detail/ImplicitParam.h"
+#include "rapidcheck/detail/GenerationParams.h"
+#include "rapidcheck/detail/RoseNode.h"
+#include "rapidcheck/detail/Quantifier.h"
+#include "rapidcheck/detail/ErasedGenerator.h"
 
 namespace rc {
 namespace detail {

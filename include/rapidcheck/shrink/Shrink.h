@@ -98,4 +98,4 @@ IteratorUP<T> filter(IteratorUP<T> &&iterator, Predicate predicate);
 } // namespace shrink
 } // namespace rc
 
-#include "detail/Shrink.hpp"
+#include "Shrink.hpp"

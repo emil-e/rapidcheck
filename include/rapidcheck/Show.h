@@ -124,4 +124,4 @@ void show(const std::array<T, N> &value, std::ostream &os);
 
 } // namespace rc
 
-#include "detail/Show.hpp"
+#include "Show.hpp"

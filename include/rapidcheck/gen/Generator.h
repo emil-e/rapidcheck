@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "Shrink.h"
+#include "rapidcheck/shrink/Shrink.h"
 
 namespace rc {
 
@@ -236,4 +236,4 @@ T pick();
 
 } // namespace rc
 
-#include "detail/Generator.hpp"
+#include "Generator.hpp"

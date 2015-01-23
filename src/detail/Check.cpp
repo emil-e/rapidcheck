@@ -1,6 +1,6 @@
 #include "rapidcheck/Check.h"
 
-#include "rapidcheck/Generator.h"
+#include "rapidcheck/gen/Generator.h"
 #include "rapidcheck/detail/ImplicitParam.h"
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/GenerationParams.h"
@@ -95,19 +95,6 @@ TestResult checkProperty(const gen::Generator<CaseResult> &property)
 
     return SuccessResult{ .numTests = currentCase.index };
 }
-
-void throwResultIf(CaseResult::Type type,
-                   bool condition,
-                   std::string description,
-                   std::string file,
-                   int line)
-{
-    if (condition) {
-        throw CaseResult(
-            type, file + ":" + std::to_string(line) + ": " + description);
-    }
-}
-
 
 } // namespace detail
 } // namespace rc

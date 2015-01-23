@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
-#include <rapidcheck.h>
+#include <rapidcheck-catch.h>
 
 using namespace rc;
 

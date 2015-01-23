@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rapidcheck/Generator.h"
+#include "rapidcheck/gen/Generator.h"
 
 namespace rc {
 
