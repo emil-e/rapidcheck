@@ -2,9 +2,6 @@
 
 #include <rapidcheck.h>
 
-// TODO remove this and have checkResults in Check.h instead
-#include "rapidcheck/detail/Property.h"
-
 namespace rc {
 
 //! For use with `catch.hpp`. Use this function wherever you would use a
@@ -13,12 +10,12 @@ namespace rc {
 //! @param description  A description of the property.
 //! @param testable     The object that implements the property.
 template<typename Testable>
-void prop(const std::string &description, Testable testable)
+void prop(const std::string &description, const Testable &testable)
 {
     using namespace detail;
 
     SECTION(description) {
-        auto result = checkProperty(toProperty(testable));
+        auto result = checkTestable(testable);
         INFO(resultMessage(result) << "\n");
 
         FailureResult failure;

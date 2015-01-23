@@ -23,7 +23,7 @@ private:
 
 //! Converts `testable` to a property.
 template<typename Testable>
-Property<Testable> toProperty(Testable testable);
+Property<Testable> toProperty(const Testable &testable);
 
 } // namespace detail
 } // namespace rc

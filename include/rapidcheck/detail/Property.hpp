@@ -50,7 +50,7 @@ CaseResult Property<Testable>::generate() const
 }
 
 template<typename Testable>
-Property<Testable> toProperty(Testable testable)
+Property<Testable> toProperty(const Testable &testable)
 {
     return Property<Testable>(testable);
 }
