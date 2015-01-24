@@ -17,7 +17,7 @@ T pick(const gen::Generator<T> &generator)
     detail::ImplicitParam<detail::param::CurrentNode> currentNode;
     if (*currentNode != nullptr) {
         return std::move(
-            (*currentNode)->pick(
+            currentNode->pick(
                 detail::ErasedGenerator<T>(&generator)).template get<T>());
     } else {
         return generator.generate();

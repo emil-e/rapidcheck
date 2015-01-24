@@ -51,11 +51,16 @@ public:
         return values().top();
     }
 
-    //! Member dereference operator for the contained value.
-    //! TODO can we specialize this somehow for pointers?
-    ValueType *operator->()
+    //! Member dereference operator. Only useful if `ValueType` is pointer-like.
+    ValueType &operator->()
     {
-        return &(**this);
+        return **this;
+    }
+
+    //! Const version of member dereference.
+    const ValueType &operator->() const
+    {
+        return **this;
     }
 
     //! Removes any introduced binding.

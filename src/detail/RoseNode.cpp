@@ -53,7 +53,7 @@ Any RoseNode::pick(const gen::Generator<Any> &generator)
 
     ImplicitParam<CurrentObserver> currentObserver;
     if (*currentObserver != nullptr)
-        (*currentObserver)->pickedValue(child, value);
+        currentObserver->pickedValue(child, value);
     return value;
 }
 
@@ -165,7 +165,7 @@ RandomEngine::Atom RoseNode::atom()
 {
     if (!m_hasAtom) {
         ImplicitParam<param::RandomEngine> randomEngine;
-        m_atom = (*randomEngine)->nextAtom();
+        m_atom = randomEngine->nextAtom();
         m_hasAtom = true;
     }
 
