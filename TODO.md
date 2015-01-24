@@ -28,3 +28,8 @@
 - type checking in Any
 - assert strategy
 - move as much as possible from include to src, Rose and RoseNode should be possible to move there
+- break apart TEST_CASES?
+- more consistent terminology, rename numTests to numCases?
+- injective gen::map
+- shrink gen::ranged
+- add number of discarded tests to success data
