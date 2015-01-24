@@ -54,7 +54,7 @@ TEST_CASE("checkTestable") {
              int numCases = 0;
              int lastSize = -1;
              // TODO test seed?
-             int failingIndex = pick(gen::ranged<int>(1, DEFAULT_NUM_TESTS));
+             int failingIndex = *gen::ranged<int>(1, DEFAULT_NUM_TESTS);
              auto result = checkTestable([&] {
                  numCases++;
                  lastSize = gen::currentSize();
@@ -73,10 +73,10 @@ TEST_CASE("checkTestable") {
                  gen::suchThat(
                      gen::positive<int>(),
                      [](int x) { return (x % 2) == 0; }));
-             auto values = pick(gen::pairOf(evenInteger, evenInteger));
+             auto values = *gen::pairOf(evenInteger, evenInteger);
              auto results = checkTestable([&] {
-                 auto v1 = pick(CountDownGenerator(values.first));
-                 auto v2 = pick(CountDownGenerator(values.second));
+                 auto v1 = *CountDownGenerator(values.first);
+                 auto v2 = *CountDownGenerator(values.second);
                  return ((v1 % 2) != 0) || ((v2 % 2) != 0);
              });
 
@@ -90,7 +90,7 @@ TEST_CASE("checkTestable") {
          [] (std::vector<int> values) {
              auto results = checkTestable([&] {
                  for (auto value : values)
-                     pick(gen::constant(value));
+                     *gen::constant(value);
                  return false;
              });
 
@@ -106,10 +106,10 @@ TEST_CASE("checkTestable") {
     prop("counter-example is not affected by nested tests",
          [] {
              auto results = checkTestable([] {
-                 pick(gen::constant<std::string>("foo"));
+                 *gen::constant<std::string>("foo");
                  auto innerResults = checkTestable([&] {
-                     pick(gen::constant<std::string>("bar"));
-                     pick(gen::constant<std::string>("baz"));
+                     *gen::constant<std::string>("bar");
+                     *gen::constant<std::string>("baz");
                  });
 
                  return false;
@@ -137,7 +137,7 @@ TEST_CASE("checkTestable") {
     prop("gives up if too many test cases are discarded",
          [] {
              const int maxDiscards = DEFAULT_NUM_TESTS * DEFAULT_MAX_DISCARDS;
-             const int targetSuccess = pick(gen::ranged<int>(1, DEFAULT_NUM_TESTS));
+             const int targetSuccess = *gen::ranged<int>(1, DEFAULT_NUM_TESTS);
              int numTests = 0;
              auto results = checkTestable([&] {
                  numTests++;
@@ -153,7 +153,7 @@ TEST_CASE("checkTestable") {
     prop("does not give up if not enough tests are discarded",
          [] {
              const int maxDiscards = DEFAULT_NUM_TESTS * DEFAULT_MAX_DISCARDS;
-             const int targetDiscard = pick(gen::ranged<int>(0, maxDiscards + 1));
+             const int targetDiscard = *gen::ranged<int>(0, maxDiscards + 1);
              int numTests = 0;
              auto results = checkTestable([&] {
                  numTests++;

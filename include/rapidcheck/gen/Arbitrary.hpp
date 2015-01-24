@@ -65,7 +65,7 @@ class ArbitraryReal : public gen::Generator<T>
 public:
     T generate() const override
     {
-        int64_t i = pick(gen::arbitrary<int64_t>());
+        int64_t i = *gen::arbitrary<int64_t>();
         T x = static_cast<T>(i) / std::numeric_limits<int64_t>::max();
         return std::pow<T>(1.2, gen::currentSize()) * x;
     }
@@ -97,8 +97,8 @@ class Arbitrary<bool> : public gen::Generator<bool>
 public:
     bool generate() const override
     {
-        return (pick(gen::resize(gen::kNominalSize,
-                                 gen::arbitrary<uint8_t>())) & 0x1) == 0;
+        return (*gen::resize(gen::kNominalSize,
+                                 gen::arbitrary<uint8_t>()) & 0x1) == 0;
     }
 
     shrink::IteratorUP<bool> shrink(bool value)

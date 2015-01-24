@@ -27,9 +27,9 @@ public:
     detail::TestCase generate() const override
     {
         detail::TestCase testCase;
-        testCase.index = pick<int>();
-        testCase.size = pick(gen::ranged<int>(0, gen::currentSize()));
-        testCase.seed = pick<decltype(testCase.seed)>();
+        testCase.index = *gen::arbitrary<int>();
+        testCase.size = *gen::ranged<int>(0, gen::currentSize());
+        testCase.seed = *gen::arbitrary<decltype(testCase.seed)>();
         return testCase;
     }
 };
@@ -58,10 +58,10 @@ class ErraticSum : public gen::Generator<int>
 public:
     int generate() const override
     {
-        int n = pick(ErraticInt());
+        int n = *ErraticInt();
         int sum = 0;
         for (int i = 0; i < n; i++)
-            sum += pick(gen::noShrink(gen::arbitrary<int>()));
+            sum += *gen::noShrink(gen::arbitrary<int>());
         return sum;
     }
 };
@@ -80,7 +80,7 @@ public:
     {
         std::vector<GeneratedT<Gen>> value;
         for (const auto &gen : m_generators)
-            value.push_back(pick(gen));
+            value.push_back(*gen);
 
 
         return std::move(value);
@@ -97,7 +97,7 @@ class SimpleByteGen : public gen::Generator<uint8_t>
 {
 public:
     uint8_t generate() const override
-    { return pick(gen::noShrink(gen::arbitrary<uint8_t>())); }
+    { return *gen::noShrink(gen::arbitrary<uint8_t>()); }
 
     shrink::IteratorUP<uint8_t> shrink(uint8_t value) const override
     {
@@ -269,7 +269,7 @@ public:
     {
         std::vector<int> values;
         for (auto value : m_values)
-            values.push_back(pick(gen::constant(value)));
+            values.push_back(*gen::constant(value));
         return values;
     }
 
@@ -288,8 +288,8 @@ TEST_CASE("Rose") {
 
     prop("stateful test",
          [] (const TestCase &testCase) {
-             auto sizes = pick(
-                 gen::collection<std::vector<std::size_t>>(gen::ranged(0, 10)));
+             auto sizes =
+                 *gen::collection<std::vector<std::size_t>>(gen::ranged(0, 10));
 
              SimpleByteGen leafGen;
              typedef decltype(leafGen) LeafGenT;
@@ -312,7 +312,7 @@ TEST_CASE("Rose") {
                  size.let(testCase.size);
                  ImplicitParam<param::CurrentNode> currentNode;
                  currentNode.let(nullptr);
-                 s0.acceptedValue = pick(generator);
+                 s0.acceptedValue = *generator;
                  s0.currentValue = s0.acceptedValue;
                  s0.didShrink = false;
                  s0.i1 = 0;
@@ -322,7 +322,7 @@ TEST_CASE("Rose") {
 
              Rose<RoseModel::ValueT> rose(&generator, testCase);
              state::check(s0, rose, [=] (const RoseModel &model) {
-                 switch (pick(gen::ranged(0, 4))) {
+                 switch (*gen::ranged(0, 4)) {
                  case 0:
                      return state::CommandSP<
                          RoseModel,
@@ -355,7 +355,7 @@ TEST_CASE("Rose") {
     prop("shrinking of one value does not affect other unrelated values",
          [] (const TestCase &testCase) {
              // TODO this test is a bit hard to understand, document or refactor
-             auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
+             auto size = *gen::ranged<std::size_t>(0, gen::currentSize());
              std::vector<ErraticSum> generators(size);
              auto generator = gen::scale(0.1, VectorGen<ErraticSum>(generators));
              Rose<std::vector<int>> rose(&generator, testCase);
@@ -378,8 +378,8 @@ TEST_CASE("Rose") {
 
     prop("honors the NoShrink parameter",
          [] (const TestCase &testCase) {
-             auto size = pick(gen::ranged<int>(1, gen::currentSize() + 1));
-             auto i = pick(gen::ranged<int>(0, size));
+             auto size = *gen::ranged<int>(1, gen::currentSize() + 1);
+             auto i = *gen::ranged<int>(0, size);
              auto elementGen = gen::scale(0.05, gen::arbitrary<std::vector<uint8_t>>());
              OptionalShrink<decltype(elementGen)> shrinkGen(elementGen, true);
              OptionalShrink<decltype(elementGen)> noShrinkGen(elementGen, false);

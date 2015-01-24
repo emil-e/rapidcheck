@@ -14,7 +14,7 @@ void generatesSuchThat(const Predicate &pred)
 {
     auto generator = gen::noShrink(gen::resize(50, gen::arbitrary<T>()));
     while (true) {
-        T x = pick(generator);
+        T x = *generator;
         if (pred(x)) {
             RC_SUCCEED("Generated value that satisfied predicate");
             return;
@@ -32,7 +32,7 @@ struct NumericProperties
             "generates only zero when size is zero",
             [] {
                 auto value =
-                    pick(gen::noShrink(gen::resize(0, gen::arbitrary<T>())));
+                    *gen::noShrink(gen::resize(0, gen::arbitrary<T>()));
                 RC_ASSERT(value == 0);
             });
     }
@@ -58,7 +58,7 @@ struct SignedProperties
         templatedProp<T>(
             "shrinks negative values to their positive equivalent",
             [] {
-                T value = pick(gen::negative<T>());
+                T value = *gen::negative<T>();
                 auto it = gen::arbitrary<T>().shrink(value);
                 RC_ASSERT(it->hasNext());
                 RC_ASSERT(it->next() == -value);
@@ -83,7 +83,7 @@ struct RealProperties
         templatedProp<T>(
             "shrinks to nearest integer",
             [] {
-                T value = pick(gen::nonZero<T>());
+                T value = *gen::nonZero<T>();
                 RC_PRE(value != std::trunc(value));
                 auto it = gen::arbitrary<T>().shrink(value);
                 while (it->hasNext())
@@ -103,12 +103,12 @@ TEST_CASE("gen::arbitrary<bool>") {
     prop("generates both true and false",
          [] {
              while (true) {
-                 if (pick(gen::noShrink(gen::arbitrary<bool>())))
+                 if (*gen::noShrink(gen::arbitrary<bool>()))
                      break;
              }
 
              while (true) {
-                 if (!pick<bool>())
+                 if (!*gen::arbitrary<bool>())
                      break;
              }
          });
@@ -134,7 +134,7 @@ struct CollectionTests
         templatedProp<T>(
             "uses the correct arbitrary instance",
             [] {
-                auto values = pick(gen::arbitrary<T>());
+                auto values = *gen::arbitrary<T>();
                 for (const auto &value : values)
                     RC_ASSERT(isArbitraryPredictable(value));
             });

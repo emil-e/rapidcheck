@@ -21,7 +21,7 @@ struct Invoker<Callable, ReturnType, Arg, Args...>
     static ReturnType
     invoke(const Callable &callable)
     {
-        auto arg(pick<typename std::decay<Arg>::type>());
+        auto arg(*gen::arbitrary<typename std::decay<Arg>::type>());
         auto curried = [&] (Args &&...args) {
             return callable(std::move(arg), std::move(args)...);
         };

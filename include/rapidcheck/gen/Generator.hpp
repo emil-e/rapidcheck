@@ -11,8 +11,6 @@ namespace detail {
 
 template<typename T> class ErasedGenerator;
 
-} // namespace detail
-
 template<typename T>
 T pick(const gen::Generator<T> &generator)
 {
@@ -26,13 +24,14 @@ T pick(const gen::Generator<T> &generator)
     }
 }
 
-template<typename T>
-T pick()
-{
-    return pick(gen::arbitrary<T>());
-}
+} // namespace detail
 
 namespace gen {
+
+//! Generates a value.
+template<typename T>
+T Generator<T>::operator*() const
+{ return detail::pick(*this); }
 
 template<typename Gen>
 void sample(int sz, Gen generator)
@@ -69,7 +68,7 @@ public:
         auto startSize = currentSize();
         auto size = startSize;
         while (true) { // TODO give up sometime
-            auto x(pick(noShrink(resize(size, m_generator))));
+            auto x(*noShrink(resize(size, m_generator)));
             if (m_predicate(x))
                 return x;
             size++;
@@ -106,7 +105,7 @@ public:
 
         // TODO this seems a bit broken
         typedef typename std::make_unsigned<T>::type Uint;
-        Uint value(pick(noShrink(resize(kNominalSize, arbitrary<Uint>()))));
+        Uint value(*noShrink(resize(kNominalSize, arbitrary<Uint>())));
         return m_min + value % (m_max - m_min);
     }
 
@@ -188,7 +187,7 @@ public:
     GeneratedT<Gen> pickWithId(int id) const
     {
         if (id == myId)
-            return pick(m_generator);
+            return *m_generator;
         else
             return m_multiplexer.pickWithId(id);
     }
@@ -211,7 +210,7 @@ public:
         : m_generator(std::move(generator)) {}
 
     GeneratedT<Gen> pickWithId(int id) const
-    { return pick(m_generator); }
+    { return *m_generator; }
 
 private:
     static constexpr int myId = 0;
@@ -228,7 +227,7 @@ public:
     GeneratedT<Multiplexer<Gens...>> generate() const override
     {
         int n = Multiplexer<Gens...>::numGenerators;
-        auto id = pick(resize(kNominalSize, ranged<int>(0, n)));
+        auto id = *resize(kNominalSize, ranged<int>(0, n));
         return m_multiplexer.pickWithId(id);
     }
 
@@ -243,7 +242,7 @@ private:
     {                                                                   \
     public:                                                             \
         T generate() const                                            \
-        { return pick(suchThat<T>([](T x) { return (predicate); })); }  \
+        { return *suchThat<T>([](T x) { return (predicate); }); }  \
     };
 
 IMPLEMENT_SUCH_THAT_GEN(NonZero, x != 0)
@@ -271,7 +270,7 @@ public:
             // time
             auto startSize = gen::currentSize();
             auto currentSize = startSize;
-            while (!builder.add(pick(resize(currentSize, gen)))) {
+            while (!builder.add(*resize(currentSize, gen))) {
                 currentSize++;
                 if ((currentSize - startSize) > 100) {
                     std::ostringstream msg;
@@ -320,10 +319,10 @@ public:
     Container generate() const override
     {
         typedef typename Container::size_type SizeT;
-        auto size = pick(ranged<SizeT>(0, currentSize() + 1));
+        auto size = *ranged<SizeT>(0, currentSize() + 1);
         detail::CollectionBuilder<Container> builder;
         for (int i = 0; i < size; i++)
-            builder.add(pick(noShrink(m_generator)));
+            builder.add(*noShrink(m_generator));
         return std::move(builder.collection());
     }
 
@@ -369,7 +368,7 @@ public:
     {
         ArrayT array;
         for (std::size_t i = 0; i < N; i++)
-            array[i] = pick(noShrink(m_generator));
+            array[i] = *noShrink(m_generator);
         return std::move(array);
     }
 
@@ -454,7 +453,7 @@ public:
         : m_generator(std::move(generator))
         , m_mapper(std::move(mapper)) {}
 
-    T generate() const override { return m_mapper(pick(m_generator)); }
+    T generate() const override { return m_mapper(*m_generator); }
 
 private:
     Gen m_generator;
@@ -467,9 +466,9 @@ class Character : public Generator<T>
 public:
     T generate() const override
     {
-        return pick(oneOf(map(ranged<uint8_t>(1, 128),
-                              [](uint8_t x) { return static_cast<T>(x); }),
-                          nonZero<T>()));
+        return *oneOf(map(ranged<uint8_t>(1, 128),
+                          [](uint8_t x) { return static_cast<T>(x); }),
+                      nonZero<T>());
     }
 
     shrink::IteratorUP<T> shrink(T value) const override
@@ -565,8 +564,8 @@ public:
     TupleT generate() const override
     {
         return std::tuple_cat(
-            std::tuple<GeneratedT<Gen>>(pick(m_headGenerator)),
-            pick(m_tailGenerator));
+            std::tuple<GeneratedT<Gen>>(*m_headGenerator),
+            *m_tailGenerator);
     }
 
     shrink::IteratorUP<TupleT> shrink(TupleT value) const override

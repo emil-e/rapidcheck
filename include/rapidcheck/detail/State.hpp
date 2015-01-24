@@ -85,9 +85,9 @@ public:
         CommandsT commands;
         StateT currentState(m_initialState);
         while (commands.commands().size() < gen::currentSize()) {
-            auto command = pick(gen::lambda([=] {
+            auto command = *gen::lambda([=] {
                 return m_generationFunc(currentState);
-            }));
+            });
 
             try {
                 currentState = command->nextState(currentState);
@@ -120,9 +120,9 @@ void check(State initialState,
            Sut &sut,
            GenerationFunc generationFunc)
 {
-    auto commands = pick(CommandsGenerator<
-                         GenerationFunc,
-                         Command<State, Sut>>(initialState, generationFunc));
+    auto commands = *CommandsGenerator<
+        GenerationFunc,
+        Command<State, Sut>>(initialState, generationFunc);
     commands.run(initialState, sut);
 }
 

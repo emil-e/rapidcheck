@@ -71,7 +71,7 @@ TEST_CASE("Counter") {
              CounterModel state;
              Counter sut;
              state::check(state, sut, [] (const CounterModel &state) {
-                 if (pick<bool>())
+                 if (*gen::arbitrary<bool>())
                      return state::CommandSP<CounterModel, Counter>(new Inc());
                  else
                      return state::CommandSP<CounterModel, Counter>(new Dec());

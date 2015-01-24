@@ -12,9 +12,8 @@ using namespace rc;
 TEST_CASE("gen::suchThat") {
     prop("never generates values not satisfying the predicate",
          [] (int max) {
-             int x = pick(
-                 gen::noShrink(
-                     gen::suchThat<int>([=](int x) { return x < max; })));
+             int x = *gen::noShrink(
+                 gen::suchThat<int>([=](int x) { return x < max; }));
              RC_ASSERT(x < max);
          });
 }
@@ -26,10 +25,10 @@ struct RangedProperties
     {
         templatedProp<T>(
             "never generates values outside of range", [] {
-                int min = pick<int>();
-                int max = pick(gen::suchThat<int>(
-                                   [=](int x) { return x > min; }));
-                int x = pick(gen::noShrink(gen::ranged(min, max)));
+                int min = *gen::arbitrary<int>();
+                int max = *gen::suchThat<int>(
+                    [=](int x) { return x > min; });
+                int x = *gen::noShrink(gen::ranged(min, max));
                 RC_ASSERT((x >= min) && (x < max));
             });
     }
@@ -42,11 +41,11 @@ struct SignedRangedProperties
     {
         templatedProp<T>(
             "sometimes generates negative values if in range", [] {
-                int min = pick(gen::negative<int>());
-                int max = pick(gen::positive<int>());
+                int min = *gen::negative<int>();
+                int max = *gen::positive<int>();
                 auto generator = gen::noShrink(gen::ranged(min, max));
                 while (true)
-                    RC_SUCCEED_IF(pick(generator) < 0);
+                    RC_SUCCEED_IF(*generator < 0);
 
                 return false;
             });
@@ -61,9 +60,9 @@ TEST_CASE("gen::ranged") {
 TEST_CASE("gen::oneOf") {
     prop("only uses the given generators",
          [] (int a, int b, int c) {
-             int value = pick(gen::noShrink(gen::oneOf(gen::constant(a),
-                                                       gen::constant(b),
-                                                       gen::constant(c))));
+             int value = *gen::noShrink(gen::oneOf(gen::constant(a),
+                                                   gen::constant(b),
+                                                   gen::constant(c)));
              RC_ASSERT((value == a) ||
                        (value == b) ||
                        (value == c));
@@ -72,29 +71,29 @@ TEST_CASE("gen::oneOf") {
     prop("all generators are eventually used",
          [] (int a, int b, int c) {
              while (true) {
-                 int value = pick(gen::noShrink(gen::oneOf(gen::constant(a),
-                                                           gen::constant(b),
-                                                           gen::constant(c))));
-                 if (value == a)
-                     break;
-             }
+                 int value = *gen::noShrink(gen::oneOf(gen::constant(a),
+                                                       gen::constant(b),
+                                                       gen::constant(c)));
+             if (value == a)
+                 break;
+         }
 
-             while (true) {
-                 int value = pick(gen::noShrink(gen::oneOf(gen::constant(a),
-                                                           gen::constant(b),
-                                                           gen::constant(c))));
-                 if (value == b)
-                     break;
-             }
+         while (true) {
+             int value = *gen::noShrink(gen::oneOf(gen::constant(a),
+                                                   gen::constant(b),
+                                                   gen::constant(c)));
+         if (value == b)
+             break;
+         }
 
-             while (true) {
-                 int value = pick(gen::noShrink(gen::oneOf(gen::constant(a),
-                                                           gen::constant(b),
-                                                           gen::constant(c))));
-                 if (value == c)
-                     break;
-             }
-         });
+        while (true) {
+            int value = *gen::noShrink(gen::oneOf(gen::constant(a),
+                                                  gen::constant(b),
+                                                  gen::constant(c)));
+            if (value == c)
+                break;
+        }
+});
 }
 
 struct NonZeroProperties
@@ -103,7 +102,7 @@ struct NonZeroProperties
     static void exec()
     {
         templatedProp<T>("never generates zero", [] {
-            RC_ASSERT(pick(gen::noShrink(gen::nonZero<T>())) != 0);
+            RC_ASSERT(*gen::noShrink(gen::nonZero<T>()) != 0);
         });
     }
 };
@@ -115,7 +114,7 @@ struct PositiveProperties
     static void exec()
     {
         templatedProp<T>("never generates non-positive", [] {
-            RC_ASSERT(pick(gen::noShrink(gen::positive<T>())) > 0);
+            RC_ASSERT(*gen::noShrink(gen::positive<T>()) > 0);
         });
     }
 };
@@ -126,7 +125,7 @@ struct NegativeProperties
     static void exec()
     {
         templatedProp<T>("never generates non-negative", [] {
-            RC_ASSERT(pick(gen::noShrink(gen::negative<T>())) < 0);
+            RC_ASSERT(*gen::noShrink(gen::negative<T>()) < 0);
         });
     }
 };
@@ -137,7 +136,7 @@ struct NonNegativeProperties
     static void exec()
     {
         templatedProp<T>("never generates negative", [] {
-            RC_ASSERT(pick(gen::noShrink(gen::nonNegative<T>())) >= 0);
+            RC_ASSERT(*gen::noShrink(gen::nonNegative<T>()) >= 0);
         });
     }
 };
@@ -166,9 +165,9 @@ struct VectorTests
         templatedProp<T>(
             "uses the given generator for elements",
             [] {
-                auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
+                auto size = *gen::ranged<std::size_t>(0, gen::currentSize());
                 auto egen = gen::arbitrary<typename T::value_type>();
-                auto elements = pick(gen::noShrink(gen::vector<T>(size, egen)));
+                auto elements = *gen::noShrink(gen::vector<T>(size, egen));
                 for (const auto &e : elements)
                     RC_ASSERT(isArbitraryPredictable(e));
             });
@@ -176,9 +175,9 @@ struct VectorTests
         templatedProp<T>(
             "generates collections of the given size",
             [] {
-                auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
+                auto size = *gen::ranged<std::size_t>(0, gen::currentSize());
                 auto egen = gen::arbitrary<typename T::value_type>();
-                auto elements = pick(gen::noShrink(gen::vector<T>(size, egen)));
+                auto elements = *gen::noShrink(gen::vector<T>(size, egen));
                 auto actualSize = std::distance(begin(elements),
                                                 end(elements));
                 RC_ASSERT(actualSize == size);
@@ -196,10 +195,9 @@ struct NonCopyableVectorTests
         templatedProp<T>(
             "works with non-copyable types",
             [] {
-                auto size = pick(gen::ranged<std::size_t>(0, gen::currentSize()));
-                auto coll = pick(
-                    gen::noShrink(
-                        gen::vector<T>(size, gen::arbitrary<Element>())));
+                auto size = *gen::ranged<std::size_t>(0, gen::currentSize());
+                auto coll = *gen::noShrink(
+                    gen::vector<T>(size, gen::arbitrary<Element>()));
                 for (const auto &e : coll)
                     RC_ASSERT(isArbitraryPredictable(e));
             });
@@ -222,20 +220,19 @@ struct CollectionTests
         templatedProp<T>(
             "uses the given generator for elements",
             [] {
-                auto elements = pick(
-                    gen::noShrink(
-                        gen::collection<T>(
-                            gen::arbitrary<typename T::value_type>())));
-                    for (const auto &e : elements)
-                        RC_ASSERT(isArbitraryPredictable(e));
+                auto elements = *gen::noShrink(
+                    gen::collection<T>(
+                        gen::arbitrary<typename T::value_type>()));
+                for (const auto &e : elements)
+                    RC_ASSERT(isArbitraryPredictable(e));
             });
 
         templatedProp<T>(
             "generates empty collections for 0 size",
             [] {
                 auto egen = gen::arbitrary<typename T::value_type>();
-                auto coll = pick(
-                    gen::noShrink(gen::resize(0, gen::collection<T>(egen))));
+                auto coll = *gen::noShrink(
+                    gen::resize(0, gen::collection<T>(egen)));
                 RC_ASSERT(coll.empty());
             });
     }
@@ -250,7 +247,7 @@ struct NonCopyableCollectionTests
             "works with non-copyable types",
             [] {
                 auto egen = gen::arbitrary<typename T::value_type>();
-                auto coll = pick(gen::noShrink(gen::collection<T>(egen)));
+                auto coll = *gen::noShrink(gen::collection<T>(egen));
                 for (const auto &e : coll)
                     RC_ASSERT(isArbitraryPredictable(e));
             });
@@ -271,7 +268,7 @@ TEST_CASE("gen::collection") {
          [] {
              typedef std::array<Predictable, 100> ArrayT;
              auto egen = gen::arbitrary<Predictable>();
-             auto coll = pick(gen::noShrink(gen::collection<ArrayT>(egen)));
+             auto coll = *gen::noShrink(gen::collection<ArrayT>(egen));
              for (const auto &e : coll)
                  RC_ASSERT(isArbitraryPredictable(e));
          });
@@ -280,13 +277,12 @@ TEST_CASE("gen::collection") {
 TEST_CASE("gen::resize") {
     prop("changes the generation size",
          [] {
-             auto size = pick(gen::positive<int>());
-             auto generator =
-                 gen::noShrink(
-                     gen::resize(
-                         size,
-                         gen::lambda([] { return gen::currentSize(); })));
-             RC_ASSERT(pick(generator) == size);
+             auto size = *gen::positive<int>();
+             auto generator = gen::noShrink(
+                 gen::resize(
+                     size,
+                     gen::lambda([] { return gen::currentSize(); })));
+             RC_ASSERT(*generator == size);
          });
 }
 
@@ -311,12 +307,11 @@ void show(IncInt x, std::ostream &os) { os << x.value; }
 TEST_CASE("gen::anyInvocation") {
     prop("generates arguments in listing order",
          [] {
-             auto tuple = pick(
-                 gen::noShrink(
-                     gen::anyInvocation(
-                         [] (IncInt a, IncInt b, IncInt c) {
-                             return std::make_tuple(a.value, b.value, c.value);
-                         })));
+             auto tuple = *gen::noShrink(
+                 gen::anyInvocation(
+                     [] (IncInt a, IncInt b, IncInt c) {
+                         return std::make_tuple(a.value, b.value, c.value);
+                     }));
 
              RC_ASSERT(std::get<0>(tuple) < std::get<1>(tuple));
              RC_ASSERT(std::get<1>(tuple) < std::get<2>(tuple));
@@ -324,15 +319,14 @@ TEST_CASE("gen::anyInvocation") {
 
     prop("uses the appropriate Arbitrary instance",
          [] {
-             auto tuple = pick(
-                 gen::noShrink(
-                     gen::anyInvocation(
-                         [] (const Predictable &a,
-                             Predictable &&b,
-                             Predictable c)
-                         {
-                             return std::make_tuple(a.value, b.value, c.value);
-                         })));
+             auto tuple = *gen::noShrink(
+                 gen::anyInvocation(
+                     [] (const Predictable &a,
+                         Predictable &&b,
+                         Predictable c)
+             {
+                 return std::make_tuple(a.value, b.value, c.value);
+             }));
              RC_ASSERT(std::get<0>(tuple) == Predictable::predictableValue);
              RC_ASSERT(std::get<1>(tuple) == Predictable::predictableValue);
              RC_ASSERT(std::get<2>(tuple) == Predictable::predictableValue);
@@ -340,9 +334,8 @@ TEST_CASE("gen::anyInvocation") {
 
     prop("uses the return value as the generated value",
          [] {
-             int x = pick(
-                 gen::noShrink(
-                     gen::anyInvocation([] (int a, int b) { return 12345; })));
+             int x = *gen::noShrink(
+                 gen::anyInvocation([] (int a, int b) { return 12345; }));
              RC_ASSERT(x == 12345);
          });
 }
@@ -351,17 +344,17 @@ TEST_CASE("gen::noShrink") {
     prop("sets the NoShrink parameter",
          [] {
              detail::ImplicitParam<detail::param::NoShrink> noShrink;
-             noShrink.let(pick<bool>());
-             bool wasNoShrink = pick(gen::noShrink(gen::lambda([]{
+             noShrink.let(*gen::arbitrary<bool>());
+             bool wasNoShrink = *gen::noShrink(gen::lambda([]{
                  return *detail::ImplicitParam<detail::param::NoShrink>();
-             })));
+             }));
              RC_ASSERT(wasNoShrink);
          });
 
     prop("blocks explicit shrinking",
          [] {
              auto generator = gen::arbitrary<int>();
-             auto value = pick(generator);
+             auto value = *generator;
              RC_ASSERT(!gen::noShrink(generator).shrink(value)->hasNext());
          });
 }
@@ -370,18 +363,18 @@ TEST_CASE("gen::map") {
     prop("maps a generated values from one type to another",
          [] (int input) {
              std::string str(
-                 pick( gen::noShrink(
-                         gen::map(gen::constant(input),
-                                    [] (int x) {
-                                      return std::to_string(x);
-                                  }))));
+                 *gen::noShrink(
+                     gen::map(gen::constant(input),
+                              [] (int x) {
+                                  return std::to_string(x);
+                              })));
              RC_ASSERT(str == std::to_string(input));
          });
 }
 
 TEST_CASE("gen::character") {
     prop("never generates null characters", [] {
-        RC_ASSERT(pick(gen::noShrink(gen::character<char>())) != '\0');
+        RC_ASSERT(*gen::noShrink(gen::character<char>()) != '\0');
     });
 
     SECTION("does not shrink 'a'") {
@@ -389,7 +382,7 @@ TEST_CASE("gen::character") {
     }
 
     prop("first tries to shrink every value to 'a')", [] {
-        char c = pick(gen::character<char>());
+        char c = *gen::character<char>();
         RC_PRE(c != 'a');
         RC_ASSERT(gen::character<char>().shrink(c)->next() == 'a');
     });
@@ -404,12 +397,12 @@ TEST_CASE("gen::rescue") {
              });
 
              std::string str(
-                 pick(gen::noShrink(
-                          gen::rescue<std::string>(
-                              generator,
-                              [] (const std::string &ex) {
-                                  return ex;
-                              }))));
+                 *gen::noShrink(
+                     gen::rescue<std::string>(
+                         generator,
+                         [] (const std::string &ex) {
+                             return ex;
+                         })));
 
              RC_ASSERT(str == std::to_string(x));
          });
@@ -420,7 +413,7 @@ TEST_CASE("gen::constant") {
          [] (int x) {
              auto generator = gen::constant(x);
              for (int i = 0; i < gen::currentSize(); i++)
-                 RC_ASSERT(pick(generator) == x);
+                 RC_ASSERT(*generator == x);
          });
 }
 
@@ -429,27 +422,26 @@ TEST_CASE("gen::lambda") {
          [] (int x) {
              auto generator = gen::lambda([=] { return x; });
              for (int i = 0; i < gen::currentSize(); i++)
-                 RC_ASSERT(pick(generator) == x);
+                 RC_ASSERT(*generator == x);
          });
 }
 
 TEST_CASE("gen::tupleOf") {
     prop("uses the provided generators",
          [] {
-             auto tuple = pick(gen::noShrink(gen::tupleOf(gen::constant(1),
-                                                          gen::constant(2),
-                                                          gen::constant(3),
-                                                          gen::constant(4))));
+             auto tuple = *gen::noShrink(gen::tupleOf(gen::constant(1),
+                                                      gen::constant(2),
+                                                      gen::constant(3),
+                                                      gen::constant(4)));
              RC_ASSERT(tuple == std::make_tuple(1, 2, 3, 4));
          });
 
     prop("works with non-copyable types",
          [] {
-             auto tuple = pick(
-                 gen::noShrink(gen::tupleOf(gen::constant(std::string("foobar")),
-                                            gen::constant(123),
-                                            gen::arbitrary<NonCopyable>(),
-                                            gen::arbitrary<NonCopyable>())));
+             auto tuple = *gen::noShrink(gen::tupleOf(gen::constant(std::string("foobar")),
+                                                      gen::constant(123),
+                                                      gen::arbitrary<NonCopyable>(),
+                                                      gen::arbitrary<NonCopyable>()));
              RC_ASSERT(std::get<0>(tuple) == "foobar");
              RC_ASSERT(std::get<1>(tuple) == 123);
              RC_ASSERT(isArbitraryPredictable(std::get<2>(tuple)));
@@ -497,23 +489,23 @@ TEST_CASE("gen::tupleOf") {
 TEST_CASE("gen::pairOf") {
     prop("uses the provided generators",
          [] {
-             auto pair = pick(gen::noShrink(gen::pairOf(gen::constant(1),
-                                                        gen::constant(2))));
+             auto pair = *gen::noShrink(gen::pairOf(gen::constant(1),
+                                                    gen::constant(2)));
              RC_ASSERT(pair == std::make_pair(1, 2));
          });
 
     prop("works with non-copyable types",
          [] {
-            auto pair = pick(gen::noShrink(gen::pairOf(gen::constant(std::string("foobar")),
-                                                       gen::arbitrary<NonCopyable>())));
-            RC_ASSERT(pair.first == "foobar");
-            RC_ASSERT(isArbitraryPredictable(pair.second));
+             auto pair = *gen::noShrink(gen::pairOf(gen::constant(std::string("foobar")),
+                                                    gen::arbitrary<NonCopyable>()));
+             RC_ASSERT(pair.first == "foobar");
+             RC_ASSERT(isArbitraryPredictable(pair.second));
          });
 
     prop("shrinks one element at a time",
          [] (const std::pair<int, int> &pair) {
              auto it = gen::pairOf(gen::arbitrary<int>(),
-                                    gen::arbitrary<int>()).shrink(pair);
+                                   gen::arbitrary<int>()).shrink(pair);
 
              auto eit = gen::arbitrary<int>().shrink(pair.first);
              while (eit->hasNext()) {

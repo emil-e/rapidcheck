@@ -48,6 +48,11 @@ public:
     typedef T GeneratedType;
 
     //! Generates a value.
+    T operator*() const;
+
+    //! Generates a value. This method should not be called directly, use the
+    //! dereferencing operator (i.e. `*someGenerator`) instead. This makes
+    //! shrinking work properly.
     virtual T generate() const = 0;
 
     //! Returns a \c ShrinkIterator which yields the possible shrinks for the
@@ -220,6 +225,8 @@ PairOf<Gen1, Gen2> pairOf(Gen1 generator1, Gen2 generator2);
 template<typename Gen>
 using GeneratedT = typename Gen::GeneratedType;
 
+namespace detail {
+
 //! Picks a random value using the given generator.
 //!
 //! @param generator  The Generator to use.
@@ -227,13 +234,7 @@ using GeneratedT = typename Gen::GeneratedType;
 template<typename T>
 T pick(const gen::Generator<T> &generator);
 
-//! Picks a random value of the given type. Essentially a shorthand for
-//! <pre>pick(arbitrary<T>())</pre>.
-//!
-//! @tparam T  The type of the value to pick.
-template<typename T>
-T pick();
-
+} // namespace detail
 } // namespace rc
 
 #include "Generator.hpp"

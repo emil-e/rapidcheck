@@ -11,7 +11,7 @@ using namespace rc;
 TEST_CASE("shrink::sequentially") {
     prop("joins shrinkers together",
          [] (const std::vector<int> &xs) {
-             int split = xs.empty() ? 0 : pick(gen::ranged<size_t>(0, xs.size()));
+             int split = xs.empty() ? 0 : *gen::ranged<size_t>(0, xs.size());
              shrink::IteratorUP<int> it(
                  shrink::sequentially(
                      shrink::constant<int>({xs.begin(), xs.begin() + split}),
@@ -24,9 +24,9 @@ TEST_CASE("shrink::sequentially") {
 TEST_CASE("shrink::unfold") {
     prop("mimics a for loop",
          [] {
-             int start = pick<int>();
-             int end = pick(gen::suchThat<int>([=](int x){ return x > start; }));
-             int incr = pick(gen::ranged<int>(1, end - start + 1));
+             int start = *gen::arbitrary<int>();
+             int end = *gen::suchThat<int>([=](int x){ return x > start; });
+             int incr = *gen::ranged<int>(1, end - start + 1);
              auto iterator = shrink::unfold(
                  start,
                  [=](int x) { return x < end; },
@@ -79,7 +79,7 @@ struct EachElementProperties
         templatedProp<T>(
             "the container size stays the same",
             [&] {
-                auto elements = pick(smallValues);
+                auto elements = *smallValues;
                 auto it = shrink::eachElement(
                     elements,
                     [&] (const Element &x) { return smallValue.shrink(x); });
@@ -103,7 +103,7 @@ struct EachElementProperties
             "has no shrinks if elements have no shrinks",
             [] {
                 auto it = shrink::eachElement(
-                    pick(smallValues),
+                    *smallValues,
                     [] (const Element &x) {
                         return shrink::nothing<Element>();
                     });
@@ -114,7 +114,7 @@ struct EachElementProperties
             "the number of shrinks is never greater than the sum of the "
             "shrink counts for the iterators of the elements",
             [] {
-                auto elements = pick(smallValues);
+                auto elements = *smallValues;
                 auto it = shrink::eachElement(
                     elements,
                     [&] (const Element &x) { return smallValue.shrink(x); });
@@ -129,7 +129,7 @@ struct EachElementProperties
             "for every shrink, a value is replaced with one of its possible "
             "shrinks",
             [] {
-                auto elements = pick(smallValues);
+                auto elements = *smallValues;
                 auto it = shrink::eachElement(
                     elements,
                     [&] (const Element &x) { return smallValue.shrink(x); });
@@ -168,13 +168,13 @@ struct RemoveChunksProperties
         templatedProp<T>(
             "first tries empty collection",
             [] {
-                RC_ASSERT(shrink::removeChunks(pick(smallValues))->next().empty());
+                RC_ASSERT(shrink::removeChunks(*smallValues)->next().empty());
             });
 
         templatedProp<T>(
             "successively increases in size for each shrink",
             [] {
-                auto it = shrink::removeChunks(pick(fewSmallValues));
+                auto it = shrink::removeChunks(*fewSmallValues);
                 T c;
                 while (it->hasNext()) {
                     auto next = it->next();
@@ -186,7 +186,7 @@ struct RemoveChunksProperties
         templatedProp<T>(
             "shrinks to a subset of the original",
             [] {
-                auto elements = pick(fewSmallValues);
+                auto elements = *fewSmallValues;
                 auto it = shrink::removeChunks(elements);
                 while (it->hasNext()) {
                     auto diff(setDifference<Element>(it->next(), elements));
@@ -198,15 +198,14 @@ struct RemoveChunksProperties
             "every removal of consecutive elements is a possible shrink",
             [] {
                 // TODO non-empty generator
-                auto elements = pick(
-                    gen::suchThat(
-                        fewSmallValues,
-                        [] (const T &x) {
-                            return std::distance(begin(x), end(x)) != 0;
-                        }));
+                auto elements =  *gen::suchThat(
+                    fewSmallValues,
+                    [] (const T &x) {
+                        return std::distance(begin(x), end(x)) != 0;
+                    });
                 auto size = containerSize(elements);
-                int begin = pick(gen::ranged<int>(0, size - 1));
-                int end = pick(gen::ranged<int>(begin + 1, size));
+                int begin = *gen::ranged<int>(0, size - 1);
+                int end = *gen::ranged<int>(begin + 1, size);
 
                 detail::CollectionBuilder<T> builder;
                 int i = 0;
@@ -223,7 +222,7 @@ struct RemoveChunksProperties
         templatedProp<T>(
             "never yields the original value",
             [] {
-                auto elements = pick(fewSmallValues);
+                auto elements = *fewSmallValues;
                 auto it = shrink::removeChunks(elements);
                 RC_ASSERT(!hasShrink(it, elements));
             });
@@ -245,9 +244,9 @@ struct ShrinkTowardsProperties
         templatedProp<T>(
             "first tries target immediately",
             [] (T target) {
-                T value = pick(gen::suchThat(
-                                   gen::arbitrary<T>(),
-                                   [=] (T x) { return x != target; }));
+                T value = *gen::suchThat(
+                    gen::arbitrary<T>(),
+                    [=] (T x) { return x != target; });
                 auto it = shrink::towards(value, target);
                 RC_ASSERT(it->hasNext());
                 RC_ASSERT(it->next() == target);
@@ -256,9 +255,9 @@ struct ShrinkTowardsProperties
         templatedProp<T>(
             "tries an adjacent value last",
             [] (T target) {
-                T value = pick(gen::suchThat(
-                                   gen::arbitrary<T>(),
-                                   [=] (T x) { return x != target; }));
+                T value = *gen::suchThat(
+                    gen::arbitrary<T>(),
+                    [=] (T x) { return x != target; });
                 auto it = shrink::towards(value, target);
                 T fin = finalShrink(it);
                 T diff = (value > target) ? (value - fin) : (fin - value);
@@ -288,7 +287,7 @@ TEST_CASE("shrink::filter") {
 
     prop("never returns an item which does not satisfy the predicate",
          [] (const std::vector<int> &shrinks) {
-             auto max = pick(gen::positive<int>());
+             auto max = *gen::positive<int>();
              auto it = shrink::filter(shrink::constant(shrinks),
                                       [=] (int x) { return x < max; });
              while (it->hasNext())
