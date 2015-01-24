@@ -33,3 +33,4 @@
 - injective gen::map
 - shrink gen::ranged
 - add number of discarded tests to success data
+- make pick() use a hook instead of calling RoseNode directly
