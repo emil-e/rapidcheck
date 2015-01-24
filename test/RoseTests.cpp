@@ -260,32 +260,27 @@ struct AcceptShrink : public RoseCommand
     }
 };
 
-class TripleConstantGen : public gen::Generator<std::string>
+class PassthroughGen : public gen::Generator<std::vector<int>>
 {
 public:
-    TripleConstantGen(const std::string &a,
-                      const std::string &b,
-                      const std::string &c)
-        : m_a(a), m_b(b), m_c(c) {}
+    PassthroughGen(const std::vector<int> &values) : m_values(values) {}
 
-    std::string generate() const override
+    std::vector<int> generate() const override
     {
-        std::string ret;
-        ret += rc::pick(gen::constant(m_a));
-        ret += rc::pick(gen::constant(m_b));
-        ret += rc::pick(gen::constant(m_c));
-        return ret;
+        std::vector<int> values;
+        for (auto value : m_values)
+            values.push_back(pick(gen::constant(value)));
+        return values;
     }
 
-    shrink::IteratorUP<std::string> shrink(std::string value) const override
+    shrink::IteratorUP<std::vector<int>> shrink(
+        std::vector<int> value) const override
     {
-        return shrink::constant<std::string>({ std::string("foobar") });
+        return shrink::constant<std::vector<int>>({ std::vector<int>{1, 2, 3} });
     }
 
 private:
-    std::string m_a;
-    std::string m_b;
-    std::string m_c;
+    std::vector<int> m_values;
 };
 
 TEST_CASE("Rose") {
@@ -401,38 +396,29 @@ TEST_CASE("Rose") {
 
     SECTION("example") {
         prop("correctly generates examples when not shrunk",
-             [] (const TestCase &testCase,
-                 std::string a,
-                 std::string b,
-                 std::string c)
+             [] (const TestCase &testCase, std::vector<int> values)
              {
-                 TripleConstantGen generator(a, b, c);
-                 Rose<decltype(generator)::GeneratedType> rose(&generator, testCase);
+                 PassthroughGen generator(values);
+                 Rose<std::vector<int>> rose(&generator, testCase);
+
                  auto example(rose.example());
-                 // show(example, std::cout);
-                 // std::cout << std::endl;
-                 RC_ASSERT(example.size() == 3);
-                 RC_ASSERT(example[0] == ValueDescription(a));
-                 RC_ASSERT(example[1] == ValueDescription(b));
-                 RC_ASSERT(example[2] == ValueDescription(c));
+                 RC_ASSERT(example.size() == values.size());
+
+                 for (int i = 0; i < example.size(); i++)
+                     RC_ASSERT(example[i] == ValueDescription(values[i]));
              });
 
         prop("generates empty example if shrunk",
-             [] (const TestCase &testCase,
-                 std::string a,
-                 std::string b,
-                 std::string c)
+             [] (const TestCase &testCase, std::vector<int> values)
              {
-                 TripleConstantGen generator(a, b, c);
-                 Rose<decltype(generator)::GeneratedType> rose(&generator, testCase);
-
+                 PassthroughGen generator(values);
+                 Rose<std::vector<int>> rose(&generator, testCase);
                  bool didShrink;
-                 auto shrunk = rose.nextShrink(didShrink);
-                 RC_ASSERT(shrunk == "foobar");
+                 rose.nextShrink(didShrink);
                  RC_ASSERT(didShrink);
 
                  auto example(rose.example());
-                 RC_ASSERT(example.size() == 0);
+                 RC_ASSERT(example.empty());
              });
     }
 }
