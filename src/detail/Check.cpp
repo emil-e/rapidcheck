@@ -13,10 +13,14 @@ template<typename Callable>
 auto withTestCase(const TestCase &testCase, Callable callable)
     -> decltype(callable())
 {
+    ImplicitParam<param::CurrentNode> currentNode;
+    currentNode.let(nullptr);
+
     ImplicitParam<param::RandomEngine> randomEngine;
     RandomEngine engine;
     engine.seed(testCase.seed);
     randomEngine.let(&engine);
+
     ImplicitParam<param::Size> size;
     size.let(testCase.size);
 
@@ -82,18 +86,17 @@ TestResult checkProperty(const gen::Generator<CaseResult> &property)
             numDiscarded++;
             if (numDiscarded > maxDiscard) {
                 return GaveUpResult {
-                    .numTests = currentCase.index,
+                    .numTests = (currentCase.index - 1),
                     .description = result.description() };
             }
-            continue;
+        } else {
+            currentCase.index++;
+            currentCase.size = (currentCase.size + 1) % (params.maxSize + 1);
+            //TODO better size calculation
         }
-
-        currentCase.index++;
-        currentCase.size = (currentCase.size + 1) % (params.maxSize + 1);
-        //TODO better size calculation
     }
 
-    return SuccessResult{ .numTests = currentCase.index };
+    return SuccessResult{ .numTests = (currentCase.index - 1) };
 }
 
 } // namespace detail
