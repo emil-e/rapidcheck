@@ -10,3 +10,7 @@ add_executable(rapidcheck_tests
 
 target_link_libraries(rapidcheck_tests rapidcheck)
 target_include_directories(rapidcheck_tests PRIVATE ../ext/catch/include)
+
+add_test(
+  NAME rapidcheck_tests
+  COMMAND rapidcheck_tests)
