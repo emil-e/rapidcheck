@@ -15,7 +15,7 @@ struct TestCase
     //! The used size.
     int size = 0;
     //! The used seed.
-    RandomEngine::Atom seed = 0;
+    RandomEngine::Seed seed = 0;
 };
 
 //! Describes the result of a test case.

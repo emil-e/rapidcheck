@@ -17,8 +17,7 @@ auto withTestCase(const TestCase &testCase, Callable callable)
     currentNode.let(nullptr);
 
     ImplicitParam<param::RandomEngine> randomEngine;
-    RandomEngine engine;
-    engine.seed(testCase.seed);
+    RandomEngine engine(testCase.seed);
     randomEngine.let(&engine);
 
     ImplicitParam<param::Size> size;
@@ -67,15 +66,12 @@ TestResult checkProperty(const gen::Generator<CaseResult> &property)
     using namespace detail;
     TestParams params;
     TestCase currentCase;
-    RandomEngine seedEngine;
 
     int maxDiscard = params.maxDiscardRatio * params.maxSuccess;
     int numDiscarded = 0;
     currentCase.size = 0;
     currentCase.index = 1;
     while (currentCase.index <= params.maxSuccess) {
-        currentCase.seed = seedEngine.nextAtom();
-
         CaseResult result = withTestCase(
             currentCase,
             [&]{ return property.generate(); });

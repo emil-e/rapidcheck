@@ -34,7 +34,7 @@ T Generator<T>::operator*() const
 { return detail::pick(*this); }
 
 template<typename Gen>
-void sample(int sz, Gen generator)
+void sample(int sz, Gen generator, uint64_t seed)
 {
     using namespace detail;
 
@@ -42,7 +42,7 @@ void sample(int sz, Gen generator)
     size.let(sz);
 
     ImplicitParam<param::RandomEngine> randomEngine;
-    RandomEngine engine;
+    RandomEngine engine(seed);
     randomEngine.let(&engine);
 
     show(generator(), std::cout);

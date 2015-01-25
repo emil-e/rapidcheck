@@ -304,8 +304,7 @@ TEST_CASE("Rose") {
              RoseModel s0;
              {
                  // TODO gotta be a better way to do this
-                 RandomEngine engine;
-                 engine.seed(testCase.seed);
+                 RandomEngine engine(testCase.seed);
                  ImplicitParam<param::RandomEngine> randomEngine;
                  randomEngine.let(&engine);
                  ImplicitParam<param::Size> size;

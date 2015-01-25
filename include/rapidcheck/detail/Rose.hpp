@@ -14,8 +14,8 @@ template<typename T>
 Rose<T>::Rose(const gen::Generator<T> *generator, const TestCase &testCase)
     : m_generator(generator)
     , m_testCase(testCase)
+    , m_randomEngine(testCase.seed)
 {
-    m_randomEngine.seed(testCase.seed);
     // Initialize the tree with the test case.
     currentValue();
 }

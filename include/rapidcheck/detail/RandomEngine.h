@@ -1,12 +1,16 @@
 #pragma once
 
-#include <random>
+#include <array>
+#include <cstdint>
 
 namespace rc {
 namespace detail {
 
-//! The fundamental source of randomness in rapidcheck. Generates the most basic
+//! The fundamental source of randomness in RapidCheck. Generates the most basic
 //! random values which are then used to generate more complex structures.
+//!
+//! Currently uses Xorshift128+ from Sebastiano Vigna (vigna@acm.org). Creds to
+//! him.
 class RandomEngine
 {
 public:
@@ -15,18 +19,17 @@ public:
     //! or more values of \c Atom.
     typedef uint64_t Atom;
 
-    //! Default constructor
-    RandomEngine() = default;
+    //! The type of the seed.
+    typedef uint64_t Seed;
 
-    //! Returns the next \c Atom.
+    //! C-tor.
+    explicit RandomEngine(Seed seed);
+
+    //! Returns the next \c Atom. Mutates the state.
     Atom nextAtom();
 
-    //! Sets the seed of this random engine.
-    void seed(Atom s);
-
 private:
-    std::default_random_engine m_randomEngine;
-    std::uniform_int_distribution<uint64_t> m_distribution;
+    uint64_t m_state[2];
 };
 
 } // namespace detail

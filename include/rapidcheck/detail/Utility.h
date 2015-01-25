@@ -95,6 +95,16 @@ std::tuple<Types...> tupleTail(const std::tuple<Type, Types...> &tuple)
     return TupleTailHelper<std::tuple<Type, Types...>, Types...>::tail(tuple);
 }
 
+//! Avalanching function.
+//! Written in 2014 by Sebastiano Vigna (vigna@acm.org)
+inline uint64_t avalanche(uint64_t x) {
+    x ^= x >> 33;
+    x *= 0xff51afd7ed558ccdULL;
+    x ^= x >> 33;
+    x *= 0xc4ceb9fe1a85ec53ULL;
+    return x ^= x >> 33;
+}
+
 // TODO separate into header and implementation file
 
 } // namespace detail

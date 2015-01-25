@@ -3,6 +3,7 @@ add_executable(rapidcheck_tests
   ArbitraryTests.cpp
   CheckTests.cpp
   GeneratorTests.cpp
+  RandomEngineTests.cpp
   RoseTests.cpp
   ShrinkTests.cpp
   VariantTests.cpp
