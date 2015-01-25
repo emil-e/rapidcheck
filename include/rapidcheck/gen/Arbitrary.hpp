@@ -67,7 +67,7 @@ public:
     {
         int64_t i = *gen::arbitrary<int64_t>();
         T x = static_cast<T>(i) / std::numeric_limits<int64_t>::max();
-        return std::pow<T>(1.2, gen::currentSize()) * x;
+        return std::pow<T>(1.1, gen::currentSize()) * x;
     }
 
     shrink::IteratorUP<T> shrink(T value) const override
