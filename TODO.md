@@ -34,3 +34,7 @@
 - shrink gen::ranged
 - add number of discarded tests to success data
 - make pick() use a hook instead of calling RoseNode directly
+- pick unique values in some nice way
+- maybe some default predicates would be nice
+- replace some raw loops
+- static_asserts that something is a generator
