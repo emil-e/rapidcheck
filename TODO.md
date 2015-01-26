@@ -38,3 +38,8 @@
 - maybe some default predicates would be nice
 - replace some raw loops
 - static_asserts that something is a generator
+- test that types like shared_ptr<T> are never stored if they don't shrink, they need to be regenerated always (IMPORTANT)
+- split Generator, Shrink and Arbitrary files into smaller files
+- really need some way to generated values in a range but dependent on size
+- static_assert for missing Arbitrary instance
+- prefer ostream<< for RapidCheck types where there's no point in having a difference between show() and ostream<<
