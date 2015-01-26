@@ -9,6 +9,14 @@
 namespace rc {
 namespace detail {
 
+std::ostream &operator<<(std::ostream &os, const TestParams &params)
+{
+    os << "maxSuccess=" << params.maxSuccess;
+    os << ", maxSize=" << params.maxSize;
+    os << ", maxDiscardRatio=" << params.maxDiscardRatio;
+    return os;
+}
+
 template<typename Callable>
 auto withTestCase(const TestCase &testCase, Callable callable)
     -> decltype(callable())
@@ -50,21 +58,10 @@ TestResult shrinkFailingCase(const gen::Generator<CaseResult> &property,
     }
 }
 
-//! Describes the parameters for a test.
-struct TestParams
-{
-    //! The maximum number of successes before deciding a property passes.
-    int maxSuccess = 100;
-    //! The maximum size to generate.
-    int maxSize = 100;
-    //! The maximum allowed number of discarded tests per successful test.
-    int maxDiscardRatio = 10;
-};
-
-TestResult checkProperty(const gen::Generator<CaseResult> &property)
+TestResult checkProperty(const gen::Generator<CaseResult> &property,
+                         const TestParams &params)
 {
     using namespace detail;
-    TestParams params;
     TestCase currentCase;
 
     int maxDiscard = params.maxDiscardRatio * params.maxSuccess;

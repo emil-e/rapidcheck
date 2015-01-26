@@ -3,14 +3,26 @@
 
 #include "util/Util.h"
 
-// TODO fix when we have configurability
-#define DEFAULT_NUM_TESTS 100
-#define DEFAULT_MAX_SIZE 100
-#define DEFAULT_MAX_DISCARDS 10
-
 using namespace rc;
 using namespace rc::detail;
 
+template<>
+class Arbitrary<TestParams> : public gen::Generator<TestParams>
+{
+public:
+    TestParams generate() const override
+    {
+        TestParams params;
+        params.maxSuccess = *gen::ranged(0, 100);
+        params.maxSize = *gen::ranged(0, 101);
+        params.maxDiscardRatio = *gen::ranged(0, 100);
+        return params;
+    }
+};
+
+// Generates a constant value but tries to shrink it by a sequence of
+// decrementing towards zero. Used for testing the correct number of shrinks are
+// performed/reported.
 class CountDownGenerator : public gen::Generator<int>
 {
 public:
@@ -36,30 +48,31 @@ private:
 };
 
 TEST_CASE("checkTestable") {
-    SECTION("runs all test cases if no cases fail") {
-        int numCases = 0;
-        int lastSize = -1;
-        auto result = checkTestable([&] {
-            numCases++;
-        });
-        REQUIRE(numCases == DEFAULT_NUM_TESTS);
+    prop("runs all test cases if no cases fail",
+         [] (const TestParams &params) {
+             int numCases = 0;
+             int lastSize = -1;
+             auto result = checkTestable([&] {
+                 numCases++;
+             }, params);
+             RC_ASSERT(numCases == params.maxSuccess);
 
-        SuccessResult success;
-        REQUIRE(result.match(success));
-        REQUIRE(success.numTests == DEFAULT_NUM_TESTS);
-    }
+             SuccessResult success;
+             RC_ASSERT(result.match(success));
+             RC_ASSERT(success.numTests == params.maxSuccess);
+         });
 
     prop("returns correct information about failing case",
-         [] {
+         [] (const TestParams &params) {
              int numCases = 0;
              int lastSize = -1;
              // TODO test seed?
-             int failingIndex = *gen::ranged<int>(1, DEFAULT_NUM_TESTS);
+             int failingIndex = *gen::ranged<int>(1, params.maxSuccess);
              auto result = checkTestable([&] {
                  numCases++;
                  lastSize = gen::currentSize();
                  return numCases < failingIndex;
-             });
+             }, params);
              FailureResult failure;
              RC_ASSERT(result.match(failure));
              RC_ASSERT(failure.failingCase.index == failingIndex);
@@ -135,14 +148,14 @@ TEST_CASE("checkTestable") {
          });
 
     prop("gives up if too many test cases are discarded",
-         [] {
-             const int maxDiscards = DEFAULT_NUM_TESTS * DEFAULT_MAX_DISCARDS;
-             const int targetSuccess = *gen::ranged<int>(1, DEFAULT_NUM_TESTS);
+         [] (const TestParams &params) {
+             const int maxDiscards = params.maxSuccess * params.maxDiscardRatio;
+             const int targetSuccess = *gen::ranged<int>(1, params.maxSuccess);
              int numTests = 0;
              auto results = checkTestable([&] {
                  numTests++;
                  RC_PRE(numTests <= targetSuccess);
-             });
+             }, params);
              RC_ASSERT(numTests >= (targetSuccess + maxDiscards));
 
              GaveUpResult gaveUp;
@@ -151,18 +164,18 @@ TEST_CASE("checkTestable") {
          });
 
     prop("does not give up if not enough tests are discarded",
-         [] {
-             const int maxDiscards = DEFAULT_NUM_TESTS * DEFAULT_MAX_DISCARDS;
+         [] (const TestParams &params) {
+             const int maxDiscards = params.maxSuccess * params.maxDiscardRatio;
              const int targetDiscard = *gen::ranged<int>(0, maxDiscards + 1);
              int numTests = 0;
              auto results = checkTestable([&] {
                  numTests++;
                  RC_PRE(numTests > targetDiscard);
-             });
+             }, params);
 
              SuccessResult success;
              RC_ASSERT(results.match(success));
-             RC_ASSERT(success.numTests == DEFAULT_NUM_TESTS);
+             RC_ASSERT(success.numTests == params.maxSuccess);
          });
 
     prop("on giving up, description contains message",
