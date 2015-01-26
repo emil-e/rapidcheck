@@ -10,7 +10,7 @@ using namespace rc::detail;
 
 TEST_CASE("RandomEngine") {
     SECTION("nextAtom") {
-        prop("same seeds yield same sequences of numbers",
+        prop("same seeds yields same sequences of numbers",
              [] (RandomEngine::Seed seed) {
                  RandomEngine r1(seed);
                  RandomEngine r2(seed);
@@ -27,7 +27,7 @@ TEST_CASE("RandomEngine") {
                      RC_ASSERT(r1.nextAtom() == r2.nextAtom());
              });
 
-        prop("different seeds yield different sequences of numbers",
+        prop("different seeds yields different sequences of numbers",
              [] {
                  auto s1 = *gen::arbitrary<RandomEngine::Seed>();
                  auto s2 = *gen::suchThat(

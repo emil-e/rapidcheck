@@ -24,8 +24,8 @@ public:
             r = randomEngine->nextAtom();
         }
 
-        // We vary the size by using different number of bits. This way, we can be
-        // that the max value can also be generated.
+        // We vary the size by using different number of bits. This way, we can
+        // be sure that the max value can also be generated.
         int nBits = (size * std::numeric_limits<T>::digits) / gen::kNominalSize;
         if (nBits == 0)
             return 0;
@@ -36,8 +36,9 @@ public:
         T x = static_cast<T>(r & mask);
         if (std::numeric_limits<T>::is_signed)
         {
-            // Use the topmost bit as the signed bit. Even in the case of a signed
-            // 64-bit integer, it won't be used since it actually IS the sign bit.
+            // Use the topmost bit as the signed bit. Even in the case of a
+            // signed 64-bit integer, it won't be used since it actually IS the
+            // sign bit.
             constexpr int basicBits =
                 std::numeric_limits<RandomEngine::Atom>::digits;
             x *= ((r >> (basicBits - 1)) == 0) ? 1 : -1;
