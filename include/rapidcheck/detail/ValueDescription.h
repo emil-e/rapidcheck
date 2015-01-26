@@ -13,7 +13,7 @@ public:
     ValueDescription() = default;
 
     template<typename T>
-    ValueDescription(const T &value);
+    explicit ValueDescription(const T &value);
 
     //! Returns the name of the type of this value.
     std::string typeName() const;

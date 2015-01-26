@@ -7,6 +7,7 @@ add_executable(rapidcheck_tests
   RoseTests.cpp
   ShrinkTests.cpp
   VariantTests.cpp
+  ShowTests.cpp
   main.cpp
   )
 
