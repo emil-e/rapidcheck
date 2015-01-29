@@ -20,8 +20,6 @@
 - Should noShrink for collections be the default?
 - Tests for CollectionBuilder
 - Test discarding behavior
-- Accepted generator bug? Shouldn't be set unconditionally?
-- Assumptions about mutability in copied values... dangerous? For example, shared pointers are copied...
 - Make pick() a member function
 - Make default show() not depending on operator<<
 - showing() method and support class for nicer integration with operator<<
@@ -43,3 +41,10 @@
 - really need some way to generated values in a range but dependent on size
 - static_assert for missing Arbitrary instance
 - prefer ostream<< for RapidCheck types where there's no point in having a difference between show() and ostream<<
+- better error message if precondition not met
+- terminology in result classes should be better, confusing now
+- retry with different seed... or just ignore test?
+- showtype for commands
+- look at where boost places templates that need to be specialized by the user
+- do we have generators for std::stack? We didn't have showType for it
+- maybe only generate one seed for all of RapidCheck and its tests
