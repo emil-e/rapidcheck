@@ -21,15 +21,10 @@ template<typename Callable>
 auto withTestCase(const TestCase &testCase, Callable callable)
     -> decltype(callable())
 {
-    ImplicitParam<param::CurrentNode> currentNode;
-    currentNode.let(nullptr);
-
-    ImplicitParam<param::RandomEngine> randomEngine;
     RandomEngine engine(testCase.seed);
-    randomEngine.let(&engine);
-
-    ImplicitParam<param::Size> size;
-    size.let(testCase.size);
+    ImplicitParam<param::CurrentNode> currentNode(nullptr);
+    ImplicitParam<param::RandomEngine> randomEngine(&engine);
+    ImplicitParam<param::Size> size(testCase.size);
 
     return callable();
 }
@@ -62,6 +57,9 @@ TestResult checkProperty(const gen::Generator<CaseResult> &property,
                          const TestParams &params)
 {
     using namespace detail;
+    // NOTE: Fresh scope
+    ImplicitScope scope;
+
     TestCase currentCase;
 
     int maxDiscard = params.maxDiscardRatio * params.maxSuccess;

@@ -23,10 +23,8 @@ Rose<T>::Rose(const gen::Generator<T> *generator, const TestCase &testCase)
 template<typename T>
 T Rose<T>::currentValue()
 {
-    ImplicitParam<param::RandomEngine> randomEngine;
-    randomEngine.let(&m_randomEngine);
-    ImplicitParam<param::Size> size;
-    size.let(m_testCase.size);
+    ImplicitParam<param::RandomEngine> randomEngine(&m_randomEngine);
+    ImplicitParam<param::Size> size(m_testCase.size);
 
     return m_root.currentValue(m_generator).template get<T>();
 }
@@ -34,10 +32,8 @@ T Rose<T>::currentValue()
 template<typename T>
 T Rose<T>::nextShrink(bool &didShrink)
 {
-    ImplicitParam<param::RandomEngine> randomEngine;
-    randomEngine.let(&m_randomEngine);
-    ImplicitParam<param::Size> size;
-    size.let(m_testCase.size);
+    ImplicitParam<param::RandomEngine> randomEngine(&m_randomEngine);
+    ImplicitParam<param::Size> size(m_testCase.size);
 
     return m_root.nextShrink(m_generator, didShrink).template get<T>();
 }
@@ -51,10 +47,8 @@ void Rose<T>::acceptShrink()
 template<typename T>
 std::vector<ValueDescription> Rose<T>::example()
 {
-    ImplicitParam<param::RandomEngine> randomEngine;
-    randomEngine.let(&m_randomEngine);
-    ImplicitParam<param::Size> size;
-    size.let(m_testCase.size);
+    ImplicitParam<param::RandomEngine> randomEngine(&m_randomEngine);
+    ImplicitParam<param::Size> size(m_testCase.size);
 
     return m_root.example(m_generator);
 }

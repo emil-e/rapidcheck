@@ -8,7 +8,7 @@ GenerationFailure::GenerationFailure(std::string msg)
 
 int currentSize()
 {
-    return *detail::ImplicitParam<detail::param::Size>();
+    return detail::ImplicitParam<detail::param::Size>::value();
 }
 
 } // namespace gen

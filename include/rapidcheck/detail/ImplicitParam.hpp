@@ -1,60 +1,45 @@
 #pragma once
 
+#include <iostream>
+#include "rapidcheck/Show.h"
+
 namespace rc {
 namespace detail {
 
 template<typename Param>
-void ImplicitParam<Param>::let(ValueType value)
+ImplicitParam<Param>::ImplicitParam(ValueType value)
 {
-    if (m_isBinding)
-        values().pop();
-    values().push(std::move(value));
-    m_isBinding = true;
+    m_stack.push(std::make_pair(
+                     std::move(value),
+                     ImplicitScope::m_scopes.size()));
 }
 
-template<typename Param>
-typename ImplicitParam<Param>::ValueType &
-ImplicitParam<Param>::operator*()
-{ return values().top(); }
+template<typename StackT, StackT *stack>
+void popStackBinding() { stack->pop(); }
 
 template<typename Param>
-const typename ImplicitParam<Param>::ValueType &
-ImplicitParam<Param>::operator*() const
-{ return values().top(); }
+typename ImplicitParam<Param>::ValueType &ImplicitParam<Param>::value()
+{
+    int scopeLevel = ImplicitScope::m_scopes.size();
+    if (m_stack.empty() || (m_stack.top().second < scopeLevel)) {
+        m_stack.push(std::make_pair(
+                         Param::defaultValue(),
+                         ImplicitScope::m_scopes.size()));
+        if (!ImplicitScope::m_scopes.empty()) {
+            ImplicitScope::m_scopes.top().push_back(
+                popStackBinding<StackT, &m_stack>);
+        }
+    }
 
-template<typename Param>
-typename ImplicitParam<Param>::ValueType &
-ImplicitParam<Param>::operator->()
-{ return **this; }
-
-template<typename Param>
-const typename ImplicitParam<Param>::ValueType &
-ImplicitParam<Param>::operator->() const
-{ return **this; }
+    return m_stack.top().first;
+}
 
 template<typename Param>
 ImplicitParam<Param>::~ImplicitParam()
-{
-    if (m_isBinding)
-        values().pop();
-}
+{ m_stack.pop(); }
 
 template<typename Param>
-typename ImplicitParam<Param>::StackT &ImplicitParam<Param>::values()
-{
-    // TODO needs thread local
-    static StackT valueStack;
-    if (valueStack.empty())
-        valueStack.push(Param::defaultValue());
-    return valueStack;
-}
-
-template<typename Param>
-std::ostream &operator<<(std::ostream& os, const ImplicitParam<Param> &p)
-{
-    os << *p;
-    return os;
-}
+typename ImplicitParam<Param>::StackT ImplicitParam<Param>::m_stack;
 
 } // namespace detail
 } // namespace rc

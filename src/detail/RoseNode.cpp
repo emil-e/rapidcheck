@@ -40,9 +40,8 @@ Any RoseNode::pick(const gen::Generator<Any> &generator)
     m_nextChild++;
 
     auto &child = m_children[i];
-    ImplicitParam<ShrinkMode> shrinkMode;
     Any value;
-    if (*shrinkMode && (i == m_shrinkChild)) {
+    if (ImplicitParam<ShrinkMode>::value() && (i == m_shrinkChild)) {
         bool didShrink;
         value = child.nextShrink(generator, didShrink);
         if (!didShrink)
@@ -51,8 +50,8 @@ Any RoseNode::pick(const gen::Generator<Any> &generator)
         value = child.currentValue(generator);
     }
 
-    ImplicitParam<CurrentObserver> currentObserver;
-    if (*currentObserver != nullptr)
+    auto currentObserver = ImplicitParam<CurrentObserver>::value();
+    if (currentObserver != nullptr)
         currentObserver->pickedValue(child, value);
     return value;
 }
@@ -64,8 +63,7 @@ Any RoseNode::currentValue(const gen::Generator<Any> &generator)
     } else if (m_acceptedValue) {
         return m_acceptedValue;
     } else {
-        ImplicitParam<ShrinkMode> shrinkMode;
-        shrinkMode.let(false);
+        ImplicitParam<ShrinkMode> shrinkMode(false);
         return generate(generator);
     }
 }
@@ -74,8 +72,7 @@ Any RoseNode::nextShrink(const gen::Generator<Any> &generator,
                          bool &didShrink)
 {
     // If shrinking is disabled, just return the current value
-    ImplicitParam<param::NoShrink> noShrink;
-    if (*noShrink) {
+    if (ImplicitParam<param::NoShrink>::value()) {
         didShrink = false;
         return currentValue(generator);
     }
@@ -164,8 +161,7 @@ void RoseNode::acceptShrink()
 RandomEngine::Atom RoseNode::atom()
 {
     if (!m_hasAtom) {
-        ImplicitParam<param::RandomEngine> randomEngine;
-        m_atom = randomEngine->nextAtom();
+        m_atom = ImplicitParam<param::RandomEngine>::value()->nextAtom();
         m_hasAtom = true;
     }
 
@@ -175,9 +171,8 @@ RandomEngine::Atom RoseNode::atom()
 std::vector<ValueDescription> RoseNode::example(
     const gen::Generator<Any> &generator)
 {
-    ImplicitParam<CurrentObserver> currentObserver;
     ExampleObserver observer(this);
-    currentObserver.let(&observer);
+    ImplicitParam<CurrentObserver> currentObserver(&observer);
     currentValue(generator);
     return std::move(observer.descriptions());
 }
@@ -196,8 +191,7 @@ Any RoseNode::nextShrinkChildren(const gen::Generator<Any> &generator,
         return currentValue(generator);
     }
 
-    ImplicitParam<ShrinkMode> shrinkMode;
-    shrinkMode.let(true);
+    ImplicitParam<ShrinkMode> shrinkMode(true);
     Any value(generate(generator));
     didShrink = !isChildrenExhausted();
     return value;
@@ -210,8 +204,7 @@ bool RoseNode::isChildrenExhausted() const
 
 Any RoseNode::generate(const gen::Generator<Any> &generator)
 {
-    ImplicitParam<param::CurrentNode> currentNode;
-    currentNode.let(this);
+    ImplicitParam<param::CurrentNode> currentNode(this);
     m_nextChild = 0;
     return generator.generate();
 }

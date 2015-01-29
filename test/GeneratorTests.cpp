@@ -343,10 +343,10 @@ TEST_CASE("gen::anyInvocation") {
 TEST_CASE("gen::noShrink") {
     prop("sets the NoShrink parameter",
          [] {
-             detail::ImplicitParam<detail::param::NoShrink> noShrink;
-             noShrink.let(*gen::arbitrary<bool>());
+             detail::ImplicitParam<detail::param::NoShrink> noShrink(
+                 *gen::arbitrary<bool>());
              bool wasNoShrink = *gen::noShrink(gen::lambda([]{
-                 return *detail::ImplicitParam<detail::param::NoShrink>();
+                 return detail::ImplicitParam<detail::param::NoShrink>::value();
              }));
              RC_ASSERT(wasNoShrink);
          });

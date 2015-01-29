@@ -305,12 +305,9 @@ TEST_CASE("Rose") {
              {
                  // TODO gotta be a better way to do this
                  RandomEngine engine(testCase.seed);
-                 ImplicitParam<param::RandomEngine> randomEngine;
-                 randomEngine.let(&engine);
-                 ImplicitParam<param::Size> size;
-                 size.let(testCase.size);
-                 ImplicitParam<param::CurrentNode> currentNode;
-                 currentNode.let(nullptr);
+                 ImplicitParam<param::RandomEngine> randomEngine(&engine);
+                 ImplicitParam<param::Size> size(testCase.size);
+                 ImplicitParam<param::CurrentNode> currentNode(nullptr);
                  s0.acceptedValue = *generator;
                  s0.currentValue = s0.acceptedValue;
                  s0.didShrink = false;

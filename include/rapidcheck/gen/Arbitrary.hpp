@@ -16,12 +16,11 @@ public:
         int size = std::min(gen::currentSize(), gen::kNominalSize);
         RandomEngine::Atom r;
         // TODO this switching shouldn't be done here. pickAtom?
-        ImplicitParam<param::CurrentNode> currentNode;
-        if (*currentNode != nullptr) {
+        auto currentNode = ImplicitParam<param::CurrentNode>::value();
+        if (currentNode != nullptr) {
             r = currentNode->atom();
         } else {
-            ImplicitParam<param::RandomEngine> randomEngine;
-            r = randomEngine->nextAtom();
+            r = ImplicitParam<param::RandomEngine>::value()->nextAtom();
         }
 
         // We vary the size by using different number of bits. This way, we can

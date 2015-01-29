@@ -14,8 +14,8 @@ template<typename T> class ErasedGenerator;
 template<typename T>
 T pick(const gen::Generator<T> &generator)
 {
-    detail::ImplicitParam<detail::param::CurrentNode> currentNode;
-    if (*currentNode != nullptr) {
+    auto currentNode = ImplicitParam<param::CurrentNode>::value();
+    if (currentNode != nullptr) {
         return std::move(
             currentNode->pick(
                 detail::ErasedGenerator<T>(&generator)).template get<T>());
@@ -38,12 +38,10 @@ void sample(int sz, Gen generator, uint64_t seed)
 {
     using namespace detail;
 
-    ImplicitParam<param::Size> size;
-    size.let(sz);
+    ImplicitParam<param::Size> size(sz);
 
-    ImplicitParam<param::RandomEngine> randomEngine;
     RandomEngine engine(seed);
-    randomEngine.let(&engine);
+    ImplicitParam<param::RandomEngine> randomEngine(&engine);
 
     show(generator(), std::cout);
     std::cout << std::endl;
@@ -122,8 +120,7 @@ public:
 
     GeneratedT<Gen> generate() const override
     {
-        detail::ImplicitParam<detail::param::Size> size;
-        size.let(m_size);
+        detail::ImplicitParam<detail::param::Size> size(m_size);
         return m_generator.generate();
     }
 
@@ -146,8 +143,9 @@ public:
 
     GeneratedT<Gen> generate() const override
     {
-        detail::ImplicitParam<detail::param::Size> size;
-        size.let(*size * m_scale);
+        using namespace rc::detail;
+        ImplicitParam<param::Size> size(
+            ImplicitParam<param::Size>::value() * m_scale);
         return m_generator.generate();
     }
 
@@ -432,8 +430,7 @@ public:
     explicit NoShrink(Gen generator) : m_generator(std::move(generator)) {}
     GeneratedT<Gen> generate() const override
     {
-        detail::ImplicitParam<detail::param::NoShrink> noShrink;
-        noShrink.let(true);
+        detail::ImplicitParam<detail::param::NoShrink> noShrink(true);
         return m_generator.generate();
     }
 
