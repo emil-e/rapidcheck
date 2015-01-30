@@ -6,8 +6,10 @@ namespace detail {
 static inline CaseResult toCaseResult(bool value)
 {
     return value
-        ? CaseResult(CaseResult::Type::Success, "returned true")
-        : CaseResult(CaseResult::Type::Failure, "returned false");
+        ? CaseResult { .type = CaseResult::Type::Success,
+                       .description = "returned true" }
+        : CaseResult { .type = CaseResult::Type::Failure,
+                       .description = "returned false" };
 }
 
 //! Helper class to convert different return types to `CaseResult`.
@@ -25,7 +27,7 @@ struct CaseResultHelper<Callable, void>
     static CaseResult resultOf(const Callable &callable)
     {
         callable();
-        return CaseResult(CaseResult::Type::Success);
+        return CaseResult { .type = CaseResult::Type::Success };
     }
 };
 
@@ -41,11 +43,14 @@ CaseResult Property<Testable>::generate() const
     } catch (const CaseResult &result) {
         return result;
     } catch (const gen::GenerationFailure &e) {
-        return CaseResult(CaseResult::Type::Discard, e.what());
+        return CaseResult { .type = CaseResult::Type::Discard,
+                            .description = e.what() };
     } catch (const std::exception &e) {
-        return CaseResult(CaseResult::Type::Failure, e.what());
+        return CaseResult { .type = CaseResult::Type::Failure,
+                            .description = e.what() };
     } catch (...) {
-        return CaseResult(CaseResult::Type::Failure, "Unknown exception thrown");
+        return CaseResult { .type = CaseResult::Type::Failure,
+                            .description = "Unknown exception thrown" };
     }
 }
 

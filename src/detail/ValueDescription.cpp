@@ -5,6 +5,11 @@
 namespace rc {
 namespace detail {
 
+ValueDescription::ValueDescription(std::string typeName,
+                                   std::string stringValue)
+    : m_typeName(typeName)
+    , m_stringValue(stringValue) {}
+
 std::string ValueDescription::typeName() const
 { return m_typeName; }
 
@@ -14,17 +19,15 @@ std::string ValueDescription::stringValue() const
 bool ValueDescription::isNull() const
 { return m_typeName.empty(); }
 
-bool ValueDescription::operator==(const ValueDescription &rhs) const
+bool operator==(const ValueDescription &lhs, const ValueDescription &rhs)
 {
     return
-        (m_typeName == rhs.m_typeName) &&
-        (m_stringValue == rhs.m_stringValue);
+        (lhs.typeName() == rhs.typeName()) &&
+        (lhs.stringValue() == rhs.stringValue());
 }
 
-bool ValueDescription::operator!=(const ValueDescription &rhs) const
-{
-    return !(*this == rhs);
-}
+bool operator!=(const ValueDescription &lhs, const ValueDescription &rhs)
+{ return !(lhs == rhs); }
 
 std::ostream &operator<<(std::ostream &os, const ValueDescription &value)
 {

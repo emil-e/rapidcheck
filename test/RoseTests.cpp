@@ -1,40 +1,12 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include "util/Generators.h"
+
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/Rose.h"
 
 using namespace rc;
-
-namespace rc {
-namespace detail {
-
-void show(const detail::TestCase &testCase, std::ostream &os)
-{
-    os << "#" << testCase.index << ": seed=" << testCase.seed << ", size="
-       << testCase.size;
-}
-
-} // namespace detail
-} // namespace rc
-
-namespace rc {
-
-template<>
-class Arbitrary<detail::TestCase> : public gen::Generator<detail::TestCase>
-{
-public:
-    detail::TestCase generate() const override
-    {
-        detail::TestCase testCase;
-        testCase.index = *gen::arbitrary<int>();
-        testCase.size = *gen::ranged<int>(0, gen::currentSize());
-        testCase.seed = *gen::arbitrary<decltype(testCase.seed)>();
-        return testCase;
-    }
-};
-
-} // namespace rc
 
 // Arbitrary integer which gives very erratic values when shrinking.
 class ErraticInt : public gen::Generator<int>
@@ -155,20 +127,11 @@ struct RoseModel
     bool didShrink;
 };
 
-struct RoseCommand
-    : public state::Command<RoseModel, detail::Rose<RoseModel::ValueT>>
-{
-    RoseCommand(const gen::Generator<RoseModel::ValueT> *generator)
-        : m_generator(generator) {}
-
-    const gen::Generator<RoseModel::ValueT> *m_generator;
-};
+typedef state::Command<RoseModel, detail::Rose<RoseModel::ValueT>> RoseCommand;
+typedef std::shared_ptr<RoseCommand> RoseCommandSP;
 
 struct CurrentValue : public RoseCommand
 {
-    CurrentValue(const gen::Generator<RoseModel::ValueT> *generator)
-        : RoseCommand(generator) {}
-
     void run(const RoseModel &s0,
              detail::Rose<RoseModel::ValueT> &rose) const override
     {
@@ -179,9 +142,6 @@ struct CurrentValue : public RoseCommand
 
 struct Example : public RoseCommand
 {
-    Example(const gen::Generator<RoseModel::ValueT> *generator)
-        : RoseCommand(generator) {}
-
     void run(const RoseModel &s0,
              detail::Rose<RoseModel::ValueT> &rose) const override
     {
@@ -195,9 +155,6 @@ struct Example : public RoseCommand
 
 struct NextShrink : public RoseCommand
 {
-    NextShrink(const gen::Generator<RoseModel::ValueT> *generator)
-        : RoseCommand(generator) {}
-
     RoseModel nextState(const RoseModel &s0) const override
     {
         RoseModel s1(s0);
@@ -240,9 +197,6 @@ struct NextShrink : public RoseCommand
 
 struct AcceptShrink : public RoseCommand
 {
-    AcceptShrink(const gen::Generator<RoseModel::ValueT> *generator)
-        : RoseCommand(generator) {}
-
     RoseModel nextState(const RoseModel &s0) const override
     {
         RC_PRE(s0.didShrink);
@@ -317,32 +271,22 @@ TEST_CASE("Rose") {
              }
 
              Rose<RoseModel::ValueT> rose(&generator, testCase);
-             state::check(s0, rose, [=] (const RoseModel &model) {
+             state::check(s0, rose, [] (const RoseModel &model) {
                  switch (*gen::ranged(0, 4)) {
                  case 0:
-                     return state::CommandSP<
-                         RoseModel,
-                         Rose<RoseModel::ValueT>>(new CurrentValue(&generator));
+                     return RoseCommandSP(new CurrentValue());
 
                  case 1:
-                     return state::CommandSP<
-                         RoseModel,
-                         Rose<RoseModel::ValueT>>(new Example(&generator));
+                     return RoseCommandSP(new Example());
 
                  case 2:
-                     return state::CommandSP<
-                         RoseModel,
-                         Rose<RoseModel::ValueT>>(new NextShrink(&generator));
+                     return RoseCommandSP(new NextShrink());
 
                  case 3:
-                     return state::CommandSP<
-                         RoseModel,
-                         Rose<RoseModel::ValueT>>(new AcceptShrink(&generator));
+                     return RoseCommandSP(new AcceptShrink());
 
                  default:
-                     return state::CommandSP<
-                         RoseModel,
-                         Rose<RoseModel::ValueT>>(nullptr);
+                     return RoseCommandSP(nullptr);
                  }
 
              });

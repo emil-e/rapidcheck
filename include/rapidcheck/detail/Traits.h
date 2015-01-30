@@ -11,6 +11,9 @@
 #include <queue>
 #include <deque>
 #include <stack>
+#include <iostream>
+
+// TODO break apart
 
 namespace rc {
 namespace detail {
@@ -130,6 +133,26 @@ struct IsCopyConstructible<std::pair<T1, T2>>
 //! Convenience wrapper over std::decay
 template<typename T>
 using DecayT = typename std::decay<T>::type;
+
+namespace test {
+
+template<typename T, typename = decltype(std::declval<T>() == std::declval<T>())>
+std::true_type isEqualityComparable(const T &);
+std::false_type isEqualityComparable(...);
+
+template<typename T, typename = decltype(std::cout << std::declval<T>())>
+std::true_type supportsOstreamOperator(const T &);
+std::false_type supportsOstreamOperator(...);
+
+} // namespace test
+
+template<typename T>
+using IsEqualityComparable = decltype(
+    test::isEqualityComparable(std::declval<T>()));
+
+template<typename T>
+using SupportsOstreamOperator = decltype(
+    test::supportsOstreamOperator(std::declval<T>()));
 
 } // namespace detail
 } // namespace rc

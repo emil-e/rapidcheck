@@ -1,5 +1,7 @@
 #include <catch.hpp>
 
+#include "util/Util.h"
+
 #include "rapidcheck/detail/Variant.h"
 
 using namespace rc;
@@ -12,6 +14,12 @@ struct A
     std::string value;
 };
 
+bool operator==(const A &a1, const A &a2)
+{ return a1.value == a2.value; }
+
+bool operator!=(const A &a1, const A &a2)
+{ return a1.value != a2.value; }
+
 struct B
 {
     B() {}
@@ -19,12 +27,24 @@ struct B
     std::string value;
 };
 
+bool operator==(const B &b1, const B &b2)
+{ return b1.value == b2.value; }
+
+bool operator!=(const B &b1, const B &b2)
+{ return b1.value != b2.value; }
+
 struct C
 {
     C() {}
     C(const std::string &x) : value(x) {}
     std::string value;
 };
+
+bool operator==(const C &c1, const C &c2)
+{ return c1.value == c2.value; }
+
+bool operator!=(const C &c1, const C &c2)
+{ return c1.value != c2.value; }
 
 typedef Variant<A, B, C> ABC;
 
@@ -116,6 +136,57 @@ TEST_CASE("Variant") {
             REQUIRE(b.value == "B");
             vc.match(c);
             REQUIRE(c.value == "C");
+        }
+    }
+
+    SECTION("operator==/operator!=") {
+        SECTION("equals if contained values are equal") {
+            REQUIRE(ABC(A("a")) == ABC(A("a")));
+            REQUIRE(ABC(B("b")) == ABC(B("b")));
+            REQUIRE(ABC(C("c")) == ABC(C("c")));
+
+            REQUIRE_FALSE(ABC(A("a")) != ABC(A("a")));
+            REQUIRE_FALSE(ABC(B("b")) != ABC(B("b")));
+            REQUIRE_FALSE(ABC(C("c")) != ABC(C("c")));
+        }
+
+        SECTION("not equals if contained values are not equal") {
+            REQUIRE_FALSE(ABC(A("a")) == ABC(A("ax")));
+            REQUIRE_FALSE(ABC(A("ax")) == ABC(A("a")));
+            REQUIRE_FALSE(ABC(B("b")) == ABC(B("bx")));
+            REQUIRE_FALSE(ABC(B("bx")) == ABC(B("b")));
+            REQUIRE_FALSE(ABC(C("c")) == ABC(C("cx")));
+            REQUIRE_FALSE(ABC(C("cx")) == ABC(C("c")));
+
+            REQUIRE(ABC(A("a")) != ABC(A("ax")));
+            REQUIRE(ABC(A("ax")) != ABC(A("a")));
+            REQUIRE(ABC(B("b")) != ABC(B("bx")));
+            REQUIRE(ABC(B("bx")) != ABC(B("b")));
+            REQUIRE(ABC(C("c")) != ABC(C("cx")));
+            REQUIRE(ABC(C("cx")) != ABC(C("c")));
+        }
+
+        SECTION("not equals if contained values are not of same type") {
+            REQUIRE_FALSE(ABC(A("a")) == ABC(B("a")));
+            REQUIRE_FALSE(ABC(B("a")) == ABC(A("a")));
+            REQUIRE(ABC(A("a")) != ABC(B("a")));
+            REQUIRE(ABC(B("a")) != ABC(A("a")));
+
+            // Not even if types are normally equatable
+            typedef Variant<Apple, Orange> Orapple;
+            REQUIRE_FALSE(Orapple(Apple("foo")) == Orapple(Orange("foo")));
+            REQUIRE_FALSE(Orapple(Orange("foo")) == Orapple(Apple("foo")));
+            REQUIRE(Orapple(Apple("foo")) != Orapple(Orange("foo")));
+            REQUIRE(Orapple(Orange("foo")) != Orapple(Apple("foo")));
+        }
+
+        SECTION("not equals if contained values do not support operator==") {
+            typedef Variant<int, float, NonComparable> SomeVariant;
+            REQUIRE_FALSE(SomeVariant(NonComparable("foo")) ==
+                          SomeVariant(NonComparable("foo")));
+
+            REQUIRE(SomeVariant(NonComparable("foo")) !=
+                    SomeVariant(NonComparable("foo")));
         }
     }
 }

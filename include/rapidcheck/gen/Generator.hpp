@@ -107,6 +107,11 @@ public:
         return m_min + value % (m_max - m_min);
     }
 
+    shrink::IteratorUP<T> shrink(T value) const override
+    {
+        return shrink::towards(value, m_min);
+    }
+
 private:
     T m_min, m_max;
 };

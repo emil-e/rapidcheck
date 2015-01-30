@@ -47,4 +47,5 @@
 - showtype for commands
 - look at where boost places templates that need to be specialized by the user
 - do we have generators for std::stack? We didn't have showType for it
-- maybe only generate one seed for all of RapidCheck and its tests
+- really inline defaultValue for implicit params?
+- const-pointers for Any?

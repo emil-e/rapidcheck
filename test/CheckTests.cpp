@@ -2,6 +2,11 @@
 #include <rapidcheck-catch.h>
 
 #include "util/Util.h"
+#include "util/Generators.h"
+#include "util/TemplateProps.h"
+
+#include "rapidcheck/detail/Configuration.h"
+#include "rapidcheck/Check.h"
 
 using namespace rc;
 using namespace rc::detail;
@@ -47,6 +52,16 @@ private:
     const int m_value;
 };
 
+TEST_CASE("TestParams") {
+    SECTION("operator==/operator!=") {
+        propConformsToEquals<TestParams>();
+        PROP_REPLACE_MEMBER_INEQUAL(TestParams, seed);
+        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSuccess);
+        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSize);
+        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxDiscardRatio);
+    }
+}
+
 TEST_CASE("checkTestable") {
     prop("runs all test cases if no cases fail",
          [] (const TestParams &params) {
@@ -59,23 +74,24 @@ TEST_CASE("checkTestable") {
 
              SuccessResult success;
              RC_ASSERT(result.match(success));
-             RC_ASSERT(success.numTests == params.maxSuccess);
+             RC_ASSERT(success.numSuccess == params.maxSuccess);
          });
 
     prop("returns correct information about failing case",
          [] (const TestParams &params) {
-             int numCases = 0;
+             RC_PRE(params.maxSuccess > 0);
+             int caseIndex = 0;
              int lastSize = -1;
              // TODO test seed?
-             int failingIndex = *gen::ranged<int>(1, params.maxSuccess);
+             int targetSuccess = *gen::ranged<int>(0, params.maxSuccess);
              auto result = checkTestable([&] {
-                 numCases++;
                  lastSize = gen::currentSize();
-                 return numCases < failingIndex;
+                 RC_ASSERT(caseIndex < targetSuccess);
+                 caseIndex++;
              }, params);
              FailureResult failure;
              RC_ASSERT(result.match(failure));
-             RC_ASSERT(failure.failingCase.index == failingIndex);
+             RC_ASSERT(failure.numSuccess == targetSuccess);
              RC_ASSERT(failure.failingCase.size == lastSize);
          });
 
@@ -149,8 +165,9 @@ TEST_CASE("checkTestable") {
 
     prop("gives up if too many test cases are discarded",
          [] (const TestParams &params) {
+             RC_PRE(params.maxSuccess > 0);
              const int maxDiscards = params.maxSuccess * params.maxDiscardRatio;
-             const int targetSuccess = *gen::ranged<int>(1, params.maxSuccess);
+             const int targetSuccess = *gen::ranged<int>(0, params.maxSuccess);
              int numTests = 0;
              auto results = checkTestable([&] {
                  numTests++;
@@ -160,7 +177,7 @@ TEST_CASE("checkTestable") {
 
              GaveUpResult gaveUp;
              RC_ASSERT(results.match(gaveUp));
-             RC_ASSERT(gaveUp.numTests == targetSuccess);
+             RC_ASSERT(gaveUp.numSuccess == targetSuccess);
          });
 
     prop("does not give up if not enough tests are discarded",
@@ -175,7 +192,7 @@ TEST_CASE("checkTestable") {
 
              SuccessResult success;
              RC_ASSERT(results.match(success));
-             RC_ASSERT(success.numTests == params.maxSuccess);
+             RC_ASSERT(success.numSuccess == params.maxSuccess);
          });
 
     prop("on giving up, description contains message",
@@ -188,5 +205,40 @@ TEST_CASE("checkTestable") {
              RC_ASSERT(results.match(gaveUp));
              RC_ASSERT(gaveUp.description.find(description) !=
                        std::string::npos);
+         });
+
+    prop("running the same test with the same TestParams yields identical runs",
+         [] (const TestParams &params) {
+             std::vector<std::vector<int>> values;
+             auto property = [&] {
+                 auto x = *gen::arbitrary<std::vector<int>>();
+                 values.push_back(x);
+                 auto result = std::find(begin(x), end(x), 50);
+                 return result == end(x);
+             };
+
+             auto results1 = checkTestable(property, params);
+             auto values1 = std::move(values);
+
+             values = std::vector<std::vector<int>>();
+             auto results2 = checkTestable(property, params);
+             auto values2 = std::move(values);
+
+             RC_ASSERT(results1 == results2);
+             RC_ASSERT(values1 == values2);
+         });
+}
+
+TEST_CASE("defaultTestParams") {
+    prop("takes default params from ImplicitParam<CurrentConfiguration>",
+         [] (const Configuration &config) {
+             TestParams expected;
+             expected.seed = config.seed;
+             expected.maxSuccess = config.defaultMaxSuccess;
+             expected.maxSize = config.defaultMaxSize;
+             expected.maxDiscardRatio = config.defaultMaxDiscardRatio;
+
+             ImplicitParam<param::CurrentConfiguration> currentConfig(config);
+             RC_ASSERT(defaultTestParams() == expected);
          });
 }

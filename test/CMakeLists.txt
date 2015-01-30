@@ -5,6 +5,7 @@ add_executable(rapidcheck_tests
   GeneratorTests.cpp
   ImplicitParamTests.cpp
   RandomEngineTests.cpp
+  ResultsTests.cpp
   RoseTests.cpp
   ShowTests.cpp
   ShrinkTests.cpp

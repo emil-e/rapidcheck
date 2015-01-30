@@ -7,6 +7,7 @@
 #include <set>
 #include <unordered_set>
 #include <unordered_map>
+#include <stack>
 
 #include "Utility.h"
 
@@ -189,6 +190,17 @@ struct ShowType<std::array<T, N>>
         os << "std::array<";
         detail::showType<T>(os);
         os << ", " << N << ">";
+    }
+};
+
+template<class T, class Container>
+struct ShowType<std::stack<T, Container>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::stack<";
+        detail::showType<T>(os);
+        os << ">";
     }
 };
 

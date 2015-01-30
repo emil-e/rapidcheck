@@ -10,8 +10,11 @@ void throwResultIf(CaseResult::Type type,
                    int line)
 {
     if (condition) {
-        throw CaseResult(
-            type, file + ":" + std::to_string(line) + ": " + description);
+        auto desc = file + ":" + std::to_string(line) + ": " + description;
+        throw CaseResult {
+            .type = type,
+            .description = desc
+        };
     }
 }
 

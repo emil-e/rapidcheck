@@ -93,7 +93,7 @@ public:
                 currentState = command->nextState(currentState);
                 commands.append(std::move(command));
             } catch (const detail::CaseResult &result) {
-                if (result.type() != detail::CaseResult::Type::Discard)
+                if (result.type != detail::CaseResult::Type::Discard)
                     throw;
             }
         }
@@ -133,4 +133,34 @@ void show(const state::Commands<CommandT> &commands, std::ostream &os)
 }
 
 } // namespace state
+
+namespace detail {
+
+// TODO should this be here?
+template<typename State, typename Sut>
+struct ShowType<rc::state::Command<State, Sut>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "Command<";
+        ::rc::detail::showType<State>(os);
+        os << ", ";
+        ::rc::detail::showType<Sut>(os);
+        os << ">";
+    }
+};
+
+template<typename CommandT>
+struct ShowType<rc::state::Commands<CommandT>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "Commands<";
+        ::rc::detail::showType<CommandT>(os);
+        os << ">";
+    }
+};
+
+} // namespace detail
+
 } // namespace rc

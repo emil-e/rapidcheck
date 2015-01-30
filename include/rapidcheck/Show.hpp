@@ -4,6 +4,8 @@
 #include <string>
 #include <iomanip>
 
+#include "rapidcheck/detail/Traits.h"
+
 namespace rc {
 namespace detail {
 
@@ -34,14 +36,6 @@ struct TupleHelper
         TupleHelper<TupleT, I - 1>::showTuple(tuple, os);
     }
 };
-
-template<typename T, typename = decltype(std::cout << std::declval<T>())>
-std::true_type supportsOstreamOperatorTest(const T &);
-std::false_type supportsOstreamOperatorTest(...);
-
-template<typename T>
-using SupportsOstreamOperator = decltype(supportsOstreamOperatorTest(
-                                             std::declval<T>()));
 
 template<typename T>
 void showDefault(const T &value, std::ostream &os, std::true_type)

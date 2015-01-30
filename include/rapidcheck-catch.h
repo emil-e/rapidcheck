@@ -30,7 +30,7 @@ void prop(const std::string &description, const Testable &testable)
             FAIL("Property failed: " << failure.description);
         } else if (result.match(gaveUp)) {
             INFO(gaveUp.description);
-            FAIL("Gave up after " << gaveUp.numTests << " successful tests");
+            FAIL("Gave up after " << gaveUp.numSuccess << " successful tests");
         }
     }
 }

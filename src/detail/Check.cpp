@@ -5,9 +5,35 @@
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/GenerationParams.h"
 #include "rapidcheck/detail/Rose.h"
+#include "rapidcheck/detail/Configuration.h"
 
 namespace rc {
 namespace detail {
+
+TestParams defaultTestParams()
+{
+    auto &config = ImplicitParam<param::CurrentConfiguration>::value();
+    TestParams params;
+    params.seed = config.seed;
+    params.maxSuccess = config.defaultMaxSuccess;
+    params.maxSize = config.defaultMaxSize;
+    params.maxDiscardRatio = config.defaultMaxDiscardRatio;
+    return params;
+}
+
+bool operator==(const TestParams &p1, const TestParams &p2)
+{
+    return
+        (p1.seed == p2.seed) &&
+        (p1.maxSuccess == p2.maxSuccess) &&
+        (p1.maxSize == p2.maxSize) &&
+        (p1.maxDiscardRatio == p2.maxDiscardRatio);
+}
+
+bool operator!=(const TestParams &p1, const TestParams &p2)
+{
+    return !(p1 == p2);
+}
 
 std::ostream &operator<<(std::ostream &os, const TestParams &params)
 {
@@ -16,6 +42,8 @@ std::ostream &operator<<(std::ostream &os, const TestParams &params)
     os << ", maxDiscardRatio=" << params.maxDiscardRatio;
     return os;
 }
+
+namespace {
 
 template<typename Callable>
 auto withTestCase(const TestCase &testCase, Callable callable)
@@ -29,29 +57,37 @@ auto withTestCase(const TestCase &testCase, Callable callable)
     return callable();
 }
 
-TestResult shrinkFailingCase(const gen::Generator<CaseResult> &property,
-                             const TestCase &testCase)
+struct ShrinkResult
+{
+    int numShrinks;
+    std::string description;
+    std::vector<ValueDescription> counterExample;
+};
+
+ShrinkResult shrinkFailingCase(const gen::Generator<CaseResult> &property,
+                               const TestCase &testCase)
 {
     Rose<CaseResult> rose(&property, testCase);
-    FailureResult result;
-    result.failingCase = testCase;
+    ShrinkResult result;
     result.numShrinks = 0;
 
     bool didShrink = true;
     while (true) {
         CaseResult shrinkResult(rose.nextShrink(didShrink));
         if (didShrink) {
-            if (shrinkResult.type() == CaseResult::Type::Failure) {
+            if (shrinkResult.type == CaseResult::Type::Failure) {
                 rose.acceptShrink();
                 result.numShrinks++;
             }
         } else {
-            result.description = shrinkResult.description();
+            result.description = shrinkResult.description;
             result.counterExample = rose.example();
             return result;
         }
     }
 }
+
+} // namespace
 
 TestResult checkProperty(const gen::Generator<CaseResult> &property,
                          const TestParams &params)
@@ -61,33 +97,56 @@ TestResult checkProperty(const gen::Generator<CaseResult> &property,
     ImplicitScope scope;
 
     TestCase currentCase;
+    currentCase.size = 0;
 
     int maxDiscard = params.maxDiscardRatio * params.maxSuccess;
     int numDiscarded = 0;
-    currentCase.size = 0;
-    currentCase.index = 1;
-    while (currentCase.index <= params.maxSuccess) {
+    int numSuccess = 0;
+    int caseIndex = 0;
+    while (numSuccess < params.maxSuccess) {
+        // The seed is a hash of all that identifies the case together with the
+        // global seed
+        currentCase.seed = avalanche(params.seed +
+                                     caseIndex +
+                                     currentCase.size);
+
         CaseResult result = withTestCase(
             currentCase,
             [&]{ return property.generate(); });
 
-        if (result.type() == CaseResult::Type::Failure) {
-            return shrinkFailingCase(property, currentCase);
-        } else if(result.type() == CaseResult::Type::Discard) {
+        if (result.type == CaseResult::Type::Failure) {
+            // Test case failed, shrink it
+            auto shrinkResult = shrinkFailingCase(property, currentCase);
+            return FailureResult {
+                .numSuccess = numSuccess,
+                .failingCase = currentCase,
+                .description = std::move(shrinkResult.description),
+                .numShrinks = shrinkResult.numShrinks,
+                .counterExample = std::move(shrinkResult.counterExample)
+            };
+        } else if(result.type == CaseResult::Type::Discard) {
+            // Test case discarded
             numDiscarded++;
             if (numDiscarded > maxDiscard) {
                 return GaveUpResult {
-                    .numTests = (currentCase.index - 1),
-                    .description = result.description() };
+                    .numSuccess = numSuccess,
+                    .description = result.description };
             }
         } else {
-            currentCase.index++;
+            // Success!
+            numSuccess++;
             currentCase.size = (currentCase.size + 1) % (params.maxSize + 1);
             //TODO better size calculation
         }
+        caseIndex++;
     }
 
-    return SuccessResult{ .numTests = (currentCase.index - 1) };
+    return SuccessResult{ .numSuccess = numSuccess };
+}
+
+TestResult checkProperty(const gen::Generator<CaseResult> &property)
+{
+    return checkProperty(property, defaultTestParams());
 }
 
 } // namespace detail
