@@ -2,9 +2,10 @@ add_executable(rapidcheck_tests
   AnyTests.cpp
   ArbitraryTests.cpp
   CheckTests.cpp
-  MapParserTests.cpp
+  ConfigurationTests.cpp
   GeneratorTests.cpp
   ImplicitParamTests.cpp
+  MapParserTests.cpp
   RandomEngineTests.cpp
   ResultsTests.cpp
   RoseTests.cpp

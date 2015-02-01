@@ -28,9 +28,9 @@ public:
     {
         detail::Configuration config;
         config.seed = *gen::arbitrary<detail::RandomEngine::Seed>();
-        config.defaultMaxSuccess = *gen::ranged<int>(0, 1000);
-        config.defaultMaxSize = *gen::ranged<int>(0, 1000);;
-        config.defaultMaxDiscardRatio = *gen::ranged<int>(0, 100);
+        config.maxSuccess = *gen::ranged<int>(0, 1000);
+        config.maxSize = *gen::ranged<int>(0, 1000);;
+        config.maxDiscardRatio = *gen::ranged<int>(0, 100);
         return config;
     }
 };

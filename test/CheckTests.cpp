@@ -233,9 +233,9 @@ TEST_CASE("defaultTestParams") {
          [] (const Configuration &config) {
              TestParams expected;
              expected.seed = config.seed;
-             expected.maxSuccess = config.defaultMaxSuccess;
-             expected.maxSize = config.defaultMaxSize;
-             expected.maxDiscardRatio = config.defaultMaxDiscardRatio;
+             expected.maxSuccess = config.maxSuccess;
+             expected.maxSize = config.maxSize;
+             expected.maxDiscardRatio = config.maxDiscardRatio;
 
              ImplicitParam<param::CurrentConfiguration> currentConfig(config);
              RC_ASSERT(defaultTestParams() == expected);

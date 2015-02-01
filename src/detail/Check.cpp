@@ -15,9 +15,9 @@ TestParams defaultTestParams()
     auto &config = ImplicitParam<param::CurrentConfiguration>::value();
     TestParams params;
     params.seed = config.seed;
-    params.maxSuccess = config.defaultMaxSuccess;
-    params.maxSize = config.defaultMaxSize;
-    params.maxDiscardRatio = config.defaultMaxDiscardRatio;
+    params.maxSuccess = config.maxSuccess;
+    params.maxSize = config.maxSize;
+    params.maxDiscardRatio = config.maxDiscardRatio;
     return params;
 }
 
