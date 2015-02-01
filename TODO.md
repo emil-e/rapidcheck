@@ -50,3 +50,5 @@
 - really inline defaultValue for implicit params?
 - const-pointers in Any?
 - how to test seed in CheckTests
+- support double and float in as many functions as possible
+- 100 tests won't generate max :(
