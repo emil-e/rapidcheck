@@ -15,8 +15,8 @@ TEST_CASE("parseMap") {
     SECTION("parses basic maps") {
         auto map = parseMap("foo=bar baz=1337");
         std::map<std::string, std::string> expected = {
-            std::make_pair("foo", "bar"),
-            std::make_pair("baz", "1337")
+            {"foo", "bar"},
+            {"baz", "1337"}
         };
 
         REQUIRE(map == expected);
@@ -25,8 +25,8 @@ TEST_CASE("parseMap") {
     SECTION("ignores whitespace") {
         auto map = parseMap(" \n  foo =   bar \t  baz =  1337 ");
         std::map<std::string, std::string> expected = {
-            std::make_pair("foo", "bar"),
-            std::make_pair("baz", "1337")
+            {"foo", "bar"},
+            {"baz", "1337"}
         };
 
         REQUIRE(map == expected);
@@ -123,7 +123,7 @@ TEST_CASE("mapToString") {
 
     SECTION("does not quote strings that do not contains special chars") {
         std::map<std::string, std::string> map {
-            std::make_pair("foobar", "barfoo")
+            {"foobar", "barfoo"}
         };
 
         REQUIRE(mapToString(map) == "foobar=barfoo");
@@ -131,7 +131,7 @@ TEST_CASE("mapToString") {
 
     SECTION("quotes strings that contain whitespace") {
         std::map<std::string, std::string> map {
-            std::make_pair("foo bar", "bar\tfoo")
+            {"foo bar", "bar\tfoo"}
         };
 
         REQUIRE(mapToString(map) == "'foo bar'='bar\tfoo'");
@@ -139,7 +139,7 @@ TEST_CASE("mapToString") {
 
     SECTION("quotes strings that contain '='") {
         std::map<std::string, std::string> map {
-            std::make_pair("foo=bar", "bar=foo")
+            {"foo=bar", "bar=foo"}
         };
 
         REQUIRE(mapToString(map) == "'foo=bar'='bar=foo'");
@@ -147,7 +147,7 @@ TEST_CASE("mapToString") {
 
     SECTION("if string contains single quotes") {
         std::map<std::string, std::string> map {
-            std::make_pair("foo'bar", "bar'foo")
+            {"foo'bar", "bar'foo"}
         };
 
         SECTION("quotes and escapes if using single quoting") {
@@ -160,7 +160,7 @@ TEST_CASE("mapToString") {
 
     SECTION("if string contains double quotes") {
         std::map<std::string, std::string> map {
-            std::make_pair("foo\"bar", "bar\"foo")
+            {"foo\"bar", "bar\"foo"}
         };
 
         SECTION("quotes and escapes if using double quoting") {
@@ -173,7 +173,7 @@ TEST_CASE("mapToString") {
 
     SECTION("quotes and escapes strings that contains backslashes") {
         std::map<std::string, std::string> map {
-            std::make_pair("foo\\bar", "bar\\foo")
+            {"foo\\bar", "bar\\foo"}
         };
 
         REQUIRE(mapToString(map) == "'foo\\\\bar'='bar\\\\foo'");

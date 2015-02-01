@@ -14,7 +14,7 @@ public:
     //!
     //! @param pos  The position at which the parse error occured.
     //! @param msg  A message describing the parse error.
-    ParseException(std::string::size_type pos, std::string msg);
+    ParseException(std::string::size_type pos, const std::string &msg);
 
     //! Returns the position.
     std::string::size_type position() const;

@@ -5,7 +5,8 @@
 namespace rc {
 namespace detail {
 
-ParseException::ParseException(std::string::size_type pos, std::string msg)
+ParseException::ParseException(std::string::size_type pos,
+                               const std::string &msg)
     : m_pos(pos)
     , m_msg(msg)
     , m_what("@" + std::to_string(m_pos) + ": " + msg) {}
