@@ -82,7 +82,6 @@ private:
     Predicate m_predicate;
 };
 
-// TODO make shrinkable?
 template<typename T>
 class Ranged : public Generator<T>
 {
