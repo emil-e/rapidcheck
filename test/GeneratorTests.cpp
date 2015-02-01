@@ -74,26 +74,26 @@ TEST_CASE("gen::oneOf") {
                  int value = *gen::noShrink(gen::oneOf(gen::constant(a),
                                                        gen::constant(b),
                                                        gen::constant(c)));
-             if (value == a)
-                 break;
-         }
+                 if (value == a)
+                     break;
+             }
 
-         while (true) {
-             int value = *gen::noShrink(gen::oneOf(gen::constant(a),
-                                                   gen::constant(b),
-                                                   gen::constant(c)));
-         if (value == b)
-             break;
-         }
+             while (true) {
+                 int value = *gen::noShrink(gen::oneOf(gen::constant(a),
+                                                       gen::constant(b),
+                                                       gen::constant(c)));
+                 if (value == b)
+                     break;
+             }
 
-        while (true) {
-            int value = *gen::noShrink(gen::oneOf(gen::constant(a),
-                                                  gen::constant(b),
-                                                  gen::constant(c)));
-            if (value == c)
-                break;
-        }
-});
+             while (true) {
+                 int value = *gen::noShrink(gen::oneOf(gen::constant(a),
+                                                       gen::constant(b),
+                                                       gen::constant(c)));
+                 if (value == c)
+                     break;
+             }
+         });
 }
 
 struct NonZeroProperties
