@@ -54,6 +54,19 @@ void templatedProp(const std::string &description, Testable testable)
     SECTION(std::string(description) + " (" +   \
             detail::typeToString<tparam>() + ")")
 
+//! Returns true all the shrinks returned by the given iterators are equal.
+template<typename T>
+bool yieldsEqual(const shrink::IteratorUP<T> &it1,
+                 const shrink::IteratorUP<T> &it2)
+{
+    while (it1->hasNext()) {
+        if (!it2->hasNext() || (it1->next() != it2->next()))
+            return false;
+    }
+
+    return !it2->hasNext();
+}
+
 //! Retrieves all elements from the iterator and returns them as a vector.
 template<typename T>
 std::vector<T> takeAll(const shrink::IteratorUP<T> &iterator)

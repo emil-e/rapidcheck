@@ -25,11 +25,20 @@ struct RangedProperties
     {
         templatedProp<T>(
             "never generates values outside of range", [] {
-                int min = *gen::arbitrary<int>();
-                int max = *gen::suchThat<int>(
-                    [=](int x) { return x > min; });
-                int x = *gen::noShrink(gen::ranged(min, max));
+                T min = *gen::arbitrary<T>();
+                T max = *gen::suchThat<T>([=](T x) { return x > min; });
+                T x = *gen::noShrink(gen::ranged(min, max));
                 RC_ASSERT((x >= min) && (x < max));
+            });
+
+        templatedProp<T>(
+            "shrinks using shrink::towards with lower bound as target", [] {
+                T min = *gen::arbitrary<T>();
+                T max = *gen::suchThat<T>([=](T x) { return x > min; });
+                auto generator = gen::ranged(min, max);
+                T value = *generator;
+                RC_ASSERT(yieldsEqual(generator.shrink(value),
+                                      shrink::towards(value, min)));
             });
     }
 };
@@ -41,8 +50,8 @@ struct SignedRangedProperties
     {
         templatedProp<T>(
             "sometimes generates negative values if in range", [] {
-                int min = *gen::negative<int>();
-                int max = *gen::positive<int>();
+                T min = *gen::negative<T>();
+                T max = *gen::positive<T>();
                 auto generator = gen::noShrink(gen::ranged(min, max));
                 while (true)
                     RC_SUCCEED_IF(*generator < 0);
@@ -53,8 +62,8 @@ struct SignedRangedProperties
 };
 
 TEST_CASE("gen::ranged") {
-    meta::forEachType<RangedProperties, RC_NUMERIC_TYPES>();
-    meta::forEachType<SignedRangedProperties, RC_SIGNED_TYPES>();
+    meta::forEachType<RangedProperties, RC_INTEGRAL_TYPES>();
+    meta::forEachType<SignedRangedProperties, RC_SIGNED_INTEGRAL_TYPES>();
 }
 
 TEST_CASE("gen::oneOf") {
