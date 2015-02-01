@@ -1,6 +1,7 @@
 #include "rapidcheck/detail/Configuration.h"
 
 #include <random>
+#include <cstdlib>
 
 #include "MapParser.h"
 
@@ -153,10 +154,18 @@ namespace {
 Configuration loadConfiguration()
 {
     Configuration config;
+    // Default to random seed
     std::random_device device;
     config.seed = (static_cast<uint64_t>(device()) << 32) | device();
+
+    auto params = std::getenv("RC_PARAMS");
+    if (params != nullptr)
+        config = configFromString(params, config);
+
     // TODO rapidcheck logging framework ftw
-    std::cerr << "Using seed " << config.seed << std::endl;
+    std::cerr << "Using configuration: "
+              << configToMinimalString(config)
+              << std::endl;
     return config;
 }
 
