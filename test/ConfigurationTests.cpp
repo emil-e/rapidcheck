@@ -20,13 +20,16 @@ TEST_CASE("Configuration") {
 }
 
 TEST_CASE("configFromString") {
-    SECTION("emtpy string yields default config") {
-        REQUIRE(configFromString("") == Configuration());
-    }
+    prop("emtpy string yields default config",
+         [] (const Configuration &config) {
+             RC_ASSERT(configFromString("", config) == config);
+         });
 
-    SECTION("ignores unknown keys") {
-        REQUIRE(configFromString("foo=bar stuff=things") == Configuration());
-    }
+    prop("ignores unknown keys",
+         [] (const Configuration &config) {
+             RC_ASSERT(configFromString("foo=bar stuff=things", config) ==
+                     config);
+         });
 
     SECTION("throws on invalid seed") {
         REQUIRE_THROWS_AS(configFromString("seed=foobar"),

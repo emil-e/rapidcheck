@@ -73,9 +73,10 @@ bool isNonNegative(T x) { return x >= 0; }
 template<typename T>
 bool anything(const T &) { return true; }
 
-Configuration configFromMap(const std::map<std::string, std::string> &map)
+Configuration configFromMap(const std::map<std::string, std::string> &map,
+                            const Configuration &defaults)
 {
-    Configuration config;
+    Configuration config(defaults);
 
     loadParam(map, "seed", config.seed,
               "'seed' must be a valid integer",
@@ -122,10 +123,11 @@ std::map<std::string, std::string> mapDifference(
 
 } // namespace
 
-Configuration configFromString(const std::string &str)
+Configuration configFromString(const std::string &str,
+                               const Configuration &defaults)
 {
     try {
-        return configFromMap(parseMap(str));
+        return configFromMap(parseMap(str), defaults);
     } catch (const ParseException &e) {
         throw ConfigurationException(
             std::string("Failed to parse configuration string -- ") +

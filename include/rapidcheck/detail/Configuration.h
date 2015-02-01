@@ -38,7 +38,10 @@ private:
 };
 
 //! Reads a `Configuration` from the given string.
-Configuration configFromString(const std::string &str);
+//!
+//! 
+Configuration configFromString(const std::string &str,
+                               const Configuration &defaults = Configuration());
 
 //! Returns a configuration string from a `Configuration`.
 std::string configToString(const Configuration &config);
