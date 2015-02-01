@@ -74,9 +74,11 @@ TEST_CASE("configFromString") {
 
 
 TEST_CASE("configToMinimalString") {
-    SECTION("default configuration yields empty string") {
-        REQUIRE(configToMinimalString(Configuration()) == "");
-    }
+    prop("is always shorter or same size as configFromString",
+         [] (const Configuration &config) {
+             RC_ASSERT(configToMinimalString(config).size() <=
+                       configToString(config).size());
+         });
 
     prop("configFromString(configToMinimalString(x)) == x",
          [] (const Configuration &config) {

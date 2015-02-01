@@ -142,8 +142,10 @@ std::string configToString(const Configuration &config)
 
 std::string configToMinimalString(const Configuration &config)
 {
-    return mapToString(mapDifference(mapFromConfig(config),
-                                     mapFromConfig(Configuration())));
+    auto defaults = mapFromConfig(Configuration());
+    // Remove keys that we always want to specify
+    defaults.erase("seed");
+    return mapToString(mapDifference(mapFromConfig(config), defaults));
 }
 
 namespace {
