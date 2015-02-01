@@ -48,4 +48,5 @@
 - look at where boost places templates that need to be specialized by the user
 - do we have generators for std::stack? We didn't have showType for it
 - really inline defaultValue for implicit params?
-- const-pointers for Any?
+- const-pointers in Any?
+- how to test seed in CheckTests
