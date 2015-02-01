@@ -286,7 +286,7 @@ TEST_CASE("gen::resize") {
          });
 }
 
-// Always increasing type for testing generatinon ordering. Note that thi is
+// Always increasing type for testing generatinon ordering. Note that this is
 // very much a hack but it will catch regressions where arguments are not
 // generated in the correct order.
 struct IncInt { int value; };
@@ -297,9 +297,17 @@ class Arbitrary<IncInt> : public gen::Generator<IncInt>
 public:
     IncInt generate() const override
     {
-        static int value = 0;
-        return IncInt { value++ };
+        return IncInt { value()++ };
     }
+
+    static int &value()
+    {
+        static int value = 0;
+        return value;
+    }
+
+    static void reset()
+    { value() = 0; }
 };
 
 void show(IncInt x, std::ostream &os) { os << x.value; }
@@ -307,6 +315,7 @@ void show(IncInt x, std::ostream &os) { os << x.value; }
 TEST_CASE("gen::anyInvocation") {
     prop("generates arguments in listing order",
          [] {
+             Arbitrary<IncInt>::reset();
              auto tuple = *gen::noShrink(
                  gen::anyInvocation(
                      [] (IncInt a, IncInt b, IncInt c) {
