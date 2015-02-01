@@ -82,7 +82,6 @@ TEST_CASE("checkTestable") {
              RC_PRE(params.maxSuccess > 0);
              int caseIndex = 0;
              int lastSize = -1;
-             // TODO test seed?
              int targetSuccess = *gen::ranged<int>(0, params.maxSuccess);
              auto result = checkTestable([&] {
                  lastSize = gen::currentSize();
