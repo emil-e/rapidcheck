@@ -9,6 +9,7 @@ add_library(rapidcheck
   src/detail/Any.cpp
   src/detail/Assertions.cpp
   src/detail/Check.cpp
+  src/detail/MapParser.cpp
   src/detail/Configuration.cpp
   src/detail/ImplicitParam.cpp
   src/detail/RandomEngine.cpp

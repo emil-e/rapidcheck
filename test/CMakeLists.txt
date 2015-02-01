@@ -2,6 +2,7 @@ add_executable(rapidcheck_tests
   AnyTests.cpp
   ArbitraryTests.cpp
   CheckTests.cpp
+  MapParserTests.cpp
   GeneratorTests.cpp
   ImplicitParamTests.cpp
   RandomEngineTests.cpp
@@ -14,7 +15,10 @@ add_executable(rapidcheck_tests
   )
 
 target_link_libraries(rapidcheck_tests rapidcheck)
-target_include_directories(rapidcheck_tests PRIVATE ../ext/catch/include)
+target_include_directories(rapidcheck_tests
+  PRIVATE
+  ../ext/catch/include
+  ../src)
 
 add_test(
   NAME rapidcheck_tests
