@@ -17,6 +17,10 @@ TEST_CASE("Configuration") {
         PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSize);
         PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxDiscardRatio);
     }
+
+    SECTION("operator<<") {
+        propConformsToOutputOperator<Configuration>();
+    }
 }
 
 TEST_CASE("configFromString") {
