@@ -263,6 +263,12 @@ struct ShrinkTowardsProperties
                 T diff = (value > target) ? (value - fin) : (fin - value);
                 RC_ASSERT(diff == 1);
             });
+
+        templatedProp<T>(
+            "shrinking towards self yields empty shrink",
+            [] (T target) {
+                RC_ASSERT(!shrink::towards(target, target)->hasNext());
+            });
     }
 };
 
