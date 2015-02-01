@@ -327,10 +327,13 @@ IteratorUP<T> eachElement(T collection, IteratorFactory factory)
 template<typename T>
 IteratorUP<T> towards(T value, T target)
 {
+    typedef typename std::make_unsigned<T>::type Uint;
     return shrink::unfold(
-        (value > target) ? (value - target) : (target - value),
-        [=](T i) { return i != 0; },
-        [=](T i) {
+        static_cast<Uint>((value > target)
+                          ? (value - target)
+                          : (target - value)),
+        [=](Uint i) { return i != 0; },
+        [=](Uint i) {
             T next = (value > target) ? (value - i) : (value + i);
             return std::make_pair(next, i / 2);
         });
