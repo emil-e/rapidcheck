@@ -121,15 +121,15 @@ TEST_CASE("Any") {
     }
 
     SECTION("describe") {
-        SECTION("returns a ValueDescription for the internal value") {
+        SECTION("returns a pair of the typename and value as strings") {
             std::string str("foobar");
-            ValueDescription desc(str);
+            std::pair<std::string, std::string> desc(typeToString<decltype(str)>(),
+                                                     toString(str));
 
             Any any = Any::of(str);
-            ValueDescription anyDesc(any.describe());
+            auto anyDesc(any.describe());
 
-            REQUIRE(desc.typeName() == anyDesc.typeName());
-            REQUIRE(desc.stringValue() == anyDesc.stringValue());
+            REQUIRE(desc == anyDesc);
         }
     }
 

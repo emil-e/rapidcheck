@@ -5,8 +5,10 @@
 
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/Rose.h"
+#include "rapidcheck/detail/ShowType.h"
 
 using namespace rc;
+using namespace rc::detail;
 
 // Arbitrary integer which gives very erratic values when shrinking.
 class ErraticInt : public gen::Generator<int>
@@ -127,13 +129,12 @@ struct RoseModel
     bool didShrink;
 };
 
-typedef state::Command<RoseModel, detail::Rose<RoseModel::ValueT>> RoseCommand;
+typedef state::Command<RoseModel, Rose<RoseModel::ValueT>> RoseCommand;
 typedef std::shared_ptr<RoseCommand> RoseCommandSP;
 
 struct CurrentValue : public RoseCommand
 {
-    void run(const RoseModel &s0,
-             detail::Rose<RoseModel::ValueT> &rose) const override
+    void run(const RoseModel &s0, Rose<RoseModel::ValueT> &rose) const override
     {
         auto value(rose.currentValue());
         RC_ASSERT(value == s0.currentValue);
@@ -142,13 +143,15 @@ struct CurrentValue : public RoseCommand
 
 struct Example : public RoseCommand
 {
-    void run(const RoseModel &s0,
-             detail::Rose<RoseModel::ValueT> &rose) const override
+    void run(const RoseModel &s0, Rose<RoseModel::ValueT> &rose) const override
     {
         auto example(rose.example());
-        std::vector<detail::ValueDescription> expected;
-        for (const auto &x : s0.currentValue)
-            expected.emplace_back(x);
+        std::vector<std::pair<std::string, std::string>> expected;
+        for (const auto &x : s0.currentValue) {
+            expected.emplace_back(
+                typeToString<RoseModel::ValueT::value_type>(),
+                toString(x));
+        }
         RC_ASSERT(example == expected);
     }
 };
@@ -183,8 +186,7 @@ struct NextShrink : public RoseCommand
         return s1;
     }
 
-    void run(const RoseModel &s0,
-             detail::Rose<RoseModel::ValueT> &rose) const override
+    void run(const RoseModel &s0, Rose<RoseModel::ValueT> &rose) const override
     {
         bool didShrink;
         auto value(rose.nextShrink(didShrink));
@@ -207,8 +209,7 @@ struct AcceptShrink : public RoseCommand
         return s1;
     }
 
-    void run(const RoseModel &s0,
-             detail::Rose<RoseModel::ValueT> &rose) const override
+    void run(const RoseModel &s0, Rose<RoseModel::ValueT> &rose) const override
     {
         rose.acceptShrink();
     }
@@ -238,8 +239,6 @@ private:
 };
 
 TEST_CASE("Rose") {
-    using namespace detail;
-
     prop("stateful test",
          [] (const TestCase &testCase) {
              auto sizes =
@@ -344,8 +343,12 @@ TEST_CASE("Rose") {
                  auto example(rose.example());
                  RC_ASSERT(example.size() == values.size());
 
-                 for (int i = 0; i < example.size(); i++)
-                     RC_ASSERT(example[i] == ValueDescription(values[i]));
+                 for (int i = 0; i < example.size(); i++) {
+                     RC_ASSERT(example[i] ==
+                               std::make_pair(
+                                   typeToString<decltype(values)::value_type>(),
+                                   toString(values[i])));
+                 }
              });
 
         prop("generates empty example if shrunk",

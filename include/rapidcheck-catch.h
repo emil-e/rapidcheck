@@ -23,8 +23,8 @@ void prop(const std::string &description, const Testable &testable)
         if (result.match(failure)) {
             std::string counterExample;
             for (const auto &desc : failure.counterExample) {
-                counterExample += desc.typeName() + ":\n";
-                counterExample += desc.stringValue() + "\n\n";
+                counterExample += desc.first + ":\n";
+                counterExample += desc.second + "\n\n";
             }
             INFO(counterExample);
             FAIL("Property failed: " << failure.description);

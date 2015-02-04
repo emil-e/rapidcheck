@@ -127,7 +127,8 @@ TEST_CASE("checkTestable") {
              RC_ASSERT(failure.counterExample.size() == values.size());
              for (int i = 0; i < values.size(); i++) {
                  RC_ASSERT(failure.counterExample[i] ==
-                           ValueDescription(values[i]));
+                           std::make_pair(typeToString<int>(),
+                                          toString(values[i])));
              }
          });
 
@@ -147,7 +148,8 @@ TEST_CASE("checkTestable") {
              RC_ASSERT(results.match(failure));
              RC_ASSERT(failure.counterExample.size() == 1);
              RC_ASSERT(failure.counterExample[0] ==
-                       ValueDescription(std::string("foo")));
+                       std::make_pair(typeToString<std::string>(),
+                                      toString(std::string("foo"))));
          });
 
     prop("on failure, description contains message",

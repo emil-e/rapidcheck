@@ -1,7 +1,6 @@
 #pragma once
 
 #include "RandomEngine.h"
-#include "ValueDescription.h"
 #include "Variant.h"
 
 namespace rc {
@@ -65,7 +64,7 @@ struct FailureResult
     //! The number of shrinks performed.
     int numShrinks;
     //! The counterexample.
-    std::vector<ValueDescription> counterExample;
+    std::vector<std::pair<std::string, std::string>> counterExample;
 };
 
 std::ostream &operator<<(std::ostream &os, const detail::FailureResult &result);

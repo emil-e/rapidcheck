@@ -32,8 +32,9 @@ public:
     template<typename T>
     T &get();
 
-    //! Returns a string representation of this `Any`.
-    ValueDescription describe() const;
+    //! Returns a pair of the type name and a string representation of the
+    //! value.
+    std::pair<std::string, std::string> describe() const;
 
     //! Returns `true` if this `Any` is non-null.
     operator bool() const;

@@ -42,7 +42,8 @@ public:
     //! the direct children. If this node has been shrunk, this method returns
     //! an empty array since theey no longer make up the value of the
     //! root.
-    std::vector<ValueDescription> example(const gen::Generator<Any> &generator);
+    std::vector<std::pair<std::string, std::string>>
+    example(const gen::Generator<Any> &generator);
 
     //! Returns the parent node or `nullptr` if there is none.
     const RoseNode *parent() const;

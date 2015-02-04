@@ -2,9 +2,10 @@
 
 #include <cassert>
 
+#include "rapidcheck/Show.h"
 #include "Utility.h"
 #include "Traits.h"
-#include "ValueDescription.h"
+#include "ShowType.h"
 
 namespace rc {
 namespace detail {
@@ -15,7 +16,7 @@ public:
     virtual void *get() = 0;
     virtual bool isCopyable() const = 0;
     virtual std::unique_ptr<AbstractAnyImpl> copy() const = 0;
-    virtual ValueDescription describe() const = 0;
+    virtual std::pair<std::string, std::string> describe() const = 0;
     virtual const std::type_info &typeInfo() const = 0;
     virtual ~AbstractAnyImpl() = default;
 };
@@ -35,14 +36,13 @@ public:
     std::unique_ptr<AbstractAnyImpl> copy() const override
     { return copy(IsCopyConstructible<T>()); }
 
-    ValueDescription describe() const override
-    { return ValueDescription(m_value); }
+    std::pair<std::string, std::string> describe() const override
+    {
+        return { typeToString<T>(), toString(m_value) };
+    }
 
     const std::type_info &typeInfo() const override
     { return typeid(T); }
-    {
-    }
-
 
 private:
     RC_DISABLE_COPY(AnyImpl)

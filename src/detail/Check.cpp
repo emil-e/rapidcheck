@@ -61,7 +61,7 @@ struct ShrinkResult
 {
     int numShrinks;
     std::string description;
-    std::vector<ValueDescription> counterExample;
+    std::vector<std::pair<std::string, std::string>> counterExample;
 };
 
 ShrinkResult shrinkFailingCase(const gen::Generator<CaseResult> &property,

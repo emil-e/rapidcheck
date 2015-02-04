@@ -36,19 +36,6 @@ public:
 };
 
 template<>
-class Arbitrary<detail::ValueDescription>
-    : public gen::Generator<detail::ValueDescription>
-{
-public:
-    detail::ValueDescription generate() const override
-    {
-        return detail::ValueDescription(
-            *gen::arbitrary<std::string>(),
-            *gen::arbitrary<std::string>());
-    }
-};
-
-template<>
 class Arbitrary<detail::TestCase> : public gen::Generator<detail::TestCase>
 {
 public:

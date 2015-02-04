@@ -28,7 +28,7 @@ public:
     void acceptShrink();
 
     //! See `RoseNode::example`
-    std::vector<ValueDescription> example();
+    std::vector<std::pair<std::string, std::string>> example();
 
 private:
     const ErasedGenerator<T> m_generator;

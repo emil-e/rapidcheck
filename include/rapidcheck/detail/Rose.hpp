@@ -45,7 +45,7 @@ void Rose<T>::acceptShrink()
 }
 
 template<typename T>
-std::vector<ValueDescription> Rose<T>::example()
+std::vector<std::pair<std::string, std::string>> Rose<T>::example()
 {
     ImplicitParam<param::RandomEngine> randomEngine(&m_randomEngine);
     ImplicitParam<param::Size> size(m_testCase.size);

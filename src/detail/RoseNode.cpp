@@ -22,10 +22,11 @@ public:
             m_descriptions.push_back(value.describe());
     }
 
-    std::vector<ValueDescription> descriptions() { return m_descriptions; }
+    std::vector<std::pair<std::string, std::string>> descriptions()
+    { return m_descriptions; }
 
 private:
-    std::vector<ValueDescription> m_descriptions;
+    std::vector<std::pair<std::string, std::string>> m_descriptions;
     const RoseNode *m_node;
 };
 
@@ -168,7 +169,7 @@ RandomEngine::Atom RoseNode::atom()
     return m_atom;
 }
 
-std::vector<ValueDescription> RoseNode::example(
+std::vector<std::pair<std::string, std::string>> RoseNode::example(
     const gen::Generator<Any> &generator)
 {
     ExampleObserver observer(this);

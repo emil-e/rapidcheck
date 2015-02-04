@@ -16,7 +16,6 @@ add_library(rapidcheck
   src/detail/Results.cpp
   src/detail/RoseNode.cpp
   src/detail/Utility.cpp
-  src/detail/ValueDescription.cpp
   src/gen/Generator.cpp
   )
 
