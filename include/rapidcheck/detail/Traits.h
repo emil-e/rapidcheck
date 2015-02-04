@@ -141,8 +141,8 @@ std::true_type isEqualityComparable(const T &);
 std::false_type isEqualityComparable(...);
 
 template<typename T, typename = decltype(std::cout << std::declval<T>())>
-std::true_type supportsOstreamOperator(const T &);
-std::false_type supportsOstreamOperator(...);
+std::true_type isStreamInsertible(const T &);
+std::false_type isStreamInsertible(...);
 
 } // namespace test
 
@@ -151,8 +151,8 @@ using IsEqualityComparable = decltype(
     test::isEqualityComparable(std::declval<T>()));
 
 template<typename T>
-using SupportsOstreamOperator = decltype(
-    test::supportsOstreamOperator(std::declval<T>()));
+using IsStreamInsertible = decltype(
+    test::isStreamInsertible(std::declval<T>()));
 
 } // namespace detail
 } // namespace rc
