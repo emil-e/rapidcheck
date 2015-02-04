@@ -13,11 +13,20 @@ env:
   - CMAKE_BUILD_TYPE=Release
 
 before_install:
-  - sudo apt-get install ninja
+  - sudo dpkg -r cmake cmake-data
+  - sudo add-apt-repository -y ppa:dcthomp/smtk
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get -qq update
+
+install:
+  - sudo apt-get install ninja-build cmake
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - cmake --version
+  - ninja --version
 
 script:
-  - mkdir build
-  - cd build
+  - mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -G Ninja ..
   - ninja
   - test/rapidcheck_tests -d yes
