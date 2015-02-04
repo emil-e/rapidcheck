@@ -1,0 +1,23 @@
+language: cpp
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+env:
+  - CMAKE_BUILD_TYPE=Debug
+  - CMAKE_BUILD_TYPE=Release
+
+before_install:
+  - sudo apt-get install ninja
+
+script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -G Ninja ..
+  - ninja
+  - test/rapidcheck_tests -d yes
