@@ -30,10 +30,12 @@ Any &Any::operator=(Any &&rhs)
 
 void Any::reset() { m_impl.reset(); }
 
-ValueDescription Any::describe() const
+std::pair<std::string, std::string> Any::describe() const
 {
     assert(m_impl);
-    return m_impl ? m_impl->describe() : ValueDescription();
+    return m_impl
+        ? m_impl->describe()
+        : std::make_pair(std::string(), std::string());
 }
 
 Any::operator bool() const { return static_cast<bool>(m_impl); }
