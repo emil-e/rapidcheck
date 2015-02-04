@@ -4,18 +4,32 @@
 
 namespace rc {
 
+template<typename T, typename VariantT>
+class VariantHelperGen : public gen::Generator<VariantT>
+{
+public:
+    VariantT generate() const override
+    { return VariantT(*gen::arbitrary<T>()); }
+};
+
 template<typename ...Types>
 class Arbitrary<detail::Variant<Types...>>
     : public gen::Generator<detail::Variant<Types...>>
 {
     detail::Variant<Types...> generate() const override
     {
+        // Here's how I'd like to do it but GCC won't let me:
+        //
+        // return *gen::oneOf(
+        //     gen::map(gen::arbitrary<Types>(),
+        //              [] (Types &&x) {
+        //                  return detail::Variant<Types...>(x);
+        //              })...
+        //     );
+        //
+        // So here we go instead:
         return *gen::oneOf(
-            gen::map(gen::arbitrary<Types>(),
-                     [] (Types &&x) {
-                         return detail::Variant<Types...>(x);
-                     })...
-            );
+            VariantHelperGen<Types, detail::Variant<Types...>>()...);
     }
 };
 
