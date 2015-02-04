@@ -11,6 +11,8 @@
 using namespace rc;
 using namespace rc::detail;
 
+namespace rc {
+
 template<>
 class Arbitrary<TestParams> : public gen::Generator<TestParams>
 {
@@ -24,6 +26,8 @@ public:
         return params;
     }
 };
+
+} // namespace rc
 
 // Generates a constant value but tries to shrink it by a sequence of
 // decrementing towards zero. Used for testing the correct number of shrinks are

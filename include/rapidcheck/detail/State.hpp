@@ -134,8 +134,6 @@ void show(const state::Commands<CommandT> &commands, std::ostream &os)
 
 } // namespace state
 
-namespace detail {
-
 // TODO should this be here?
 template<typename State, typename Sut>
 struct ShowType<rc::state::Command<State, Sut>>
@@ -160,7 +158,5 @@ struct ShowType<rc::state::Commands<CommandT>>
         os << ">";
     }
 };
-
-} // namespace detail
 
 } // namespace rc

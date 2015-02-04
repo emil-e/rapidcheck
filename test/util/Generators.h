@@ -43,7 +43,7 @@ public:
         detail::Configuration config;
         config.seed = *gen::arbitrary<detail::RandomEngine::Seed>();
         config.maxSuccess = *gen::ranged<int>(0, 1000);
-        config.maxSize = *gen::ranged<int>(0, 1000);;
+        config.maxSize = *gen::ranged<int>(0, 1000);
         config.maxDiscardRatio = *gen::ranged<int>(0, 100);
         return config;
     }

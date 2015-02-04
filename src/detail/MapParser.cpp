@@ -1,6 +1,7 @@
 #include "MapParser.h"
 
 #include <cctype>
+#include <algorithm>
 
 namespace rc {
 namespace detail {
@@ -48,7 +49,7 @@ bool takeWhile(ParseState &state, std::string &result, const Pred &pred)
 bool skipSpace(ParseState &state)
 {
     std::string space;
-    return takeWhile(state, space, std::isspace);
+    return takeWhile(state, space, [](char c){ return std::isspace(c); });
 }
 
 bool parseQuotedString(ParseState &state, std::string &value)

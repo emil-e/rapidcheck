@@ -300,6 +300,8 @@ TEST_CASE("gen::resize") {
 // generated in the correct order.
 struct IncInt { int value; };
 
+namespace rc {
+
 template<>
 class Arbitrary<IncInt> : public gen::Generator<IncInt>
 {
@@ -318,6 +320,8 @@ public:
     static void reset()
     { value() = 0; }
 };
+
+} // namespace rc
 
 void show(IncInt x, std::ostream &os) { os << x.value; }
 

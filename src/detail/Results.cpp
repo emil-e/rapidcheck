@@ -1,5 +1,7 @@
 #include "rapidcheck/detail/Results.h"
 
+#include "rapidcheck/Show.h"
+
 namespace rc {
 namespace detail {
 

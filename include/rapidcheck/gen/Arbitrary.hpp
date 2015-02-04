@@ -1,5 +1,8 @@
 #pragma once
 
+#include <limits>
+#include <cmath>
+
 namespace rc {
 
 template<typename T>
