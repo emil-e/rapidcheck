@@ -52,3 +52,7 @@
 - how to test seed in CheckTests
 - support double and float in as many functions as possible
 - 100 tests won't generate max :(
+- replacement for ValueDescription constructor so we don't do the same everywhere
+- NOEXCEPT
+- std::bitset
+- does std::vector<bool> even work?
