@@ -77,11 +77,6 @@ private:
     Any generate(const gen::Generator<Any> &generator);
     bool isChildrenExhausted() const;
     void adoptChildren();
-    std::string debugDescription() const;
-    std::string debugPath() const;
-    std::string debugIndexPath() const;
-    int depth() const;
-    int index() const;
 
     RoseNode *m_parent;
     // TODO use unique_ptr instead?

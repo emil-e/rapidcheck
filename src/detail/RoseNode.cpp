@@ -239,57 +239,6 @@ RoseNode &RoseNode::operator=(RoseNode &&rhs)
     return *this;
 }
 
-std::string RoseNode::debugDescription() const
-{
-    std::string desc;
-    // TODO fix
-    // if (!m_canonicalGenerator)
-    //     desc += "<null>";
-    // else
-    //     desc += demangle(typeid(*m_canonicalGenerator).name());
-    // desc += "[" + std::to_string(index()) + "]";
-    return desc;
-}
-
-std::string RoseNode::debugPath() const
-{
-    if (m_parent == nullptr)
-        return "/";
-    else
-        return m_parent->debugPath() + " " + debugDescription() + " /";
-}
-
-std::string RoseNode::debugIndexPath() const
-{
-    if (m_parent == nullptr)
-        return "/";
-    else
-        return m_parent->debugIndexPath() + std::to_string(index()) + "/";
-}
-
-int RoseNode::depth() const
-{
-    if (m_parent == nullptr)
-        return 0;
-    else
-        return m_parent->depth() + 1;
-}
-
-int RoseNode::index() const
-{
-    if (m_parent == nullptr) {
-        return 0;
-    } else {
-        auto &parentChildren = m_parent->m_children;
-        auto it = std::find_if(
-            parentChildren.begin(), parentChildren.end(),
-            [this] (const RoseNode &n) {
-                return &n == this;
-            });
-        return it - parentChildren.begin();
-    }
-}
-
 void RoseNode::adoptChildren()
 {
     for (auto &child : m_children)
