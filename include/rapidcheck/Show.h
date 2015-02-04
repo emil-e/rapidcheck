@@ -122,6 +122,10 @@ void show(const std::unordered_multiset<Key, Hash, KeyEqual, Allocator> &value,
 template<typename T, std::size_t N>
 void show(const std::array<T, N> &value, std::ostream &os);
 
+//! Uses show(...) to convert argument to a string.
+template<typename T>
+std::string toString(const T &value);
+
 } // namespace rc
 
 #include "Show.hpp"

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <iomanip>
 
 #include "rapidcheck/detail/Traits.h"
@@ -224,6 +225,14 @@ template<typename T, std::size_t N>
 void show(const std::array<T, N> &value, std::ostream &os)
 {
     showCollection("[", "]", value, os);
+}
+
+template<typename T>
+std::string toString(const T &value)
+{
+    std::ostringstream os;
+    show(value, os);
+    return os.str();
 }
 
 } // namespace rc
