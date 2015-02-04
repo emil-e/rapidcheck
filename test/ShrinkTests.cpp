@@ -216,7 +216,7 @@ struct RemoveChunksProperties
                 }
 
                 auto it = shrink::removeChunks(elements);
-                RC_ASSERT(hasShrink(it, builder.collection()));
+                RC_ASSERT(hasShrink(it, builder.result()));
             });
 
         templatedProp<T>(

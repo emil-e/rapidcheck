@@ -53,7 +53,7 @@ public:
             m_skipSize--;
         }
 
-        return std::move(builder.collection());
+        return std::move(builder.result());
     }
 
 private:
@@ -123,7 +123,7 @@ private:
                 return false;
         }
 
-        m_next = std::move(builder.collection());
+        m_next = std::move(builder.result());
         return true;
     }
 

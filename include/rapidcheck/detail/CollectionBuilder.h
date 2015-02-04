@@ -9,119 +9,130 @@
 namespace rc {
 namespace detail {
 
-//! Helper class for building collections.
-template<typename Collection>
-class CollectionBuilder
+template<typename Container>
+class BaseBuilder
 {
 public:
-    //! Inserts an element at the end of the collection. Returns true if the
-    //! item was successfully added or false if it was not.
-    bool add(typename Collection::value_type value);
+    Container &result();
 
-    //! Returns a reference to the collection.
-    Collection &collection();
-
-private:
-    Collection m_collection;
+protected:
+    Container m_container;
 };
 
-//! Specialization for `std::forward_list`
-template<typename T, typename Allocator>
-class CollectionBuilder<std::forward_list<T, Allocator>>
+template<typename Container>
+class EmplaceBackBuilder : public BaseBuilder<Container>
 {
 public:
-    typedef std::forward_list<T, Allocator> ListT;
-
-    CollectionBuilder();
-    bool add(T value);
-    ListT &collection();
-
-private:
-    ListT m_collection;
-    typename ListT::iterator m_iterator;
+    template<typename T>
+    bool add(T &&value);
 };
 
-//! Specialization for `std::array`
+template<typename Container>
+class InsertEndBuilder : public BaseBuilder<Container>
+{
+public:
+    template<typename T>
+    bool add(T &&value);
+};
+
+template<typename Container>
+class InsertAfterBuilder : public BaseBuilder<Container>
+{
+public:
+    InsertAfterBuilder();
+
+    template<typename T>
+    bool add(T &&value);
+
+private:
+    typename Container::iterator m_iterator;
+};
+
+template<typename Container>
+class ArrayBuilder : public BaseBuilder<Container>
+{
+public:
+    ArrayBuilder();
+
+    template<typename T>
+    bool add(T &&value);
+
+private:
+    typename Container::iterator m_iterator;
+};
+
+template<typename Container>
+class InsertKeyMaybeBuilder : public BaseBuilder<Container>
+{
+public:
+    template<typename T>
+    bool add(T &&key);
+};
+
+template<typename Container>
+class InsertPairMaybeBuilder : public BaseBuilder<Container>
+{
+public:
+    template<typename T>
+    bool add(T &&key);
+};
+
+
+namespace test {
+
+// Fallback, std::false_type acts our null value
+std::false_type builderTypeTest(...);
+
+// Types supporting insert_after(), mostly std::forward_list I suppose
+template<typename T, typename = decltype(
+    std::declval<T>().insert_after(
+        std::declval<typename T::iterator>(),
+        std::declval<typename T::value_type>()))>
+InsertAfterBuilder<T> builderTypeTest(const T &);
+
+// Types supporting insert(value) returning a pair of an iterator and a boolean
+// indicating success
+template<typename T, typename = decltype(
+    !!std::declval<T>().insert(std::declval<typename T::value_type>()).second)>
+InsertPairMaybeBuilder<T> builderTypeTest(const T &);
+
+// Types supporting insert(value) with a boolean return indicating success
+template<typename T, typename = decltype(
+    !!std::declval<T>().insert(std::declval<typename T::value_type>()))>
+InsertKeyMaybeBuilder<T> builderTypeTest(const T &);
+
+// Types supporting push_back(value)
+template<typename T, typename = decltype(
+    std::declval<T>().emplace_back(std::declval<typename T::value_type>()))>
+EmplaceBackBuilder<T> builderTypeTest(const T &);
+
+// Gives us a suitable builder for T, or std::false_type if unknown. This base
+// template uses the SFINAE junk above.
+template<typename T>
+struct SuitableBuilder
+{
+    typedef decltype(builderTypeTest(std::declval<T>())) Type;
+};
+
+// Specialization for std::array, dunno any more generic way to give it a
+// suitable type
 template<typename T, std::size_t N>
-class CollectionBuilder<std::array<T, N>>
+struct SuitableBuilder<std::array<T, N>>
 {
-public:
-    typedef std::array<T, N> ArrayT;
-
-    CollectionBuilder();
-    bool add(T value);
-    ArrayT &collection();
-
-private:
-    ArrayT m_array;
-    typename ArrayT::iterator m_iterator;
+    typedef ArrayBuilder<std::array<T, N>> Type;
 };
 
-//! Base class for map specializations.
-template<typename Map>
-class MapBuilder
-{
-public:
-    template<typename PairT>
-    bool add(PairT pair);
-    Map &collection();
+} // namespace test
 
-private:
-    Map m_map;
-};
-
-//! Base class for set specializations.
-template<typename Set>
-class SetBuilder
-{
-public:
-    bool add(typename Set::key_type key);
-    Set &collection();
-
-private:
-    Set m_set;
-};
-
-template<typename Key, typename T, typename Compare, typename Allocator>
-class CollectionBuilder<std::map<Key, T, Compare, Allocator>>
-    : public MapBuilder<std::map<Key, T, Compare, Allocator>> {};
-
-template<typename Key, typename T, typename Compare, typename Allocator>
-class CollectionBuilder<std::multimap<Key, T, Compare, Allocator>>
-    : public MapBuilder<std::multimap<Key, T, Compare, Allocator>> {};
-
-template<typename Key,
-         typename T,
-         typename Hash,
-         typename KeyEqual,
-         typename Allocator>
-class CollectionBuilder<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>>
-    : public MapBuilder<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>>
-{
-};
-
-template<typename Key,
-         typename T,
-         typename Hash,
-         typename KeyEqual,
-         typename Allocator>
-class CollectionBuilder<std::unordered_multimap<Key, T, Hash,KeyEqual, Allocator>>
-    : public MapBuilder<std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>>
-{
-};
-
-template<typename Key, typename Compare, typename Allocator>
-class CollectionBuilder<std::set<Key, Compare, Allocator>>
-    : public SetBuilder<std::set<Key, Compare, Allocator>> {};
-
-template<typename Key,
-         typename Hash,
-         typename KeyEqual,
-         typename Allocator>
-class CollectionBuilder<std::unordered_set<Key, Hash, KeyEqual, Allocator>>
-    : public SetBuilder<std::unordered_set<Key, Hash, KeyEqual, Allocator>>
-{
-};
+// This is what you want to actually use. Uses SuitableBuilder to check for a
+// suitable builder but if that "returns" std::false_type, use
+// InsertEndBuilder<T> as default.
+template<typename T>
+using CollectionBuilder = typename std::conditional<
+    std::is_same<std::false_type,
+                 typename test::SuitableBuilder<T>::Type>::value,
+    InsertEndBuilder<T>,
+    typename test::SuitableBuilder<T>::Type>::type;
 
 } // namespace detail
 } // namespace rc

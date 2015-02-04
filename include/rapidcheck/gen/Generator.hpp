@@ -284,7 +284,7 @@ public:
                 }
             }
         }
-        return std::move(builder.collection());
+        return std::move(builder.result());
     }
 
     shrink::IteratorUP<Container> shrink(Container value) const override
@@ -325,7 +325,7 @@ public:
         detail::CollectionBuilder<Container> builder;
         for (int i = 0; i < size; i++)
             builder.add(*noShrink(m_generator));
-        return std::move(builder.collection());
+        return std::move(builder.result());
     }
 
     shrink::IteratorUP<Container> shrink(Container value) const override

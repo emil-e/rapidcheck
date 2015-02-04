@@ -3,83 +3,79 @@
 namespace rc {
 namespace detail {
 
-template<typename Collection>
-bool CollectionBuilder<Collection>::add(
-    typename Collection::value_type value)
+// BaseBuilder
+
+template<typename Container>
+Container &BaseBuilder<Container>::result()
+{ return m_container; }
+
+// PushBackBuilder
+
+template<typename Container>
+template<typename T>
+bool EmplaceBackBuilder<Container>::add(T &&value)
 {
-    m_collection.insert(m_collection.end(), std::move(value));
+    this->m_container.emplace_back(std::forward<T>(value));
     return true;
 }
 
-template<typename Collection>
-Collection &CollectionBuilder<Collection>::collection()
-{ return m_collection; }
+// InsertEndBuilder
 
-template<typename T, typename Allocator>
-CollectionBuilder<std::forward_list<T, Allocator>>::CollectionBuilder()
-    : m_iterator(m_collection.before_begin()) {}
-
-template<typename T, typename Allocator>
-bool CollectionBuilder<std::forward_list<T, Allocator>>::add(T value)
+template<typename Container>
+template<typename T>
+bool InsertEndBuilder<Container>::add(T &&value)
 {
-    m_iterator = m_collection.insert_after(m_iterator, std::move(value));
+    this->m_container.insert(this->m_container.end(), std::forward<T>(value));
     return true;
 }
 
-template<typename T, typename Allocator>
-std::forward_list<T, Allocator> &
-CollectionBuilder<std::forward_list<T, Allocator>>::collection()
-{ return m_collection; }
+// InsertAfterBuilder
 
+template<typename Container>
+InsertAfterBuilder<Container>::InsertAfterBuilder()
+    : m_iterator(this->m_container.before_begin()) {}
 
-template<typename T, std::size_t N>
-CollectionBuilder<std::array<T, N>>::CollectionBuilder()
-    : m_iterator(m_array.begin()) {}
-
-template<typename T, std::size_t N>
-bool CollectionBuilder<std::array<T, N>>::add(T value)
+template<typename Container>
+template<typename T>
+bool InsertAfterBuilder<Container>::add(T &&value)
 {
-    if (m_iterator == m_array.end())
+    m_iterator = this->m_container.insert_after(m_iterator,
+                                                std::forward<T>(value));
+    return true;
+}
+
+// ArrayBuilder
+
+template<typename Container>
+ArrayBuilder<Container>::ArrayBuilder()
+    : m_iterator(this->m_container.begin()) {}
+
+template<typename Container>
+template<typename T>
+bool ArrayBuilder<Container>::add(T &&value)
+{
+    if (m_iterator == this->m_container.end())
         return false;
 
-    *m_iterator = std::move(value);
+    *m_iterator = std::forward<T>(value);
     m_iterator++;
     return true;
 }
 
-template<typename T, std::size_t N>
-std::array<T, N> &CollectionBuilder<std::array<T, N>>::collection()
-{ return m_array; }
+// InsertKeyMaybeBuilder
 
+template<typename Container>
+template<typename T>
+bool InsertKeyMaybeBuilder<Container>::add(T &&value)
+{ return this->m_container.insert(std::forward<T>(value)); }
 
-template<typename Map>
-template<typename PairT>
-bool MapBuilder<Map>::add(PairT pair)
+template<typename Container>
+template<typename T>
+bool InsertPairMaybeBuilder<Container>::add(T &&value)
 {
-    if (m_map.count(pair.first) != 0)
-        return false;
-
-    m_map.emplace(std::move(pair.first), std::move(pair.second));
-    return true;
+    auto result = this->m_container.emplace(std::forward<T>(value));
+    return result.second;
 }
-
-template<typename Map>
-Map &MapBuilder<Map>::collection()
-{ return m_map; }
-
-template<typename Set>
-bool SetBuilder<Set>::add(typename Set::key_type key)
-{
-    if (m_set.count(key) != 0)
-        return false;
-
-    m_set.insert(std::move(key));
-    return true;
-}
-
-template<typename Set>
-Set &SetBuilder<Set>::collection()
-{ return m_set; }
 
 } // namespace detail
 } // namespace rc
