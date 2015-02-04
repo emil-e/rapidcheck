@@ -38,7 +38,7 @@ TEST_CASE("configFromString") {
     SECTION("throws on invalid seed") {
         REQUIRE_THROWS_AS(configFromString("seed=foobar"),
                           ConfigurationException);
-        REQUIRE_THROWS_AS(configFromString("seed=-2"),
+        REQUIRE_THROWS_AS(configFromString("seed=--2"),
                           ConfigurationException);
     }
 
