@@ -12,7 +12,7 @@ template<>
 struct IndexHelper<>
 {
     template<typename T>
-    static constexpr std::ptrdiff_t indexOf() { return -1; }
+    static constexpr std::ptrdiff_t indexOf() { return 0; }
 };
 
 template<typename First, typename ...Types>
@@ -22,8 +22,8 @@ struct IndexHelper<First, Types...>
     static constexpr std::ptrdiff_t indexOf()
     {
         return std::is_same<First, T>::value
-            ? sizeof...(Types)
-            : IndexHelper<Types...>::template indexOf<T>();
+            ? 0
+            : IndexHelper<Types...>::template indexOf<T>() + 1;
     }
 };
 
@@ -33,7 +33,7 @@ Variant<Types...>::Variant(T &&value)
     : m_typeIndex(indexOfType<DecayT<T>>())
     , m_value(Any::of(std::forward<T>(value)))
 {
-    static_assert(indexOfType<DecayT<T>>() != -1,
+    static_assert(isValidType<DecayT<T>>(),
                   "T is not a valid type of this variant");
 }
 
@@ -53,7 +53,7 @@ template<typename ...Types>
 template<typename T>
 bool Variant<Types...>::is() const
 {
-    static_assert(indexOfType<T>() != -1,
+    static_assert(isValidType<DecayT<T>>(),
                   "T is not a valid type of this variant");
     return m_typeIndex == indexOfType<T>();
 }
@@ -61,30 +61,37 @@ bool Variant<Types...>::is() const
 template<typename ...Types>
 template<typename T>
 constexpr std::ptrdiff_t Variant<Types...>::indexOfType()
-{
-    return IndexHelper<Types...>::template indexOf<T>();
-}
+{ return IndexHelper<Types...>::template indexOf<T>(); }
+
+template<typename ...Types>
+template<typename T>
+constexpr bool Variant<Types...>::isValidType()
+{ return indexOfType<T>() < sizeof...(Types); }
+
+template<typename T>
+bool equalAs(const Any &lhs, const Any &rhs)
+{ return lhs.get<T>() == rhs.get<T>(); }
 
 template<typename ...Types>
 bool operator==(const Variant<Types...> &v1, const Variant<Types...> &v2)
 {
+    typedef bool (*EqualFunc)(const Any &, const Any &);
+    static EqualFunc equalFuncs[sizeof...(Types)] = { equalAs<Types>... };
+
     return
         (v1.m_typeIndex == v2.m_typeIndex) &&
-        (v1.m_value == v2.m_value);
+        equalFuncs[v1.m_typeIndex](v1.m_value, v2.m_value);
 }
 
 template<typename ...Types>
 bool operator!=(const Variant<Types...> &v1, const Variant<Types...> &v2)
-{
-    return !(v1 == v2);
-}
+{ return !(v1 == v2); }
 
-// TODO hacky implementation and it should also be tested!
 template<typename ...Types>
 std::ostream &operator<<(std::ostream &os, const Variant<Types...> &variant)
 {
-    auto desc = variant.m_value.describe();
-    os << desc.typeName() << ": " << desc.stringValue();
+    const auto typeValue = variant.m_value.describe();
+    os << typeValue.first << ": " << typeValue.second;
     return os;
 }
 

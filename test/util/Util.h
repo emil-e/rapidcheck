@@ -193,27 +193,4 @@ struct NonComparable
     std::string value;
 };
 
-struct Apple
-{
-    Apple(const char *x)
-        : value(x) {}
-
-    std::string value;
-};
-
-struct Orange
-{
-    Orange(const char *x)
-        : value(x) {}
-
-    std::string value;
-};
-
-// Apples and Oranges have comparison operators to compare each other
-inline bool operator==(const Apple &a, const Orange &o)
-{ return a.value == o.value; }
-inline bool operator==(const Orange &o, const Apple &a) { return a == o; }
-inline bool operator!=(const Apple &a, const Orange &o) { return !(a == o); }
-inline bool operator!=(const Orange &o, const Apple &a) { return !(a == o); }
-
 } // namespace rc

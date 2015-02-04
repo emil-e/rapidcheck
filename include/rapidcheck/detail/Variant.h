@@ -45,6 +45,9 @@ private:
     template<typename T>
     static constexpr std::ptrdiff_t indexOfType();
 
+    template<typename T>
+    static constexpr bool isValidType();
+
     std::ptrdiff_t m_typeIndex;
     Any m_value;
 };

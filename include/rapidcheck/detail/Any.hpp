@@ -17,7 +17,6 @@ public:
     virtual std::unique_ptr<AbstractAnyImpl> copy() const = 0;
     virtual ValueDescription describe() const = 0;
     virtual const std::type_info &typeInfo() const = 0;
-    virtual bool equals(const AbstractAnyImpl &other) const = 0;
     virtual ~AbstractAnyImpl() = default;
 };
 
@@ -41,25 +40,9 @@ public:
 
     const std::type_info &typeInfo() const override
     { return typeid(T); }
-
-    bool equals(const AbstractAnyImpl &other) const
     {
-        return equals(other, IsEqualityComparable<T>());
     }
 
-private:
-    bool equals(const AbstractAnyImpl &other, std::false_type) const
-    { return false; }
-
-    bool equals(const AbstractAnyImpl &other, std::true_type) const
-    {
-        // TODO This const_cast below, is that a good thing? Are we relying on
-        // things we shouldn't?
-        return
-            (other.typeInfo() == typeid(T)) &&
-            (m_value == *static_cast<T *>(
-                const_cast<AbstractAnyImpl &>(other).get()));
-    }
 
 private:
     RC_DISABLE_COPY(AnyImpl)

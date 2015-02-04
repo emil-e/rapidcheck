@@ -11,8 +11,6 @@ class AbstractAnyImpl;
 //! Variant class that can hold a value of any type.
 class Any
 {
-    friend bool operator==(const Any &a1, const Any &a2);
-
 public:
     //! Constructs a new null `Any`.
     Any();
@@ -58,8 +56,6 @@ public:
 private:
     std::unique_ptr<AbstractAnyImpl> m_impl;
 };
-
-bool operator!=(const Any &a1, const Any &a2);
 
 } // namespace detail
 } // namespace rc
