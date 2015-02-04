@@ -21,8 +21,18 @@ struct NonCopyable : public Predictable
     NonCopyable() = default;
     NonCopyable(const NonCopyable &) = delete;
     NonCopyable &operator=(const NonCopyable &) = delete;
-    NonCopyable(NonCopyable &&) = default;
-    NonCopyable &operator=(NonCopyable &&) = default;
+    NonCopyable(NonCopyable &&other) noexcept
+    {
+        value = other.value;
+        extra = other.extra;
+    }
+
+    NonCopyable &operator=(NonCopyable &&other) noexcept
+    {
+        value = other.value;
+        extra = other.extra;
+        return *this;
+    }
 };
 
 // TODO source file!
