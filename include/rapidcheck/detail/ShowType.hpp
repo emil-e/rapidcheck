@@ -8,17 +8,92 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <stack>
+#include <sstream>
 
 #include "Utility.h"
+#include "Traits.h"
 
 namespace rc {
-namespace detail {
 
-template<typename T> struct ShowType
+template<typename T>
+struct ShowType
 {
     static void showType(std::ostream &os)
     {
-        os << demangle(typeid(T).name());
+        os << detail::demangle(typeid(T).name());
+    }
+};
+
+template<typename T>
+struct ShowType<const T>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "const ";
+        detail::showType<T>(os);
+    }
+};
+
+template<typename T>
+struct ShowType<volatile T>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "volatile ";
+        detail::showType<T>(os);
+    }
+};
+
+
+template<typename T>
+struct ShowType<const volatile T>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "const volatile ";
+        detail::showType<T>(os);
+    }
+};
+
+
+template<typename T>
+struct ShowType<T &>
+{
+    static void showType(std::ostream &os)
+    {
+        detail::showType<T>(os);
+        os << " &";
+    }
+};
+
+template<typename T>
+struct ShowType<T &&>
+{
+    static void showType(std::ostream &os)
+    {
+        detail::showType<T>(os);
+        os << " &&";
+    }
+};
+
+template<typename T>
+struct ShowType<T *>
+{
+    static void showType(std::ostream &os)
+    {
+        detail::showType<T>(os);
+        os << " *";
+    }
+};
+
+// To avoid whitespace between asterisks
+template<typename T>
+struct ShowType<T **>
+{
+    static void showType(std::ostream &os)
+    {
+        detail::showType<T *>(os);
+        os << "*";
     }
 };
 
@@ -193,7 +268,7 @@ struct ShowType<std::array<T, N>>
     }
 };
 
-template<class T, class Container>
+template<typename T, typename Container>
 struct ShowType<std::stack<T, Container>>
 {
     static void showType(std::ostream &os)
@@ -204,11 +279,63 @@ struct ShowType<std::stack<T, Container>>
     }
 };
 
+template<typename T1, typename T2>
+struct ShowType<std::pair<T1, T2>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::pair<";
+        detail::showType<T1>(os);
+        os << ", ";
+        detail::showType<T2>(os);
+        os << ">";
+    }
+};
+
+template<typename ...Types>
+struct ShowMultipleTypes;
+
+template<>
+struct ShowMultipleTypes<>
+{
+    static void showType(std::ostream &os) {}
+};
+
+template<typename Type>
+struct ShowMultipleTypes<Type>
+{
+    static void showType(std::ostream &os)
+    { detail::showType<Type>(os); }
+};
+
+
+template<typename Type, typename ...Types>
+struct ShowMultipleTypes<Type, Types...>
+{
+    static void showType(std::ostream &os)
+    {
+        detail::showType<Type>(os);
+        os << ", ";
+        ShowMultipleTypes<Types...>::showType(os);
+    }
+};
+
+template<typename ...Types>
+struct ShowType<std::tuple<Types...>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::tuple<";
+        ShowMultipleTypes<Types...>::showType(os);
+        os << ">";
+    }
+};
+
+namespace detail {
+
 template<typename T>
 void showType(std::ostream &os)
-{
-    ShowType<T>::showType(os);
-}
+{ rc::ShowType<T>::showType(os); }
 
 template<typename T>
 std::string typeToString()

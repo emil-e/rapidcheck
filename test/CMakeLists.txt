@@ -10,6 +10,7 @@ add_executable(rapidcheck_tests
   ResultsTests.cpp
   RoseTests.cpp
   ShowTests.cpp
+  ShowTypeTests.cpp
   ShrinkTests.cpp
   VariantTests.cpp
   main.cpp
