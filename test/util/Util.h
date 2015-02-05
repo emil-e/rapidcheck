@@ -2,7 +2,7 @@
 
 #include "rapidcheck/shrink/Shrink.h"
 #include "rapidcheck/detail/ShowType.h"
-#include "rapidcheck/gen/Generator.h"
+#include "rapidcheck/gen/Common.h"
 
 namespace rc {
 

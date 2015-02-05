@@ -53,4 +53,4 @@ void check(State initialState,
 } // namespace state
 } // namespace rc
 
-#include "detail/State.hpp"
+#include "State.hpp"

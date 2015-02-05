@@ -2,19 +2,20 @@
 
 #include "Any.h"
 #include "RandomEngine.h"
+#include "ErasedGenerator.h"
 
 namespace rc {
 namespace detail {
 
+template<typename T> class ErasedGenerator;
+
 //! Internal class used by `Rose`.
 class RoseNode
 {
+    template<typename T> friend class ::rc::gen::Generator;
+
 public:
     RoseNode(RoseNode *parent = nullptr);
-
-    //! Picks a value using the given generator in the context of this
-    //! `RoseNode`.
-    Any pick(const gen::Generator<Any> &generator);
 
     //! Returns the current value which may be be generated or fixed.
     //!
@@ -68,6 +69,16 @@ private:
         typedef Observer *ValueType;
         static Observer *defaultValue() { return nullptr; }
     };
+
+    Any pick(const gen::Generator<Any> &generator);
+
+    template<typename T>
+    T pick(const gen::Generator<T> &generator)
+    {
+        return std::move(
+            pick(ErasedGenerator<T>(&generator)).template get<T>());
+    }
+
 
     // TODO maybe name tryShrink instead
     Any nextShrinkChildren(const gen::Generator<Any> &generator,

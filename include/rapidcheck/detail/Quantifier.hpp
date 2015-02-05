@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/gen/Common.h"
+
 namespace rc {
 namespace detail {
 
