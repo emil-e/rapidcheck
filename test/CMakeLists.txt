@@ -3,7 +3,6 @@ add_executable(rapidcheck_tests
   ArbitraryTests.cpp
   CheckTests.cpp
   ConfigurationTests.cpp
-  GeneratorTests.cpp
   ImplicitParamTests.cpp
   MapParserTests.cpp
   RandomEngineTests.cpp
@@ -13,12 +12,21 @@ add_executable(rapidcheck_tests
   ShowTypeTests.cpp
   ShrinkTests.cpp
   VariantTests.cpp
+  gen/CollectionTests.cpp
+  gen/CommonTests.cpp
+  gen/InvokeTests.cpp
+  gen/NumericTests.cpp
+  gen/OneOfTests.cpp
+  gen/ParametersTests.cpp
+  gen/TextTests.cpp
+  gen/TupleTests.cpp
   main.cpp
   )
 
 target_link_libraries(rapidcheck_tests rapidcheck)
 target_include_directories(rapidcheck_tests
   PRIVATE
+  .
   ../ext/catch/include
   ../src)
 
