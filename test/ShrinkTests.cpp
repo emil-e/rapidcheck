@@ -276,6 +276,13 @@ TEST_CASE("shrink::towards") {
     meta::forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
 }
 
+struct NonDefaultConstructible
+{
+    NonDefaultConstructible() = delete;
+    NonDefaultConstructible(int xx) : x(xx) {}
+    int x;
+};
+
 TEST_CASE("shrink::filter") {
     prop("if the predicate always returns true, yields the same as the original",
          [] (const std::vector<int> &shrinks) {
@@ -299,4 +306,20 @@ TEST_CASE("shrink::filter") {
              while (it->hasNext())
                  RC_ASSERT(it->next() < max);
          });
+
+    SECTION("works with non-default-constructible types") {
+        auto it = shrink::filter(
+            shrink::constant<NonDefaultConstructible>({
+                    NonDefaultConstructible(1),
+                    NonDefaultConstructible(20),
+                    NonDefaultConstructible(2)}),
+            [](const NonDefaultConstructible &x) { return x.x < 10; });
+
+        REQUIRE(it->hasNext());
+        REQUIRE(it->next().x == 1);
+        REQUIRE(it->hasNext());
+        REQUIRE(it->next().x == 2);
+
+        REQUIRE(!it->hasNext());
+    }
 }
