@@ -13,6 +13,10 @@ template<typename Container> class ElementOf;
 template<typename Container>
 ElementOf<detail::DecayT<Container>> elementOf(Container &&container);
 
+//! Returns a generator which randomly selects from the given arguments.
+template<typename Arg, typename ...Args>
+ElementOf<std::vector<Arg>> element(Arg &&arg, Args &&...args);
+
 } // namespace gen
 } // namespace rc
 

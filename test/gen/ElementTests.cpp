@@ -62,3 +62,21 @@ TEST_CASE("gen::elementOf") {
                       RC_GENERIC_CONTAINERS(int),
                       RC_STRING_TYPES>();
 }
+
+TEST_CASE("gen::element") {
+    prop("all generated elements are arguments",
+         [] {
+             const auto x = *gen::element<std::string>("foo", "bar", "baz");
+             RC_ASSERT((x == "foo") || (x == "bar") || (x == "baz"));
+         });
+
+    prop("all generated elements are arguments",
+         [] {
+             const auto gen = gen::element<std::string>("foo", "bar", "baz");
+             std::set<std::string> all{"foo", "bar", "baz"};
+             std::set<std::string> generated;
+             while (all != generated)
+                 generated.insert(*gen);
+             RC_SUCCEED("All values generated");
+         });
+}

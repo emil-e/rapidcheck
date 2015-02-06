@@ -11,6 +11,9 @@ class ElementOf : public gen::Generator<typename Container::value_type>
 public:
     typedef typename Container::value_type T;
 
+    ElementOf(std::initializer_list<T> elements)
+        : m_container(elements) {}
+
     template<typename ...Args>
     ElementOf(Args &&...args)
         : m_container(std::forward<Args>(args)...) {}
@@ -37,6 +40,15 @@ ElementOf<detail::DecayT<Container>> elementOf(Container &&container)
 {
     return ElementOf<detail::DecayT<Container>>(
         std::forward<Container>(container));
+}
+
+template<typename Arg, typename ...Args>
+ElementOf<std::vector<Arg>>
+element(Arg &&arg, Args &&...args)
+{
+    return ElementOf<std::vector<Arg>>{
+        std::forward<Arg>(arg), std::forward<Args>(args)...
+    };
 }
 
 } // namespace gen
