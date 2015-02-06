@@ -1,6 +1,7 @@
 #include <catch.hpp>
 
 #include "util/Util.h"
+#include "util/AppleOrange.h"
 
 #include "rapidcheck/detail/Variant.h"
 
@@ -47,38 +48,6 @@ bool operator!=(const C &c1, const C &c2)
 { return c1.value != c2.value; }
 
 typedef Variant<A, B, C> ABC;
-
-struct Apple
-{
-    Apple(const char *x)
-        : value(x) {}
-
-    std::string value;
-};
-
-struct Orange
-{
-    Orange(const char *x)
-        : value(x) {}
-
-    std::string value;
-};
-
-
-inline bool operator==(const Apple &a1, const Apple &a2)
-{ return a2.value == a2.value; }
-inline bool operator==(const Orange &o1, const Orange &o2)
-{ return o2.value == o2.value; }
-inline bool operator!=(const Apple &a1, const Apple &a2) { return !(a1 == a2); }
-inline bool operator!=(const Orange &o1, const Orange &o2) { return !(o1 == o2); }
-
-// Apples and Oranges have comparison operators to compare each other
-inline bool operator==(const Apple &a, const Orange &o)
-{ return a.value == o.value; }
-inline bool operator==(const Orange &o, const Apple &a) { return a == o; }
-inline bool operator!=(const Apple &a, const Orange &o) { return !(a == o); }
-inline bool operator!=(const Orange &o, const Apple &a) { return !(a == o); }
-
 
 TEST_CASE("Variant") {
     ABC va(A("A"));
