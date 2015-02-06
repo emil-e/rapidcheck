@@ -38,6 +38,13 @@ struct NonCopyable : public Predictable
 
 // TODO source file!
 
+static inline bool operator==(const Predictable &lhs, const Predictable &rhs)
+{
+    return
+        (lhs.value == rhs.value) &&
+        (lhs.extra == rhs.extra);
+}
+
 static inline bool operator<(const Predictable &lhs, const Predictable &rhs)
 {
     if (lhs.value == rhs.value)
@@ -46,11 +53,22 @@ static inline bool operator<(const Predictable &lhs, const Predictable &rhs)
     return lhs.value < rhs.value;
 }
 
-static inline bool operator==(const Predictable &lhs, const Predictable &rhs)
+static inline bool operator>(const Predictable &lhs, const Predictable &rhs)
 {
-    return
-        (lhs.value == rhs.value) &&
-        (lhs.extra == rhs.extra);
+    if (lhs.value == rhs.value)
+        return lhs.extra > rhs.extra;
+
+    return lhs.value > rhs.value;
+}
+
+static inline bool operator<=(const Predictable &lhs, const Predictable &rhs)
+{
+    return (lhs < rhs) || (lhs == rhs);
+}
+
+static inline bool operator>=(const Predictable &lhs, const Predictable &rhs)
+{
+    return (lhs > rhs) || (lhs == rhs);
 }
 
 static inline void show(const Predictable &value, std::ostream &os)
