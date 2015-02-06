@@ -38,23 +38,6 @@ private:
     T m_min, m_max;
 };
 
-// Generators of this form are common, let's not repeat ourselves
-#define IMPLEMENT_SUCH_THAT_GEN(GeneratorName, predicate)               \
-    template<typename T>                                                \
-    class GeneratorName : public Generator<T>                           \
-    {                                                                   \
-    public:                                                             \
-        T generate() const                                              \
-        { return *suchThat<T>([](T x) { return (predicate); }); }       \
-    };
-
-IMPLEMENT_SUCH_THAT_GEN(NonZero, x != 0)
-IMPLEMENT_SUCH_THAT_GEN(Positive, x > 0)
-IMPLEMENT_SUCH_THAT_GEN(Negative, x < 0)
-IMPLEMENT_SUCH_THAT_GEN(NonNegative, x >= 0)
-
-#undef IMPLEMENT_SUCH_THAT_GEN
-
 template<typename T>
 Ranged<T> ranged(T min, T max)
 {
@@ -64,24 +47,24 @@ Ranged<T> ranged(T min, T max)
 }
 
 template<typename T>
-NonZero<T> nonZero()
-{ return NonZero<T>(); }
+SuchThat<Arbitrary<T>, predicate::Not<predicate::Equals<T>>> nonZero()
+{ return gen::suchThat<T>(predicate::Not<predicate::Equals<T>>(0)); }
 
 template<typename T>
-Positive<T> positive()
-{ return Positive<T>(); }
+SuchThat<Arbitrary<T>, predicate::GreaterThan<T>> positive()
+{ return gen::suchThat<T>(predicate::GreaterThan<T>(0)); }
 
 template<typename T>
-Negative<T> negative()
+SuchThat<Arbitrary<T>, predicate::LessThan<T>> negative()
 {
     static_assert(std::is_signed<T>::value,
                   "gen::negative can only be used for signed types");
-    return Negative<T>();
+    return gen::suchThat<T>(predicate::LessThan<T>(0));
 }
 
 template<typename T>
-NonNegative<T> nonNegative()
-{ return NonNegative<T>(); }
+SuchThat<Arbitrary<T>, predicate::GreaterEqThan<T>> nonNegative()
+{ return gen::suchThat<T>(predicate::GreaterEqThan<T>(0)); }
 
 } // namespace gen
 } // namespace rc
