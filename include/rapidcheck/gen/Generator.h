@@ -14,24 +14,6 @@ public:
     explicit GenerationFailure(std::string msg);
 };
 
-//! Prints a sample value to stdout for the given generator.
-//!
-//! @param sz         The size to sample.
-//! @param generator  The generator.
-template<typename Gen>
-void sample(int sz, Gen generator);
-
-//! Returns the current size that is being generated.
-int currentSize();
-
-//! The reference size. This is not a max limit on the generator size parameter
-//! but serves as a guideline. In general, genenerators for which there is a
-//! natural limit which is not too expensive to generate should max out at this.
-//! This applies to, for example, generation of numbers but not to the
-//! generation of collection where there is an associated cost to generating
-//! large collections.
-constexpr int kNominalSize = 100;
-
 //! Base class for generators of value of type `T`.
 template<typename T>
 class Generator
@@ -62,6 +44,24 @@ public:
 //! `typename Gen::GeneratedType` but shorter.
 template<typename Gen>
 using GeneratedT = typename Gen::GeneratedType;
+
+//! Returns the current size that is being generated.
+int currentSize();
+
+//! The reference size. This is not a max limit on the generator size parameter
+//! but serves as a guideline. In general, genenerators for which there is a
+//! natural limit which is not too expensive to generate should max out at this.
+//! This applies to, for example, generation of numbers but not to the
+//! generation of collection where there is an associated cost to generating
+//! large collections.
+constexpr int kNominalSize = 100;
+
+//! Prints a sample value to stdout for the given generator.
+//!
+//! @param sz         The size to sample.
+//! @param generator  The generator.
+template<typename T>
+void sample(int sz, const Generator<T> &generator, uint64_t seed = 0);
 
 } // namespace gen
 } // namespace rc

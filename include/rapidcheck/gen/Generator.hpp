@@ -19,8 +19,14 @@ T Generator<T>::operator*() const
     }
 }
 
-template<typename Gen>
-void sample(int sz, Gen generator, uint64_t seed)
+template<typename T>
+shrink::IteratorUP<T> Generator<T>::shrink(T value) const
+{
+    return shrink::nothing<T>();
+}
+
+template<typename T>
+void sample(int sz, const Generator<T> &generator, uint64_t seed)
 {
     using namespace detail;
 
@@ -29,14 +35,8 @@ void sample(int sz, Gen generator, uint64_t seed)
     RandomEngine engine(seed);
     ImplicitParam<param::RandomEngine> randomEngine(&engine);
 
-    show(generator(), std::cout);
+    show(*generator, std::cout);
     std::cout << std::endl;
-}
-
-template<typename T>
-shrink::IteratorUP<T> Generator<T>::shrink(T value) const
-{
-    return shrink::nothing<T>();
 }
 
 } // namespace gen
