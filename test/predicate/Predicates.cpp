@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include "util/TypeListMacros.h"
 #include "util/AppleOrange.h"
 #include "util/Util.h"
 #include "util/Meta.h"

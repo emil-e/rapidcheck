@@ -3,6 +3,7 @@
 
 #include <array>
 
+#include "util/TypeListMacros.h"
 #include "util/Util.h"
 #include "util/Meta.h"
 
@@ -149,9 +150,8 @@ struct EachElementProperties
 TEST_CASE("shrink::eachElement") {
     meta::forEachType<EachElementProperties,
                       RC_GENERIC_CONTAINERS(int),
-                      std::array<int, 100>,
-                      std::string,
-                      std::wstring>();
+                      RC_STRING_TYPES,
+                      std::array<int, 100>>();
 }
 
 struct RemoveChunksProperties
