@@ -250,13 +250,17 @@ public:
     }
 
 private:
+    struct Deleter { void operator()(T *p) { p->~T(); } };
+
     void advance()
     {
         while (m_iterator->hasNext()) {
-            if (m_next)
+            if (m_next) {
                 *m_next = m_iterator->next();
-            else
-                m_next = std::unique_ptr<T>(new T(m_iterator->next()));
+            } else {
+                m_next = std::unique_ptr<T, Deleter>(
+                    new (&m_storage) T(m_iterator->next()));
+            }
 
             if (m_predicate(*m_next))
                 return;
@@ -266,8 +270,9 @@ private:
     }
 
     IteratorUP<T> m_iterator;
-    std::unique_ptr<T> m_next;
     Predicate m_predicate;
+    std::unique_ptr<T, Deleter> m_next;
+    typename std::aligned_storage<sizeof(T), alignof(T)>::type m_storage;
 };
 
 template<typename IteratorUP, typename ...IteratorsUP>
