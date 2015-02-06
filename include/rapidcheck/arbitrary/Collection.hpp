@@ -1,5 +1,8 @@
 #pragma once
 
+#include "rapidcheck/gen/Collection.h"
+#include "rapidcheck/gen/Text.h"
+
 namespace rc {
 
 // Base template class for collection types
