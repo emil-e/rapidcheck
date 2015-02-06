@@ -106,10 +106,9 @@ public:
 
     shrink::IteratorUP<bool> shrink(bool value)
     {
-        if (value)
-            return shrink::constant<bool>({false});
-        else
-            return shrink::nothing<bool>();
+        return value
+            ? shrink::constant<bool>({false})
+            : shrink::nothing<bool>();
     }
 };
 
