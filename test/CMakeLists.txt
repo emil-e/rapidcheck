@@ -1,6 +1,5 @@
 add_executable(rapidcheck_tests
   AnyTests.cpp
-  ArbitraryTests.cpp
   CheckTests.cpp
   ConfigurationTests.cpp
   ImplicitParamTests.cpp
@@ -12,6 +11,8 @@ add_executable(rapidcheck_tests
   ShowTypeTests.cpp
   ShrinkTests.cpp
   VariantTests.cpp
+  arbitrary/CollectionTests.cpp
+  arbitrary/NumericTests.cpp
   gen/CollectionTests.cpp
   gen/CommonTests.cpp
   gen/InvokeTests.cpp
