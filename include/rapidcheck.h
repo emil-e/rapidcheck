@@ -14,6 +14,7 @@
 #include "rapidcheck/gen/Parameters.h"
 #include "rapidcheck/gen/Text.h"
 #include "rapidcheck/gen/Tuple.h"
+#include "rapidcheck/gen/Element.h"
 
 #include "rapidcheck/arbitrary/Arbitrary.h"
 #include "rapidcheck/arbitrary/Collection.h"
