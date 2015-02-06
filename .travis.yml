@@ -10,6 +10,7 @@ env:
 
 before_install:
   # CMake 3.x
+  - sudo dpkg -r cmake cmake-data
   - sudo add-apt-repository -y ppa:dcthomp/smtk
 
   # g++4.8.1
