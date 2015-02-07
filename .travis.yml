@@ -27,9 +27,11 @@ install:
   - cmake --version
   - ninja --version
 
-  # g++4.8.1
+  # upgrade GCC, also needed for Clang since we need a newer version of libstc++
   - sudo apt-get install -qq g++-4.8
-  - export CXX="g++-4.8"
+
+  # Also use it if that's what we're going for
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
 
   # clang 3.4
   - if [ "$CXX" == "clang++" ]; then sudo apt-get install --allow-unauthenticated -qq clang-3.4; fi
