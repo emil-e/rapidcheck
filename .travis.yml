@@ -14,7 +14,7 @@ before_install:
   - sudo add-apt-repository -y ppa:dcthomp/smtk
 
   # g++4.8.1
-  - if [ "$CXX" == "g++" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 
   # clang 3.4
   - if [ "$CXX" == "clang++" ]; then sudo add-apt-repository -y ppa:h-rayflood/llvm; fi
@@ -28,8 +28,8 @@ install:
   - ninja --version
 
   # g++4.8.1
-  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
+  - sudo apt-get install -qq g++-4.8
+  - export CXX="g++-4.8"
 
   # clang 3.4
   - if [ "$CXX" == "clang++" ]; then sudo apt-get install --allow-unauthenticated -qq clang-3.4; fi
