@@ -51,8 +51,8 @@ public:
     //! Throws if `other` is not copyable.
     Any &operator=(const Any &rhs);
 
-    Any(Any &&other);
-    Any &operator=(Any &&rhs);
+    Any(Any &&other) noexcept;
+    Any &operator=(Any &&rhs) noexcept;
 
 private:
     std::unique_ptr<AbstractAnyImpl> m_impl;

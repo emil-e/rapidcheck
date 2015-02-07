@@ -210,7 +210,7 @@ Any RoseNode::generate(const gen::Generator<Any> &generator)
     return generator.generate();
 }
 
-RoseNode::RoseNode(RoseNode &&other)
+RoseNode::RoseNode(RoseNode &&other) noexcept
     : m_parent(other.m_parent)
     , m_children(std::move(other.m_children))
     , m_nextChild(other.m_nextChild)
@@ -224,7 +224,7 @@ RoseNode::RoseNode(RoseNode &&other)
     adoptChildren();
 }
 
-RoseNode &RoseNode::operator=(RoseNode &&rhs)
+RoseNode &RoseNode::operator=(RoseNode &&rhs) noexcept
 {
     m_parent = rhs.m_parent;
     m_children = std::move(rhs.m_children);

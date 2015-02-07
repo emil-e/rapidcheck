@@ -50,10 +50,10 @@ public:
     const RoseNode *parent() const;
 
     //! Move constructor.
-    RoseNode(RoseNode &&other);
+    RoseNode(RoseNode &&other) noexcept;
 
     //! Move assignment
-    RoseNode &operator=(RoseNode &&rhs);
+    RoseNode &operator=(RoseNode &&rhs) noexcept;
 
 private:
     RC_DISABLE_COPY(RoseNode)
