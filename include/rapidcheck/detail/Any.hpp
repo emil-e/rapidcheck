@@ -4,7 +4,7 @@
 
 #include "rapidcheck/Show.h"
 #include "Utility.h"
-#include "Traits.h"
+#include "IsCopyConstructible.h"
 #include "ShowType.h"
 
 namespace rc {

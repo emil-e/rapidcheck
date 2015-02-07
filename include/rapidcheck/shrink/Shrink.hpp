@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "rapidcheck/detail/Traits.h"
+#include "rapidcheck/detail/IsCopyConstructible.h"
 #include "rapidcheck/detail/CollectionBuilder.h"
 #include "rapidcheck/detail/Utility.h"
 
