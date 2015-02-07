@@ -31,6 +31,8 @@ public:
     std::vector<std::pair<std::string, std::string>> example();
 
 private:
+    RC_DISABLE_COPY(Rose)
+    
     const ErasedGenerator<T> m_generator;
     RoseNode m_root;
     const TestCase m_testCase;
