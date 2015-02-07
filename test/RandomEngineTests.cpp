@@ -30,9 +30,7 @@ TEST_CASE("RandomEngine") {
         prop("different seeds yields different sequences of numbers",
              [] {
                  auto s1 = *gen::arbitrary<RandomEngine::Seed>();
-                 auto s2 = *gen::suchThat(
-                     gen::arbitrary<RandomEngine::Seed>(),
-                     [=](const RandomEngine::Seed &s){ return s != s1; });
+                 auto s2 = *gen::distinctFrom(s1);
 
                  RandomEngine r1(s1);
                  RandomEngine r2(s2);

@@ -31,7 +31,8 @@ struct ElementOfTests
             [] {
                 T elements = *nonEmpty;
                 const auto gen = gen::elementOf(elements);
-                std::set<typename T::value_type> all(begin(elements), end(elements));
+                std::set<typename T::value_type> all(begin(elements),
+                                                     end(elements));
                 std::set<typename T::value_type> generated;
                 while (all != generated)
                     generated.insert(*gen);

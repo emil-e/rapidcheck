@@ -34,15 +34,15 @@ void propConformsToOutputOperator() {
          });
 }
 
-#define PROP_REPLACE_MEMBER_INEQUAL(Type, Member)          \
-    prop("not equal if " #Member " not equal",             \
-         [] (const Type &x) {                              \
-             auto other(x);                                \
-             replaceWithDifferent(other.Member);           \
-             RC_ASSERT(x != other);                        \
-             RC_ASSERT(other != x);                        \
-             RC_ASSERT(!(x == other));                     \
-             RC_ASSERT(!(other == x));                     \
-         })                                                \
+#define PROP_REPLACE_MEMBER_INEQUAL(Type, Member)             \
+    prop("not equal if " #Member " not equal",                \
+         [] (const Type &x) {                                 \
+             auto other(x);                                   \
+             other.Member = *gen::distinctFrom(other.Member); \
+             RC_ASSERT(x != other);                           \
+             RC_ASSERT(other != x);                           \
+             RC_ASSERT(!(x == other));                        \
+             RC_ASSERT(!(other == x));                        \
+         })                                                   \
 
 } // namespace rc

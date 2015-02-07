@@ -10,7 +10,7 @@
 using namespace rc;
 
 TEST_CASE("shrink::sequentially") {
-    prop("joins shrinkers together",
+    prop("joins iterators together",
          [] (const std::vector<int> &xs) {
              int split = xs.empty() ? 0 : *gen::ranged<size_t>(0, xs.size());
              shrink::IteratorUP<int> it(
@@ -244,9 +244,7 @@ struct ShrinkTowardsProperties
         templatedProp<T>(
             "first tries target immediately",
             [] (T target) {
-                T value = *gen::suchThat(
-                    gen::arbitrary<T>(),
-                    [=] (T x) { return x != target; });
+                T value = *gen::distinctFrom(target);
                 auto it = shrink::towards(value, target);
                 RC_ASSERT(it->hasNext());
                 RC_ASSERT(it->next() == target);
@@ -255,9 +253,7 @@ struct ShrinkTowardsProperties
         templatedProp<T>(
             "tries an adjacent value last",
             [] (T target) {
-                T value = *gen::suchThat(
-                    gen::arbitrary<T>(),
-                    [=] (T x) { return x != target; });
+                T value = *gen::distinctFrom(target);
                 auto it = shrink::towards(value, target);
                 T fin = finalShrink(it);
                 T diff = (value > target) ? (value - fin) : (fin - value);
