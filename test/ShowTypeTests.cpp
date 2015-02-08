@@ -169,4 +169,17 @@ TEST_CASE("typeToString") {
         REQUIRE(typeToString<Tuple3>() ==
                 "std::tuple<FFoo *, BBar **, const volatile BBaz &>");
     }
+
+    SECTION("std::unique_ptr") {
+        typedef std::unique_ptr<Foo *, Bar> UP2;
+        REQUIRE(typeToString<std::unique_ptr<Foo *>>() ==
+                "std::unique_ptr<FFoo *>");
+        REQUIRE(typeToString<UP2>() ==
+                "std::unique_ptr<FFoo *>");
+    }
+
+    SECTION("std::shared_ptr") {
+        REQUIRE(typeToString<std::shared_ptr<const Foo *>>() ==
+                "std::shared_ptr<const FFoo *>");
+    }
 }

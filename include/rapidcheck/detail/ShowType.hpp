@@ -15,6 +15,37 @@
 #include "Traits.h"
 
 namespace rc {
+namespace detail {
+
+template<typename ...Types>
+struct ShowMultipleTypes;
+
+template<>
+struct ShowMultipleTypes<>
+{
+    static void showType(std::ostream &os) {}
+};
+
+template<typename Type>
+struct ShowMultipleTypes<Type>
+{
+    static void showType(std::ostream &os)
+    { detail::showType<Type>(os); }
+};
+
+
+template<typename Type, typename ...Types>
+struct ShowMultipleTypes<Type, Types...>
+{
+    static void showType(std::ostream &os)
+    {
+        detail::showType<Type>(os);
+        os << ", ";
+        ShowMultipleTypes<Types...>::showType(os);
+    }
+};
+
+} // namespace detail
 
 template<typename T>
 struct ShowType
@@ -294,40 +325,35 @@ struct ShowType<std::pair<T1, T2>>
 };
 
 template<typename ...Types>
-struct ShowMultipleTypes;
-
-template<>
-struct ShowMultipleTypes<>
-{
-    static void showType(std::ostream &os) {}
-};
-
-template<typename Type>
-struct ShowMultipleTypes<Type>
-{
-    static void showType(std::ostream &os)
-    { detail::showType<Type>(os); }
-};
-
-
-template<typename Type, typename ...Types>
-struct ShowMultipleTypes<Type, Types...>
-{
-    static void showType(std::ostream &os)
-    {
-        detail::showType<Type>(os);
-        os << ", ";
-        ShowMultipleTypes<Types...>::showType(os);
-    }
-};
-
-template<typename ...Types>
 struct ShowType<std::tuple<Types...>>
 {
     static void showType(std::ostream &os)
     {
         os << "std::tuple<";
-        ShowMultipleTypes<Types...>::showType(os);
+        detail::ShowMultipleTypes<Types...>::showType(os);
+        os << ">";
+    }
+};
+
+template<typename T, typename Deleter>
+struct ShowType<std::unique_ptr<T, Deleter>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::unique_ptr<";
+        detail::showType<T>(os);
+        os << ">";
+    }
+};
+
+
+template<typename T>
+struct ShowType<std::shared_ptr<T>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::shared_ptr<";
+        detail::showType<T>(os);
         os << ">";
     }
 };
