@@ -17,7 +17,7 @@
 - Better syntax for generation of commands
 - Generator for unique collections
 - Tests for arbitrary collections
-- Should noShrink for collections be the default?
+- Should noShrink for collections be the default? Probably not, right?
 - Tests for CollectionBuilder
 - Test discarding behavior
 - Make pick() a member function
@@ -56,3 +56,11 @@
 - NOEXCEPT
 - std::bitset
 - does std::vector<bool> even work?
+- we don't need gen::labmbda, do we?
+- test gen::scale
+- shrink::constant has weird behavior
+- gen::greaterThan and gen::lessThan
+- shrink::filter for gen::suchThat
+- rename and move stuff in rc::shrink to be more generic, not related to shrinking
+- generators for nonEmpty collection
+- move some gen:: and similar stuff to detail namespace

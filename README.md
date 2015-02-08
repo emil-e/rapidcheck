@@ -1,4 +1,4 @@
-RapidCheck
+RapidCheck [![Build Status](https://travis-ci.org/emil-e/rapidcheck.svg?branch=master)](https://travis-ci.org/emil-e/rapidcheck)
 ==========
 RapidCheck is a C++ framework for property based testing inspired by QuickCheck and other similar frameworks. In property based testing, you state facts about some piece of code that should always be true given certain preconditions. RapidCheck then generates random test data to try and find a case for which the property doesn't hold. If such a case is found, RapidCheck tries to find the smallest case (for some definition of smallest) for which the property is not true. For example, if the input is an integer, RapidCheck tries to find the smallest integer for which the property is false.
 
