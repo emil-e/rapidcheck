@@ -23,6 +23,12 @@ struct Invoker<Callable, ReturnType, Arg, Args...>
     static ReturnType
     invoke(const Callable &callable)
     {
+        static_assert(
+            !(std::is_reference<Arg>::value &&
+              !std::is_rvalue_reference<Arg>::value &&
+              !std::is_const<typename std::remove_reference<Arg>::type>::value),
+            "Parameter must be const reference, rvalue reference or value.");
+
         auto arg(*gen::arbitrary<typename std::decay<Arg>::type>());
         auto curried = [&] (Args &&...args) {
             return callable(std::move(arg), std::move(args)...);
