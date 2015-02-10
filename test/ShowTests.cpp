@@ -3,6 +3,8 @@
 
 using namespace rc;
 
+namespace {
+
 struct Showable {};
 
 void show(Showable x, std::ostream &os) { os << "show(Showable)"; };
@@ -22,6 +24,8 @@ std::ostream &operator<<(std::ostream &os, Ostreamable)
 }
 
 struct NonShowable {};
+
+} // namespace
 
 TEST_CASE("show<T>") {
     std::ostringstream os;

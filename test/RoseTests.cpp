@@ -11,6 +11,8 @@
 using namespace rc;
 using namespace rc::detail;
 
+namespace {
+
 // Arbitrary integer which gives very erratic values when shrinking.
 class ErraticInt : public gen::Generator<int>
 {
@@ -238,6 +240,8 @@ public:
 private:
     std::vector<int> m_values;
 };
+
+} // namespace
 
 TEST_CASE("Rose") {
     prop("stateful test",

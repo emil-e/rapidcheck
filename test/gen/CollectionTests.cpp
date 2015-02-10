@@ -8,6 +8,8 @@
 
 using namespace rc;
 
+namespace {
+
 struct VectorTests
 {
     template<typename T>
@@ -55,6 +57,8 @@ struct NonCopyableVectorTests
     }
 };
 
+} // namespace
+
 TEST_CASE("gen::vector") {
     meta::forEachType<VectorTests,
                       RC_GENERIC_CONTAINERS(Predictable),
@@ -62,6 +66,8 @@ TEST_CASE("gen::vector") {
     meta::forEachType<NonCopyableVectorTests,
                       RC_GENERIC_CONTAINERS(NonCopyable)>();
 }
+
+namespace {
 
 struct CollectionTests
 {
@@ -104,6 +110,8 @@ struct NonCopyableCollectionTests
             });
     }
 };
+
+} // namespace
 
 TEST_CASE("gen::collection") {
     meta::forEachType<CollectionTests,

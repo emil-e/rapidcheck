@@ -6,6 +6,8 @@
 using namespace rc;
 using namespace rc::detail;
 
+namespace {
+
 // Our test params
 
 struct ParamA
@@ -242,6 +244,7 @@ struct PopScope : public ImplicitCommand
     }
 };
 
+} // namespace
 
 TEST_CASE("ImplicitParam") {
     prop("stateful test",

@@ -29,6 +29,8 @@ public:
 
 } // namespace rc
 
+namespace {
+
 // Generates a constant value but tries to shrink it by a sequence of
 // decrementing towards zero. Used for testing the correct number of shrinks are
 // performed/reported.
@@ -55,6 +57,8 @@ public:
 private:
     const int m_value;
 };
+
+} // namespace
 
 TEST_CASE("TestParams") {
     SECTION("operator==/operator!=") {

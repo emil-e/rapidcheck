@@ -8,6 +8,8 @@
 
 using namespace rc;
 
+namespace {
+
 template<typename T, typename Predicate>
 void generatesSuchThat(const Predicate &pred)
 {
@@ -65,6 +67,8 @@ struct SignedProperties
     }
 };
 
+} // namespace
+
 TEST_CASE("gen::arbitrary<T> (signed integral)") {
     meta::forEachType<NumericProperties, RC_SIGNED_INTEGRAL_TYPES>();
     meta::forEachType<SignedProperties, RC_SIGNED_INTEGRAL_TYPES>();
@@ -73,6 +77,8 @@ TEST_CASE("gen::arbitrary<T> (signed integral)") {
 TEST_CASE("gen::arbitrary<T> (unsigned integral)") {
     meta::forEachType<NumericProperties, RC_UNSIGNED_INTEGRAL_TYPES>();
 }
+
+namespace {
 
 struct RealProperties
 {
@@ -91,6 +97,8 @@ struct RealProperties
             });
     }
 };
+
+} // namespace
 
 TEST_CASE("gen::arbitrary<T> (reals)") {
     meta::forEachType<NumericProperties, RC_REAL_TYPES>();

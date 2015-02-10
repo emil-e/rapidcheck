@@ -7,6 +7,8 @@
 
 using namespace rc;
 
+namespace {
+
 struct RangedProperties
 {
     template<typename T>
@@ -50,11 +52,14 @@ struct SignedRangedProperties
     }
 };
 
+} // namespace
+
 TEST_CASE("gen::ranged") {
     meta::forEachType<RangedProperties, RC_INTEGRAL_TYPES>();
     meta::forEachType<SignedRangedProperties, RC_SIGNED_INTEGRAL_TYPES>();
 }
 
+namespace {
 
 struct NonZeroProperties
 {
@@ -100,6 +105,8 @@ struct NonNegativeProperties
         });
     }
 };
+
+} // namespace
 
 TEST_CASE("gen::nonZero") {
     meta::forEachType<NonZeroProperties, RC_NUMERIC_TYPES>();

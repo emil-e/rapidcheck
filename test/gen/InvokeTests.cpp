@@ -33,7 +33,11 @@ public:
 
 } // namespace rc
 
+namespace {
+
 void show(IncInt x, std::ostream &os) { os << x.value; }
+
+} // namespace
 
 TEST_CASE("gen::lambda") {
     prop("generates the return value of the given callable",

@@ -8,6 +8,8 @@
 
 using namespace rc;
 
+namespace {
+
 struct CollectionTests
 {
     template<typename T>
@@ -22,6 +24,8 @@ struct CollectionTests
             });
     }
 };
+
+} // namespace
 
 TEST_CASE("gen::arbitrary for containers") {
     meta::forEachType<CollectionTests,

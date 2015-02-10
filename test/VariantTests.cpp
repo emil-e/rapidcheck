@@ -8,6 +8,8 @@
 using namespace rc;
 using namespace rc::detail;
 
+namespace {
+
 struct A
 {
     A() {}
@@ -48,6 +50,8 @@ bool operator!=(const C &c1, const C &c2)
 { return c1.value != c2.value; }
 
 typedef Variant<A, B, C> ABC;
+
+} // namespace
 
 TEST_CASE("Variant") {
     ABC va(A("A"));

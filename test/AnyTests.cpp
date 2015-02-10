@@ -8,6 +8,8 @@
 using namespace rc;
 using namespace rc::detail;
 
+namespace {
+
 enum class InitType { Value, Move, Copy, Dead };
 
 std::ostream &operator<<(std::ostream &os, InitType itype)
@@ -72,6 +74,8 @@ void show(const InitTracker<T> &value, std::ostream &os)
 }
 
 typedef InitTracker<std::string> StringTracker;
+
+} // namespace
 
 TEST_CASE("Any") {
     StringTracker x("foobar");

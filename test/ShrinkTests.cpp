@@ -67,6 +67,7 @@ TEST_CASE("shrink::nothing") {
     }
 }
 
+namespace {
 
 struct EachElementProperties
 {
@@ -147,12 +148,16 @@ struct EachElementProperties
     }
 };
 
+} // namespace
+
 TEST_CASE("shrink::eachElement") {
     meta::forEachType<EachElementProperties,
                       RC_GENERIC_CONTAINERS(int),
                       RC_STRING_TYPES,
                       std::array<int, 100>>();
 }
+
+namespace {
 
 struct RemoveChunksProperties
 {
@@ -229,12 +234,16 @@ struct RemoveChunksProperties
     }
 };
 
+} // namespace
+
 TEST_CASE("shrink::removeChunks") {
     meta::forEachType<RemoveChunksProperties,
                       RC_GENERIC_CONTAINERS(int),
                       std::string,
                       std::wstring>();
 }
+
+namespace {
 
 struct ShrinkTowardsProperties
 {
@@ -268,9 +277,13 @@ struct ShrinkTowardsProperties
     }
 };
 
+} // namespace
+
 TEST_CASE("shrink::towards") {
     meta::forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
 }
+
+namespace {
 
 struct NonDefaultConstructible
 {
@@ -278,6 +291,8 @@ struct NonDefaultConstructible
     NonDefaultConstructible(int xx) : x(xx) {}
     int x;
 };
+
+}
 
 TEST_CASE("shrink::filter") {
     prop("if the predicate always returns true, yields the same as the original",
