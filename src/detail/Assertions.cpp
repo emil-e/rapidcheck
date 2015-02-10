@@ -18,5 +18,17 @@ void throwResultIf(CaseResult::Type type,
     }
 }
 
+void throwResult(CaseResult::Type type,
+                 std::string description,
+                 std::string file,
+                 int line)
+{
+    auto desc = file + ":" + std::to_string(line) + ": " + description;
+    throw CaseResult {
+        .type = type,
+        .description = desc
+    };
+}
+
 } // namespace detail
 } // namespace rc

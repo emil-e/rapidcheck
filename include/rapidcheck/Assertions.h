@@ -10,6 +10,13 @@
         __FILE__,                                                      \
         __LINE__)
 
+#define RC_UNCONDITIONAL_RESULT(ResultType, msg)                       \
+    ::rc::detail::throwResult(                                         \
+        ::rc::detail::CaseResult::Type::ResultType,                    \
+        msg,                                                           \
+        __FILE__,                                                      \
+        __LINE__)
+
 //! Fails the current test case unless the given condition is `true`.
 #define RC_ASSERT(condition)                    \
     RC_CONDITIONAL_RESULT(Failure,              \
@@ -18,9 +25,7 @@
 
 //! Unconditionally fails the current test case with the given message.
 #define RC_FAIL(msg)                            \
-    RC_CONDITIONAL_RESULT(Failure,              \
-                          true,                 \
-                          (msg))
+    RC_UNCONDITIONAL_RESULT(Failure, (msg))
 
 //! Succeed if the given condition is true.
 #define RC_SUCCEED_IF(condition)                \
@@ -30,9 +35,7 @@
 
 //! Unconditionally succeed with the given message.
 #define RC_SUCCEED(msg)                         \
-    RC_CONDITIONAL_RESULT(Success,              \
-                          true,                 \
-                          msg)
+    RC_UNCONDITIONAL_RESULT(Success, (msg))
 
 //! Discards the current test case if the given condition is false.
 #define RC_PRE(condition)                       \
@@ -42,9 +45,7 @@
 
 //! Discards the current test case with the given description.
 #define RC_DISCARD(msg)                         \
-    RC_CONDITIONAL_RESULT(Discard,              \
-                          true,                 \
-                          (msg))
+    RC_UNCONDITIONAL_RESULT(Discard, (msg))
 
 namespace rc {
 namespace detail {
@@ -61,6 +62,17 @@ void throwResultIf(CaseResult::Type type,
                    std::string description,
                    std::string file,
                    int line);
+
+//! Throws a result of the given type.
+//!
+//! @param type         The result type.
+//! @param description  A description of the potential failure.
+//! @param file         The file in which the failure occurs.
+//! @param line         The line at which the failure occurs.
+[[noreturn]] void throwResult(CaseResult::Type type,
+                              std::string description,
+                              std::string file,
+                              int line);
 
 } // namespace detail
 } // namespace rc
