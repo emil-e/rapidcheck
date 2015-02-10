@@ -5,7 +5,7 @@
 
 namespace rc {
 
-void show(const std::string &value, std::ostream &os)
+void showValue(const std::string &value, std::ostream &os)
 {
     os << '"';
     for (char c : value) {
@@ -61,7 +61,7 @@ void show(const std::string &value, std::ostream &os)
     os << '"';
 }
 
-void show(const char *value, std::ostream &os)
+void showValue(const char *value, std::ostream &os)
 {
     show(std::string(value), os);
 }
