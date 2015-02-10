@@ -13,16 +13,16 @@ public:
         : m_generator(std::move(generator))
         , m_predicate(std::move(predicate)) {}
 
-    GeneratedT<Gen> generate() const override
-    {
-        auto startSize = currentSize();
-        auto size = startSize;
-        while (true) { // TODO give up sometime
+    GeneratedT<Gen> generate() const override {
+        auto size = currentSize();
+        int tries = 0;
+        while (true) {
             auto x(*noShrink(resize(size, m_generator)));
             if (m_predicate(x))
                 return x;
             size++;
-            if ((size - startSize) > 100) {
+            tries++;
+            if (tries > 100) { // TODO configurable!
                 throw GenerationFailure(
                     "Gave up trying to generate value satisfying predicate");
             }
