@@ -2,49 +2,11 @@
 
 #include "rapidcheck/detail/ShowType.h"
 
+#include "util/ShowTypeTestUtils.h"
+
 using namespace rc;
+using namespace rc::test;
 using namespace rc::detail;
-
-struct Foo {};
-struct Bar {};
-struct Baz {};
-struct NonspecializedPlain {};
-
-template<typename T>
-struct NonspecializedTemplate {};
-
-namespace rc {
-
-template<>
-struct ShowType<Foo>
-{
-    static void showType(std::ostream &os)
-    {
-        os << "FFoo";
-    }
-};
-
-
-template<>
-struct ShowType<Bar>
-{
-    static void showType(std::ostream &os)
-    {
-        os << "BBar";
-    }
-};
-
-
-template<>
-struct ShowType<Baz>
-{
-    static void showType(std::ostream &os)
-    {
-        os << "BBaz";
-    }
-};
-
-} // namespace rc
 
 TEST_CASE("typeToString") {
     SECTION("shows primitive types correctly") {
@@ -87,11 +49,19 @@ TEST_CASE("typeToString") {
     }
 
     SECTION("non-specialized types") {
-        REQUIRE(typeToString<NonspecializedPlain>() == "NonspecializedPlain");
-        REQUIRE(typeToString<NonspecializedTemplate<NonspecializedPlain>>() ==
-                "NonspecializedTemplate<NonspecializedPlain>");
-        REQUIRE(typeToString<NonspecializedPlain *>() == "NonspecializedPlain *");
-        REQUIRE(typeToString<const NonspecializedPlain *>() == "const NonspecializedPlain *");
+        REQUIRE(
+            typeToString<NonspecializedPlain>() ==
+            "rc::test::NonspecializedPlain");
+        REQUIRE(
+            typeToString<NonspecializedTemplate<NonspecializedPlain>>() ==
+            "rc::test::NonspecializedTemplate<rc::test::NonspecializedPlain>");
+        REQUIRE(
+            typeToString<NonspecializedPlain *>() ==
+            "rc::test::NonspecializedPlain *");
+        REQUIRE(
+            typeToString<const NonspecializedPlain *>() ==
+            "const rc::test::NonspecializedPlain *");
+    }
 
     SECTION("std::string") {
         REQUIRE(typeToString<std::string>() == "std::string");
