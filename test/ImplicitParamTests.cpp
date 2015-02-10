@@ -68,6 +68,9 @@ struct NewScope : public ImplicitCommand
 
 struct BindA : public ImplicitCommand
 {
+    BindA() : value(*gen::arbitrary<ParamA::ValueType>()) {}
+    ParamA::ValueType value;
+
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
         RC_PRE(!s0.empty());
@@ -88,12 +91,13 @@ struct BindA : public ImplicitCommand
     {
         os << "BindA: " << value;
     }
-
-    ParamA::ValueType value;
 };
 
 struct BindB : public ImplicitCommand
 {
+    BindB() : value(*gen::arbitrary<ParamB::ValueType>()) {}
+    ParamB::ValueType value;
+
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
         RC_PRE(!s0.empty());
@@ -114,12 +118,13 @@ struct BindB : public ImplicitCommand
     {
         os << "BindB: " << value;
     }
-
-    ParamB::ValueType value;
 };
 
 struct ModifyA : public ImplicitCommand
 {
+    ModifyA() : value(*gen::arbitrary<ParamA::ValueType>()) {}
+    ParamA::ValueType value;
+
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
         RC_PRE(!s0.empty());
@@ -140,12 +145,13 @@ struct ModifyA : public ImplicitCommand
     {
         os << "ModifyA: " << value;
     }
-
-    ParamA::ValueType value;
 };
 
 struct ModifyB : public ImplicitCommand
 {
+    ModifyB() : value(*gen::arbitrary<ParamB::ValueType>()) {}
+    ParamB::ValueType value;
+
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
         RC_PRE(!s0.empty());
@@ -166,8 +172,6 @@ struct ModifyB : public ImplicitCommand
     {
         os << "ModifyB: " << value;
     }
-
-    ParamB::ValueType value;
 };
 
 struct PopA : public ImplicitCommand
@@ -251,47 +255,16 @@ TEST_CASE("ImplicitParam") {
          [] {
              ImplicitParamModel s0;
              ImplicitParamSystem sut;
-             state::check(s0, sut, [] (const ImplicitParamModel &model) {
-                 switch(*gen::ranged(0, 8)) {
-                 case 0:
-                     return ImplicitCommandSP(new NewScope());
-
-                 case 1: {
-                     auto cmd = new BindA();
-                     cmd->value = *gen::arbitrary<decltype(cmd->value)>();
-                     return ImplicitCommandSP(cmd);
-                 }
-
-                 case 2: {
-                     auto cmd = new BindB();
-                     cmd->value = *gen::arbitrary<decltype(cmd->value)>();
-                     return ImplicitCommandSP(cmd);
-                 }
-
-                 case 3: {
-                     auto cmd = new ModifyA();
-                     cmd->value = *gen::arbitrary<decltype(cmd->value)>();
-                     return ImplicitCommandSP(cmd);
-                 }
-
-                 case 4: {
-                     auto cmd = new ModifyB();
-                     cmd->value = *gen::arbitrary<decltype(cmd->value)>();
-                     return ImplicitCommandSP(cmd);
-                 }
-
-                 case 5:
-                     return ImplicitCommandSP(new PopA());
-
-                 case 6:
-                     return ImplicitCommandSP(new PopB());
-
-                 case 7:
-                     return ImplicitCommandSP(new PopScope());
-                 }
-
-                 return ImplicitCommandSP(nullptr);
-             });
+             state::check(s0, sut,
+                          state::anyCommand<
+                          NewScope,
+                          BindA,
+                          BindB,
+                          ModifyA,
+                          ModifyB,
+                          PopA,
+                          PopB,
+                          PopScope>);
          });
 
     SECTION("unit tests") {

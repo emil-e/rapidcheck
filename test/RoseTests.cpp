@@ -275,25 +275,11 @@ TEST_CASE("Rose") {
              }
 
              Rose<RoseModel::ValueT> rose(&generator, testCase);
-             state::check(s0, rose, [] (const RoseModel &model) {
-                 switch (*gen::ranged(0, 4)) {
-                 case 0:
-                     return RoseCommandSP(new CurrentValue());
-
-                 case 1:
-                     return RoseCommandSP(new Example());
-
-                 case 2:
-                     return RoseCommandSP(new NextShrink());
-
-                 case 3:
-                     return RoseCommandSP(new AcceptShrink());
-
-                 default:
-                     return RoseCommandSP(nullptr);
-                 }
-
-             });
+             state::check(s0, rose, state::anyCommand<
+                          CurrentValue,
+                          Example,
+                          NextShrink,
+                          AcceptShrink>);
          });
 
     prop("shrinking of one value does not affect other unrelated values",

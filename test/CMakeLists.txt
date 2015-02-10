@@ -25,6 +25,7 @@ add_executable(rapidcheck_tests
   gen/TupleTests.cpp
   main.cpp
   predicate/PredicatesTests.cpp
+  state/StateTests.cpp
   )
 
 target_link_libraries(rapidcheck_tests rapidcheck)
