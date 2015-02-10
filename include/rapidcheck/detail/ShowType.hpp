@@ -129,6 +129,42 @@ struct ShowType<T **>
     }
 };
 
+template<typename Traits, typename Allocator>
+struct ShowType<std::basic_string<char, Traits, Allocator>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::string";
+    }
+};
+
+template<typename Traits, typename Allocator>
+struct ShowType<std::basic_string<wchar_t, Traits, Allocator>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::wstring";
+    }
+};
+
+template<typename Traits, typename Allocator>
+struct ShowType<std::basic_string<char16_t, Traits, Allocator>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::u16string";
+    }
+};
+
+template<typename Traits, typename Allocator>
+struct ShowType<std::basic_string<char32_t, Traits, Allocator>>
+{
+    static void showType(std::ostream &os)
+    {
+        os << "std::u32string";
+    }
+};
+
 template<typename T, typename Allocator>
 struct ShowType<std::vector<T, Allocator>>
 {

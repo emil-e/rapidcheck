@@ -92,6 +92,18 @@ TEST_CASE("typeToString") {
                 "NonspecializedTemplate<NonspecializedPlain>");
         REQUIRE(typeToString<NonspecializedPlain *>() == "NonspecializedPlain *");
         REQUIRE(typeToString<const NonspecializedPlain *>() == "const NonspecializedPlain *");
+
+    SECTION("std::string") {
+        REQUIRE(typeToString<std::string>() == "std::string");
+    }
+    SECTION("std::wstring") {
+        REQUIRE(typeToString<std::wstring>() == "std::wstring");
+    }
+    SECTION("std::u16string") {
+        REQUIRE(typeToString<std::u16string>() == "std::u16string");
+    }
+    SECTION("std::u32string") {
+        REQUIRE(typeToString<std::u32string>() == "std::u32string");
     }
 
     SECTION("std::vector") {
