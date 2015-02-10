@@ -6,6 +6,7 @@ add_executable(rapidcheck_tests
   arbitrary/NumericTests.cpp
   detail/AnyTests.cpp
   detail/ConfigurationTests.cpp
+  detail/ExpressionCaptorTests.cpp
   detail/ImplicitParamTests.cpp
   detail/MapParserTests.cpp
   detail/RandomEngineTests.cpp
