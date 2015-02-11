@@ -1,7 +1,10 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include "util/Box.h"
+
 using namespace rc;
+using namespace rc::test;
 
 namespace {
 
@@ -27,21 +30,45 @@ struct NonShowable {};
 
 } // namespace
 
-TEST_CASE("show<T>") {
+TEST_CASE("toString<T>") {
     std::ostringstream os;
 
     SECTION("uses showValue(...) overload if available") {
-        show(Showable(), os);
-        REQUIRE(os.str() == "showValue(Showable)");
+        REQUIRE(toString(Showable()) == "showValue(Showable)");
     }
 
     SECTION("tries to use operator<<(ostream...) if showValue(...) is not availble") {
-        show(Ostreamable(), os);
-        REQUIRE(os.str() == "<< Ostreamable");
+        REQUIRE(toString(Ostreamable()) == "<< Ostreamable");
     }
 
     SECTION("if neither operator<< or showValue(...) available, show as <\?\?\?>") {
-        show(NonShowable(), os);
-        REQUIRE(os.str() == "<\?\?\?>");
+        REQUIRE(toString(NonShowable()) == "<\?\?\?>");
     }
+}
+
+TEST_CASE("showCollection") {
+    prop("shows empty collection correctly",
+         [] (const std::string &prefix, const std::string &suffix) {
+             std::ostringstream os;
+             showCollection(prefix, suffix, std::vector<Box>(), os);
+             REQUIRE(os.str() == (prefix + suffix));
+         });
+
+    prop("shows single element correctly",
+         [&] (const std::string &prefix, const std::string &suffix, Box a) {
+             std::ostringstream os;
+             showCollection(prefix, suffix, std::vector<Box>{a}, os);
+             RC_ASSERT(os.str() == (prefix + a.str() + suffix));
+         });
+
+    prop("shows multiple elements correctly",
+         [&] (const std::string &prefix, const std::string &suffix,
+              Box a, Box b, Box c)
+         {
+             std::ostringstream os;
+             showCollection(prefix, suffix, std::vector<Box>{a, b, c}, os);
+             RC_ASSERT(
+                 os.str() ==
+                 (prefix + a.str() + ", " + b.str() + ", " + c.str() + suffix));
+         });
 }
