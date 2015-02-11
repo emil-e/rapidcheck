@@ -3,25 +3,11 @@
 
 #include "rapidcheck/detail/ExpressionCaptor.h"
 
+#include "util/Box.h"
+
 using namespace rc;
+using namespace rc::test;
 using namespace rc::detail;
-
-namespace {
-
-struct Box
-{
-    Box(int x) : value(x) {}
-    int value;
-
-    std::string str() const { return "[" + std::to_string(value) + "]"; }
-};
-
-void showValue(const Box &value, std::ostream &os)
-{
-    os << value.str();
-}
-
-} // namespace
 
 namespace rc {
 
@@ -31,13 +17,6 @@ class Arbitrary<ExpressionCaptor> : public gen::Generator<ExpressionCaptor>
 public:
     ExpressionCaptor generate() const override
     { return ExpressionCaptor(*gen::arbitrary<std::string>()); }
-};
-
-template<>
-class Arbitrary<Box> : public gen::Generator<Box>
-{
-public:
-    Box generate() const override { return Box(*gen::arbitrary<int>()); }
 };
 
 } // namespace rc
