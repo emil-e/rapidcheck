@@ -90,11 +90,11 @@ TEST_CASE("gen::anyInvocation") {
                          Predictable &&b,
                          Predictable c)
              {
-                 return std::make_tuple(a.value, b.value, c.value);
+                 return std::make_tuple(a, b, c);
              }));
-             RC_ASSERT(std::get<0>(tuple) == Predictable::predictableValue);
-             RC_ASSERT(std::get<1>(tuple) == Predictable::predictableValue);
-             RC_ASSERT(std::get<2>(tuple) == Predictable::predictableValue);
+             RC_ASSERT(isArbitraryPredictable(std::get<0>(tuple)));
+             RC_ASSERT(isArbitraryPredictable(std::get<1>(tuple)));
+             RC_ASSERT(isArbitraryPredictable(std::get<2>(tuple)));
          });
 
     prop("uses the return value as the generated value",
