@@ -14,7 +14,7 @@ struct Box
     std::string str() const { return "|" + std::to_string(value) + "|"; }
 };
 
-void showValue(const Box &value, std::ostream &os)
+inline void showValue(const Box &value, std::ostream &os)
 {
     os << value.str();
 }
