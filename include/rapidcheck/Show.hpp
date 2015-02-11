@@ -1,9 +1,18 @@
 #pragma once
 
-#include <iostream>
-#include <string>
+#include <map>
+#include <vector>
+#include <deque>
+#include <forward_list>
+#include <list>
+#include <set>
+#include <unordered_set>
+#include <unordered_map>
+#include <memory>
+#include <cstdint>
+#include <type_traits>
+#include <array>
 #include <sstream>
-#include <iomanip>
 
 #include "rapidcheck/detail/Traits.h"
 
@@ -38,12 +47,9 @@ struct TupleHelper
     }
 };
 
-} // namespace detail
-
-void showValue(uint8_t value, std::ostream &os)
-{
-    os << int(value);
-}
+void showValue(uint8_t value, std::ostream &os);
+void showValue(const std::string &value, std::ostream &os);
+void showValue(const char *value, std::ostream &os);
 
 template<typename T>
 void showValue(T *p, std::ostream &os)
@@ -82,25 +88,6 @@ void showValue(const std::tuple<Types...> &tuple, std::ostream &os)
     os << "(";
     detail::TupleHelper<std::tuple<Types...>>::showTuple(tuple, os);
     os << ")";
-}
-
-template<typename Collection>
-void showCollection(const std::string &prefix,
-                    const std::string &suffix,
-                    const Collection &collection,
-                    std::ostream &os)
-{
-    os << prefix;
-    auto cbegin = begin(collection);
-    auto cend = end(collection);
-    if (cbegin != cend) {
-        show(*cbegin, os);
-        for (auto it = ++cbegin; it != cend; it++) {
-            os << ", ";
-            show(*it, os);
-        }
-    }
-    os << suffix;
 }
 
 template<typename T, typename Allocator>
@@ -216,8 +203,6 @@ void showValue(const std::array<T, N> &value, std::ostream &os)
     showCollection("[", "]", value, os);
 }
 
-namespace detail {
-
 struct NoShowValue {};
 NoShowValue showValue(...);
 template<typename T>
@@ -260,6 +245,25 @@ std::string toString(const T &value)
     std::ostringstream os;
     show(value, os);
     return os.str();
+}
+
+template<typename Collection>
+void showCollection(const std::string &prefix,
+                    const std::string &suffix,
+                    const Collection &collection,
+                    std::ostream &os)
+{
+    os << prefix;
+    auto cbegin = begin(collection);
+    auto cend = end(collection);
+    if (cbegin != cend) {
+        show(*cbegin, os);
+        for (auto it = ++cbegin; it != cend; it++) {
+            os << ", ";
+            show(*it, os);
+        }
+    }
+    os << suffix;
 }
 
 } // namespace rc

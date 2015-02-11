@@ -2,8 +2,15 @@
 
 #include <string>
 #include <iostream>
+#include <iomanip>
 
 namespace rc {
+namespace detail {
+
+void showValue(uint8_t value, std::ostream &os)
+{
+    os << int(value);
+}
 
 void showValue(const std::string &value, std::ostream &os)
 {
@@ -66,4 +73,5 @@ void showValue(const char *value, std::ostream &os)
     show(std::string(value), os);
 }
 
+} // namespace detail
 } // namespace rc
