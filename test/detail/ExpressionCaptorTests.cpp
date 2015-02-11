@@ -59,8 +59,8 @@ TEST_CASE("ExpressionCaptor") {
     }
 
 #define TEST_BINARY_OPERATOR(op)                                        \
-    SECTION("joins LHS and RHS with operator string between") {         \
-        prop("simply appends RHS",                                      \
+    SECTION("operator" op) {                                            \
+        prop("joins LHS and RHS with operator string between",          \
              [](const ExpressionCaptor &captor, Box value) {            \
                  RC_ASSERT((std::move(captor) op value).str() ==        \
                            (captor.str() + " " #op " " + value.str())); \
