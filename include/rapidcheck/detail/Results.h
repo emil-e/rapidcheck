@@ -29,6 +29,9 @@ struct CaseResult
         Discard  //!< The preconditions for the test case were not met.
     };
 
+    CaseResult();
+    CaseResult(Type t, std::string desc);
+
     //! The type of the result.
     Type type;
 

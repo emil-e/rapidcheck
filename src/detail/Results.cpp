@@ -21,6 +21,12 @@ std::ostream &operator<<(std::ostream &os, const detail::TestCase &testCase)
     return os;
 }
 
+CaseResult::CaseResult()
+    : type(CaseResult::Type::Failure) {}
+
+CaseResult::CaseResult(Type t, std::string desc)
+    : type(t)
+    , description(desc) {}
 
 bool operator==(const CaseResult &r1, const CaseResult &r2)
 {
