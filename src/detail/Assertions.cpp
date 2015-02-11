@@ -3,31 +3,26 @@
 namespace rc {
 namespace detail {
 
-void throwResultIf(CaseResult::Type type,
-                   bool condition,
-                   std::string description,
-                   std::string file,
-                   int line)
+std::string makeDescriptionMessage(const std::string file,
+                                   int line,
+                                   const std::string &description)
 {
-    if (condition) {
-        auto desc = file + ":" + std::to_string(line) + ": " + description;
-        throw CaseResult {
-            .type = type,
-            .description = desc
-        };
-    }
+    return
+        file + ":" + std::to_string(line) + "\n" +
+        description;
 }
 
-void throwResult(CaseResult::Type type,
-                 std::string description,
-                 std::string file,
-                 int line)
+std::string makeExpressionMessage(const std::string file,
+                                  int line,
+                                  const std::string &expression,
+                                  const std::string &expansion)
 {
-    auto desc = file + ":" + std::to_string(line) + ": " + description;
-    throw CaseResult {
-        .type = type,
-        .description = desc
-    };
+    return
+        file + ":" + std::to_string(line) + "\n" +
+        expression + "\n"
+        "\n"
+        "Expands to:\n" +
+        expansion;
 }
 
 } // namespace detail
