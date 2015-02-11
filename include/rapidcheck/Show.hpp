@@ -66,10 +66,6 @@ void showValue(const std::shared_ptr<T> &p, std::ostream &os)
     show(p.get(), os);
 }
 
-//! Displays `p.get()`.
-template<typename T>
-void showValue(const std::shared_ptr<T> &p, std::ostream &os);
-
 template<typename T1, typename T2>
 void showValue(const std::pair<T1, T2> &pair, std::ostream &os)
 {
