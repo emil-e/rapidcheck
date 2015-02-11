@@ -27,7 +27,7 @@ void prop(const std::string &description, const Testable &testable)
                 counterExample += desc.second + "\n\n";
             }
             INFO(counterExample);
-            FAIL("Property failed: " << failure.description);
+            FAIL(failure.description);
         } else if (result.match(gaveUp)) {
             INFO(gaveUp.description);
             FAIL("Gave up after " << gaveUp.numSuccess << " successful tests");
