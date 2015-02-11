@@ -1,7 +1,9 @@
 #pragma once
 
 #include "rapidcheck/detail/Results.h"
+#include "rapidcheck/detail/ExpressionCaptor.h"
 
+#define RC__CAPTURE(expr) ((::rc::detail::ExpressionCaptor()->* expr).str())
 
 #define RC__CONDITIONAL_RESULT(ResultType, condition, msg)      \
     ::rc::detail::throwResultIf(                                \
