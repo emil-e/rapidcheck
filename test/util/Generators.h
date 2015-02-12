@@ -1,6 +1,8 @@
 #pragma once
 
 #include "rapidcheck/detail/Configuration.h"
+#include "rapidcheck/Seq.h"
+#include "rapidcheck/seq/Create.h"
 
 namespace rc {
 
@@ -130,6 +132,25 @@ public:
         result.numSuccess = *gen::positive<int>();
         result.description = *gen::arbitrary<std::string>();
         return result;
+    }
+};
+
+template<typename T>
+class Arbitrary<Seq<T>> : public gen::Generator<Seq<T>>
+{
+public:
+    Seq<T> generate() const override
+    { return seq::fromContainer(*gen::arbitrary<std::vector<T>>()); }
+
+    shrink::IteratorUP<Seq<T>> shrink(const Seq<T> &value) const
+    {
+        Seq<T> seq = value;
+        std::vector<T> values;
+        while (seq)
+            values.push_back(seq.next());
+        return shrink::map(
+            gen::arbitrary<std::vector<T>>().shrink(std::move(values)),
+            [](std::vector<T> &&x) { return seq::fromContainer(x); });;
     }
 };
 

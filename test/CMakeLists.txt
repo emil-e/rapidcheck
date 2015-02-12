@@ -28,6 +28,7 @@ add_executable(rapidcheck_tests
   gen/TupleTests.cpp
   main.cpp
   predicate/PredicatesTests.cpp
+  seq/CreateTests.cpp
   state/StateTests.cpp
   )
 

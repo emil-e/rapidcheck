@@ -3,6 +3,9 @@
 
 #include "rapidcheck/Seq.h"
 
+#include "util/Generators.h"
+#include "util/TemplateProps.h"
+
 using namespace rc;
 
 namespace {
@@ -178,5 +181,45 @@ TEST_CASE("Seq") {
                 "move constructed"};
         REQUIRE(value.first == "foobar");
         REQUIRE(value.second == expectedLog);
+    }
+
+    SECTION("operator==/operator!=") {
+        propConformsToEquals<Seq<std::string>>();
+
+        SECTION("empty sequences are equal") {
+            REQUIRE(Seq<int>() == Seq<int>());
+        }
+
+        SECTION("an exhausted sequence equals an originally empty sequence") {
+            auto seq = seq::just(1, 2, 3);
+            seq.next();
+            seq.next();
+            seq.next();
+            REQUIRE(seq == Seq<int>());
+        }
+
+        prop("sequences with different implementation classes can be equal",
+             [] (const std::string &a,
+                 const std::string &b,
+                 const std::string &c)
+             {
+                 auto seqJust = seq::just(a, b, c);
+                 std::vector<std::string> vec{a, b, c};
+                 auto seqContainer = seq::fromContainer(vec);
+                 RC_ASSERT(seqJust == seqContainer);
+             });
+
+        prop("changing a single element leads to inequal sequences",
+             [] {
+                 const auto elements1 = *gen::suchThat<std::vector<std::string>>(
+                     [](const std::vector<std::string> &x) {
+                         return !x.empty();
+                     });
+                 auto elements2 = elements1;
+                 const auto i = *gen::ranged<std::size_t>(0, elements2.size());
+                 elements2[i] = *gen::distinctFrom(elements2[i]);
+                 RC_ASSERT(seq::fromContainer(elements1) !=
+                           seq::fromContainer(elements2));
+             });
     }
 }

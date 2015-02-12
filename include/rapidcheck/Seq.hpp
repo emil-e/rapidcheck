@@ -71,4 +71,19 @@ Seq<T> &Seq<T>::operator=(Seq &&rhs)
     return *this;
 }
 
+template<typename A, typename B>
+bool operator==(Seq<A> lhs, Seq<B> rhs)
+{
+    while (lhs && rhs) {
+        if (lhs.next() != rhs.next())
+            return false;
+    }
+
+    return !lhs && !rhs;
+}
+
+template<typename A, typename B>
+bool operator!=(Seq<A> lhs, Seq<B> rhs)
+{ return !(std::move(lhs) == std::move(rhs)); }
+
 } // namespace rc
