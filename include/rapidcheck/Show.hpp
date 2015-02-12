@@ -47,7 +47,24 @@ struct TupleHelper
     }
 };
 
-void showValue(uint8_t value, std::ostream &os);
+template<typename T>
+void showValue(
+    T value,
+    typename std::enable_if<
+    std::is_same<T, bool>::value, std::ostream>::type &os)
+{
+    os << (value ? "true" : "false");
+}
+
+template<typename T>
+void showValue(
+    T value,
+    typename std::enable_if<
+    std::is_same<T, uint8_t>::value, std::ostream>::type &os)
+{
+    os << int(value);
+}
+
 void showValue(const std::string &value, std::ostream &os);
 void showValue(const char *value, std::ostream &os);
 

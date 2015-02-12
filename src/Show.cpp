@@ -7,11 +7,6 @@
 namespace rc {
 namespace detail {
 
-void showValue(uint8_t value, std::ostream &os)
-{
-    os << int(value);
-}
-
 void showValue(const std::string &value, std::ostream &os)
 {
     os << '"';
