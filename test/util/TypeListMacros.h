@@ -22,11 +22,14 @@
 
 #define RC_NUMERIC_TYPES RC_REAL_TYPES, RC_INTEGRAL_TYPES
 
-#define RC_ORDERED_CONTAINERS(T)                \
+#define RC_SEQUENCE_CONTAINERS(T)               \
     std::vector<T>,                             \
     std::deque<T>,                              \
     std::forward_list<T>,                       \
-    std::list<T>,                               \
+    std::list<T>                                \
+
+#define RC_ORDERED_CONTAINERS(T)                \
+    RC_SEQUENCE_CONTAINERS(T),                  \
     std::set<T>,                                \
     std::map<T, T>,                             \
     std::multiset<T>,                           \
