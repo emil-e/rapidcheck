@@ -89,6 +89,9 @@ TEST_CASE("seq::fromContainer") {
                       RC_ORDERED_CONTAINERS(std::string),
                       RC_STRING_TYPES,
                       std::array<std::string, 100>>();
+
+    // TODO Weirdly arbitrary to run this for a category called
+    // RC_SEQUENCE_CONTAINERS
     meta::forEachType<FromContainerCopyTests,
                       RC_SEQUENCE_CONTAINERS(CopyGuard),
                       std::array<CopyGuard, 100>>();
