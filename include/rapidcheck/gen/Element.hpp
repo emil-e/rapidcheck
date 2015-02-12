@@ -36,9 +36,9 @@ private:
 };
 
 template<typename Container>
-ElementOf<detail::DecayT<Container>> elementOf(Container &&container)
+ElementOf<Decay<Container>> elementOf(Container &&container)
 {
-    return ElementOf<detail::DecayT<Container>>(
+    return ElementOf<Decay<Container>>(
         std::forward<Container>(container));
 }
 

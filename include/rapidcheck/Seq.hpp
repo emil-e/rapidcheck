@@ -1,7 +1,5 @@
 #pragma once
 
-#include "rapidcheck/detail/Traits.h"
-
 namespace rc {
 
 template<typename T>
@@ -37,7 +35,7 @@ template<typename T>
 template<typename Impl, typename>
 Seq<T>::Seq(Impl &&impl)
     : m_impl(impl.hasNext()
-             ? new SeqImpl<detail::DecayT<Impl>>(std::forward<Impl>(impl))
+             ? new SeqImpl<Decay<Impl>>(std::forward<Impl>(impl))
              : nullptr) {}
 
 template<typename T>

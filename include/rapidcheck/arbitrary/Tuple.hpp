@@ -13,15 +13,13 @@ public:
 
 template<typename T1, typename T2>
 class Arbitrary<std::pair<T1, T2>>
-    : public gen::PairOf<Arbitrary<detail::DecayT<T1>>,
-                         Arbitrary<detail::DecayT<T2>>>
+    : public gen::PairOf<Arbitrary<Decay<T1>>, Arbitrary<Decay<T2>>>
 {
 public:
     Arbitrary()
-        : gen::PairOf<Arbitrary<detail::DecayT<T1>>,
-                      Arbitrary<detail::DecayT<T2>>>(
-            gen::arbitrary<detail::DecayT<T1>>(),
-            gen::arbitrary<detail::DecayT<T2>>()) {}
+        : gen::PairOf<Arbitrary<Decay<T1>>, Arbitrary<Decay<T2>>>(
+            gen::arbitrary<Decay<T1>>(),
+            gen::arbitrary<Decay<T2>>()) {}
 };
 
 } // namespace rc

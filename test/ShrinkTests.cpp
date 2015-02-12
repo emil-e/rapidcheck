@@ -74,7 +74,7 @@ struct EachElementProperties
     template<typename T>
     static void exec()
     {
-        typedef DeepDecayT<typename T::value_type> Element;
+        typedef DeepDecay<typename T::value_type> Element;
         static auto smallValue = gen::scale(0.1, gen::arbitrary<Element>());
         static auto smallValues = gen::collection<T>(smallValue);
 
@@ -164,7 +164,7 @@ struct RemoveChunksProperties
     template<typename T>
     static void exec()
     {
-        typedef DeepDecayT<typename T::value_type> Element;
+        typedef DeepDecay<typename T::value_type> Element;
         static auto smallValue =
             gen::scale(0.1, gen::arbitrary<typename T::value_type>());
         static auto smallValues = gen::collection<T>(smallValue);

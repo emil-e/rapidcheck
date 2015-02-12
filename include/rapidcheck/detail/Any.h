@@ -6,6 +6,7 @@ namespace rc {
 namespace detail {
 
 class ValueDescription;
+// TODO rename to IAnyImpl
 class AbstractAnyImpl;
 
 //! Variant class that can hold a value of any type.

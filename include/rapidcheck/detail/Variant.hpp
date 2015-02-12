@@ -30,10 +30,10 @@ struct IndexHelper<First, Types...>
 template<typename ...Types>
 template<typename T>
 Variant<Types...>::Variant(T &&value)
-    : m_typeIndex(indexOfType<DecayT<T>>())
+    : m_typeIndex(indexOfType<Decay<T>>())
     , m_value(Any::of(std::forward<T>(value)))
 {
-    static_assert(isValidType<DecayT<T>>(),
+    static_assert(isValidType<Decay<T>>(),
                   "T is not a valid type of this variant");
 }
 
@@ -53,7 +53,7 @@ template<typename ...Types>
 template<typename T>
 bool Variant<Types...>::is() const
 {
-    static_assert(isValidType<DecayT<T>>(),
+    static_assert(isValidType<Decay<T>>(),
                   "T is not a valid type of this variant");
     return m_typeIndex == indexOfType<T>();
 }

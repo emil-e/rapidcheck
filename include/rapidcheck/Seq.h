@@ -2,6 +2,8 @@
 
 #include <type_traits>
 
+#include "rapidcheck/Traits.h"
+
 namespace rc {
 
 //! This class implements lazy sequences using iterator semantics. This is
@@ -38,7 +40,7 @@ public:
     //! Constructs a `Seq` from the given implementation object.
     template<typename Impl,
              typename = typename std::enable_if<
-                 !std::is_same<detail::DecayT<Impl>, Seq>::value>::type>
+                 !std::is_same<Decay<Impl>, Seq>::value>::type>
     Seq(Impl &&impl);
 
     //! Returns `true` if there are more values, `false` if there are no more

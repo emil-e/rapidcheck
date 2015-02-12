@@ -129,25 +129,22 @@ void replaceWithDifferent(T &value)
         [&] (const T &x) { return x != value; });
 }
 
-template<typename T> struct DeepDecay;
+template<typename T> struct DeepDecayType;
 
 template<typename T>
-using DeepDecayT = typename DeepDecay<T>::Type;
+using DeepDecay = typename DeepDecayType<T>::Type;
 
 template<typename T>
-struct DeepDecay
+struct DeepDecayType
 {
-    typedef detail::DecayT<T> Type;
+    typedef Decay<T> Type;
 };
 
 template<typename T1, typename T2>
-struct DeepDecay<std::pair<T1, T2>>
+struct DeepDecayType<std::pair<T1, T2>>
 {
-    typedef std::pair<DeepDecayT<T1>, DeepDecayT<T2>> Type;
+    typedef std::pair<DeepDecay<T1>, DeepDecay<T2>> Type;
 };
-
-template<typename T>
-using DeepDecayT = typename DeepDecay<T>::Type;
 
 struct NonComparable
 {

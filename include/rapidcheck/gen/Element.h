@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rapidcheck/detail/Traits.h"
+#include "rapidcheck/Traits.h"
 
 namespace rc {
 namespace gen {
@@ -11,7 +11,7 @@ template<typename Container> class ElementOf;
 //! container must support `begin` and `end`. Its iterator must meet the
 //! requirements of BidirectionalIterator.
 template<typename Container>
-ElementOf<detail::DecayT<Container>> elementOf(Container &&container);
+ElementOf<Decay<Container>> elementOf(Container &&container);
 
 //! Returns a generator which randomly selects from the given arguments.
 template<typename Arg, typename ...Args>

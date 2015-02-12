@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "rapidcheck/Traits.h"
 #include "rapidcheck/Show.h"
 #include "Utility.h"
 #include "IsCopyConstructible.h"
@@ -62,7 +63,7 @@ template<typename T>
 Any Any::of(T &&value)
 {
     Any any;
-    any.m_impl.reset(new AnyImpl<DecayT<T>>(std::forward<T>(value)));
+    any.m_impl.reset(new AnyImpl<Decay<T>>(std::forward<T>(value)));
     return any;
 }
 
