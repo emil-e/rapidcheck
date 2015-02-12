@@ -15,5 +15,12 @@ std::size_t length(Seq<T> seq)
     return l;
 }
 
+template<typename T, typename Callable>
+void forEach(Seq<T> seq, Callable callable)
+{
+    while (seq)
+        callable(seq.next());
+}
+
 } // namespace seq
 } // namespace rc
