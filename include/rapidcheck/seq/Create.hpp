@@ -83,6 +83,29 @@ private:
     typename Container::iterator m_iterator;
 };
 
+template<typename T, typename Callable>
+class IterateSeq
+{
+public:
+    template<typename ValueArg, typename CallableArg>
+    IterateSeq(ValueArg &&value, CallableArg &&iterate)
+        : m_value(std::forward<ValueArg>(value))
+        , m_iterate(std::forward<CallableArg>(iterate)) {}
+
+    bool hasNext() const { return true; }
+
+    T next()
+    {
+        T value = m_value;
+        m_value = m_iterate(std::move(m_value));
+        return value;
+    }
+
+private:
+    T m_value;
+    Callable m_iterate;
+};
+
 } // namespace detail
 
 template<typename T, typename ...Ts>
@@ -103,6 +126,14 @@ fromContainer(Container &&container)
         return Seq<T>();
 
     return detail::ContainerSeq<ContainerT>(std::forward<Container>(container));
+}
+
+template<typename T, typename Callable>
+Seq<Decay<T>> iterate(T &&x, Callable &&f)
+{
+    return detail::IterateSeq<Decay<T>, Decay<Callable>>(
+        std::forward<T>(x),
+        std::forward<Callable>(f));
 }
 
 } // namespace seq

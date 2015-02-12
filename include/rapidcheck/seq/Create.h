@@ -14,6 +14,11 @@ template<typename Container>
 Seq<Decay<typename Decay<Container>::value_type>>
 fromContainer(Container &&container);
 
+//! Returns an infinite sequence by repeatedly applying the given callable to
+//! the given value, i.e. [x, f(x), f(f(x))...].
+template<typename T, typename Callable>
+Seq<Decay<T>> iterate(T &&x, Callable &&f);
+
 } // namespace seq
 } // namespace rc
 

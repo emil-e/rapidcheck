@@ -96,3 +96,18 @@ TEST_CASE("seq::fromContainer") {
                       RC_SEQUENCE_CONTAINERS(CopyGuard),
                       std::array<CopyGuard, 100>>();
 }
+
+TEST_CASE("seq::iterate") {
+    prop("returns an infinite sequence of applying the given function to the"
+         " value",
+         [](int start, int inc) {
+             const auto func = [=](int x) { return x + inc; };
+             auto seq = seq::iterate(start, func);
+             int x = start;
+             // Arbitrary number of iterations, sequence is infinite
+             for (int i = 0; i < 1000; i++) {
+                 RC_ASSERT(seq.next() == x);
+                 x = func(x);
+             }
+         });
+}
