@@ -10,6 +10,12 @@
 using namespace rc;
 using namespace rc::test;
 
+TEST_CASE("Nothing") {
+    SECTION("convertible to boolean false") {
+        REQUIRE_FALSE(Nothing);
+    }
+}
+
 TEST_CASE("Maybe") {
     Logger foo("foo");
     Logger bar("bar");
@@ -17,6 +23,12 @@ TEST_CASE("Maybe") {
     SECTION("default constructor") {
         SECTION("constructed object is not initialized") {
             REQUIRE_FALSE(Maybe<int>());
+        }
+    }
+
+    SECTION("NothingType constructor") {
+        SECTION("constructed object is not initialized") {
+            REQUIRE_FALSE(Maybe<int>(Nothing));
         }
     }
 
@@ -109,6 +121,14 @@ TEST_CASE("Maybe") {
                     "constructed as bar",
                     "move assigned");
             }
+        }
+    }
+
+    SECTION("NothingType assignment") {
+        SECTION("deinitializes object") {
+            Maybe<int> maybe(1337);
+            maybe = Nothing;
+            REQUIRE_FALSE(maybe);
         }
     }
 

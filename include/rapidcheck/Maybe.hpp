@@ -7,6 +7,9 @@ Maybe<T>::Maybe() noexcept
     : m_initialized(false) {}
 
 template<typename T>
+Maybe<T>::Maybe(NothingType) noexcept : Maybe() {}
+
+template<typename T>
 Maybe<T>::Maybe(const T &value) { init(value); }
 
 template<typename T>
@@ -29,6 +32,13 @@ Maybe<T> &Maybe<T>::operator=(T &&value)
         **this = std::move(value);
     else
         init(std::move(value));
+    return *this;
+}
+
+template<typename T>
+Maybe<T> &Maybe<T>::operator=(NothingType)
+{
+    reset();
     return *this;
 }
 

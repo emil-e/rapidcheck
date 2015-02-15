@@ -2,6 +2,15 @@
 
 namespace rc {
 
+//! Tag struct that can be used to construct a `Maybe` to an initialized state.
+struct NothingType {
+    //! Implicit conversion to false.
+    operator bool() const { return false; }
+};
+
+//! Singleton NothingType value.
+constexpr NothingType Nothing = NothingType();
+
 //! Represents the presence of a value or nothing at all. Like `Maybe` in
 //! Haskell, `Option` in Scala or `optional` in Boost. But we're not Haskell nor
 //! Scala and we don't depend on Boost so we have our own.
@@ -11,6 +20,9 @@ class Maybe
 public:
     //! Constructs a new empty `Maybe`.
     Maybe() noexcept;
+
+    //! Equivalent to default construction.
+    Maybe(NothingType) noexcept;
 
     //! Constructs a new `Maybe` and copy-constructs its value.
     Maybe(const T &value);
@@ -23,6 +35,9 @@ public:
 
     //! Constructs a new `Maybe` and move-constructs or move-assigns its value.
     Maybe &operator=(T &&value);
+
+    //! Equivalent to `reset()`.
+    Maybe &operator=(NothingType);
 
     //! Initializes this `Maybe` with an in-place constructed value that gets
     //! forwarded the given arguments.

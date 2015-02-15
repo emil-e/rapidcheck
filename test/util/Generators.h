@@ -162,7 +162,7 @@ public:
     Maybe<T> generate() const override
     {
         if (*gen::noShrink(gen::ranged(0, 4)) == 0)
-            return Maybe<T>();
+            return Nothing;
         return Maybe<T>(*gen::arbitrary<T>());
     }
 
