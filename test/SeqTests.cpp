@@ -20,8 +20,8 @@ public:
     LoggingSeqImpl(const LoggingSeqImpl &other) : Logger(other) {}
     LoggingSeqImpl(LoggingSeqImpl &&other) : Logger(std::move(other)) {}
 
-    std::pair<std::string, std::vector<std::string>> operator()()
-    { return { id, log }; }
+    Maybe<std::pair<std::string, std::vector<std::string>>> operator()()
+    { return {{ id, log }}; }
 };
 
 typedef Seq<std::pair<std::string, std::vector<std::string>>> LoggingSeq;
@@ -157,5 +157,15 @@ TEST_CASE("Seq") {
                  RC_ASSERT(seq::fromContainer(elements1) !=
                            seq::fromContainer(elements2));
              });
+    }
+
+    SECTION("makeSeq") {
+        SECTION("constructs implementation object in place") {
+            auto seq = makeSeq<LoggingSeqImpl>("foobar");
+            const auto value = seq.next();
+            REQUIRE(value->first == "foobar");
+            std::vector<std::string> expectedLog{"constructed as foobar"};
+            REQUIRE(value->second == expectedLog);
+        }
     }
 }

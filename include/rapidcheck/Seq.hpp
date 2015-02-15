@@ -16,8 +16,8 @@ template<typename Impl>
 class Seq<T>::SeqImpl : public Seq<T>::ISeqImpl
 {
 public:
-    template<typename Arg>
-    SeqImpl(Arg &&impl) : m_impl(std::forward<Arg>(impl)) {}
+    template<typename ...Args>
+    SeqImpl(Args &&...args) : m_impl(std::forward<Args>(args)...) {}
 
     Maybe<T> next() override { return m_impl(); }
 
@@ -57,6 +57,17 @@ Seq<T> &Seq<T>::operator=(Seq &&rhs)
 {
     m_impl = std::move(rhs.m_impl);
     return *this;
+}
+
+template<typename Impl, typename ...Args>
+Seq<typename std::result_of<Impl()>::type::ValueType> makeSeq(Args &&...args)
+{
+    typedef Seq<typename std::result_of<Impl()>::type::ValueType> SeqT;
+    typedef typename SeqT::template SeqImpl<Impl> ImplT;
+
+    SeqT seq;
+    seq.m_impl.reset(new ImplT(std::forward<Args>(args)...));
+    return seq;
 }
 
 template<typename A, typename B>

@@ -18,6 +18,9 @@ template<typename T>
 class Maybe
 {
 public:
+    //! The type of value contained in this `Maybe`.
+    typedef T ValueType;
+
     //! Constructs a new empty `Maybe`.
     Maybe() noexcept;
 

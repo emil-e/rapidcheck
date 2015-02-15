@@ -55,14 +55,6 @@ public:
         return *this;
     }
 
-    ContainerSeq(ContainerSeq &&other) { moveFrom(other); }
-
-    ContainerSeq &operator=(ContainerSeq &&other)
-    {
-        moveFrom(other);
-        return *this;
-    }
-
     Maybe<T> operator()()
     {
         if (m_iterator == end(m_container))
@@ -72,14 +64,6 @@ public:
     }
 
 private:
-    void moveFrom(ContainerSeq &other)
-    {
-        m_container = std::move(other.m_container);
-        m_iterator = begin(m_container);
-        m_position = other.m_position;
-        std::advance(m_iterator, m_position);
-    }
-
     Container m_container;
     typename Container::iterator m_iterator;
     std::size_t m_position;
@@ -111,8 +95,9 @@ private:
 template<typename T, typename ...Ts>
 Seq<Decay<T>> just(T &&value, Ts &&...values)
 {
-    return detail::JustSeq<Decay<T>, sizeof...(Ts) + 1>{
-        std::forward<T>(value), std::forward<Ts>(values)...};
+    return makeSeq<detail::JustSeq<Decay<T>, sizeof...(Ts) + 1>>(
+        std::forward<T>(value),
+        std::forward<Ts>(values)...);
 }
 
 template<typename Container>
@@ -125,13 +110,14 @@ fromContainer(Container &&container)
     if (container.empty())
         return Seq<T>();
 
-    return detail::ContainerSeq<ContainerT>(std::forward<Container>(container));
+    return makeSeq<detail::ContainerSeq<ContainerT>>(
+        std::forward<Container>(container));
 }
 
 template<typename T, typename Callable>
 Seq<Decay<T>> iterate(T &&x, Callable &&f)
 {
-    return detail::IterateSeq<Decay<T>, Decay<Callable>>(
+    return makeSeq<detail::IterateSeq<Decay<T>, Decay<Callable>>>(
         std::forward<T>(x),
         std::forward<Callable>(f));
 }

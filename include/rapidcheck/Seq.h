@@ -28,6 +28,12 @@ namespace rc {
 template<typename T>
 class Seq
 {
+    //! Creates a new `Seq` using the implementation class specificed by the
+    //! type parameter constructed by forwarding the given arguments.
+    template<typename Impl, typename ...Args>
+    friend Seq<typename std::result_of<Impl()>::type::ValueType>
+    makeSeq(Args &&...args);
+
 public:
     //! The type of the values of this `Seq`.
     typedef T ValueType;
