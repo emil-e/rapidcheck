@@ -31,6 +31,7 @@ add_executable(rapidcheck_tests
   predicate/PredicatesTests.cpp
   seq/CreateTests.cpp
   seq/OperationsTests.cpp
+  seq/TransformTests.cpp
   state/StateTests.cpp
   )
 
