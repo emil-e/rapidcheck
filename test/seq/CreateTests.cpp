@@ -95,6 +95,19 @@ TEST_CASE("seq::fromContainer") {
                       std::array<CopyGuard, 100>>();
 }
 
+TEST_CASE("seq::fromIteratorRange") {
+    prop("creates a sequence that returns the values in the range",
+         [] (const std::vector<int> &elements) {
+             const int start = *gen::ranged<int>(0, elements.size());
+             const int end = *gen::ranged<int>(start, elements.size());
+             const auto startIt = elements.begin() + start;
+             const auto endIt = elements.begin() + end;
+             std::vector<int> subElements(startIt, endIt);
+             RC_ASSERT(seq::fromIteratorRange(startIt, endIt) ==
+                       seq::fromContainer(subElements));
+         });
+}
+
 TEST_CASE("seq::iterate") {
     prop("returns an infinite sequence of applying the given function to the"
          " value",

@@ -14,6 +14,11 @@ template<typename Container>
 Seq<Decay<typename Decay<Container>::value_type>>
 fromContainer(Container &&container);
 
+//! Creates a sequence from the given iterator range.
+template<typename Iterator>
+Seq<typename std::iterator_traits<Iterator>::value_type>
+fromIteratorRange(Iterator start, Iterator end);
+
 //! Returns an infinite sequence by repeatedly applying the given callable to
 //! the given value, i.e. [x, f(x), f(f(x))...].
 template<typename T, typename Callable>

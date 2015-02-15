@@ -32,11 +32,11 @@ class ContainerSeq
 public:
     typedef Decay<typename Container::value_type> T;
 
-    template<typename C,
+    template<typename ...Args,
              typename = typename std::enable_if<
-                 std::is_constructible<Container, C>::value>::type>
-    ContainerSeq(C &&container)
-        : m_container(std::forward<C>(container))
+                 std::is_constructible<Container, Args...>::value>::type>
+    ContainerSeq(Args &&...args)
+        : m_container(std::forward<Args>(args)...)
         , m_iterator(begin(m_container))
         , m_position(0) {}
 
@@ -112,6 +112,14 @@ fromContainer(Container &&container)
 
     return makeSeq<detail::ContainerSeq<ContainerT>>(
         std::forward<Container>(container));
+}
+
+template<typename Iterator>
+Seq<typename std::iterator_traits<Iterator>::value_type>
+fromIteratorRange(Iterator start, Iterator end)
+{
+    typedef typename std::iterator_traits<Iterator>::value_type T;
+    return makeSeq<detail::ContainerSeq<std::vector<T>>>(start, end);
 }
 
 template<typename T, typename Callable>
