@@ -5,8 +5,10 @@
 
 #include "util/Generators.h"
 #include "util/TemplateProps.h"
+#include "util/Logger.h"
 
 using namespace rc;
+using namespace rc::test;
 
 namespace {
 
@@ -30,31 +32,18 @@ template<typename Next, typename HasNext>
 Seq<typename std::result_of<Next()>::type> mockSeq(Next next, HasNext hasNext)
 { return SeqImplMock<Next, HasNext>(std::move(next), std::move(hasNext)); }
 
-class LoggingSeqImpl
+class LoggingSeqImpl : public Logger
 {
 public:
-    LoggingSeqImpl(std::string id)
-        : m_id(std::move(id))
-        , m_log{"ID constructed"} {}
-
-    LoggingSeqImpl(const LoggingSeqImpl &other)
-        : m_id(other.m_id)
-        , m_log(other.m_log)
-    { m_log.emplace_back("copy constructed"); }
-
-    LoggingSeqImpl(LoggingSeqImpl &&other)
-        : m_id(std::move(other.m_id))
-        , m_log(std::move(other.m_log))
-    { m_log.emplace_back("move constructed"); }
+    LoggingSeqImpl() : Logger() {}
+    LoggingSeqImpl(std::string theId) : Logger(std::move(theId)) {}
+    LoggingSeqImpl(const LoggingSeqImpl &other) : Logger(other) {}
+    LoggingSeqImpl(LoggingSeqImpl &&other) : Logger(std::move(other)) {}
 
     bool hasNext() const { return true; }
 
     std::pair<std::string, std::vector<std::string>> next()
-    { return { m_id, m_log }; }
-
-private:
-    std::string m_id;
-    std::vector<std::string> m_log;
+    { return { id, log }; }
 };
 
 typedef Seq<std::pair<std::string, std::vector<std::string>>> LoggingSeq;
@@ -114,7 +103,7 @@ TEST_CASE("Seq") {
 
         const auto value = seq.next();
         std::vector<std::string> expectedLog{
-            "ID constructed",
+            "constructed as foobar",
             "copy constructed"};
         REQUIRE(value.first == "foobar");
         REQUIRE(value.second == expectedLog);
@@ -125,7 +114,7 @@ TEST_CASE("Seq") {
         const auto value = seq.next();
 
         std::vector<std::string> expectedLog{
-            "ID constructed",
+            "constructed as foobar",
             "move constructed"};
         REQUIRE(value.first == "foobar");
         REQUIRE(value.second == expectedLog);
@@ -137,7 +126,7 @@ TEST_CASE("Seq") {
 
         const auto value = copy.next();
         std::vector<std::string> expectedLog{
-            "ID constructed",
+            "constructed as foobar",
             "move constructed",
             "copy constructed"};
         REQUIRE(value.first == "foobar");
@@ -151,7 +140,7 @@ TEST_CASE("Seq") {
 
         const auto value = copy.next();
         std::vector<std::string> expectedLog{
-            "ID constructed",
+            "constructed as foobar",
             "move constructed",
             "copy constructed"};
         REQUIRE(value.first == "foobar");
@@ -164,7 +153,7 @@ TEST_CASE("Seq") {
 
         const auto value = moved.next();
         std::vector<std::string> expectedLog{
-            "ID constructed",
+            "constructed as foobar",
             "move constructed"};
         REQUIRE(value.first == "foobar");
         REQUIRE(value.second == expectedLog);
@@ -177,8 +166,8 @@ TEST_CASE("Seq") {
 
         const auto value = moved.next();
         std::vector<std::string> expectedLog{
-            "ID constructed",
-                "move constructed"};
+            "constructed as foobar",
+            "move constructed"};
         REQUIRE(value.first == "foobar");
         REQUIRE(value.second == expectedLog);
     }
