@@ -46,10 +46,14 @@ public:
     //! Maybe copy should be explicit?
     bool isCopyable() const;
 
-    //! Throws if `other` is not copyable.
+    //! This constructor is effectively `noexcept` iff the contained value has a
+    //! copy constructor and if that copy constructor does not throw. If the
+    //! value does not have a copy constructor, this constructor throws.
     Any(const Any &other);
 
-    //! Throws if `other` is not copyable.
+    //! This method is effectively `noexcept` iff the contained value has a
+    //! copy constructor and if that copy constructor does not throw. If the
+    //! value does not have a copy constructor, this method throws.
     Any &operator=(const Any &rhs);
 
     Any(Any &&other) noexcept;
