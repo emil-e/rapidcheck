@@ -2,6 +2,7 @@
 
 #include "rapidcheck/detail/Configuration.h"
 #include "rapidcheck/Seq.h"
+#include "rapidcheck/Maybe.h"
 #include "rapidcheck/seq/Create.h"
 
 namespace rc {
@@ -150,7 +151,31 @@ public:
             values.push_back(seq.next());
         return shrink::map(
             gen::arbitrary<std::vector<T>>().shrink(std::move(values)),
-            [](std::vector<T> &&x) { return seq::fromContainer(x); });;
+            [](std::vector<T> &&x) { return seq::fromContainer(x); });
+    }
+};
+
+template<typename T>
+class Arbitrary<Maybe<T>> : public gen::Generator<Maybe<T>>
+{
+public:
+    Maybe<T> generate() const override
+    {
+        if (*gen::noShrink(gen::ranged(0, 4)) == 0)
+            return Maybe<T>();
+        return Maybe<T>(*gen::arbitrary<T>());
+    }
+
+    shrink::IteratorUP<Maybe<T>> shrink(const Maybe<T> &value) const
+    {
+        if (!value)
+            return shrink::nothing<T>();
+
+        shrink::sequentially(
+            shrink::constant({ Maybe<T>() }),
+            shrink::map(
+                gen::arbitrary<T>().shrink(value),
+                [](T &&x) { return Maybe<T>(x); }));
     }
 };
 
