@@ -16,10 +16,10 @@ TEST_CASE("seq::length") {
 
 TEST_CASE("seq::forEach") {
     prop("calls the callable once for each element",
-         [](const std::vector<int> &elements) {
+         [](const std::vector<std::string> &elements) {
              auto seq = seq::fromContainer(elements);
              auto it = begin(elements);
-             seq::forEach(seq, [&](int x) {
+             seq::forEach(seq, [&](const std::string &x) {
                  RC_ASSERT(x == *it++);
              });
              RC_ASSERT(it == end(elements));

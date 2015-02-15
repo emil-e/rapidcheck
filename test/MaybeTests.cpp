@@ -6,6 +6,7 @@
 #include "util/Logger.h"
 #include "util/TemplateProps.h"
 #include "util/Generators.h"
+#include "util/AppleOrange.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -341,19 +342,19 @@ TEST_CASE("Maybe") {
         propConformsToEquals<Maybe<std::string>>();
 
         SECTION("uninitialized values are equal") {
-            REQUIRE(Maybe<std::string>() == Maybe<std::string>());
+            REQUIRE(Maybe<Apple>() == Maybe<Orange>());
         }
 
         SECTION("uninitialized value are not equal to initialized values") {
-            REQUIRE(Maybe<std::string>() != Maybe<std::string>("foo"));
+            REQUIRE(Maybe<Apple>() != Maybe<Orange>(Orange("foo")));
         }
 
         SECTION("initialized value are equal if value is equal") {
-            REQUIRE(Maybe<std::string>("foo") == Maybe<std::string>("foo"));
+            REQUIRE(Maybe<Apple>(Apple("foo")) == Maybe<Orange>(Orange("foo")));
         }
 
         SECTION("initialized value are inequal if value is inequal") {
-            REQUIRE(Maybe<std::string>("foo") != Maybe<std::string>("bar"));
+            REQUIRE(Maybe<Apple>(Apple("foo")) != Maybe<Orange>(Orange("bar")));
         }
     }
 }

@@ -6,8 +6,7 @@ template<typename T>
 class Seq<T>::ISeqImpl
 {
 public:
-    virtual bool hasNext() const = 0;
-    virtual T next() = 0;
+    virtual Maybe<T> next() = 0;
     virtual std::unique_ptr<ISeqImpl> copy() const = 0;
     virtual ~ISeqImpl() = default;
 };
@@ -20,9 +19,7 @@ public:
     template<typename Arg>
     SeqImpl(Arg &&impl) : m_impl(std::forward<Arg>(impl)) {}
 
-    bool hasNext() const override { return m_impl.hasNext(); }
-
-    T next() override { return m_impl.next(); }
+    Maybe<T> next() override { return m_impl(); }
 
     std::unique_ptr<ISeqImpl> copy() const
     { return std::unique_ptr<ISeqImpl>(new SeqImpl(*this)); }
@@ -34,20 +31,11 @@ private:
 template<typename T>
 template<typename Impl, typename>
 Seq<T>::Seq(Impl &&impl)
-    : m_impl(impl.hasNext()
-             ? new SeqImpl<Decay<Impl>>(std::forward<Impl>(impl))
-             : nullptr) {}
+    : m_impl(new SeqImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}
 
 template<typename T>
-Seq<T>::operator bool() const
-{ return m_impl && m_impl->hasNext(); }
-
-template<typename T>
-T Seq<T>::next()
-{
-    assert(m_impl);
-    return m_impl->next();
-}
+Maybe<T> Seq<T>::next()
+{ return m_impl ? m_impl->next() : Nothing; }
 
 template<typename T>
 Seq<T>::Seq(const Seq &other)
@@ -74,12 +62,15 @@ Seq<T> &Seq<T>::operator=(Seq &&rhs)
 template<typename A, typename B>
 bool operator==(Seq<A> lhs, Seq<B> rhs)
 {
-    while (lhs && rhs) {
-        if (lhs.next() != rhs.next())
+    while (true) {
+        Maybe<A> a(lhs.next());
+        Maybe<B> b(rhs.next());
+        if (a != b)
             return false;
-    }
 
-    return !lhs && !rhs;
+        if (!a && !b)
+            return true;
+    }
 }
 
 template<typename A, typename B>

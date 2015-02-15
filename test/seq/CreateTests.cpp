@@ -25,10 +25,10 @@ TEST_CASE("seq::just") {
              const std::string &c)
          {
              auto seq = seq::just(a, b, c);
-             RC_ASSERT(seq.next() == a);
-             RC_ASSERT(seq.next() == b);
-             RC_ASSERT(seq.next() == c);
-             RC_ASSERT(!seq);
+             RC_ASSERT(*seq.next() == a);
+             RC_ASSERT(*seq.next() == b);
+             RC_ASSERT(*seq.next() == c);
+             RC_ASSERT(!seq.next());
          });
 
     prop("copies are equal",
@@ -53,10 +53,9 @@ struct FromContainerTests
             [](const T &elements) {
                 auto seq = seq::fromContainer(elements);
                 for (const auto &x : elements) {
-                    RC_ASSERT(seq);
-                    RC_ASSERT(seq.next() == x);
+                    RC_ASSERT(*seq.next() == x);
                 }
-                RC_ASSERT(!seq);
+                RC_ASSERT(!seq.next());
             });
 
         templatedProp<T>(
@@ -78,8 +77,7 @@ struct FromContainerCopyTests
             "does not copy elements",
             [](T elements) {
                 auto seq = seq::fromContainer(std::move(elements));
-                while (seq)
-                    seq.next();
+                while (seq.next());
             });
     }
 };
@@ -106,7 +104,7 @@ TEST_CASE("seq::iterate") {
              int x = start;
              // Arbitrary number of iterations, sequence is infinite
              for (int i = 0; i < 1000; i++) {
-                 RC_ASSERT(seq.next() == x);
+                 RC_ASSERT(*seq.next() == x);
                  x = func(x);
              }
          });

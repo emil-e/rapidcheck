@@ -13,8 +13,12 @@ public:
         : m_values{std::forward<Args>(args)...}
         , m_next(0) {}
 
-    bool hasNext() const { return m_next < N; }
-    T next() { return std::move(m_values[m_next++]); }
+    Maybe<T> operator()()
+    {
+        if (m_next >= N)
+            return Nothing;
+        return std::move(m_values[m_next++]);
+    }
 
 private:
     std::array<T, N> m_values;
@@ -33,27 +37,21 @@ public:
                  std::is_constructible<Container, C>::value>::type>
     ContainerSeq(C &&container)
         : m_container(std::forward<C>(container))
-        , m_iterator(begin(m_container)) {}
+        , m_iterator(begin(m_container))
+        , m_position(0) {}
 
     ContainerSeq(const ContainerSeq &other)
         : m_container(other.m_container)
         , m_iterator(begin(m_container))
-    {
-        // TODO dat const_cast? safe?
-        std::advance(m_iterator,
-                     std::distance(
-                         begin(const_cast<Container &>(other.m_container)),
-                         other.m_iterator));
-    }
+        , m_position(other.m_position)
+    { std::advance(m_iterator, m_position); }
 
-    ContainerSeq &operator=(const ContainerSeq &other)
+    ContainerSeq &operator=(const ContainerSeq &rhs)
     {
-        m_container = other.m_container;
+        m_container = rhs.m_container;
         m_iterator = begin(m_container);
-        std::advance(m_iterator,
-                     std::distance(
-                         begin(const_cast<Container &>(other.m_container)),
-                         other.m_iterator));
+        m_position = rhs.m_position;
+        std::advance(m_iterator, m_position);
         return *this;
     }
 
@@ -65,22 +63,26 @@ public:
         return *this;
     }
 
-    bool hasNext() const { return m_iterator != end(m_container); }
-    T next() { return std::move(*(m_iterator++)); }
+    Maybe<T> operator()()
+    {
+        if (m_iterator == end(m_container))
+            return Nothing;
+        m_position++;
+        return std::move(*(m_iterator++));
+    }
 
 private:
     void moveFrom(ContainerSeq &other)
     {
-        const auto i = std::distance(
-            begin(const_cast<Container &>(other.m_container)),
-            other.m_iterator);
         m_container = std::move(other.m_container);
         m_iterator = begin(m_container);
-        std::advance(m_iterator, i);
+        m_position = other.m_position;
+        std::advance(m_iterator, m_position);
     }
 
     Container m_container;
     typename Container::iterator m_iterator;
+    std::size_t m_position;
 };
 
 template<typename T, typename Callable>
@@ -92,9 +94,7 @@ public:
         : m_value(std::forward<ValueArg>(value))
         , m_iterate(std::forward<CallableArg>(iterate)) {}
 
-    bool hasNext() const { return true; }
-
-    T next()
+    Maybe<T> operator()()
     {
         T value = m_value;
         m_value = m_iterate(std::move(m_value));

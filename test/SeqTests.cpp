@@ -12,26 +12,6 @@ using namespace rc::test;
 
 namespace {
 
-template<typename Next, typename HasNext>
-class SeqImplMock
-{
-public:
-    SeqImplMock(Next next, HasNext hasNext)
-        : m_next(next)
-        , m_hasNext(hasNext) {}
-
-    bool hasNext() const { return m_hasNext(); }
-    typename std::result_of<Next()>::type next() { return m_next(); }
-
-private:
-    Next m_next;
-    HasNext m_hasNext;
-};
-
-template<typename Next, typename HasNext>
-Seq<typename std::result_of<Next()>::type> mockSeq(Next next, HasNext hasNext)
-{ return SeqImplMock<Next, HasNext>(std::move(next), std::move(hasNext)); }
-
 class LoggingSeqImpl : public Logger
 {
 public:
@@ -40,9 +20,7 @@ public:
     LoggingSeqImpl(const LoggingSeqImpl &other) : Logger(other) {}
     LoggingSeqImpl(LoggingSeqImpl &&other) : Logger(std::move(other)) {}
 
-    bool hasNext() const { return true; }
-
-    std::pair<std::string, std::vector<std::string>> next()
+    std::pair<std::string, std::vector<std::string>> operator()()
     { return { id, log }; }
 };
 
@@ -52,49 +30,18 @@ typedef Seq<std::pair<std::string, std::vector<std::string>>> LoggingSeq;
 
 TEST_CASE("Seq") {
     SECTION("default constructed Seq is empty") {
-        REQUIRE_FALSE(Seq<int>());
+        REQUIRE_FALSE(Seq<int>().next());
     }
 
-    SECTION("calls the next() method of the implementation object") {
+    SECTION("calls operator()() of the implementation object") {
         bool nextCalled = false;
-        auto seq = mockSeq([&]{
+        Seq<int> seq = [&]{
             nextCalled = true;
-            return 0;
-        }, []{
-            return true;
-        });
+            return Maybe<int>(1337);
+        };
 
-        seq.next();
+        REQUIRE(*seq.next() == 1337);
         REQUIRE(nextCalled);
-    }
-
-    SECTION("calls the hasNext() method of the implementation object") {
-        bool hasNextCalled = false;
-        auto seq = mockSeq([]{
-            return 0;
-        }, [&]{
-            hasNextCalled = true;
-            return true;
-        });
-
-        REQUIRE(seq);
-        REQUIRE(hasNextCalled);
-    }
-
-    SECTION("discards the implementation object if hasNext() returns false") {
-        bool nextCalled = false;
-        int hasNextCount = 0;
-        auto seq = mockSeq([&]{
-            nextCalled = true;
-            return 0;
-        }, [&]{
-            hasNextCount++;
-            return false;
-        });
-
-        REQUIRE_FALSE(seq);
-        REQUIRE_FALSE(nextCalled);
-        REQUIRE(hasNextCount == 1);
     }
 
     SECTION("copies implementation if constructed from lvalue") {
@@ -105,8 +52,8 @@ TEST_CASE("Seq") {
         std::vector<std::string> expectedLog{
             "constructed as foobar",
             "copy constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
+        REQUIRE(value->first == "foobar");
+        REQUIRE(value->second == expectedLog);
     }
 
     SECTION("moves implementation if constructed from rvalue") {
@@ -116,8 +63,8 @@ TEST_CASE("Seq") {
         std::vector<std::string> expectedLog{
             "constructed as foobar",
             "move constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
+        REQUIRE(value->first == "foobar");
+        REQUIRE(value->second == expectedLog);
     }
 
     SECTION("copy construction copies the implementation object") {
@@ -129,8 +76,8 @@ TEST_CASE("Seq") {
             "constructed as foobar",
             "move constructed",
             "copy constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
+        REQUIRE(value->first == "foobar");
+        REQUIRE(value->second == expectedLog);
     }
 
     SECTION("copy assignment copies the implementation object") {
@@ -143,8 +90,8 @@ TEST_CASE("Seq") {
             "constructed as foobar",
             "move constructed",
             "copy constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
+        REQUIRE(value->first == "foobar");
+        REQUIRE(value->second == expectedLog);
     }
 
     SECTION("move construction neither moves nor copies") {
@@ -155,8 +102,8 @@ TEST_CASE("Seq") {
         std::vector<std::string> expectedLog{
             "constructed as foobar",
             "move constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
+        REQUIRE(value->first == "foobar");
+        REQUIRE(value->second == expectedLog);
     }
 
     SECTION("move assignment neither moves nor copies") {
@@ -168,8 +115,8 @@ TEST_CASE("Seq") {
         std::vector<std::string> expectedLog{
             "constructed as foobar",
             "move constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
+        REQUIRE(value->first == "foobar");
+        REQUIRE(value->second == expectedLog);
     }
 
     SECTION("operator==/operator!=") {

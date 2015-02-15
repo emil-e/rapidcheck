@@ -7,10 +7,8 @@ template<typename T>
 std::size_t length(Seq<T> seq)
 {
     std::size_t l = 0;
-    while (seq) {
-        seq.next();
+    while (seq.next())
         l++;
-    }
 
     return l;
 }
@@ -18,8 +16,9 @@ std::size_t length(Seq<T> seq)
 template<typename T, typename Callable>
 void forEach(Seq<T> seq, Callable callable)
 {
-    while (seq)
-        callable(seq.next());
+    Maybe<T> value;
+    while ((value = seq.next()))
+        callable(*value);
 }
 
 } // namespace seq
