@@ -14,7 +14,7 @@ class Any
 {
 public:
     //! Constructs a new null `Any`.
-    Any();
+    Any() noexcept;
 
     //! Constructs a new `Any` with the given value.
     template<typename T>

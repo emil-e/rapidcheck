@@ -3,7 +3,7 @@
 namespace rc {
 namespace detail {
 
-Any::Any() {}
+Any::Any() noexcept {}
 
 Any::Any(const Any &other)
     : m_impl(other.m_impl
