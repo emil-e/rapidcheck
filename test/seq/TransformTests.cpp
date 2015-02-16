@@ -22,8 +22,11 @@ TEST_CASE("seq::drop") {
     prop("copies are equal",
          [] (const std::vector<int> &elements) {
              std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
-             std::size_t start = std::min(elements.size(), n);
-             const auto seq = seq::drop(n, seq::fromContainer(elements));
+             auto seq = seq::drop(n, seq::fromContainer(elements));
+             std::size_t nexts =
+                 *gen::ranged<std::size_t>(0, elements.size() * 2);
+             while (nexts--)
+                 seq.next();
              const auto copy = seq;
              RC_ASSERT(seq == copy);
          });
@@ -31,7 +34,6 @@ TEST_CASE("seq::drop") {
     prop("does not copy items",
          [] (std::vector<CopyGuard> elements) {
              std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
-             std::size_t start = std::min(elements.size(), n);
              auto seq = seq::drop(n, seq::fromContainer(std::move(elements)));
              while (seq.next());
          });
@@ -55,7 +57,11 @@ TEST_CASE("seq::take") {
          [] (const std::vector<int> &elements) {
              std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
              std::size_t start = std::min(elements.size(), n);
-             const auto seq = seq::take(n, seq::fromContainer(elements));
+             auto seq = seq::take(n, seq::fromContainer(elements));
+             std::size_t nexts =
+                 *gen::ranged<std::size_t>(0, elements.size() * 2);
+             while (nexts--)
+                 seq.next();
              const auto copy = seq;
              RC_ASSERT(seq == copy);
          });
