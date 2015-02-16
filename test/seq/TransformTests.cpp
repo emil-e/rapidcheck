@@ -107,4 +107,13 @@ TEST_CASE("seq::dropWhile") {
              auto seq = seq::dropWhile(pred, seq::fromContainer(std::move(elements)));
              while (seq.next());
          });
+
+    SECTION("sanity check") {
+        auto seq = seq::dropWhile(
+            [](int x) { return x < 5; },
+            seq::just(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+        auto expected = seq::just(5, 6, 7, 8, 9, 10);
+        REQUIRE(seq == expected);
+    }
+}
 }
