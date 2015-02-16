@@ -144,3 +144,91 @@ TEST_CASE("seq::takeWhile") {
         REQUIRE(seq == expected);
     }
 }
+
+TEST_CASE("seq::map") {
+    prop("works with no sequences",
+         [] (int x) {
+             std::size_t n = *gen::ranged<std::size_t>(0, 1000);
+             const auto mapper = [=] { return x; };
+             auto mapSeq = seq::take(n, seq::map(mapper));
+             for (std::size_t i = 0; i < n; i++)
+                 RC_ASSERT(*mapSeq.next() == x);
+             RC_ASSERT(!mapSeq.next());
+         });
+
+    prop("works with one sequence",
+         [] (const std::vector<int> &elements, int x)
+         {
+             const auto mapper = [=](int a) { return a * x; };
+             std::vector<int> expectedElements;
+             for (const auto e : elements)
+                 expectedElements.push_back(mapper(e));
+             auto mapSeq = seq::map(mapper, seq::fromContainer(elements));
+             RC_ASSERT(mapSeq ==
+                       seq::fromContainer(std::move(expectedElements)));
+         });
+
+    prop("works with two sequences",
+         [] (const std::vector<int> &e1,
+             const std::vector<std::string> &e2)
+         {
+             const auto mapper = [](int a, std::string b) {
+                 return std::to_string(a) + b;
+             };
+             std::size_t size = std::min(e1.size(), e2.size());
+             std::vector<std::string> expectedElements;
+             for (std::size_t i = 0; i < size; i++)
+                 expectedElements.push_back(mapper(e1[i], e2[i]));
+             auto mapSeq = seq::map(mapper,
+                                    seq::fromContainer(e1),
+                                    seq::fromContainer(e2));
+             RC_ASSERT(mapSeq ==
+                       seq::fromContainer(std::move(expectedElements)));
+         });
+
+    prop("works with three sequences",
+         [] (const std::vector<int> &e1,
+             const std::vector<std::string> &e2,
+             const std::vector<double> &e3)
+         {
+             const auto mapper = [](int a, std::string b, double c) {
+                 return std::to_string(a) + b + std::to_string(c);
+             };
+             std::size_t size = std::min({e1.size(), e2.size(), e3.size()});
+             std::vector<std::string> expectedElements;
+             for (std::size_t i = 0; i < size; i++)
+                 expectedElements.push_back(mapper(e1[i], e2[i], e3[i]));
+             auto mapSeq = seq::map(mapper,
+                                    seq::fromContainer(e1),
+                                    seq::fromContainer(e2),
+                                    seq::fromContainer(e3));
+             RC_ASSERT(mapSeq ==
+                       seq::fromContainer(std::move(expectedElements)));
+         });
+
+    prop("copies are equal",
+         [] (const std::vector<int> &e1,
+             const std::vector<std::string> &e2,
+             const std::vector<double> &e3)
+         {
+             const auto mapper = [](int a, std::string b, double c) {
+                 return std::to_string(a) + b + std::to_string(c);
+             };
+             auto mapSeq = seq::map(mapper,
+                                    seq::fromContainer(e1),
+                                    seq::fromContainer(e2),
+                                    seq::fromContainer(e3));
+             assertEqualCopies(mapSeq);
+         });
+
+    prop("does not copy elements",
+         [] (std::vector<CopyGuard> e1, std::vector<CopyGuard> e2) {
+             const auto mapper = [](CopyGuard &&a, CopyGuard &&b) {
+                 return std::make_pair(std::move(a), std::move(b));
+             };
+             auto mapSeq = seq::map(mapper,
+                                    seq::fromContainer(std::move(e1)),
+                                    seq::fromContainer(std::move(e2)));
+             while (mapSeq.next());
+         });
+}

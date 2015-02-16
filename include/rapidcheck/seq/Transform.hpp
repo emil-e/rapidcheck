@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/detail/Meta.h"
+
 namespace rc {
 namespace seq {
 namespace detail {
@@ -117,6 +119,42 @@ private:
     Seq<T> m_seq;
 };
 
+bool allTrue() { return true; }
+
+template<typename T, typename ...Ts>
+bool allTrue(const T &arg, const Ts &...args)
+{ return arg && allTrue(args...); }
+
+template<typename Mapper, typename Indexes, typename ...Ts>
+class MapSeq;
+
+template<typename Mapper,
+         std::size_t ...Indexes,
+         typename ...Ts>
+class MapSeq<Mapper, ::rc::detail::IndexSequence<Indexes...>, Ts...>
+{
+public:
+    template<typename MapperArg>
+    MapSeq(MapperArg &&mapper, Seq<Ts> ...seqs)
+        : m_mapper(std::forward<MapperArg>(mapper))
+        , m_seqs(std::move(seqs)...) {}
+
+    Maybe<typename std::result_of<Mapper(Ts...)>::type> operator()()
+    {
+        std::tuple<Maybe<Ts>...> values(std::get<Indexes>(m_seqs).next()...);
+        if (!allTrue(std::get<Indexes>(values)...)) {
+            m_seqs = std::tuple<Seq<Ts>...>();
+            return Nothing;
+        }
+
+        return m_mapper(std::move(*std::get<Indexes>(values))...);
+    }
+
+private:
+    Mapper m_mapper;
+    std::tuple<Seq<Ts>...> m_seqs;
+};
+
 } // namespace detail
 
 template<typename T>
@@ -139,6 +177,15 @@ Seq<T> takeWhile(Predicate &&pred, Seq<T> seq)
 {
     return makeSeq<detail::TakeWhileSeq<Decay<Predicate>, T>>(
         std::forward<Predicate>(pred), std::move(seq));
+}
+
+template<typename Mapper, typename ...Ts>
+Seq<typename std::result_of<Mapper(Ts...)>::type>
+map(Mapper &&mapper, Seq<Ts> ...seqs)
+{
+    typedef ::rc::detail::MakeIndexSequence<sizeof...(Ts)> Indexes;
+    return makeSeq<detail::MapSeq<Decay<Mapper>, Indexes, Ts...>>(
+        std::forward<Mapper>(mapper), std::move(seqs)...);
 }
 
 } // namespace seq
