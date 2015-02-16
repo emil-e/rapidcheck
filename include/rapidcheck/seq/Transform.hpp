@@ -89,6 +89,34 @@ private:
     Seq<T> m_seq;
 };
 
+template<typename Predicate, typename T>
+class TakeWhileSeq
+{
+public:
+    template<typename PredArg>
+    TakeWhileSeq(PredArg &&pred, Seq<T> seq)
+        : m_pred(std::forward<PredArg>(pred))
+        , m_seq(std::move(seq)) {}
+
+    Maybe<T> operator()()
+    {
+        auto value = m_seq.next();
+        if (!value)
+            return Nothing;
+
+        if (!m_pred(*value)) {
+            m_seq = Seq<T>();
+            return Nothing;
+        }
+
+        return value;
+    }
+
+private:
+    Predicate m_pred;
+    Seq<T> m_seq;
+};
+
 } // namespace detail
 
 template<typename T>
@@ -103,6 +131,13 @@ template<typename Predicate, typename T>
 Seq<T> dropWhile(Predicate &&pred, Seq<T> seq)
 {
     return makeSeq<detail::DropWhileSeq<Decay<Predicate>, T>>(
+        std::forward<Predicate>(pred), std::move(seq));
+}
+
+template<typename Predicate, typename T>
+Seq<T> takeWhile(Predicate &&pred, Seq<T> seq)
+{
+    return makeSeq<detail::TakeWhileSeq<Decay<Predicate>, T>>(
         std::forward<Predicate>(pred), std::move(seq));
 }
 

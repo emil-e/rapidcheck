@@ -17,6 +17,10 @@ Seq<T> take(std::size_t n, Seq<T> seq);
 template<typename Predicate, typename T>
 Seq<T> dropWhile(Predicate &&pred, Seq<T> seq);
 
+//! Takes elements until there is an element which does not match the predicate.
+template<typename Predicate, typename T>
+Seq<T> takeWhile(Predicate &&pred, Seq<T> seq);
+
 } // namespace seq
 } // namespace rc
 
