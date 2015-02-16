@@ -81,6 +81,7 @@ Maybe<T>::operator bool() const { return m_initialized; }
 template<typename T>
 Maybe<T>::Maybe(const Maybe &other) noexcept(
     std::is_nothrow_copy_constructible<T>::value)
+    : m_initialized(false)
 {
     if (other.m_initialized)
         init(*other);
@@ -102,6 +103,7 @@ Maybe<T> &Maybe<T>::operator=(const Maybe &rhs) noexcept(
 template<typename T>
 Maybe<T>::Maybe(Maybe &&other) noexcept(
     std::is_nothrow_move_constructible<T>::value)
+    : m_initialized(false)
 {
     if (other.m_initialized)
         init(std::move(*other));
