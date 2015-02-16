@@ -3,11 +3,25 @@
 
 #include "rapidcheck/seq/Transform.h"
 #include "rapidcheck/seq/Create.h"
+#include "rapidcheck/seq/Operations.h"
 
 #include "util/CopyGuard.h"
 
 using namespace rc;
 using namespace rc::test;
+
+//! Forwards Seq a random amount and copies it to see if it is equal to the
+//! original.
+template<typename T>
+void assertEqualCopies(Seq<T> seq)
+{
+    std::size_t len = seq::length(seq);
+    std::size_t n = *gen::ranged<std::size_t>(0, len * 2);
+    while (n--)
+        seq.next();
+    const auto copy = seq;
+    RC_ASSERT(copy == seq);
+}
 
 TEST_CASE("seq::drop") {
     prop("drops the first N elements from the given seq",
@@ -22,13 +36,7 @@ TEST_CASE("seq::drop") {
     prop("copies are equal",
          [] (const std::vector<int> &elements) {
              std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
-             auto seq = seq::drop(n, seq::fromContainer(elements));
-             std::size_t nexts =
-                 *gen::ranged<std::size_t>(0, elements.size() * 2);
-             while (nexts--)
-                 seq.next();
-             const auto copy = seq;
-             RC_ASSERT(seq == copy);
+             assertEqualCopies(seq::drop(n, seq::fromContainer(elements)));
          });
 
     prop("does not copy items",
@@ -57,13 +65,7 @@ TEST_CASE("seq::take") {
          [] (const std::vector<int> &elements) {
              std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
              std::size_t start = std::min(elements.size(), n);
-             auto seq = seq::take(n, seq::fromContainer(elements));
-             std::size_t nexts =
-                 *gen::ranged<std::size_t>(0, elements.size() * 2);
-             while (nexts--)
-                 seq.next();
-             const auto copy = seq;
-             RC_ASSERT(seq == copy);
+             assertEqualCopies(seq::take(n, seq::fromContainer(elements)));
          });
 
     prop("does not copy items",
@@ -92,13 +94,7 @@ TEST_CASE("seq::dropWhile") {
     prop("copies are equal",
          [] (const std::vector<int> &elements, int limit) {
              const auto pred = [=](int x) { return x < limit; };
-             auto seq = seq::dropWhile(pred, seq::fromContainer(elements));
-             std::size_t nexts =
-                 *gen::ranged<std::size_t>(0, elements.size() * 2);
-             while (nexts--)
-                 seq.next();
-             const auto copy = seq;
-             RC_ASSERT(seq == copy);
+             assertEqualCopies(seq::dropWhile(pred, seq::fromContainer(elements)));
          });
 
     prop("does not copy items",
@@ -130,13 +126,7 @@ TEST_CASE("seq::takeWhile") {
     prop("copies are equal",
          [] (const std::vector<int> &elements, int limit) {
              const auto pred = [=](int x) { return x < limit; };
-             auto seq = seq::takeWhile(pred, seq::fromContainer(elements));
-             std::size_t nexts =
-                 *gen::ranged<std::size_t>(0, elements.size() * 2);
-             while (nexts--)
-                 seq.next();
-             const auto copy = seq;
-             RC_ASSERT(seq == copy);
+             assertEqualCopies(seq::takeWhile(pred, seq::fromContainer(elements)));
          });
 
     prop("does not copy items",
