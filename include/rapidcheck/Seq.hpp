@@ -88,4 +88,31 @@ template<typename A, typename B>
 bool operator!=(Seq<A> lhs, Seq<B> rhs)
 { return !(std::move(lhs) == std::move(rhs)); }
 
+template<typename T>
+std::ostream &operator<<(std::ostream &os, Seq<T> seq)
+{
+    os << "[";
+    int n = 1;
+    auto first = seq.next();
+    if (first) {
+        show(*first, os);
+        while (true) {
+            const auto value = seq.next();
+            if (!value)
+                break;
+
+            os << ", ";
+            // Don't print infinite sequences...
+            if (n++ >= 1000) {
+                os << "...";
+                break;
+            }
+
+            show(*value, os);
+        }
+    }
+    os << "]";
+    return os;
+}
+
 } // namespace rc
