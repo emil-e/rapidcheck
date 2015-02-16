@@ -13,6 +13,10 @@ Seq<T> drop(std::size_t n, Seq<T> seq);
 template<typename T>
 Seq<T> take(std::size_t n, Seq<T> seq);
 
+//! Drops all elements until the given predicate returns true.
+template<typename Predicate, typename T>
+Seq<T> dropWhile(Predicate &&pred, Seq<T> seq);
+
 } // namespace seq
 } // namespace rc
 

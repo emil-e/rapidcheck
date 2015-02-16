@@ -78,3 +78,33 @@ TEST_CASE("seq::take") {
         REQUIRE(seq::take(2, seq::just(1, 2, 3)) == seq::just(1, 2));
     }
 }
+
+TEST_CASE("seq::dropWhile") {
+    prop("drops all elements before the first element matching the predicate",
+         [] (const std::vector<int> &elements, int limit) {
+             const auto pred = [=](int x) { return x < limit; };
+             const auto it = std::find_if(begin(elements), end(elements),
+                                          [&](int x) { return !pred(x); });
+             RC_ASSERT(seq::dropWhile(pred, seq::fromContainer(elements)) ==
+                       seq::fromIteratorRange(it, end(elements)));
+         });
+
+    prop("copies are equal",
+         [] (const std::vector<int> &elements, int limit) {
+             const auto pred = [=](int x) { return x < limit; };
+             auto seq = seq::dropWhile(pred, seq::fromContainer(elements));
+             std::size_t nexts =
+                 *gen::ranged<std::size_t>(0, elements.size() * 2);
+             while (nexts--)
+                 seq.next();
+             const auto copy = seq;
+             RC_ASSERT(seq == copy);
+         });
+
+    prop("does not copy items",
+         [] (std::vector<CopyGuard> elements, int limit) {
+             const auto pred = [=](const CopyGuard &x) { return x < limit; };
+             auto seq = seq::dropWhile(pred, seq::fromContainer(std::move(elements)));
+             while (seq.next());
+         });
+}
