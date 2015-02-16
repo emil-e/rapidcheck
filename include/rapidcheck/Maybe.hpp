@@ -142,4 +142,14 @@ template<typename T, typename U>
 bool operator!=(const Maybe<T> &lhs, const Maybe<U> &rhs)
 { return !(lhs == rhs); }
 
+template<typename T>
+std::ostream &operator<<(std::ostream &os, const Maybe<T> &value)
+{
+    if (value)
+        show(*value, os);
+    else
+        os << "Nothing";
+    return os;
+}
+
 } // namespace rc

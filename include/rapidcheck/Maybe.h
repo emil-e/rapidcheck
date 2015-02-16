@@ -93,6 +93,9 @@ bool operator==(const Maybe<T> &lhs, const Maybe<U> &rhs);
 template<typename T, typename U>
 bool operator!=(const Maybe<T> &lhs, const Maybe<U> &rhs);
 
+template<typename T>
+std::ostream &operator<<(std::ostream &os, const Maybe<T> &value);
+
 } // namespace rc
 
 #include "Maybe.hpp"
