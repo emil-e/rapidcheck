@@ -35,4 +35,10 @@ TEST_CASE("seq::drop") {
              auto seq = seq::drop(n, seq::fromContainer(std::move(elements)));
              while (seq.next());
          });
+
+    SECTION("sanity check") {
+        REQUIRE(seq::drop(2, seq::just(1, 2, 3)) == seq::just(3));
+    }
+}
+
 }
