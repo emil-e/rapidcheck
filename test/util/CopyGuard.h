@@ -22,7 +22,7 @@ struct CopyGuard
     int value;
 };
 
-void showValue(CopyGuard value, std::ostream &os)
+static inline void showValue(CopyGuard value, std::ostream &os)
 { os << "[CopyGuard]"; }
 
 
