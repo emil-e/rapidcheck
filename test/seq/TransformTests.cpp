@@ -252,3 +252,48 @@ TEST_CASE("seq::filter") {
              while (seq.next());
          });
 }
+
+TEST_CASE("seq::join") {
+    auto subgen = gen::scale(0.25, gen::arbitrary<std::vector<int>>());
+    auto gen = gen::collection<std::vector<std::vector<int>>>(subgen);
+
+    prop("returns a seq with the elements of all seqs joined together",
+         [&] {
+             auto vectors = *gen;
+             auto seqs = seq::map([](std::vector<int> &&vec) {
+                 return seq::fromContainer(std::move(vec));
+             }, seq::fromContainer(vectors));
+
+             std::vector<int> expectedElements;
+             for (const auto &vec : vectors) {
+                 expectedElements.insert(expectedElements.end(),
+                                         begin(vec), end(vec));
+             }
+
+             RC_ASSERT(seq::join(seqs) == seq::fromContainer(expectedElements));
+         });
+
+    prop("copies are equal",
+         [&] {
+             auto vectors = *gen;
+             auto seqs = seq::map([](std::vector<int> &&vec) {
+                 return seq::fromContainer(std::move(vec));
+             }, seq::fromContainer(vectors));
+             assertEqualCopies(seq::join(seqs));
+         });
+
+    prop("does not copy elements",
+         [&] {
+             auto subguardgen =
+                 gen::scale(0.25, gen::arbitrary<std::vector<CopyGuard>>());
+             auto guardgen =
+                 gen::collection<std::vector<std::vector<CopyGuard>>>(
+                     subguardgen);
+             auto vectors = *guardgen;
+             auto seqs = seq::map([](std::vector<CopyGuard> &&vec) {
+                 return seq::fromContainer(std::move(vec));
+             }, seq::fromContainer(std::move(vectors)));
+             auto seq = seq::join(std::move(seqs));
+             while (seq.next());
+         });
+}

@@ -184,6 +184,38 @@ private:
     Seq<T> m_seq;
 };
 
+template<typename T>
+class JoinSeq
+{
+public:
+    JoinSeq(Seq<Seq<T>> seqs)
+        : m_seqs(std::move(seqs)) {}
+
+    Maybe<T> operator()()
+    {
+        while (true) {
+            auto value = m_seq.next();
+            if (value) {
+                return value;
+            }
+
+            // Otherwise, next Seq
+            auto seq = m_seqs.next();
+            if (!seq) {
+                m_seq = Seq<T>();
+                m_seqs = Seq<Seq<T>>();
+                return Nothing;
+            }
+
+            m_seq = std::move(*seq);
+        }
+    }
+
+private:
+    Seq<T> m_seq;
+    Seq<Seq<T>> m_seqs;
+};
+
 } // namespace detail
 
 template<typename T>
@@ -231,6 +263,10 @@ Seq<T> filter(Predicate &&pred, Seq<T> seq)
     return makeSeq<detail::FilterSeq<Decay<Predicate>, T>>(
         std::forward<Predicate>(pred), std::move(seq));
 }
+
+template<typename T>
+Seq<T> join(Seq<Seq<T>> seqs)
+{ return makeSeq<detail::JoinSeq<T>>(std::move(seqs)); }
 
 } // namespace seq
 } // namespace rc

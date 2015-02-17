@@ -37,6 +37,10 @@ map(Mapper &&mapper, Seq<Ts> ...seqs);
 template<typename Predicate, typename T>
 Seq<T> filter(Predicate &&pred, Seq<T> seq);
 
+//! Takes `Seq<Seq<T>>` and joins them together into a `Seq<T>`.
+template<typename T>
+Seq<T> join(Seq<Seq<T>> seqs);
+
 } // namespace seq
 } // namespace rc
 
