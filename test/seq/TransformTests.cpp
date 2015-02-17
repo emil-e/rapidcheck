@@ -336,3 +336,26 @@ TEST_CASE("seq::concat") {
              while (seq.next());
          });
 }
+
+TEST_CASE("seq::cycle") {
+    prop("returns an infinite cycle of the given Seq",
+         [] {
+             auto elements = *gen::suchThat<std::vector<int>>(
+                 [](const std::vector<int> &x) { return !x.empty(); });
+             auto seq = seq::cycle(seq::fromContainer(elements));
+             auto it = begin(elements);
+             for (int i = 0; i < 2000; i++) {
+                 RC_ASSERT(*seq.next() == *it++);
+                 if (it == end(elements))
+                     it = begin(elements);
+             }
+         });
+
+    prop("copies are equal",
+         [] {
+             auto elements = *gen::suchThat<std::vector<int>>(
+                 [](const std::vector<int> &x) { return !x.empty(); });
+             auto seq = seq::cycle(seq::fromContainer(elements));
+             assertEqualCopies(seq::take(1000, std::move(seq)));
+         });
+}

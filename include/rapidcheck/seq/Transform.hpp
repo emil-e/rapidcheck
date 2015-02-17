@@ -273,5 +273,9 @@ template<typename T, typename ...Ts>
 Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs)
 { return seq::join(seq::just(std::move(seq), std::move(seqs)...)); }
 
+template<typename T>
+Seq<T> cycle(Seq<T> seq)
+{ return seq::join<T>([=]{ return seq; }); }
+
 } // namespace seq
 } // namespace rc

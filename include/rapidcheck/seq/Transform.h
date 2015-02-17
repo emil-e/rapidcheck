@@ -45,6 +45,10 @@ Seq<T> join(Seq<Seq<T>> seqs);
 template<typename T, typename ...Ts>
 Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs);
 
+//! Creates a `Seq` which infinitely repeats the given `Seq`.
+template<typename T>
+Seq<T> cycle(Seq<T> seq);
+
 } // namespace seq
 } // namespace rc
 
