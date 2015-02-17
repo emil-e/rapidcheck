@@ -119,7 +119,7 @@ private:
     Seq<T> m_seq;
 };
 
-bool allTrue() { return true; }
+static inline bool allTrue() { return true; }
 
 template<typename T, typename ...Ts>
 bool allTrue(const T &arg, const Ts &...args)
@@ -153,6 +153,35 @@ public:
 private:
     Mapper m_mapper;
     std::tuple<Seq<Ts>...> m_seqs;
+};
+
+template<typename Predicate, typename T>
+class FilterSeq
+{
+public:
+    template<typename PredArg>
+    FilterSeq(PredArg predicate, Seq<T> seq)
+        : m_predicate(std::forward<PredArg>(predicate))
+        , m_seq(std::move(seq)) {}
+
+    Maybe<T> operator()()
+    {
+        while (true) {
+            auto value = m_seq.next();
+
+            if (!value) {
+                m_seq = Seq<T>();
+                return Nothing;
+            }
+
+            if (m_predicate(*value))
+                return value;
+        }
+    }
+
+private:
+    Predicate m_predicate;
+    Seq<T> m_seq;
 };
 
 } // namespace detail
@@ -194,6 +223,13 @@ map(Mapper &&mapper, Seq<Ts> ...seqs)
     typedef ::rc::detail::MakeIndexSequence<sizeof...(Ts)> Indexes;
     return makeSeq<detail::MapSeq<Decay<Mapper>, Indexes, Ts...>>(
         std::forward<Mapper>(mapper), std::move(seqs)...);
+}
+
+template<typename Predicate, typename T>
+Seq<T> filter(Predicate &&pred, Seq<T> seq)
+{
+    return makeSeq<detail::FilterSeq<Decay<Predicate>, T>>(
+        std::forward<Predicate>(pred), std::move(seq));
 }
 
 } // namespace seq

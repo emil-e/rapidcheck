@@ -5,23 +5,11 @@
 #include "rapidcheck/seq/Create.h"
 #include "rapidcheck/seq/Operations.h"
 
+#include "util/SeqUtils.h"
 #include "util/CopyGuard.h"
 
 using namespace rc;
 using namespace rc::test;
-
-//! Forwards Seq a random amount and copies it to see if it is equal to the
-//! original.
-template<typename T>
-void assertEqualCopies(Seq<T> seq)
-{
-    std::size_t len = seq::length(seq);
-    std::size_t n = *gen::ranged<std::size_t>(0, len * 2);
-    while (n--)
-        seq.next();
-    const auto copy = seq;
-    RC_ASSERT(copy == seq);
-}
 
 TEST_CASE("seq::drop") {
     prop("drops the first N elements from the given seq",
@@ -149,7 +137,7 @@ TEST_CASE("seq::map") {
     prop("works with no sequences",
          [] (int x) {
              std::size_t n = *gen::ranged<std::size_t>(0, 1000);
-             const auto mapper = [=] { return x; };
+             const auto mapper = [=]{ return x; };
              auto mapSeq = seq::take(n, seq::map(mapper));
              for (std::size_t i = 0; i < n; i++)
                  RC_ASSERT(*mapSeq.next() == x);
@@ -230,5 +218,37 @@ TEST_CASE("seq::map") {
                                     seq::fromContainer(std::move(e1)),
                                     seq::fromContainer(std::move(e2)));
              while (mapSeq.next());
+         });
+}
+
+TEST_CASE("seq::filter") {
+    prop("returns a seq with only the elements not matching the predicate"
+         " removed",
+         [] (const std::vector<int> &elements, int limit) {
+             const auto pred = [=](int x) { return x < limit; };
+             std::vector<int> expectedElements;
+             std::copy_if(begin(elements), end(elements),
+                          std::back_inserter(expectedElements),
+                          pred);
+
+             RC_ASSERT(seq::filter(pred, seq::fromContainer(elements)) ==
+                       seq::fromContainer(std::move(expectedElements)));
+         });
+
+    prop("copies are equal",
+         [] (const std::vector<int> &elements, int limit) {
+             const auto pred = [=](int x) { return x < limit; };
+             std::vector<int> expectedElements;
+             std::copy_if(begin(elements), end(elements),
+                          std::back_inserter(expectedElements),
+                          pred);
+             assertEqualCopies(seq::filter(pred, seq::fromContainer(elements)));
+         });
+
+    prop("does not copy elements",
+         [] (std::vector<CopyGuard> elements, int limit) {
+             const auto pred = [=](const CopyGuard &x) { return x.value < limit; };
+             auto seq = seq::filter(pred, seq::fromContainer(std::move(elements)));
+             while (seq.next());
          });
 }

@@ -33,6 +33,10 @@ template<typename Mapper, typename ...Ts>
 Seq<typename std::result_of<Mapper(Ts...)>::type>
 map(Mapper &&mapper, Seq<Ts> ...seqs);
 
+//! Skips elements not matching the given predicate from the given stream.
+template<typename Predicate, typename T>
+Seq<T> filter(Predicate &&pred, Seq<T> seq);
+
 } // namespace seq
 } // namespace rc
 
