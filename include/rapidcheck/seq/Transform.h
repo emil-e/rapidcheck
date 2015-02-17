@@ -41,6 +41,10 @@ Seq<T> filter(Predicate &&pred, Seq<T> seq);
 template<typename T>
 Seq<T> join(Seq<Seq<T>> seqs);
 
+//! Concatenates the given `Seq`s.
+template<typename T, typename ...Ts>
+Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs);
+
 } // namespace seq
 } // namespace rc
 

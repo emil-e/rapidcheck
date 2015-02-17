@@ -297,3 +297,42 @@ TEST_CASE("seq::join") {
              while (seq.next());
          });
 }
+
+TEST_CASE("seq::concat") {
+    prop("joins the given sequences together",
+         [] (const std::vector<int> &a,
+             const std::vector<int> &b,
+             const std::vector<int> &c)
+         {
+             std::vector<int> expectedElements;
+             expectedElements.insert(end(expectedElements), begin(a), end(a));
+             expectedElements.insert(end(expectedElements), begin(b), end(b));
+             expectedElements.insert(end(expectedElements), begin(c), end(c));
+
+             RC_ASSERT(seq::concat(seq::fromContainer(a),
+                                   seq::fromContainer(b),
+                                   seq::fromContainer(c)) ==
+                       seq::fromContainer(expectedElements));
+         });
+
+    prop("copies are equal",
+         [] (const std::vector<int> &a,
+             const std::vector<int> &b,
+             const std::vector<int> &c)
+         {
+             assertEqualCopies(seq::concat(seq::fromContainer(a),
+                                           seq::fromContainer(b),
+                                           seq::fromContainer(c)));
+         });
+
+    prop("does not copy elements",
+         [] (std::vector<CopyGuard> a,
+             std::vector<CopyGuard> b,
+             std::vector<CopyGuard> c)
+         {
+             auto seq = seq::concat(seq::fromContainer(std::move(a)),
+                                    seq::fromContainer(std::move(b)),
+                                    seq::fromContainer(std::move(c)));
+             while (seq.next());
+         });
+}

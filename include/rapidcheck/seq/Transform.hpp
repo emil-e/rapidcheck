@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/detail/Meta.h"
+#include "rapidcheck/seq/Create.h"
 
 namespace rc {
 namespace seq {
@@ -267,6 +268,10 @@ Seq<T> filter(Predicate &&pred, Seq<T> seq)
 template<typename T>
 Seq<T> join(Seq<Seq<T>> seqs)
 { return makeSeq<detail::JoinSeq<T>>(std::move(seqs)); }
+
+template<typename T, typename ...Ts>
+Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs)
+{ return seq::join(seq::just(std::move(seq), std::move(seqs)...)); }
 
 } // namespace seq
 } // namespace rc
