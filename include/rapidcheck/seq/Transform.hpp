@@ -159,11 +159,19 @@ private:
 
 template<typename T>
 Seq<T> drop(std::size_t n, Seq<T> seq)
-{ return makeSeq<detail::DropSeq<T>>(n, std::move(seq)); }
+{
+    if (n == 0)
+        return seq;
+    return makeSeq<detail::DropSeq<T>>(n, std::move(seq));
+}
 
 template<typename T>
 Seq<T> take(std::size_t n, Seq<T> seq)
-{ return makeSeq<detail::TakeSeq<T>>(n, std::move(seq)); }
+{
+    if (n == 0)
+        return Seq<T>();
+    return makeSeq<detail::TakeSeq<T>>(n, std::move(seq));
+}
 
 template<typename Predicate, typename T>
 Seq<T> dropWhile(Predicate &&pred, Seq<T> seq)
