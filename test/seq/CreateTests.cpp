@@ -1,12 +1,14 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include "rapidcheck/seq/Create.h"
+#include "rapidcheck/seq/Transform.h"
+
 #include "util/CopyGuard.h"
 #include "util/Meta.h"
 #include "util/Util.h"
 #include "util/TypeListMacros.h"
-
-#include "rapidcheck/seq/Create.h"
+#include "util/SeqUtils.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -36,9 +38,7 @@ TEST_CASE("seq::just") {
              const std::string &b,
              const std::string &c)
          {
-             auto seq = seq::just(a, b, c);
-             auto copy = seq;
-             RC_ASSERT(seq == copy);
+             assertEqualCopies(seq::just(a, b, c));
          });
 }
 
@@ -61,9 +61,7 @@ struct FromContainerTests
         templatedProp<T>(
             "copies are equal",
             [](const T &elements) {
-                auto seq = seq::fromContainer(elements);
-                auto copy = seq;
-                RC_ASSERT(seq == copy);
+                assertEqualCopies(seq::fromContainer(elements));
             });
     }
 };
@@ -120,5 +118,11 @@ TEST_CASE("seq::iterate") {
                  RC_ASSERT(*seq.next() == x);
                  x = func(x);
              }
+         });
+
+    prop("copies are equal",
+         [](int start, int inc) {
+             const auto func = [=](int x) { return x + inc; };
+             assertEqualCopies(seq::take(1000, seq::iterate(start, func)));
          });
 }
