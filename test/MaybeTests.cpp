@@ -7,6 +7,7 @@
 #include "util/TemplateProps.h"
 #include "util/Generators.h"
 #include "util/AppleOrange.h"
+#include "util/DestructNotifier.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -276,34 +277,46 @@ TEST_CASE("Maybe") {
     }
 
     SECTION("init") {
-        Maybe<Logger> maybe;
-        maybe.init("foobar");
 
-        SECTION("initializes object") {
-            REQUIRE(maybe);
+        SECTION("if not initialized") {
+            Maybe<Logger> maybe;
+            maybe.init("foobar");
+
+            SECTION("initializes object") {
+                REQUIRE(maybe);
+            }
+
+            SECTION("constructs value in place") {
+                maybe->requireExact("constructed as foobar");
+            }
         }
 
-        SECTION("constructs value in place") {
-            maybe->requireExact("constructed as foobar");
+        SECTION("if already initialized") {
+            std::vector<std::string> log;
+            Maybe<DestructNotifier> maybe(DestructNotifier("foobar", &log));
+            maybe.init("foobaz", &log);
+
+            SECTION("gets initialized with new value") {
+                REQUIRE(maybe);
+                REQUIRE(maybe->id() == "foobaz");
+            }
+            SECTION("calls the destructor of the old value") {
+                REQUIRE(log == std::vector<std::string>{"foobar"});
+            }
         }
     }
 
     SECTION("reset") {
         SECTION("if initialized") {
-            bool destructorCalled = false;
-            const auto deleter = [&](void *p) {
-                delete static_cast<int *>(p);
-                destructorCalled = true;
-            };
-            std::unique_ptr<int, decltype(deleter)> ptr(new int(1337), deleter);
-            Maybe<decltype(ptr)> maybe(std::move(ptr));
+            std::vector<std::string> log;
+            Maybe<DestructNotifier> maybe(DestructNotifier("foobar", &log));
             maybe.reset();
 
-            SECTION("deinitializes object if it is initialized") {
+            SECTION("deinitializes object") {
                 REQUIRE_FALSE(maybe);
             }
             SECTION("calls the destructor of the value object") {
-                REQUIRE(destructorCalled);
+                REQUIRE(log == std::vector<std::string>{"foobar"});
             }
         }
 
@@ -323,18 +336,14 @@ TEST_CASE("Maybe") {
 
     SECTION("destructor") {
         SECTION("calls value destructor if initialized") {
-            bool destructorCalled = false;
-            const auto deleter = [&](void *p) {
-                delete static_cast<int *>(p);
-                destructorCalled = true;
-            };
-            std::unique_ptr<int, decltype(deleter)> ptr(new int(1337), deleter);
+            std::vector<std::string> log;
 
             {
-                Maybe<decltype(ptr)> maybe(std::move(ptr));
+                Maybe<DestructNotifier> maybe;
+                maybe.init("foobar", &log);
             }
 
-            REQUIRE(destructorCalled);
+            REQUIRE(log == std::vector<std::string>{"foobar"});
         }
     }
 

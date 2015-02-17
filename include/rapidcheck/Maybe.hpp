@@ -10,10 +10,12 @@ template<typename T>
 Maybe<T>::Maybe(NothingType) noexcept : Maybe() {}
 
 template<typename T>
-Maybe<T>::Maybe(const T &value) { init(value); }
+Maybe<T>::Maybe(const T &value) : m_initialized(false)
+{ init(value); }
 
 template<typename T>
-Maybe<T>::Maybe(T &&value) { init(std::move(value)); }
+Maybe<T>::Maybe(T &&value) : m_initialized(false)
+{ init(std::move(value)); }
 
 template<typename T>
 Maybe<T> &Maybe<T>::operator=(const T &value)
@@ -46,6 +48,7 @@ template<typename T>
 template<typename ...Args>
 void Maybe<T>::init(Args &&...args)
 {
+    reset();
     new (&m_storage) T(std::forward<Args>(args)...);
     m_initialized = true;
 }

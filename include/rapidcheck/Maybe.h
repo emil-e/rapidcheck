@@ -43,7 +43,9 @@ public:
     Maybe &operator=(NothingType);
 
     //! Initializes this `Maybe` with an in-place constructed value that gets
-    //! forwarded the given arguments.
+    //! forwarded the given arguments. If this `Maybe` is already initialized,
+    //! old value gets destroyed. If the constructor of the new value throws an
+    //! exception, this `Maybe` will be uninitialized on return.
     template<typename ...Args>
     void init(Args &&...args);
 
