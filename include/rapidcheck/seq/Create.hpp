@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/seq/Transform.h"
+
 namespace rc {
 namespace seq {
 namespace detail {
@@ -146,6 +148,24 @@ Seq<Decay<T>> iterate(T &&x, Callable &&f)
     return makeSeq<detail::IterateSeq<Decay<T>, Decay<Callable>>>(
         std::forward<T>(x),
         std::forward<Callable>(f));
+}
+
+template<typename T>
+Seq<T> range(T start, T end)
+{
+    if (start == end)
+        return Seq<T>();
+
+    return seq::takeWhile(
+        [=](T x) { return x != end; },
+        (start < end) ? seq::iterate(start, [](int x) { return ++x; })
+                      : seq::iterate(start, [](int x) { return --x; }));
+}
+
+Seq<std::size_t> index()
+{
+    return seq::iterate(static_cast<std::size_t>(0),
+                        [](std::size_t i) { return i + 1; });
 }
 
 } // namespace seq

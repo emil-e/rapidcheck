@@ -148,3 +148,43 @@ TEST_CASE("seq::iterate") {
              assertEqualCopies(seq::take(1000, seq::iterate(start, func)));
          });
 }
+
+
+TEST_CASE("seq::range") {
+    auto smallInt = gen::scale(0.25, gen::arbitrary<int>());
+
+    prop("returns a sequence from start to end",
+         [&]{
+             int start = *smallInt;
+             int end = *smallInt;
+
+             auto seq = seq::range(start, end);
+             int inc = (start < end) ? 1 : -1;
+             int i = start;
+             while (i != end) {
+                 auto x = seq.next();
+                 RC_ASSERT(x);
+                 RC_ASSERT(*x == i);
+                 i += inc;
+             }
+             RC_ASSERT(!seq.next());
+         });
+
+    prop("copies are equal",
+         [&]{ assertEqualCopies(seq::range(*smallInt, *smallInt)); });
+}
+
+TEST_CASE("seq::index") {
+    prop("returns an infinite sequence of increasing indexes from 0",
+         []{
+             auto seq = seq::index();
+             for (std::size_t i = 0; i < 2000; i++) {
+                 auto x = seq.next();
+                 RC_ASSERT(x);
+                 RC_ASSERT(*x == i);
+             }
+         });
+
+    prop("copies are equal",
+         []{ assertEqualCopies(seq::take(2000, seq::index())); });
+}

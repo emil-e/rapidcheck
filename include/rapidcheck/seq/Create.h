@@ -29,6 +29,15 @@ fromIteratorRange(Iterator start, Iterator end);
 template<typename T, typename Callable>
 Seq<Decay<T>> iterate(T &&x, Callable &&f);
 
+//! Returns a `Seq` of the range of values `[start, end)`. `T` must support
+//! prefix increment, prefix decrement, `operator<` and `operator==`. `start`
+//! may be greater than `end`.
+template<typename T>
+Seq<T> range(T start, T end);
+
+//! Returns a sequence of indexes starting from `0` and increasing.
+static inline Seq<std::size_t> index();
+
 } // namespace seq
 } // namespace rc
 
