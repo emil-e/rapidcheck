@@ -351,6 +351,13 @@ TEST_CASE("seq::cycle") {
              }
          });
 
+    prop("does not copy Seq on construction",
+         [] {
+             auto elements = *gen::suchThat<std::vector<CopyGuard>>(
+                 [](const std::vector<CopyGuard> &x) { return !x.empty(); });
+             auto seq = seq::cycle(seq::fromContainer(std::move(elements)));
+         });
+
     prop("copies are equal",
          [] {
              auto elements = *gen::suchThat<std::vector<int>>(
