@@ -4,6 +4,20 @@ namespace rc {
 namespace seq {
 namespace detail {
 
+template<typename T>
+class RepeatSeq
+{
+public:
+    template<typename Arg>
+    RepeatSeq(Arg &&arg) : m_value(std::forward<Arg>(arg)) {}
+
+    Maybe<T> operator()()
+    { return m_value; }
+
+private:
+    T m_value;
+};
+
 template<typename T, int N>
 class JustSeq
 {
@@ -91,6 +105,10 @@ private:
 };
 
 } // namespace detail
+
+template<typename T>
+Seq<Decay<T>> repeat(T &&value)
+{ return makeSeq<detail::RepeatSeq<Decay<T>>>(std::forward<T>(value)); }
 
 template<typename T, typename ...Ts>
 Seq<Decay<T>> just(T &&value, Ts &&...values)

@@ -13,6 +13,28 @@
 using namespace rc;
 using namespace rc::test;
 
+TEST_CASE("seq::repeat") {
+    prop("repeatedly returns the given value",
+         [](const std::string &value) {
+             auto seq = seq::repeat(value);
+             for (int i = 0; i < 2000; i++) {
+                 auto x = seq.next();
+                 RC_ASSERT(x);
+                 RC_ASSERT(*x == value);
+             }
+         });
+
+    prop("copies are equal",
+         [](const std::string &value) {
+             assertEqualCopies(seq::take(200, seq::repeat(value)));
+         });
+
+    prop("does not copy value on construction",
+         [](CopyGuard guard) {
+             auto seq = seq::repeat(std::move(guard));
+         });
+}
+
 TEST_CASE("seq::just") {
     SECTION("does not copy values") {
         auto seq = seq::just(CopyGuard(), CopyGuard(), CopyGuard());

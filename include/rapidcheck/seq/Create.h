@@ -5,6 +5,11 @@
 namespace rc {
 namespace seq {
 
+//! Returns a `Seq` which repeatedly yields the given value in an infinite
+//! sequence.
+template<typename T>
+Seq<Decay<T>> repeat(T &&value);
+
 //! Returns a `Seq` which returns just the given values.
 template<typename T, typename ...Ts>
 Seq<Decay<T>> just(T &&value, Ts &&...values);
