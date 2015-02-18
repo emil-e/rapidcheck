@@ -273,6 +273,11 @@ template<typename T, typename ...Ts>
 Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs)
 { return seq::join(seq::just(std::move(seq), std::move(seqs)...)); }
 
+template<typename ...Ts, typename Mapper>
+Seq<typename std::result_of<Mapper(Ts...)>::type::ValueType>
+mapcat(Mapper &&mapper, Seq<Ts> ...seqs)
+{ return seq::join(seq::map(std::forward<Mapper>(mapper), std::move(seqs)...)); }
+
 template<typename T>
 Seq<T> cycle(Seq<T> seq) { return seq::join(seq::repeat(std::move(seq))); }
 

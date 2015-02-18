@@ -337,6 +337,27 @@ TEST_CASE("seq::concat") {
          });
 }
 
+TEST_CASE("seq::mapcat") {
+    prop("equivalent to seq::join(seq::map(...))",
+         [](std::vector<int> c1, std::vector<int> c2) {
+             auto seq1 = seq::fromContainer(std::move(c1));
+             auto seq2 = seq::fromContainer(std::move(c2));
+             auto mapper = [](int &&a, int &&b) { return seq::just(a, b); };
+
+             RC_ASSERT(seq::mapcat(mapper, seq1, seq2) ==
+                       seq::join(seq::map(mapper, seq1, seq2)));
+         });
+
+    prop("copies are equal",
+         [](std::vector<int> c1, std::vector<int> c2) {
+             auto seq1 = seq::fromContainer(std::move(c1));
+             auto seq2 = seq::fromContainer(std::move(c2));
+             auto mapper = [](int &&a, int &&b) { return seq::just(a, b); };
+
+             assertEqualCopies(seq::mapcat(mapper, seq1, seq2));
+         });
+}
+
 TEST_CASE("seq::cycle") {
     prop("returns an infinite cycle of the given Seq",
          [] {

@@ -45,6 +45,11 @@ Seq<T> join(Seq<Seq<T>> seqs);
 template<typename T, typename ...Ts>
 Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs);
 
+//! Maps the elements to `Seq`s and concatenates them into one `Seq`.
+template<typename ...Ts, typename Mapper>
+Seq<typename std::result_of<Mapper(Ts...)>::type::ValueType>
+mapcat(Mapper &&mapper, Seq<Ts> ...seqs);
+
 //! Creates a `Seq` which infinitely repeats the given `Seq`.
 template<typename T>
 Seq<T> cycle(Seq<T> seq);
