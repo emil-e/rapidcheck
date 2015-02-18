@@ -14,11 +14,11 @@ template<typename T>
 Seq<T> take(std::size_t n, Seq<T> seq);
 
 //! Drops all elements until the given predicate returns true.
-template<typename Predicate, typename T>
+template<typename T, typename Predicate>
 Seq<T> dropWhile(Predicate &&pred, Seq<T> seq);
 
 //! Takes elements until there is an element which does not match the predicate.
-template<typename Predicate, typename T>
+template<typename T, typename Predicate>
 Seq<T> takeWhile(Predicate &&pred, Seq<T> seq);
 
 //! Takes elements from the given `Seq`s and passes them as arguments to the
@@ -29,12 +29,12 @@ Seq<T> takeWhile(Predicate &&pred, Seq<T> seq);
 //!
 //! Fun fact: Also works with no sequences and in that case returns an infinite
 //! sequence of the return values of calling the given callable.
-template<typename Mapper, typename ...Ts>
+template<typename ...Ts, typename Mapper>
 Seq<typename std::result_of<Mapper(Ts...)>::type>
 map(Mapper &&mapper, Seq<Ts> ...seqs);
 
 //! Skips elements not matching the given predicate from the given stream.
-template<typename Predicate, typename T>
+template<typename T, typename Predicate>
 Seq<T> filter(Predicate &&pred, Seq<T> seq);
 
 //! Takes `Seq<Seq<T>>` and joins them together into a `Seq<T>`.

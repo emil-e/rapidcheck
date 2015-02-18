@@ -235,21 +235,21 @@ Seq<T> take(std::size_t n, Seq<T> seq)
     return makeSeq<detail::TakeSeq<T>>(n, std::move(seq));
 }
 
-template<typename Predicate, typename T>
+template<typename T, typename Predicate>
 Seq<T> dropWhile(Predicate &&pred, Seq<T> seq)
 {
     return makeSeq<detail::DropWhileSeq<Decay<Predicate>, T>>(
         std::forward<Predicate>(pred), std::move(seq));
 }
 
-template<typename Predicate, typename T>
+template<typename T, typename Predicate>
 Seq<T> takeWhile(Predicate &&pred, Seq<T> seq)
 {
     return makeSeq<detail::TakeWhileSeq<Decay<Predicate>, T>>(
         std::forward<Predicate>(pred), std::move(seq));
 }
 
-template<typename Mapper, typename ...Ts>
+template<typename ...Ts, typename Mapper>
 Seq<typename std::result_of<Mapper(Ts...)>::type>
 map(Mapper &&mapper, Seq<Ts> ...seqs)
 {
@@ -258,7 +258,7 @@ map(Mapper &&mapper, Seq<Ts> ...seqs)
         std::forward<Mapper>(mapper), std::move(seqs)...);
 }
 
-template<typename Predicate, typename T>
+template<typename T, typename Predicate>
 Seq<T> filter(Predicate &&pred, Seq<T> seq)
 {
     return makeSeq<detail::FilterSeq<Decay<Predicate>, T>>(
