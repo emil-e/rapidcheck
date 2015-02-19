@@ -32,6 +32,7 @@ add_executable(rapidcheck_tests
   seq/CreateTests.cpp
   seq/OperationsTests.cpp
   seq/TransformTests.cpp
+  shrink/NewShrinkTests.cpp
   state/StateTests.cpp
   )
 
