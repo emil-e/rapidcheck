@@ -21,7 +21,7 @@ public:
 
     Maybe<T> next() override { return m_impl(); }
 
-    std::unique_ptr<ISeqImpl> copy() const
+    std::unique_ptr<ISeqImpl> copy() const override
     { return std::unique_ptr<ISeqImpl>(new SeqImpl(*this)); }
 
 private:

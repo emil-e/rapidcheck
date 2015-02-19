@@ -14,7 +14,7 @@ class Nothing : public Iterator<T>
 {
 public:
     bool hasNext() const override { return false; }
-    T next() { for (;;); } // Should never happen
+    T next() override { for (;;); } // Should never happen
 };
 
 template<typename Container>
