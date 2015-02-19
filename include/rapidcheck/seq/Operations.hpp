@@ -18,7 +18,7 @@ void forEach(Seq<T> seq, Callable callable)
 {
     Maybe<T> value;
     while ((value = seq.next()))
-        callable(*value);
+        callable(std::move(*value));
 }
 
 } // namespace seq
