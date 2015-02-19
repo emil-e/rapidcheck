@@ -13,6 +13,15 @@ std::size_t length(Seq<T> seq);
 template<typename T, typename Callable>
 void forEach(Seq<T> seq, Callable callable);
 
+//! Returns the last value of the given `Seq` or an uninitialized `Maybe` if the
+//! given `Seq` is empty.
+template<typename T>
+Maybe<T> last(Seq<T> seq);
+
+//! Returns true if the given `Seq` contains the given element.
+template<typename T>
+bool contains(Seq<T> seq, const T &value);
+
 } // namespace seq
 } // namespace rc
 
