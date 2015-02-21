@@ -387,3 +387,24 @@ TEST_CASE("seq::cycle") {
              assertEqualCopies(seq::take(1000, std::move(seq)));
          });
 }
+
+TEST_CASE("seq::cast") {
+    prop("returns Seq is equal to original seq except for type",
+         [](const std::vector<uint8_t> &elements) {
+             auto seq = seq::fromContainer(elements);
+             RC_ASSERT(seq::cast<int>(seq) == seq);
+         });
+
+    prop("copies are equal",
+         [](const std::vector<uint8_t> &elements) {
+             assertEqualCopies(
+                 seq::cast<int>(seq::fromContainer(elements)));
+         });
+
+    prop("does not copy elements",
+         [](std::vector<CopyGuard> elements) {
+             auto seq = seq::cast<CopyGuard>(
+                 seq::fromContainer(std::move(elements)));
+             while (seq.next());
+         });
+}

@@ -35,10 +35,10 @@ TEST_CASE("Seq") {
 
     SECTION("calls operator()() of the implementation object") {
         bool nextCalled = false;
-        Seq<int> seq = [&]{
+        Seq<int> seq = Seq<int>([&]{
             nextCalled = true;
             return Maybe<int>(1337);
-        };
+        });
 
         REQUIRE(*seq.next() == 1337);
         REQUIRE(nextCalled);

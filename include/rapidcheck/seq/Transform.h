@@ -54,6 +54,11 @@ mapcat(Mapper &&mapper, Seq<Ts> ...seqs);
 template<typename T>
 Seq<T> cycle(Seq<T> seq);
 
+//! Returns a `Seq` where each value of the given `Seq` is cast to the given
+//! type using `static_cast`.
+template<typename T, typename U>
+Seq<T> cast(Seq<U> seq);
+
 } // namespace seq
 } // namespace rc
 

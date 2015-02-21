@@ -281,5 +281,13 @@ mapcat(Mapper &&mapper, Seq<Ts> ...seqs)
 template<typename T>
 Seq<T> cycle(Seq<T> seq) { return seq::join(seq::repeat(std::move(seq))); }
 
+template<typename T, typename U>
+Seq<T> cast(Seq<U> seq)
+{
+    return seq::map(
+        [](U &&x) { return static_cast<T>(std::move(x)); },
+        std::move(seq));
+}
+
 } // namespace seq
 } // namespace rc
