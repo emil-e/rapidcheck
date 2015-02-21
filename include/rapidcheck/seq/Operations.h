@@ -14,7 +14,7 @@ template<typename T, typename Callable>
 void forEach(Seq<T> seq, Callable callable);
 
 //! Returns the last value of the given `Seq` or an uninitialized `Maybe` if the
-//! given `Seq` is empty.
+//! given `Seq` is empty. This is an O(n) operation.
 template<typename T>
 Maybe<T> last(Seq<T> seq);
 
