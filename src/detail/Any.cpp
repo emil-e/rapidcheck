@@ -42,5 +42,12 @@ Any::operator bool() const { return static_cast<bool>(m_impl); }
 
 bool Any::isCopyable() const { return !m_impl || m_impl->isCopyable(); }
 
+std::ostream &operator<<(std::ostream &os, const Any &value)
+{
+    auto desc = value.describe();
+    os << desc.second << " (" << desc.first << ")";
+    return os;
+}
+
 } // namespace detail
 } // namespace rc

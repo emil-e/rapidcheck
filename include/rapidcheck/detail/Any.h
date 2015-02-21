@@ -63,6 +63,8 @@ private:
     std::unique_ptr<AbstractAnyImpl> m_impl;
 };
 
+std::ostream &operator<<(std::ostream &os, const Any &value);
+
 } // namespace detail
 } // namespace rc
 
