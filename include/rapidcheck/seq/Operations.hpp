@@ -47,5 +47,17 @@ bool contains(Seq<T> seq, const T &value)
     return false;
 }
 
+template<typename T, typename Predicate>
+bool all(Seq<T> seq, Predicate pred)
+{
+    Maybe<T> x;
+    while ((x = seq.next())) {
+        if (!pred(*x))
+            return false;
+    }
+
+    return true;
+}
+
 } // namespace seq
 } // namespace rc

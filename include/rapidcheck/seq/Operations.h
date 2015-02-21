@@ -22,6 +22,11 @@ Maybe<T> last(Seq<T> seq);
 template<typename T>
 bool contains(Seq<T> seq, const T &value);
 
+//! Returns true if the given predicate matches all elements of the given finite
+//! `Seq`.
+template<typename T, typename Predicate>
+bool all(Seq<T> seq, Predicate pred);
+
 } // namespace seq
 } // namespace rc
 

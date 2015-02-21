@@ -60,3 +60,23 @@ TEST_CASE("seq::contains") {
              RC_ASSERT(seq::contains(seq::fromContainer(elements), value));
          });
 }
+
+TEST_CASE("seq::all") {
+    prop("returns true if all elements match predicate",
+         [] (int value) {
+             int n = *gen::ranged<std::size_t>(0, 200);
+             auto seq = seq::take(n, seq::repeat(value));
+             RC_ASSERT(seq::all(seq, [=](int x) { return x == value; }));
+         });
+
+    prop("returns false if one element does not match predicate",
+         [] (int value) {
+             int other = *gen::distinctFrom(value);
+             int n1 = *gen::ranged<std::size_t>(0, 100);
+             int n2 = *gen::ranged<std::size_t>(0, 100);
+             auto seq = seq::concat(seq::take(n1, seq::repeat(value)),
+                                    seq::just(other),
+                                    seq::take(n2, seq::repeat(value)));
+             RC_ASSERT(!seq::all(seq, [=](int x) { return x == value; }));
+         });
+}
