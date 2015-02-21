@@ -74,3 +74,4 @@
 - exceptions in copying/moving of values, generating non-property values et.c. in RoseNode may make stuff fail! In general, interactions between RoseNode and exceptions is not well understood :( Wrap the exception in Any, of course! Exceptions are values too. However, throwing during copying of copyable values should probably be InternalError or something.
 - should gen::ranged really be shrinkable?
 - improve Variant with noexcept, enable_if for copy constructor et.c.
+- safer boolean for Maybe?
