@@ -1,6 +1,5 @@
 #pragma once
 
-#include "rapidcheck/shrink/Shrink.h"
 #include "rapidcheck/detail/ShowType.h"
 #include "rapidcheck/gen/Common.h"
 
@@ -17,76 +16,6 @@ void templatedProp(const std::string &description, Testable testable)
 #define TEMPLATED_SECTION(tparam, description)  \
     SECTION(std::string(description) + " (" +   \
             detail::typeToString<tparam>() + ")")
-
-//! Returns true all the shrinks returned by the given iterators are equal.
-template<typename T>
-bool yieldsEqual(const shrink::IteratorUP<T> &it1,
-                 const shrink::IteratorUP<T> &it2)
-{
-    while (it1->hasNext()) {
-        if (!it2->hasNext() || (it1->next() != it2->next()))
-            return false;
-    }
-
-    return !it2->hasNext();
-}
-
-//! Retrieves all elements from the iterator and returns them as a vector.
-template<typename T>
-std::vector<T> takeAll(const shrink::IteratorUP<T> &iterator)
-{
-    std::vector<T> items;
-    while (iterator->hasNext())
-        items.push_back(iterator->next());
-    return items;
-}
-
-//! Returns the final element of the iterator.
-template<typename T>
-T finalShrink(const shrink::IteratorUP<T> &iterator)
-{
-    T value;
-    while (iterator->hasNext())
-        value = iterator->next();
-    return value;
-}
-
-//! Returns the number of shrinks of the given iterator.
-template<typename T>
-size_t shrinkCount(const shrink::IteratorUP<T> &iterator)
-{
-    size_t n = 0;
-    while (iterator->hasNext()) {
-        iterator->next();
-        n++;
-    }
-    return n;
-}
-
-//! Returns true if there is a shrink in the given shrink iterator that
-//! satisfies the given predicate.
-template<typename T, typename Predicate>
-bool hasShrinkSuchThat(const shrink::IteratorUP<T> &iterator,
-                       Predicate predicate)
-{
-    while (iterator->hasNext()) {
-        if (predicate(iterator->next()))
-            return true;
-    }
-
-    return false;
-}
-
-
-//! Returns true if there is a shrink that is equal to the given element.
-template<typename T>
-bool hasShrink(const shrink::IteratorUP<T> &iterator, const T &value)
-{
-    return hasShrinkSuchThat(
-        iterator,
-        [&] (const T &x) { return x == value; });
-}
-
 
 //! So that we in templated tests can compare map pairs with their non-const-key
 //! equivalents.

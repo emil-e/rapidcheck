@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Generator.h"
+#include "rapidcheck/shrink/NewShrink.h"
 
 namespace rc {
 namespace gen {
@@ -29,9 +30,9 @@ public:
         return m_min + value % (m_max - m_min);
     }
 
-    shrink::IteratorUP<T> shrink(T value) const override
+    Seq<T> shrink(T value) const override
     {
-        return shrink::towards(value, m_min);
+        return newshrink::towards(value, m_min);
     }
 
 private:

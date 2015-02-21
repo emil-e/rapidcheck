@@ -25,13 +25,13 @@ template<>
 class Arbitrary<test::Box> : public gen::Generator<test::Box>
 {
 public:
-    test::Box generate() const override { return test::Box(*gen::arbitrary<int>()); }
+    test::Box generate() const override
+    { return test::Box(*gen::arbitrary<int>()); }
 
-    shrink::IteratorUP<test::Box> shrink(const test::Box &box)
+    Seq<test::Box> shrink(const test::Box &box)
     {
-        return shrink::map(
-            gen::arbitrary<int>().shrink(box.value),
-            [] (int x) { return test::Box(x); });
+        return seq::map([](int x) { return test::Box(x); },
+                        gen::arbitrary<int>().shrink(box.value));
     }
 };
 

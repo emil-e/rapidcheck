@@ -29,38 +29,30 @@ TEST_CASE("gen::tupleOf") {
 
     prop("shrinks one element at a time",
          [] (const std::tuple<int, int, int> &tuple) {
-             auto it = gen::tupleOf(gen::arbitrary<int>(),
-                                    gen::arbitrary<int>(),
-                                    gen::arbitrary<int>()).shrink(tuple);
+             auto seq = gen::tupleOf(gen::arbitrary<int>(),
+                                     gen::arbitrary<int>(),
+                                     gen::arbitrary<int>()).shrink(tuple);
 
-             auto eit = gen::arbitrary<int>().shrink(std::get<0>(tuple));
-             while (eit->hasNext()) {
-                 RC_ASSERT(it->hasNext());
-                 auto expected = std::make_tuple(eit->next(),
-                                                 std::get<1>(tuple),
-                                                 std::get<2>(tuple));
-                 RC_ASSERT(it->next() == expected);
-             }
+             auto expected = seq::concat(
+                 seq::map([&](int x) {
+                     return std::make_tuple(x,
+                                            std::get<1>(tuple),
+                                            std::get<2>(tuple));
+                 }, gen::arbitrary<int>().shrink(std::get<0>(tuple))),
 
-             eit = gen::arbitrary<int>().shrink(std::get<1>(tuple));
-             while (eit->hasNext()) {
-                 RC_ASSERT(it->hasNext());
-                 auto expected = std::make_tuple(std::get<0>(tuple),
-                                                 eit->next(),
-                                                 std::get<2>(tuple));
-                 RC_ASSERT(it->next() == expected);
-             }
+                 seq::map([&](int x) {
+                     return std::make_tuple(std::get<0>(tuple),
+                                            x,
+                                            std::get<2>(tuple));
+                 }, gen::arbitrary<int>().shrink(std::get<1>(tuple))),
 
-             eit = gen::arbitrary<int>().shrink(std::get<2>(tuple));
-             while (eit->hasNext()) {
-                 RC_ASSERT(it->hasNext());
-                 auto expected = std::make_tuple(std::get<0>(tuple),
-                                                 std::get<1>(tuple),
-                                                 eit->next());
-                 RC_ASSERT(it->next() == expected);
-             }
+                 seq::map([&](int x) {
+                     return std::make_tuple(std::get<0>(tuple),
+                                            std::get<1>(tuple),
+                                            x);
+                 }, gen::arbitrary<int>().shrink(std::get<2>(tuple))));
 
-             RC_ASSERT(!it->hasNext());
+             RC_ASSERT(seq == expected);
          });
 }
 
@@ -83,23 +75,19 @@ TEST_CASE("gen::pairOf") {
 
     prop("shrinks one element at a time",
          [] (const std::pair<int, int> &pair) {
-             auto it = gen::pairOf(gen::arbitrary<int>(),
+             auto seq = gen::pairOf(gen::arbitrary<int>(),
                                    gen::arbitrary<int>()).shrink(pair);
 
-             auto eit = gen::arbitrary<int>().shrink(pair.first);
-             while (eit->hasNext()) {
-                 RC_ASSERT(it->hasNext());
-                 auto expected = std::make_pair(eit->next(), pair.second);
-                 RC_ASSERT(it->next() == expected);
-             }
+             auto expected = seq::concat(
+                 seq::map(
+                     [&](int x) {
+                         return std::make_pair(x, pair.second);
+                     }, gen::arbitrary<int>().shrink(pair.first)),
+                 seq::map(
+                     [&](int x) {
+                         return std::make_pair(pair.first, x);
+                     }, gen::arbitrary<int>().shrink(pair.second)));
 
-             eit = gen::arbitrary<int>().shrink(pair.second);
-             while (eit->hasNext()) {
-                 RC_ASSERT(it->hasNext());
-                 auto expected = std::make_pair(pair.first, eit->next());
-                 RC_ASSERT(it->next() == expected);
-             }
-
-             RC_ASSERT(!it->hasNext());
+             RC_ASSERT(seq == expected);
          });
 }

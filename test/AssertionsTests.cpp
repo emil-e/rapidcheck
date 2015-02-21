@@ -20,6 +20,4 @@ TEST_CASE("RC__CAPTURE") {
             "1 && 2 && 3");
     REQUIRE(RC__CAPTURE(1 || 2 || 3) ==
             "1 || 2 || 3");
-
-    std::cout << RC__CAPTURE(1 + 3 == 3 + 4);
 }

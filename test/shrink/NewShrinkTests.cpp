@@ -12,15 +12,6 @@ using namespace rc;
 
 namespace {
 
-template<typename T>
-Seq<T> fromIterator(shrink::IteratorUP<T> &&it)
-{
-    std::vector<T> elements;
-    while (it->hasNext())
-        elements.push_back(it->next());
-    return seq::fromContainer(std::move(elements));
-}
-
 struct RemoveChunksProperties
 {
     template<typename T>
@@ -120,7 +111,7 @@ struct EachElementProperties
                 auto elements = *smallValues;
                 auto seq = newshrink::eachElement(
                     elements,
-                    [&] (const Element &x) { return fromIterator(smallValue.shrink(x)); });
+                    [&] (const Element &x) { return smallValue.shrink(x); });
 
                 auto size = containerSize(elements);
                 seq::forEach(seq, [=](const T &shrink) {
@@ -133,7 +124,7 @@ struct EachElementProperties
             auto seq = newshrink::eachElement(
                 T(),
                 [] (const Element &x) {
-                    return fromIterator(gen::arbitrary<Element>().shrink(x));
+                    return gen::arbitrary<Element>().shrink(x);
                 });
             REQUIRE(!seq.next());
         }
@@ -157,13 +148,12 @@ struct EachElementProperties
                 auto seq = newshrink::eachElement(
                     elements,
                     [=] (const Element &x) {
-                        return fromIterator(smallValue.shrink(x));
+                        return smallValue.shrink(x);
                     });
 
                 std::size_t count = 0;
                 for (const auto &element : elements) {
-                    count += seq::length(
-                        fromIterator(smallValue.shrink(element)));
+                    count += seq::length(smallValue.shrink(element));
                 }
                 RC_ASSERT(seq::length(seq) <= count);
             });
@@ -176,7 +166,7 @@ struct EachElementProperties
                 auto seq = newshrink::eachElement(
                     elements,
                     [&] (const Element &x) {
-                        return fromIterator(smallValue.shrink(x));
+                        return smallValue.shrink(x);
                     });
 
                 seq::forEach(seq, [&](const T &shrunk) {
@@ -185,7 +175,7 @@ struct EachElementProperties
                     RC_ASSERT(added.size() == 1);
                     RC_ASSERT(removed.size() == 1);
                     RC_ASSERT(seq::contains(
-                                  fromIterator(smallValue.shrink(removed[0])),
+                                  smallValue.shrink(removed[0]),
                                   added[0]));
                 });
             });

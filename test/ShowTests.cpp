@@ -51,7 +51,7 @@ TEST_CASE("showCollection") {
          [] (const std::string &prefix, const std::string &suffix) {
              std::ostringstream os;
              showCollection(prefix, suffix, std::vector<Box>(), os);
-             REQUIRE(os.str() == (prefix + suffix));
+             RC_ASSERT(os.str() == (prefix + suffix));
          });
 
     prop("shows single element correctly",

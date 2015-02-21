@@ -30,6 +30,6 @@ TEST_CASE("gen::noShrink") {
          [] {
              auto generator = gen::arbitrary<int>();
              auto value = *generator;
-             RC_ASSERT(!gen::noShrink(generator).shrink(value)->hasNext());
+             RC_ASSERT(!gen::noShrink(generator).shrink(value).next());
          });
 }

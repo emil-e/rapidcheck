@@ -6,6 +6,8 @@
 
 #include "util/ShowTypeTestUtils.h"
 
+#include "rapidcheck/seq/Operations.h"
+
 using namespace rc;
 using namespace rc::test;
 using namespace rc::detail;
@@ -281,9 +283,10 @@ TEST_CASE("CommandsGenerator") {
                  gen::scale(0.25, commandsGenerator<StringVecCmd>(
                                 s0, anyCommand<PushBack, PopBack>));
              const auto commands = *generator;
-             const auto it = generator.shrink(commands);
-             while (it->hasNext())
-                 RC_ASSERT(isValidCommand(it->next(), s0));
+             auto seq = generator.shrink(commands);
+             seq::forEach(std::move(seq), [&](const StringVecCmds &cmd) {
+                 RC_ASSERT(isValidCommand(cmd, s0));
+             });
          });
 }
 

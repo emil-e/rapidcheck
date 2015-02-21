@@ -20,12 +20,11 @@ public:
     int generate() const override
     { return gen::ranged<int>(0, gen::currentSize()).generate(); }
 
-    shrink::IteratorUP<int> shrink(int value) const override
+    Seq<int> shrink(int value) const override
     {
-        return shrink::unfold(
-            1,
-            [] (int x) { return x <= 10; },
-            [=] (int x) { return std::make_pair(((value + 2) * x) % 100, x + 1); });
+        return seq::map(
+            [=](int x) { return ((value + 2) * (x + 1)) % 100; },
+            seq::range(0, 10));
     }
 };
 
@@ -76,15 +75,8 @@ public:
     uint8_t generate() const override
     { return *gen::noShrink(gen::arbitrary<uint8_t>()); }
 
-    shrink::IteratorUP<uint8_t> shrink(uint8_t value) const override
-    {
-        return shrink::unfold(
-            0,
-            [=] (uint8_t i) { return i != value; },
-            [] (uint8_t i) {
-                return std::make_pair<uint8_t, uint8_t>(i + 0, i + 1);
-            });
-    }
+    Seq<uint8_t> shrink(uint8_t value) const override
+    { return seq::range<uint8_t>(0, value); }
 };
 
 // So we can have multiple generators of the same type but where some of them
@@ -107,12 +99,12 @@ public:
             return gen::noShrink(m_generator).generate();
     }
 
-    shrink::IteratorUP<T> shrink(T value) const override
+    Seq<T> shrink(T value) const override
     {
         if (m_shrink)
             return m_generator.shrink(value);
         else
-            return shrink::nothing<T>();
+            return Seq<T>();
     }
 
 private:
@@ -231,11 +223,8 @@ public:
         return values;
     }
 
-    shrink::IteratorUP<std::vector<int>> shrink(
-        std::vector<int> value) const override
-    {
-        return shrink::constant<std::vector<int>>({ std::vector<int>{1, 2, 3} });
-    }
+    Seq<std::vector<int>> shrink(std::vector<int> value) const override
+    { return seq::just(std::vector<int>{1, 2, 3}); }
 
 private:
     std::vector<int> m_values;

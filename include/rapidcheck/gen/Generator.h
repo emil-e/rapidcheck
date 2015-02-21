@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "rapidcheck/shrink/Shrink.h"
+#include "rapidcheck/Seq.h"
 
 namespace rc {
 namespace gen {
@@ -32,7 +32,7 @@ public:
 
     //! Returns a \c ShrinkIterator which yields the possible shrinks for the
     //! given value. The default impelemtation returns a \c NullIterator.
-    virtual shrink::IteratorUP<T> shrink(T value) const;
+    virtual Seq<T> shrink(T value) const;
 
     virtual ~Generator() = default;
 

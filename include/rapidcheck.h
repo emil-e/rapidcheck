@@ -1,6 +1,5 @@
 #pragma once
 
-#include "rapidcheck/shrink/Shrink.h"
 #include "rapidcheck/Check.h"
 #include "rapidcheck/Show.h"
 #include "rapidcheck/Assertions.h"

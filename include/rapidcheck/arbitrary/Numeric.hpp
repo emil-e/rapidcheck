@@ -2,6 +2,7 @@
 
 #include "rapidcheck/gen/Generator.h"
 #include "rapidcheck/gen/Parameters.h"
+#include "rapidcheck/shrink/NewShrink.h"
 
 namespace rc {
 
@@ -49,15 +50,15 @@ public:
         return x;
     }
 
-    shrink::IteratorUP<T> shrink(T value) const override
+    Seq<T> shrink(T value) const override
     {
-        std::vector<T> constants;
-        if (value < 0)
-            constants.push_back(-value);
-
-        return shrink::sequentially(
-            shrink::constant(constants),
-            shrink::towards(value, static_cast<T>(0)));
+        if (value < 0) {
+            return seq::concat(
+                seq::just<T>(-value),
+                newshrink::towards<T>(value, 0));
+        } else {
+            return newshrink::towards<T>(value, 0);
+        }
     }
 };
 
@@ -73,18 +74,18 @@ public:
         return std::pow<T>(1.1, gen::currentSize()) * x;
     }
 
-    shrink::IteratorUP<T> shrink(T value) const override
+    Seq<T> shrink(T value) const override
     {
-        std::vector<T> constants;
+        std::vector<T> shrinks;
 
         if (value < 0)
-            constants.push_back(-value);
+            shrinks.push_back(-value);
 
         T truncated = std::trunc(value);
         if (std::abs(truncated) < std::abs(value))
-            constants.push_back(truncated);
+            shrinks.push_back(truncated);
 
-        return shrink::constant(constants);
+        return seq::fromContainer(shrinks);
     }
 };
 
@@ -104,11 +105,11 @@ public:
                                  gen::arbitrary<uint8_t>()) & 0x1) == 0;
     }
 
-    shrink::IteratorUP<bool> shrink(bool value)
+    Seq<bool> shrink(bool value)
     {
         return value
-            ? shrink::constant<bool>({false})
-            : shrink::nothing<bool>();
+            ? seq::just(false)
+            : Seq<bool>();
     }
 };
 

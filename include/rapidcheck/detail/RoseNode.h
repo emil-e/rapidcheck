@@ -97,7 +97,7 @@ private:
     RandomEngine::Atom m_atom;
 
     std::size_t m_shrinkChild = 0;
-    shrink::IteratorUP<Any> m_shrinkIterator;
+    Maybe<Seq<Any>> m_shrinks;
     Any m_currentValue;
     Any m_acceptedValue;
 };

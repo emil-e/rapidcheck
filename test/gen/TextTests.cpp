@@ -9,12 +9,12 @@ TEST_CASE("gen::character") {
     });
 
     SECTION("does not shrink 'a'") {
-        REQUIRE(!gen::character<char>().shrink('a')->hasNext());
+        REQUIRE(!gen::character<char>().shrink('a').next());
     }
 
     prop("first tries to shrink every value to 'a')", [] {
         char c = *gen::character<char>();
         RC_PRE(c != 'a');
-        RC_ASSERT(gen::character<char>().shrink(c)->next() == 'a');
+        RC_ASSERT(*gen::character<char>().shrink(c).next() == 'a');
     });
 }

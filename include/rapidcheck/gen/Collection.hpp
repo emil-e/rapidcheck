@@ -2,6 +2,7 @@
 
 #include "Generator.h"
 #include "Numeric.h"
+#include "rapidcheck/shrink/NewShrink.h"
 
 namespace rc {
 namespace gen {
@@ -39,20 +40,18 @@ public:
         return std::move(builder.result());
     }
 
-    shrink::IteratorUP<Container> shrink(Container value) const override
+    Seq<Container> shrink(Container value) const override
     { return shrink(value, detail::IsCopyConstructible<Container>()); }
 
 private:
-    shrink::IteratorUP<Container> shrink(const Container &value,
-                                         std::false_type) const
+    Seq<Container> shrink(const Container &value, std::false_type) const
     {
-        return shrink::nothing<Container>();
+        return Seq<Container>();
     }
 
-    shrink::IteratorUP<Container> shrink(const Container &value,
-                                         std::true_type) const
+    Seq<Container> shrink(const Container &value, std::true_type) const
     {
-        return shrink::eachElement(
+        return newshrink::eachElement(
             value,
             [=](typename Container::value_type element) {
                 return m_generator.shrink(std::move(element));
@@ -80,22 +79,20 @@ public:
         return std::move(builder.result());
     }
 
-    shrink::IteratorUP<Container> shrink(Container value) const override
+    Seq<Container> shrink(Container value) const override
     { return shrink(value, detail::IsCopyConstructible<Container>()); }
 
 private:
-    shrink::IteratorUP<Container> shrink(const Container &value,
-                                         std::false_type) const
+    Seq<Container> shrink(const Container &value, std::false_type) const
     {
-        return shrink::nothing<Container>();
+        return Seq<Container>();
     }
 
-    shrink::IteratorUP<Container> shrink(const Container &value,
-                                         std::true_type) const
+    Seq<Container> shrink(const Container &value, std::true_type) const
     {
-        return shrink::sequentially(
-            shrink::removeChunks(value),
-            shrink::eachElement(
+        return seq::concat(
+            newshrink::removeChunks(value),
+            newshrink::eachElement(
                 value,
                 [=](typename Container::value_type element) {
                     return m_generator.shrink(std::move(element));
@@ -126,20 +123,16 @@ public:
         return std::move(array);
     }
 
-    shrink::IteratorUP<ArrayT> shrink(ArrayT value) const override
+    Seq<ArrayT> shrink(ArrayT value) const override
     { return shrink(value, detail::IsCopyConstructible<ArrayT>()); }
 
 private:
-    shrink::IteratorUP<ArrayT> shrink(const ArrayT &value,
-                                      std::false_type) const
-    {
-        return shrink::nothing<ArrayT>();
-    }
+    Seq<ArrayT> shrink(const ArrayT &value, std::false_type) const
+    { return Seq<ArrayT>(); }
 
-    shrink::IteratorUP<ArrayT> shrink(const ArrayT &value,
-                                      std::true_type) const
+    Seq<ArrayT> shrink(const ArrayT &value, std::true_type) const
     {
-        return shrink::eachElement(
+        return newshrink::eachElement(
             value,
             [=](typename ArrayT::value_type element) {
                 return m_generator.shrink(std::move(element));

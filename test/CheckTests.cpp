@@ -43,15 +43,11 @@ public:
     int generate() const override
     { return m_value; }
 
-    shrink::IteratorUP<int> shrink(int value) const override
+    Seq<int> shrink(int value) const override
     {
-        if (value == 0)
-            return shrink::nothing<int>();
-
-        return shrink::unfold(
-            value,
+        return seq::takeWhile(
             [](int x) { return x >= 0; },
-            [](int x) { return std::make_pair(x - 1, x - 1); });
+            seq::iterate(value - 1, [](int x) { return --x; }));
     }
 
 private:

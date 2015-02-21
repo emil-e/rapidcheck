@@ -4,7 +4,6 @@ add_executable(rapidcheck_tests
   MaybeTests.cpp
   SeqTests.cpp
   ShowTests.cpp
-  ShrinkTests.cpp
   arbitrary/CollectionTests.cpp
   arbitrary/NumericTests.cpp
   detail/AnyTests.cpp

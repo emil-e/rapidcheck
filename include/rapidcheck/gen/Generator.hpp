@@ -20,9 +20,9 @@ T Generator<T>::operator*() const
 }
 
 template<typename T>
-shrink::IteratorUP<T> Generator<T>::shrink(T value) const
+Seq<T> Generator<T>::shrink(T value) const
 {
-    return shrink::nothing<T>();
+    return Seq<T>();
 }
 
 template<typename T>

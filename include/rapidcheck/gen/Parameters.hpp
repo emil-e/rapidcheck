@@ -18,8 +18,7 @@ public:
         return m_generator.generate();
     }
 
-    shrink::IteratorUP<GeneratedT<Gen>>
-                       shrink(GeneratedT<Gen> value) const override
+    Seq<GeneratedT<Gen>> shrink(GeneratedT<Gen> value) const override
     { return m_generator.shrink(std::move(value)); }
 
 private:
@@ -43,8 +42,7 @@ public:
         return m_generator.generate();
     }
 
-    shrink::IteratorUP<GeneratedT<Gen>>
-    shrink(GeneratedT<Gen> value) const override
+    Seq<GeneratedT<Gen>> shrink(GeneratedT<Gen> value) const override
     { return m_generator.shrink(std::move(value)); }
 
 private:

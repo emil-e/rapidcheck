@@ -2,6 +2,7 @@
 
 #include "rapidcheck/seq/Transform.h"
 #include "rapidcheck/seq/Create.h"
+#include "rapidcheck/detail/CollectionBuilder.h"
 
 namespace rc {
 namespace newshrink {

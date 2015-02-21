@@ -102,17 +102,17 @@ public:
         return commands;
     }
 
-    shrink::IteratorUP<CommandsT> shrink(CommandsT commands) const override
+    Seq<CommandsT> shrink(CommandsT commands) const override
     {
-        return shrink::filter(
-            shrink::map(
-                shrink::removeChunks(commands.commands()),
-                [] (std::vector<CommandSP> &&x) {
-                    return CommandsT(std::move(x));
-                }),
-            [&] (const CommandsT &commands) {
+        return seq::filter(
+            [&](const CommandsT &commands) {
                 return isValidCommand(commands, m_initialState);
-            });
+            },
+            seq::map(
+                [](std::vector<CommandSP> &&x) {
+                    return CommandsT(std::move(x));
+                },
+                newshrink::removeChunks(commands.commands())));
     }
 
 private:

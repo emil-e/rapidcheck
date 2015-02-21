@@ -37,32 +37,28 @@ public:
             *m_tailGenerator);
     }
 
-    shrink::IteratorUP<TupleT> shrink(TupleT value) const override
+    Seq<TupleT> shrink(TupleT value) const override
     { return shrink(value, detail::IsCopyConstructible<TupleT>()); }
 
 private:
-    shrink::IteratorUP<TupleT> shrink(const TupleT &value,
-                                      std::false_type) const
-    { return shrink::nothing<TupleT>(); }
+    Seq<TupleT> shrink(const TupleT &value, std::false_type) const
+    { return Seq<TupleT>(); }
 
-    shrink::IteratorUP<TupleT> shrink(const TupleT &value,
-                                      std::true_type) const
+    Seq<TupleT> shrink(const TupleT &value, std::true_type) const
     {
         // Shrink the head and map it by append the unshrunk tail,
         // then shrink the tail and map it by prepending the unshrink head.
-        return shrink::sequentially(
-            shrink::map(m_headGenerator.shrink(std::get<0>(value)),
-                        [=] (HeadT &&x) -> TupleT {
-                            return std::tuple_cat(
-                                std::tuple<HeadT>(std::move(x)),
-                                detail::tupleTail(value));
-                        }),
-            shrink::map(m_tailGenerator.shrink(detail::tupleTail(value)),
-                        [=] (TailT &&x) -> TupleT {
-                            return std::tuple_cat(
-                                std::tuple<HeadT>(std::get<0>(value)),
-                                std::move(x));
-                        }));
+        return seq::concat(
+            seq::map([=] (HeadT &&x) -> TupleT {
+                         return std::tuple_cat(
+                             std::tuple<HeadT>(std::move(x)),
+                             detail::tupleTail(value));
+            }, m_headGenerator.shrink(std::get<0>(value))),
+            seq::map([=] (TailT &&x) -> TupleT {
+                         return std::tuple_cat(
+                             std::tuple<HeadT>(std::get<0>(value)),
+                             std::move(x));
+            }, m_tailGenerator.shrink(detail::tupleTail(value))));
     }
 
     Gen m_headGenerator;
@@ -89,15 +85,15 @@ public:
                      std::move(std::get<1>(x)));
     }
 
-    shrink::IteratorUP<PairT> shrink(PairT value) const override
+    Seq<PairT> shrink(PairT value) const override
     {
-        return shrink::map(
-            m_generator.shrink(std::tuple<T1, T2>(std::move(value.first),
-                                                  std::move(value.second))),
+        return seq::map(
             [] (std::tuple<T1, T2> &&x) {
                 return PairT(std::move(std::get<0>(x)),
                              std::move(std::get<1>(x)));
-            });
+            },
+            m_generator.shrink(std::tuple<T1, T2>(std::move(value.first),
+                                                  std::move(value.second))));
     }
 
 private:

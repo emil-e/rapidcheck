@@ -16,34 +16,12 @@ public:
                       nonZero<T>());
     }
 
-    shrink::IteratorUP<T> shrink(T value) const override
+    Seq<T> shrink(T value) const override
     {
-        // TODO this can probably be better
-        std::vector<T> chars;
-        switch (value) {
-        default:
-            chars.insert(chars.begin(), static_cast<T>('3'));
-        case '3':
-            chars.insert(chars.begin(), static_cast<T>('2'));
-        case '2':
-            chars.insert(chars.begin(), static_cast<T>('1'));
-        case '1':
-            chars.insert(chars.begin(), static_cast<T>('C'));
-        case 'C':
-            chars.insert(chars.begin(), static_cast<T>('B'));
-        case 'B':
-            chars.insert(chars.begin(), static_cast<T>('A'));
-        case 'A':
-            chars.insert(chars.begin(), static_cast<T>('c'));
-        case 'c':
-            chars.insert(chars.begin(), static_cast<T>('b'));
-        case 'b':
-            chars.insert(chars.begin(), static_cast<T>('a'));
-        case 'a':
-            ;
-        }
-
-        return shrink::constant<T>(chars);
+        // TODO improve?
+        return seq::takeWhile(
+            [=](T x) { return x != value; },
+            seq::cast<T>(seq::fromContainer(std::string("abcABC123"))));
     }
 };
 

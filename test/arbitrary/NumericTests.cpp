@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include "rapidcheck/seq/Operations.h"
+
 #include "util/TypeListMacros.h"
 #include "util/Meta.h"
 #include "util/Util.h"
@@ -60,9 +62,9 @@ struct SignedProperties
             "shrinks negative values to their positive equivalent",
             [] {
                 T value = *gen::negative<T>();
-                auto it = gen::arbitrary<T>().shrink(value);
-                RC_ASSERT(it->hasNext());
-                RC_ASSERT(it->next() == -value);
+                auto shrink = gen::arbitrary<T>().shrink(value).next();
+                RC_ASSERT(shrink);
+                RC_ASSERT(*shrink == -value);
             });
     }
 };
@@ -90,10 +92,8 @@ struct RealProperties
             [] {
                 T value = *gen::nonZero<T>();
                 RC_PRE(value != std::trunc(value));
-                auto it = gen::arbitrary<T>().shrink(value);
-                while (it->hasNext())
-                    RC_SUCCEED_IF(it->next() == std::trunc(value));
-                RC_FAIL("none of the shrinks are the expected one");
+                auto seq = gen::arbitrary<T>().shrink(value);
+                RC_ASSERT(seq::contains(seq, std::trunc(value)));
             });
     }
 };
@@ -121,14 +121,10 @@ TEST_CASE("gen::arbitrary<bool>") {
          });
 
     SECTION("shrinks 'true' to 'false'") {
-        auto it = gen::arbitrary<bool>().shrink(true);
-        REQUIRE(it->hasNext());
-        REQUIRE(it->next() == false);
-        REQUIRE(!it->hasNext());
+        REQUIRE(gen::arbitrary<bool>().shrink(true) == seq::just(false));
     }
 
     SECTION("does not shrink 'false'") {
-        auto it = gen::arbitrary<bool>().shrink(false);
-        REQUIRE(!it->hasNext());
+        REQUIRE(gen::arbitrary<bool>().shrink(false) == Seq<bool>());
     }
 }

@@ -28,8 +28,8 @@ struct RangedProperties
                 T max = *gen::suchThat<T>([=](T x) { return x > min; });
                 auto generator = gen::ranged(min, max);
                 T value = *generator;
-                RC_ASSERT(yieldsEqual(generator.shrink(value),
-                                      shrink::towards(value, min)));
+                RC_ASSERT(generator.shrink(value) ==
+                          newshrink::towards(value, min));
             });
     }
 };

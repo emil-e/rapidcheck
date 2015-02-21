@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/seq/Transform.h"
+
 namespace rc {
 namespace detail {
 
@@ -14,11 +16,11 @@ Any ErasedGenerator<T>::generate() const
 }
 
 template<typename T>
-shrink::IteratorUP<Any> ErasedGenerator<T>::shrink(Any value) const
+Seq<Any> ErasedGenerator<T>::shrink(Any value) const
 {
-    return shrink::map(
-        m_generator->shrink(std::move(value.get<T>())),
-        [](T &&x) { return Any::of(std::move(x)); });
+    return seq::map(
+        [](T &&x) { return Any::of(std::move(x)); },
+        m_generator->shrink(std::move(value.get<T>())));
 }
 
 } // namespace detail

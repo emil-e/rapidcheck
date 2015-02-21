@@ -143,15 +143,15 @@ public:
     Seq<T> generate() const override
     { return seq::fromContainer(*gen::arbitrary<std::vector<T>>()); }
 
-    shrink::IteratorUP<Seq<T>> shrink(const Seq<T> &value) const
+    Seq<Seq<T>> shrink(const Seq<T> &value) const
     {
         Seq<T> seq = value;
         std::vector<T> values;
         while (seq)
             values.push_back(seq.next());
-        return shrink::map(
-            gen::arbitrary<std::vector<T>>().shrink(std::move(values)),
-            [](std::vector<T> &&x) { return seq::fromContainer(x); });
+        return seq::map(
+            [](std::vector<T> &&x) { return seq::fromContainer(x); },
+            gen::arbitrary<std::vector<T>>().shrink(std::move(values)));
     }
 };
 
@@ -166,16 +166,16 @@ public:
         return Maybe<T>(*gen::arbitrary<T>());
     }
 
-    shrink::IteratorUP<Maybe<T>> shrink(const Maybe<T> &value) const
+    Seq<Maybe<T>> shrink(const Maybe<T> &value) const
     {
         if (!value)
-            return shrink::nothing<T>();
+            return Seq<T>();
 
-        shrink::sequentially(
-            shrink::constant({ Maybe<T>() }),
-            shrink::map(
-                gen::arbitrary<T>().shrink(value),
-                [](T &&x) { return Maybe<T>(x); }));
+        return seq::concat(
+            seq::just(Maybe<T>()),
+            seq::map(
+                [](T &&x) { return Maybe<T>(x); },
+                gen::arbitrary<T>().shrink(value)));
     }
 };
 

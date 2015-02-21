@@ -15,7 +15,7 @@ class ErasedGenerator : public gen::Generator<Any>
 public:
     ErasedGenerator(const gen::Generator<T> *generator);
     Any generate() const;
-    shrink::IteratorUP<Any> shrink(Any value) const;
+    Seq<Any> shrink(Any value) const;
 
 private:
     const gen::Generator<T> *m_generator;
