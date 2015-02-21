@@ -10,23 +10,19 @@ template<typename T, T ...Ints> struct IntSequence;
 template<std::size_t ...Ints>
 using IndexSequence = IntSequence<std::size_t, Ints...>;
 
-template<typename Sequence, std::size_t N>
+template<typename Sequence, std::size_t N, typename Enable = void>
 struct MakeIntSequenceImpl;
 
-template<typename IntT>
-struct MakeIntSequenceImpl<IntSequence<IntT>, 0>
+template<typename IntSequenceT>
+struct MakeIntSequenceImpl<IntSequenceT, 0, void>
 {
-    typedef IntSequence<IntT> Sequence;
-};
-
-template<typename IntT, IntT ...Ints>
-struct MakeIntSequenceImpl<IntSequence<IntT, 0, Ints...>, 0>
-{
-    typedef IntSequence<IntT, 0, Ints...> Sequence;
+    typedef IntSequenceT Sequence;
 };
 
 template<typename IntT, IntT ...Ints, std::size_t N>
-struct MakeIntSequenceImpl<IntSequence<IntT, Ints...>, N>
+struct MakeIntSequenceImpl<IntSequence<IntT, Ints...>,
+                           N,
+                           typename std::enable_if<N != 0>::type>
 {
     typedef typename MakeIntSequenceImpl<
         IntSequence<IntT, N - 1, Ints...>, N - 1>::Sequence Sequence;
