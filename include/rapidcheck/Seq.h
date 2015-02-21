@@ -1,6 +1,8 @@
 #pragma once
 
 #include <type_traits>
+#include <memory>
+#include <iostream>
 
 #include "rapidcheck/Maybe.h"
 #include "rapidcheck/Traits.h"

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/Show.h"
+
 namespace rc {
 
 template<typename T>
