@@ -45,7 +45,7 @@ public:
     template<typename Impl,
              typename = typename std::enable_if<
                  !std::is_same<Decay<Impl>, Seq>::value>::type>
-    Seq(Impl &&impl);
+    explicit Seq(Impl &&impl);
 
     //! Returns the next value.
     Maybe<T> next();
