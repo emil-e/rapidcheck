@@ -76,7 +76,7 @@ public:
         if (m_iterator == end(m_container))
             return Nothing;
         m_position++;
-        return std::move(*(m_iterator++));
+        return Maybe<T>(std::move(*(m_iterator++)));
     }
 
 private:

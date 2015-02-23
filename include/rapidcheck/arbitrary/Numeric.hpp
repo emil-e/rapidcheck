@@ -105,7 +105,7 @@ public:
                                  gen::arbitrary<uint8_t>()) & 0x1) == 0;
     }
 
-    Seq<bool> shrink(bool value)
+    Seq<bool> shrink(bool value) const override
     {
         return value
             ? seq::just(false)
