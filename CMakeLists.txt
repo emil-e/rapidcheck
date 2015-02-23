@@ -4,6 +4,7 @@ enable_testing()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -std=c++11")
 
 add_library(rapidcheck
+  src/Random.cpp
   src/Show.cpp
   src/detail/AnsiEscape.cpp
   src/detail/Any.cpp
