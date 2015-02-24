@@ -16,11 +16,15 @@ constexpr uint64_t kTweak[2] = { 13, 37 };
 }
 
 Random::Random(const Key &key)
-    : m_key{key[0], key[1], key[2], key[3]}
+    : m_key(key)
     , m_block()
     , m_bits(0)
     , m_counter(0)
     , m_bitsi(0) {}
+
+// We just repeat the seed in the key
+Random::Random(uint64_t seed)
+    : Random({seed, seed, seed, seed}) {}
 
 Random Random::split()
 {
@@ -30,7 +34,7 @@ Random Random::split()
     return right;
 }
 
-uint64_t Random::next()
+Random::Number Random::next()
 {
     std::size_t blki = m_counter % std::tuple_size<Block>::value;
     if (blki == 0)

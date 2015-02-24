@@ -71,6 +71,13 @@ TEST_CASE("Random") {
              RC_ASSERT(Random(key1) != Random(key2));
          });
 
+    prop("different seeds yield inequal generators",
+         [] {
+             auto seed1 = *gen::arbitrary<uint64_t>();
+             auto seed2 = *gen::distinctFrom(seed1);
+             RC_ASSERT(Random(seed1) != Random(seed2));
+         });
+
     prop("different splits are inequal",
          [](Random r1) {
              Random r2(r1.split());
@@ -90,6 +97,17 @@ TEST_CASE("Random") {
              auto key2 = *gen::distinctFrom(key1);
              Random r1(key1);
              Random r2(key2);
+             for (std::size_t i = 0; i < 4; i++)
+                 RC_SUCCEED_IF(r1.next() != r2.next());
+             RC_FAIL("Equal random numbers");
+         });
+
+    prop("different seeds yield different sequences",
+         [] {
+             auto seed1 = *gen::arbitrary<uint64_t>();
+             auto seed2 = *gen::distinctFrom(seed1);
+             Random r1(seed1);
+             Random r2(seed2);
              for (std::size_t i = 0; i < 4; i++)
                  RC_SUCCEED_IF(r1.next() != r2.next());
              RC_FAIL("Equal random numbers");

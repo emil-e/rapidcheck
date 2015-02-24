@@ -18,7 +18,14 @@ public:
     //! Key type
     typedef std::array<uint64_t, 4> Key;
 
+    //! Type of a generated random number.
+    typedef uint64_t Number;
+
+    //! Constructs a Random engine from a full size 256-bit key.
     Random(const Key &key);
+
+    //! Constructs a Random engine from a 64-bit seed.
+    Random(uint64_t seed);
 
     //! Creates a second generator from this one. Both `split` and `next` should
     //! not be called on the same state.
@@ -26,7 +33,7 @@ public:
 
     //! Returns the next random number. Both `split` and `next` should not be
     //! called on the same state.
-    uint64_t next();
+    Number next();
 
 private:
     typedef std::array<uint64_t, 4> Block;
