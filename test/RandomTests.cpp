@@ -64,6 +64,13 @@ public:
 } // namespace rc
 
 TEST_CASE("Random") {
+    prop("different keys yield inequal generators",
+         [] {
+             auto key1 = *gen::arbitrary<Random::Key>();
+             auto key2 = *gen::distinctFrom(key1);
+             RC_ASSERT(Random(key1) != Random(key2));
+         });
+
     prop("different splits are inequal",
          [](Random r1) {
              Random r2(r1.split());
@@ -75,6 +82,17 @@ TEST_CASE("Random") {
              Random r2(r1);
              r2.next();
              RC_ASSERT(r1 != r2);
+         });
+
+    prop("different keys yield different sequences",
+         [] {
+             auto key1 = *gen::arbitrary<Random::Key>();
+             auto key2 = *gen::distinctFrom(key1);
+             Random r1(key1);
+             Random r2(key2);
+             for (std::size_t i = 0; i < 4; i++)
+                 RC_SUCCEED_IF(r1.next() != r2.next());
+             RC_FAIL("Equal random numbers");
          });
 
     prop("different splits yield different sequences",
