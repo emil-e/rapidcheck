@@ -49,9 +49,8 @@ template<typename Callable>
 auto withTestCase(const TestCase &testCase, Callable callable)
     -> decltype(callable())
 {
-    RandomEngine engine(testCase.seed);
     ImplicitParam<param::CurrentNode> currentNode(nullptr);
-    ImplicitParam<param::RandomEngine> randomEngine(&engine);
+    ImplicitParam<param::Random> random(Random(testCase.seed));
     ImplicitParam<param::Size> size(testCase.size);
 
     return callable();

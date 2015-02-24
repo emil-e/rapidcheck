@@ -32,11 +32,10 @@ public:
 
 private:
     RC_DISABLE_COPY(Rose)
-    
+
     const ErasedGenerator<T> m_generator;
     RoseNode m_root;
     const TestCase m_testCase;
-    RandomEngine m_randomEngine;
 };
 
 } // namespace detail

@@ -11,7 +11,10 @@ namespace gen {
 template<typename T>
 T Generator<T>::operator*() const
 {
-    auto currentNode = detail::ImplicitParam<detail::param::CurrentNode>::value();
+    using namespace rc::detail;
+    ImplicitParam<param::Random> random(
+        ImplicitParam<param::Random>::value().split());
+    auto currentNode = ImplicitParam<param::CurrentNode>::value();
     if (currentNode != nullptr) {
         return currentNode->pick(*this);
     } else {
@@ -33,7 +36,7 @@ void sample(int sz, const Generator<T> &generator, uint64_t seed)
     ImplicitParam<param::Size> size(sz);
 
     RandomEngine engine(seed);
-    ImplicitParam<param::RandomEngine> randomEngine(&engine);
+    ImplicitParam<param::Random> random(Random(0));
 
     show(*generator, std::cout);
     std::cout << std::endl;

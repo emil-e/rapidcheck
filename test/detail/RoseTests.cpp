@@ -251,11 +251,10 @@ TEST_CASE("Rose") {
              RoseModel s0;
              {
                  // TODO gotta be a better way to do this
-                 RandomEngine engine(testCase.seed);
-                 ImplicitParam<param::RandomEngine> randomEngine(&engine);
+                 ImplicitParam<param::Random> randomEngine(Random(testCase.seed));
                  ImplicitParam<param::Size> size(testCase.size);
                  ImplicitParam<param::CurrentNode> currentNode(nullptr);
-                 s0.acceptedValue = *generator;
+                 s0.acceptedValue = generator.generate();
                  s0.currentValue = s0.acceptedValue;
                  s0.didShrink = false;
                  s0.i1 = 0;

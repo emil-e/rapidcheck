@@ -153,16 +153,6 @@ void RoseNode::acceptShrink()
     }
 }
 
-RandomEngine::Atom RoseNode::atom()
-{
-    if (!m_hasAtom) {
-        m_atom = ImplicitParam<param::RandomEngine>::value()->nextAtom();
-        m_hasAtom = true;
-    }
-
-    return m_atom;
-}
-
 std::vector<std::pair<std::string, std::string>> RoseNode::example(
     const gen::Generator<Any> &generator)
 {
@@ -199,6 +189,8 @@ bool RoseNode::isChildrenExhausted() const
 
 Any RoseNode::generate(const gen::Generator<Any> &generator)
 {
+    ImplicitParam<param::Random> random(
+        ImplicitParam<param::Random>::value());
     ImplicitParam<param::CurrentNode> currentNode(this);
     m_nextChild = 0;
     return generator.generate();
@@ -209,8 +201,6 @@ RoseNode::RoseNode(RoseNode &&other) noexcept
     , m_children(std::move(other.m_children))
     , m_nextChild(other.m_nextChild)
     , m_shrinkChild(other.m_shrinkChild)
-    , m_hasAtom(other.m_hasAtom)
-    , m_atom(other.m_atom)
     , m_shrinks(std::move(other.m_shrinks))
     , m_currentValue(std::move(other.m_currentValue))
     , m_acceptedValue(std::move(other.m_acceptedValue))
@@ -224,8 +214,6 @@ RoseNode &RoseNode::operator=(RoseNode &&rhs) noexcept
     m_children = std::move(rhs.m_children);
     m_nextChild = rhs.m_nextChild;
     m_shrinkChild = rhs.m_shrinkChild;
-    m_hasAtom = rhs.m_hasAtom;
-    m_atom = rhs.m_atom;
     m_shrinks = std::move(rhs.m_shrinks);
     m_currentValue = std::move(rhs.m_currentValue);
     m_acceptedValue = std::move(rhs.m_acceptedValue);

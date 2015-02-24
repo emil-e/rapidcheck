@@ -18,23 +18,15 @@ public:
         using namespace detail;
 
         int size = std::min(gen::currentSize(), gen::kNominalSize);
-        RandomEngine::Atom r;
-        // TODO this switching shouldn't be done here. pickAtom?
-        auto currentNode = ImplicitParam<param::CurrentNode>::value();
-        if (currentNode != nullptr) {
-            r = currentNode->atom();
-        } else {
-            r = ImplicitParam<param::RandomEngine>::value()->nextAtom();
-        }
+        Random::Number r = ImplicitParam<param::Random>::value().next();
 
         // We vary the size by using different number of bits. This way, we can
         // be sure that the max value can also be generated.
         int nBits = (size * std::numeric_limits<T>::digits) / gen::kNominalSize;
         if (nBits == 0)
             return 0;
-        constexpr RandomEngine::Atom randIntMax =
-            std::numeric_limits<RandomEngine::Atom>::max();
-        RandomEngine::Atom mask = ~((randIntMax - 1) << (nBits - 1));
+        constexpr auto randIntMax = std::numeric_limits<Random::Number>::max();
+        Random::Number mask = ~((randIntMax - 1) << (nBits - 1));
 
         T x = static_cast<T>(r & mask);
         if (std::numeric_limits<T>::is_signed)
@@ -43,7 +35,7 @@ public:
             // signed 64-bit integer, it won't be used since it actually IS the
             // sign bit.
             constexpr int basicBits =
-                std::numeric_limits<RandomEngine::Atom>::digits;
+                std::numeric_limits<Random::Number>::digits;
             x *= ((r >> (basicBits - 1)) == 0) ? 1 : -1;
         }
 

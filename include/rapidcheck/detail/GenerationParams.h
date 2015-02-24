@@ -1,9 +1,10 @@
 #pragma once
 
+#include "rapidcheck/Random.h"
+
 namespace rc {
 namespace detail {
 
-class RandomEngine;
 class RoseNode;
 
 namespace param {
@@ -21,9 +22,9 @@ struct NoShrink {
 };
 
 //! The current random engine.
-struct RandomEngine {
-    typedef rc::detail::RandomEngine *ValueType;
-    static rc::detail::RandomEngine *defaultValue() { return nullptr; }
+struct Random {
+    typedef rc::Random ValueType;
+    static rc::Random defaultValue() { return rc::Random({0, 0, 0, 0}); }
 };
 
 //! The current `RoseNode`.

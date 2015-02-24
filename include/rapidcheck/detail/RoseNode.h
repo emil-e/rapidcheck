@@ -35,10 +35,6 @@ public:
     //! Accepts the current shrink.
     void acceptShrink();
 
-    //! Returns an atom. If one has already been generated, it's reused. If not,
-    //! a new one is generated.
-    RandomEngine::Atom atom();
-
     //! Returns a vector of `ValueDescription`s describing the current values of
     //! the direct children. If this node has been shrunk, this method returns
     //! an empty array since theey no longer make up the value of the
@@ -93,8 +89,6 @@ private:
     // TODO use unique_ptr instead?
     std::vector<RoseNode> m_children;
     std::size_t m_nextChild = 0;
-    bool m_hasAtom = false;
-    RandomEngine::Atom m_atom;
 
     std::size_t m_shrinkChild = 0;
     Maybe<Seq<Any>> m_shrinks;
