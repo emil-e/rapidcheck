@@ -1,5 +1,8 @@
 #include "rapidcheck/Random.h"
 
+#include <iostream>
+
+#include "rapidcheck/Show.h"
 
 // A lot of this code is taken from https://github.com/wernerd/Skein3Fish but
 // highly modified.
@@ -24,7 +27,6 @@ Random Random::split()
     Random right(*this);
     append(false);
     right.append(true);
-
     return right;
 }
 
@@ -49,6 +51,7 @@ void Random::append(bool x)
     if (m_bitsi == kBits) {
         mash(m_key);
         m_bitsi = 0;
+        m_bits = 0;
     }
 
     if (x)
@@ -232,6 +235,31 @@ void Random::mash(Block &output)
     output[1] = b1 + k4 + t0;
     output[2] = b2 + k0 + t1;
     output[3] = b3 + k1 + 18;
+}
+
+bool operator==(const Random &lhs, const Random &rhs)
+{
+    return
+        (lhs.m_key == rhs.m_key) &&
+        (lhs.m_block == rhs.m_block) &&
+        (lhs.m_bits == rhs.m_bits) &&
+        (lhs.m_counter == rhs.m_counter) &&
+        (lhs.m_bitsi == rhs.m_bitsi);
+}
+
+bool operator!=(const Random &lhs, const Random &rhs)
+{ return !(lhs == rhs); }
+
+std::ostream &operator<<(std::ostream &os, const Random &random)
+{
+    os << "key=";
+    show(random.m_key, os);
+    os << ", block=";
+    show(random.m_block, os);
+    os << ", bits=" << random.m_bits;
+    os << ", counter=" << random.m_counter;
+    os << ", bitsi=" << static_cast<int>(random.m_bitsi);
+    return os;
 }
 
 } // namespace rc

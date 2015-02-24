@@ -3,8 +3,6 @@
 
 #include "rapidcheck/Random.h"
 
-#define ENOUGH 1000
-
 using namespace rc;
 
 struct Sequence
@@ -12,6 +10,13 @@ struct Sequence
     std::vector<bool> splits;
     uint64_t nexts;
 };
+
+void showValue(const Sequence &seq, std::ostream &os)
+{
+    os << "splits(" << seq.splits.size() << ")=";
+    show(seq.splits, os);
+    os << ", nexts=" << seq.nexts;
+}
 
 void runSequence(const Sequence &seq, Random &random)
 {
@@ -44,41 +49,77 @@ public:
     }
 };
 
+template<>
+class Arbitrary<Random> : public gen::Generator<Random>
+{
+public:
+    Random generate() const override
+    {
+        Random random(*gen::arbitrary<Random::Key>());
+        runSequence(*gen::arbitrary<Sequence>(), random);
+        return random;
+    }
+};
+
 } // namespace rc
 
 TEST_CASE("Random") {
-    prop("different splits yield different sequences",
-         [] {
-             auto seqs = *gen::suchThat(
-                 gen::arbitrary<std::pair<Sequence, Sequence>>(),
-                 [&](const std::pair<Sequence, Sequence> &s) {
-                     // Must be prefix-free
-                     std::size_t size = std::min(s.first.splits.size(),
-                                                 s.second.splits.size());
-                     return !std::equal(begin(s.first.splits),
-                                        begin(s.first.splits) + size,
-                                        begin(s.second.splits));
-                 });
+    prop("different splits are inequal",
+         [](Random r1) {
+             Random r2(r1.split());
+             RC_ASSERT(r1 != r2);
+         });
 
-             Random r1(*gen::arbitrary<Random::Key>());
+    prop("next modifies state",
+         [](Random r1) {
              Random r2(r1);
-             runSequence(seqs.first, r1);
-             runSequence(seqs.second, r2);
+             r2.next();
+             RC_ASSERT(r1 != r2);
+         });
 
-             for (int i = 0; i < ENOUGH; i++)
+    prop("different splits yield different sequences",
+         [](Random r1) {
+             Random r2(r1.split());
+
+             // Random numbers are generated in 256-bit blocks so if the first
+             // four are equal, it's likely the same block and something is
+             // wrong even if subsequent blocks are not equal
+             for (std::size_t i = 0; i < 4; i++)
                  RC_SUCCEED_IF(r1.next() != r2.next());
              RC_FAIL("Equal random numbers");
          });
 
+    prop("different number of nexts yield different sequences",
+         [](Random r1) {
+             Random r2(r1);
+             auto gen = gen::ranged<int>(0, 2000);
+             int n1 = *gen;
+             int n2 = *gen::distinctFrom(gen, n1);
+
+             for (std::size_t i = 0; i < n1; i++)
+                 r1.next();
+             for (std::size_t i = 0; i < n2; i++)
+                 r2.next();
+
+             for (std::size_t i = 0; i < 4; i++)
+                 RC_SUCCEED_IF(r1.next() != r2.next());
+             RC_FAIL("Equal random numbers");
+         });
+
+    prop("copies are equal",
+         [](Random r1) {
+             Random r2(r1);
+             RC_ASSERT(r1 == r2);
+         });
+
     prop("copies yield equal random numbers",
-         [](const Sequence &seq) {
-             Random random(*gen::arbitrary<Random::Key>());
-             runSequence(seq, random);
+         [](Random r1) {
+             Random r2(r1);
 
-             Random r1(random);
-             Random r2(random);
-
-             for (int i = 0; i < ENOUGH; i++) {
+             // The first N numbers could theoretically be equal even if
+             // subsequent numbers are not but the likelihood of different
+             // states generating identical 64 * N bits is very low.
+             for (std::size_t i = 0; i < 1000; i++) {
                  auto x1 = r1.next();
                  RC_ASSERT(x1 == r2.next());
              }
@@ -87,10 +128,7 @@ TEST_CASE("Random") {
     // Somewhat dubious test, I know. Hopefully, if something totally breaks,
     // it'll let us know at least.
     prop("has uniform distribution",
-         [](const Sequence &seq) {
-             Random random(*gen::arbitrary<Random::Key>());
-             runSequence(seq, random);
-
+         [](Random random) {
              std::array<uint64_t, 16> bins;
              bins.fill(0);
              const std::size_t nSamples = 200000;

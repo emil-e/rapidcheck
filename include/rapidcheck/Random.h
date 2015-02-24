@@ -11,6 +11,9 @@ namespace rc {
 //!   Generators using Cryptographic Hashing.
 class Random
 {
+    friend bool operator==(const Random &lhs, const Random &rhs);
+    friend std::ostream &operator<<(std::ostream &os, const Random &random);
+
 public:
     //! Key type
     typedef std::array<uint64_t, 4> Key;
@@ -43,5 +46,7 @@ private:
     Counter m_counter;
     uint8_t m_bitsi;
 };
+
+bool operator!=(const Random &lhs, const Random &rhs);
 
 } // namespace rc
