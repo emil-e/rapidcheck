@@ -3,7 +3,7 @@
 #include "rapidcheck/Seq.h"
 
 namespace rc {
-namespace newshrink {
+namespace shrink {
 
 //! Shrinks the given collection by trying to remove successively smaller chunks
 //! of it.
@@ -26,7 +26,7 @@ Seq<T> eachElement(T collection, ShrinkElement shrinkElement);
 template<typename T>
 Seq<T> towards(T value, T target);
 
-} // namespace newshrink
+} // namespace shrink
 } // namespace rc
 
-#include "NewShrink.hpp"
+#include "Shrink.hpp"

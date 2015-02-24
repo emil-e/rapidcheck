@@ -29,7 +29,7 @@ struct RangedProperties
                 auto generator = gen::ranged(min, max);
                 T value = *generator;
                 RC_ASSERT(generator.shrink(value) ==
-                          newshrink::towards(value, min));
+                          shrink::towards(value, min));
             });
     }
 };

@@ -1,7 +1,7 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
-#include "rapidcheck/shrink/NewShrink.h"
+#include "rapidcheck/shrink/Shrink.h"
 #include "rapidcheck/seq/Operations.h"
 
 #include "util/Util.h"
@@ -28,13 +28,13 @@ struct RemoveChunksProperties
             "first tries empty collection",
             [] {
                 auto collection = *fewNonEmptyValues;
-                RC_ASSERT(newshrink::removeChunks(collection).next()->empty());
+                RC_ASSERT(shrink::removeChunks(collection).next()->empty());
             });
 
         templatedProp<T>(
             "successively increases in size for each shrink",
             [] {
-                auto seq = newshrink::removeChunks(*fewValues);
+                auto seq = shrink::removeChunks(*fewValues);
                 T c;
                 seq::forEach(std::move(seq), [&](T &&next) {
                     RC_ASSERT(containerSize(next) >= containerSize(c));
@@ -46,7 +46,7 @@ struct RemoveChunksProperties
             "shrinks to a subset of the original",
             [] {
                 auto elements = *fewValues;
-                auto seq = newshrink::removeChunks(elements);
+                auto seq = shrink::removeChunks(elements);
                 seq::forEach(std::move(seq), [&](T &&c) {
                     auto diff(setDifference<Element>(c, elements));
                     RC_ASSERT(diff.size() == 0);
@@ -71,7 +71,7 @@ struct RemoveChunksProperties
                     i++;
                 }
 
-                RC_ASSERT(seq::contains(newshrink::removeChunks(elements),
+                RC_ASSERT(seq::contains(shrink::removeChunks(elements),
                                         builder.result()));
             });
 
@@ -79,7 +79,7 @@ struct RemoveChunksProperties
             "never yields the original value",
             [] {
                 auto elements = *fewValues;
-                RC_ASSERT(!seq::contains(newshrink::removeChunks(elements),
+                RC_ASSERT(!seq::contains(shrink::removeChunks(elements),
                                          elements));
             });
     }
@@ -87,7 +87,7 @@ struct RemoveChunksProperties
 
 } // namespace
 
-TEST_CASE("newshrink::removeChunks") {
+TEST_CASE("shrink::removeChunks") {
     meta::forEachType<RemoveChunksProperties,
                       RC_GENERIC_CONTAINERS(int),
                       std::string,
@@ -109,7 +109,7 @@ struct EachElementProperties
             "the container size stays the same",
             [&] {
                 auto elements = *smallValues;
-                auto seq = newshrink::eachElement(
+                auto seq = shrink::eachElement(
                     elements,
                     [&] (const Element &x) { return smallValue.shrink(x); });
 
@@ -121,7 +121,7 @@ struct EachElementProperties
             });
 
         TEMPLATED_SECTION(T, "has no shrinks for empty collections") {
-            auto seq = newshrink::eachElement(
+            auto seq = shrink::eachElement(
                 T(),
                 [] (const Element &x) {
                     return gen::arbitrary<Element>().shrink(x);
@@ -132,7 +132,7 @@ struct EachElementProperties
         templatedProp<T>(
             "has no shrinks if elements have no shrinks",
             [] {
-                auto seq = newshrink::eachElement(
+                auto seq = shrink::eachElement(
                     *smallValues,
                     [] (const Element &x) {
                         return Seq<Element>();
@@ -145,7 +145,7 @@ struct EachElementProperties
             "shrink counts for the iterators of the elements",
             [] {
                 auto elements = *smallValues;
-                auto seq = newshrink::eachElement(
+                auto seq = shrink::eachElement(
                     elements,
                     [=] (const Element &x) {
                         return smallValue.shrink(x);
@@ -163,7 +163,7 @@ struct EachElementProperties
             "shrinks",
             [] {
                 auto elements = *smallValues;
-                auto seq = newshrink::eachElement(
+                auto seq = shrink::eachElement(
                     elements,
                     [&] (const Element &x) {
                         return smallValue.shrink(x);
@@ -184,7 +184,7 @@ struct EachElementProperties
 
 } // namespace
 
-TEST_CASE("newshrink::eachElement") {
+TEST_CASE("shrink::eachElement") {
     meta::forEachType<EachElementProperties,
                       RC_GENERIC_CONTAINERS(int),
                       RC_STRING_TYPES,
@@ -202,7 +202,7 @@ struct ShrinkTowardsProperties
             "first tries target immediately",
             [] (T target) {
                 T value = *gen::distinctFrom(target);
-                auto seq = newshrink::towards(value, target);
+                auto seq = shrink::towards(value, target);
                 auto first = seq.next();
                 RC_ASSERT(first);
                 RC_ASSERT(*first == target);
@@ -212,7 +212,7 @@ struct ShrinkTowardsProperties
             "tries an adjacent value last",
             [] (T target) {
                 T value = *gen::distinctFrom(target);
-                auto seq = newshrink::towards(value, target);
+                auto seq = shrink::towards(value, target);
                 auto fin = seq::last(seq);
                 RC_ASSERT(fin);
                 T diff = (value > target) ? (value - *fin) : (*fin - value);
@@ -222,13 +222,13 @@ struct ShrinkTowardsProperties
         templatedProp<T>(
             "shrinking towards self yields empty shrink",
             [] (T target) {
-                RC_ASSERT(!newshrink::towards(target, target).next());
+                RC_ASSERT(!shrink::towards(target, target).next());
             });
     }
 };
 
 } // namespace
 
-TEST_CASE("newshrink::towards") {
+TEST_CASE("shrink::towards") {
     meta::forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
 }

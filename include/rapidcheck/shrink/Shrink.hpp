@@ -5,7 +5,7 @@
 #include "rapidcheck/detail/CollectionBuilder.h"
 
 namespace rc {
-namespace newshrink {
+namespace shrink {
 
 template<typename T>
 Seq<T> removeChunks(T collection)
@@ -87,5 +87,5 @@ Seq<T> towards(T value, T target)
     return seq::takeWhile([=](T x) { return x != value; }, std::move(shrinks));
 }
 
-} // namespace newshrink
+} // namespace shrink
 } // namespace rc

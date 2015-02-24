@@ -2,7 +2,7 @@
 
 #include "Generator.h"
 #include "Numeric.h"
-#include "rapidcheck/shrink/NewShrink.h"
+#include "rapidcheck/shrink/Shrink.h"
 
 namespace rc {
 namespace gen {
@@ -51,7 +51,7 @@ private:
 
     Seq<Container> shrink(const Container &value, std::true_type) const
     {
-        return newshrink::eachElement(
+        return shrink::eachElement(
             value,
             [=](typename Container::value_type element) {
                 return m_generator.shrink(std::move(element));
@@ -91,8 +91,8 @@ private:
     Seq<Container> shrink(const Container &value, std::true_type) const
     {
         return seq::concat(
-            newshrink::removeChunks(value),
-            newshrink::eachElement(
+            shrink::removeChunks(value),
+            shrink::eachElement(
                 value,
                 [=](typename Container::value_type element) {
                     return m_generator.shrink(std::move(element));
@@ -132,7 +132,7 @@ private:
 
     Seq<ArrayT> shrink(const ArrayT &value, std::true_type) const
     {
-        return newshrink::eachElement(
+        return shrink::eachElement(
             value,
             [=](typename ArrayT::value_type element) {
                 return m_generator.shrink(std::move(element));

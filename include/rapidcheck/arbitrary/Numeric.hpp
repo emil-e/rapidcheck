@@ -2,7 +2,7 @@
 
 #include "rapidcheck/gen/Generator.h"
 #include "rapidcheck/gen/Parameters.h"
-#include "rapidcheck/shrink/NewShrink.h"
+#include "rapidcheck/shrink/Shrink.h"
 
 namespace rc {
 
@@ -55,9 +55,9 @@ public:
         if (value < 0) {
             return seq::concat(
                 seq::just<T>(-value),
-                newshrink::towards<T>(value, 0));
+                shrink::towards<T>(value, 0));
         } else {
-            return newshrink::towards<T>(value, 0);
+            return shrink::towards<T>(value, 0);
         }
     }
 };

@@ -112,7 +112,7 @@ public:
                 [](std::vector<CommandSP> &&x) {
                     return CommandsT(std::move(x));
                 },
-                newshrink::removeChunks(commands.commands())));
+                shrink::removeChunks(commands.commands())));
     }
 
 private:
