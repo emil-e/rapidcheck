@@ -105,6 +105,12 @@ inline uint64_t avalanche(uint64_t x) {
     return x ^= x >> 33;
 }
 
+//! Returns a bitmask of the given type with the lowest `nbits` bits set to 1
+//! and the rest set to 0.
+template<typename T>
+constexpr T bitMask(int nbits)
+{ return ~((~static_cast<T>(0) - 1) << static_cast<T>(nbits - 1)); }
+
 // TODO separate into header and implementation file
 
 } // namespace detail
