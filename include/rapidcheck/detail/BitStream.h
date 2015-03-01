@@ -14,6 +14,10 @@ class BitStream
 public:
     explicit BitStream(Source &source);
 
+    //! Returns the next value of the given type with maximum size.
+    template<typename T>
+    T next();
+
     //! Returns the next random of the given type and number of bits.
     template<typename T>
     T next(int nbits);

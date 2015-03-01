@@ -6,6 +6,10 @@
 namespace rc {
 namespace detail {
 
+template<typename T>
+constexpr int numBits()
+{ return std::numeric_limits<T>::digits + (std::is_signed<T>::value ? 1 : 0); }
+
 template<typename Source>
 BitStream<Source>::BitStream(Source &source)
     : m_source(source)
@@ -14,11 +18,14 @@ BitStream<Source>::BitStream(Source &source)
 
 template<typename Source>
 template<typename T>
+T BitStream<Source>::next() { return next<T>(numBits<T>()); }
+
+template<typename Source>
+template<typename T>
 T BitStream<Source>::next(int nbits)
 {
     typedef decltype(m_source.next()) SourceType;
-    typedef typename std::make_unsigned<SourceType>::type SourceUType;
-    static constexpr auto sourceBits = std::numeric_limits<SourceUType>::digits;
+
     if (nbits == 0)
         return 0;
 
@@ -28,7 +35,7 @@ T BitStream<Source>::next(int nbits)
         // Out of bits, refill
         if (m_numBits == 0) {
             m_bits = m_source.next();
-            m_numBits += sourceBits;
+            m_numBits += numBits<SourceType>();
         }
 
         int n = std::min(m_numBits, wantBits);
@@ -56,9 +63,7 @@ template<typename Source>
 template<typename T>
 T BitStream<Source>::nextWithSize(int size)
 {
-    typedef typename std::make_unsigned<T>::type UInt;
-    constexpr auto maxBits = std::numeric_limits<UInt>::digits;
-    return next<T>((size * maxBits) / gen::kNominalSize);
+    return next<T>((size * numBits<T>()) / gen::kNominalSize);
 }
 
 template<typename Source>
