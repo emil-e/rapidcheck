@@ -11,19 +11,19 @@
 namespace rc {
 namespace detail {
 
-class AbstractAnyImpl
+class Any::IAnyImpl
 {
 public:
     virtual void *get() = 0;
     virtual bool isCopyable() const = 0;
-    virtual std::unique_ptr<AbstractAnyImpl> copy() const = 0;
+    virtual std::unique_ptr<IAnyImpl> copy() const = 0;
     virtual std::pair<std::string, std::string> describe() const = 0;
     virtual const std::type_info &typeInfo() const = 0;
-    virtual ~AbstractAnyImpl() = default;
+    virtual ~IAnyImpl() = default;
 };
 
 template<typename T>
-class AnyImpl : public AbstractAnyImpl
+class Any::AnyImpl : public Any::IAnyImpl
 {
 public:
     template<typename ValueT>
@@ -34,7 +34,7 @@ public:
 
     bool isCopyable() const override { return IsCopyConstructible<T>::value; }
 
-    std::unique_ptr<AbstractAnyImpl> copy() const override
+    std::unique_ptr<IAnyImpl> copy() const override
     { return copy(IsCopyConstructible<T>()); }
 
     std::pair<std::string, std::string> describe() const override
@@ -48,11 +48,11 @@ public:
 private:
     RC_DISABLE_COPY(AnyImpl)
 
-    std::unique_ptr<AbstractAnyImpl> copy(std::true_type) const
-    { return std::unique_ptr<AbstractAnyImpl>(new AnyImpl<T>(m_value)); }
+    std::unique_ptr<IAnyImpl> copy(std::true_type) const
+    { return std::unique_ptr<IAnyImpl>(new AnyImpl<T>(m_value)); }
 
     // TODO better error message
-    std::unique_ptr<AbstractAnyImpl> copy(std::false_type) const
+    std::unique_ptr<IAnyImpl> copy(std::false_type) const
     { throw std::runtime_error("Not copyable"); }
 
     T m_value;

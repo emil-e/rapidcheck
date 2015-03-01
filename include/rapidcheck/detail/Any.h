@@ -6,8 +6,6 @@ namespace rc {
 namespace detail {
 
 class ValueDescription;
-// TODO rename to IAnyImpl
-class AbstractAnyImpl;
 
 //! Variant class that can hold a value of any type.
 class Any
@@ -60,7 +58,12 @@ public:
     Any &operator=(Any &&rhs) noexcept;
 
 private:
-    std::unique_ptr<AbstractAnyImpl> m_impl;
+    class IAnyImpl;
+
+    template<typename T>
+    class AnyImpl;
+
+    std::unique_ptr<IAnyImpl> m_impl;
 };
 
 std::ostream &operator<<(std::ostream &os, const Any &value);
