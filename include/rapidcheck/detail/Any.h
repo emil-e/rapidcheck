@@ -54,8 +54,8 @@ public:
     //! value does not have a copy constructor, this method throws.
     Any &operator=(const Any &rhs);
 
-    Any(Any &&other) noexcept;
-    Any &operator=(Any &&rhs) noexcept;
+    Any(Any &&other) noexcept = default;
+    Any &operator=(Any &&rhs) noexcept = default;
 
 private:
     class IAnyImpl;

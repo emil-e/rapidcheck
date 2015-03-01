@@ -10,21 +10,12 @@ Any::Any(const Any &other)
              ? other.m_impl->copy()
              : nullptr) {}
 
-Any::Any(Any &&other) noexcept
-    : m_impl(other.m_impl.release()) {}
-
 Any &Any::operator=(const Any &rhs)
 {
     if (rhs.m_impl)
         m_impl = rhs.m_impl->copy();
     else
         m_impl.reset();
-    return *this;
-}
-
-Any &Any::operator=(Any &&rhs) noexcept
-{
-    m_impl.reset(rhs.m_impl.release());
     return *this;
 }
 

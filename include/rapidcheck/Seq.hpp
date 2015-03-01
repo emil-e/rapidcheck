@@ -50,17 +50,6 @@ Seq<T> &Seq<T>::operator=(const Seq &rhs)
     return *this;
 }
 
-template<typename T>
-Seq<T>::Seq(Seq &&other)
-    : m_impl(std::move(other.m_impl)) {}
-
-template<typename T>
-Seq<T> &Seq<T>::operator=(Seq &&rhs)
-{
-    m_impl = std::move(rhs.m_impl);
-    return *this;
-}
-
 template<typename Impl, typename ...Args>
 Seq<typename std::result_of<Impl()>::type::ValueType> makeSeq(Args &&...args)
 {
