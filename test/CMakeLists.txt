@@ -18,6 +18,7 @@ add_executable(rapidcheck_tests
   detail/RoseTests.cpp
   detail/ShowTypeTests.cpp
   detail/VariantTests.cpp
+  fn/CommonTests.cpp
   gen/CollectionTests.cpp
   gen/CommonTests.cpp
   gen/DistinctTests.cpp
