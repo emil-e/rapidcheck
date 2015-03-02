@@ -17,8 +17,6 @@ class LoggingSeqImpl : public Logger
 public:
     LoggingSeqImpl() : Logger() {}
     LoggingSeqImpl(std::string theId) : Logger(std::move(theId)) {}
-    LoggingSeqImpl(const LoggingSeqImpl &other) : Logger(other) {}
-    LoggingSeqImpl(LoggingSeqImpl &&other) : Logger(std::move(other)) {}
 
     Maybe<std::pair<std::string, std::vector<std::string>>> operator()()
     { return {{ id, log }}; }
