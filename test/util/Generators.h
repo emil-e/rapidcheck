@@ -2,6 +2,8 @@
 
 #include "rapidcheck/detail/Configuration.h"
 #include "rapidcheck/Seq.h"
+#include "rapidcheck/Shrinkable.h"
+#include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/Maybe.h"
 #include "rapidcheck/seq/Create.h"
 
@@ -147,8 +149,10 @@ public:
     {
         Seq<T> seq = value;
         std::vector<T> values;
-        while (seq)
-            values.push_back(seq.next());
+        Maybe<T> x;
+        // TODO maybe some function to convert from Seq to iterator or container
+        while ((x = seq.next()))
+            values.push_back(*x);
         return seq::map(
             [](std::vector<T> &&x) { return seq::fromContainer(x); },
             gen::arbitrary<std::vector<T>>().shrink(std::move(values)));
@@ -176,6 +180,29 @@ public:
             seq::map(
                 [](T &&x) { return Maybe<T>(x); },
                 gen::arbitrary<T>().shrink(value)));
+    }
+};
+
+template <typename T>
+class Arbitrary<Shrinkable<T>> : public gen::Generator<Shrinkable<T>>
+{
+public:
+    Shrinkable<T> generate() const override
+    {
+        return shrinkable::just(
+            *gen::arbitrary<T>(),
+            *gen::scale(0.25, gen::arbitrary<Seq<Shrinkable<T>>>()));
+    }
+
+    Seq<Shrinkable<T>> shrink(const Shrinkable<T> &value) const
+    {
+        return seq::concat(
+            seq::map([=](T &&x) {
+                return shrinkable::just(std::move(x), value.shrinks());
+            }, gen::arbitrary<T>().shrink(value.value())),
+            seq::map([=](Seq<Shrinkable<T>> &&x) {
+                return shrinkable::just(value.value(), std::move(x));
+            }, gen::arbitrary<Seq<Shrinkable<T>>>().shrink(value.shrinks())));
     }
 };
 

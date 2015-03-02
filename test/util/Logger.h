@@ -54,6 +54,9 @@ public:
     bool hasLogItem(const std::string &item)
     { return std::find(begin(log), end(log), item) != end(log); }
 
+    int numberOf(const std::string &value) const
+    { return std::count(begin(log), end(log), value); }
+
     virtual ~Logger() = default;
 
     std::string id;

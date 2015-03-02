@@ -5,6 +5,7 @@ add_executable(rapidcheck_tests
   RandomTests.cpp
   SeqTests.cpp
   ShowTests.cpp
+  ShrinkableTests.cpp
   arbitrary/CollectionTests.cpp
   arbitrary/NumericTests.cpp
   detail/AnyTests.cpp
@@ -35,6 +36,7 @@ add_executable(rapidcheck_tests
   seq/OperationsTests.cpp
   seq/TransformTests.cpp
   shrink/ShrinkTests.cpp
+  shrinkable/CreateTests.cpp
   state/StateTests.cpp
   )
 

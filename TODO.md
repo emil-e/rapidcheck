@@ -75,3 +75,5 @@
 - should gen::ranged really be shrinkable?
 - improve Variant with noexcept, enable_if for copy constructor et.c.
 - safer boolean for Maybe?
+- Nothing for Seq
+- Should Seq really allow comparison with different types?
