@@ -19,8 +19,9 @@ namespace rc {
 //! sequence.
 //!
 //! The implementation class must meet the following requirements:
-//!   - It must provide a `Maybe<T> operator()()` (i.e. it must be a functor)
-//!     which returns the next value or nothing if there are no more valeus.
+//!   - It must provide a method `Maybe<T> operator()()` (i.e. it must be a
+//!     functor) which returns the next value or nothing if there are no more
+//!     values.
 //!   - It must have a copy constructor that produces a semantically identical
 //!     copy. This means that it should provide equal values to the original.
 //!
