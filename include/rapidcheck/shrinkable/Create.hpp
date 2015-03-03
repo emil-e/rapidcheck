@@ -47,7 +47,7 @@ private:
 } // namespace detail
 
 template<typename Value, typename Shrink>
-Shrinkable<Decay<typename std::result_of<Value()>::type>>
+Shrinkable<typename std::result_of<Value()>::type>
 lambda(Value &&value, Shrink &&shrinks)
 {
     typedef detail::LambdaShrinkable<Decay<Value>, Decay<Shrink>>
@@ -71,7 +71,7 @@ Shrinkable<Decay<T>> just(T &&value)
 }
 
 template<typename Value, typename Shrink>
-Shrinkable<Decay<typename std::result_of<Value()>::type>>
+Shrinkable<typename std::result_of<Value()>::type>
 shrink(Value &&value, Shrink &&shrinkf)
 {
     typedef detail::JustShrinkShrinkable<Decay<Value>, Decay<Shrink>> Impl;
