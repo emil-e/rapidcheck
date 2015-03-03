@@ -13,15 +13,11 @@ TEST_CASE("shrinkable::lambda") {
     SECTION("calls the value callable when value is called each time") {
         int calledTimes = 0;
         const auto shrinkable = shrinkable::lambda(
-            [&] {
-                calledTimes++;
-                return 1337;
-            },
+            [&] { return calledTimes++; },
             [] { return Seq<Shrinkable<int>>(); });
 
-        REQUIRE(shrinkable.value() == 1337);
-        REQUIRE(shrinkable.value() == 1337);
-        REQUIRE(calledTimes == 2);
+        REQUIRE(shrinkable.value() == 0);
+        REQUIRE(shrinkable.value() == 1);
     }
 
     SECTION("calls shrinks() of the implementation object") {
@@ -34,7 +30,9 @@ TEST_CASE("shrinkable::lambda") {
                 return shrinks;
             });
 
+        REQUIRE(calledTimes == 0);
         REQUIRE(shrinkable.shrinks() == shrinks);
+        REQUIRE(calledTimes == 1);
         REQUIRE(shrinkable.shrinks() == shrinks);
         REQUIRE(calledTimes == 2);
     }
