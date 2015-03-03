@@ -5,6 +5,7 @@
 
 #include "util/Logger.h"
 #include "util/Generators.h"
+#include "util/CopyGuard.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -48,13 +49,8 @@ TEST_CASE("shrinkable::just") {
 
     SECTION("does not copy on construction if rvalues") {
         const auto shrinkable = shrinkable::just(
-            Logger("value"),
-            seq::just(shrinkable::just(Logger("shrink"))));
-        const auto value = shrinkable.value();
-        REQUIRE(value.numberOf("copy constructed") == 1);
-        const auto shrink = shrinkable.shrinks().next();
-        REQUIRE(shrink);
-        REQUIRE(shrink->value().numberOf("copy constructed") == 2);
+            CopyGuard(),
+            seq::just(shrinkable::just(CopyGuard())));
     }
 }
 
@@ -115,4 +111,9 @@ TEST_CASE("shrinkable::shrinkRecur") {
 
              RC_ASSERT(shrinkable == shrinkable::just(expected));
          });
+
+    SECTION("does not copy value on construction if rvalue") {
+        const auto shrinkable = shrinkable::shrinkRecur(
+            CopyGuard(), [](const CopyGuard &) { return Seq<CopyGuard>(); });
+    }
 }
