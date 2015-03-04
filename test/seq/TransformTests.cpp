@@ -74,7 +74,7 @@ TEST_CASE("seq::dropWhile") {
          [] (const std::vector<int> &elements, int limit) {
              const auto pred = [=](int x) { return x < limit; };
              const auto it = std::find_if(begin(elements), end(elements),
-                                          [&](int x) { return !pred(x); });
+                                          [=](int x) { return !pred(x); });
              RC_ASSERT(seq::dropWhile(pred, seq::fromContainer(elements)) ==
                        seq::fromIteratorRange(it, end(elements)));
          });
@@ -106,7 +106,7 @@ TEST_CASE("seq::takeWhile") {
          [] (const std::vector<int> &elements, int limit) {
              const auto pred = [=](int x) { return x < limit; };
              const auto it = std::find_if(begin(elements), end(elements),
-                                          [&](int x) { return !pred(x); });
+                                          [=](int x) { return !pred(x); });
              RC_ASSERT(seq::takeWhile(pred, seq::fromContainer(elements)) ==
                        seq::fromIteratorRange(begin(elements), it));
          });
@@ -340,9 +340,9 @@ TEST_CASE("seq::concat") {
 TEST_CASE("seq::mapcat") {
     prop("equivalent to seq::join(seq::map(...))",
          [](std::vector<int> c1, std::vector<int> c2) {
-             auto seq1 = seq::fromContainer(std::move(c1));
-             auto seq2 = seq::fromContainer(std::move(c2));
-             auto mapper = [](int &&a, int &&b) { return seq::just(a, b); };
+             const auto seq1 = seq::fromContainer(std::move(c1));
+             const auto seq2 = seq::fromContainer(std::move(c2));
+             const auto mapper = [](int &&a, int &&b) { return seq::just(a, b); };
 
              RC_ASSERT(seq::mapcat(mapper, seq1, seq2) ==
                        seq::join(seq::map(mapper, seq1, seq2)));
@@ -350,9 +350,24 @@ TEST_CASE("seq::mapcat") {
 
     prop("copies are equal",
          [](std::vector<int> c1, std::vector<int> c2) {
+             const auto seq1 = seq::fromContainer(std::move(c1));
+             const auto seq2 = seq::fromContainer(std::move(c2));
+             const auto mapper = [](int &&a, int &&b) { return seq::just(a, b); };
+
+             assertEqualCopies(seq::mapcat(mapper, seq1, seq2));
+         });
+
+    prop("does not copy elements",
+         [](std::vector<CopyGuard> c1, std::vector<CopyGuard> c2) {
              auto seq1 = seq::fromContainer(std::move(c1));
              auto seq2 = seq::fromContainer(std::move(c2));
-             auto mapper = [](int &&a, int &&b) { return seq::just(a, b); };
+             const auto mapper = [](CopyGuard &&a, CopyGuard &&b) {
+                 return seq::just(std::move(a), std::move(b));
+             };
+             auto seq = seq::mapcat(mapper, std::move(seq1), std::move(seq2));
+             while (seq.next());
+         });
+}
 
 TEST_CASE("seq::mapMaybe") {
     prop("removes elements for which mapper evaluates to Nothing",
@@ -435,7 +450,7 @@ TEST_CASE("seq::cycle") {
 TEST_CASE("seq::cast") {
     prop("returns Seq is equal to original seq except for type",
          [](const std::vector<uint8_t> &elements) {
-             auto seq = seq::fromContainer(elements);
+             const auto seq = seq::fromContainer(elements);
              RC_ASSERT(seq::cast<int>(seq) == seq);
          });
 
