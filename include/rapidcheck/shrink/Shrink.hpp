@@ -47,29 +47,22 @@ Seq<T> eachElement(T collection, ShrinkElement shrinkElement)
         elements.push_back(std::move(item));
 
     return seq::mapcat(
-        [=](std::size_t index, ElementT &&value) {
+        [elements, shrinkElement](std::size_t index, ElementT &&value) {
             // TODO this capturing... safe to capture by reference?
-            auto maybeShrinks = seq::map([&elements, index](
-                ElementT &&shrinkValue) -> Maybe<T>
-            {
-                detail::CollectionBuilder<T> builder;
-                for (std::size_t i = 0; i < elements.size(); i++) {
-                    bool success = (i == index)
-                        ? builder.add(shrinkValue)
-                        : builder.add(elements[i]);
-                    if (success)
-                        return Nothing;
-                }
-                return std::move(builder.result());
-            }, shrinkElement(std::move(value)));
-
-            return seq::map(
-                [](Maybe<T> &&x) { return std::move(*x); },
-                seq::filter([](const Maybe<T> &x) { return bool(x); },
-                            std::move(maybeShrinks)));
+            return seq::mapMaybe(
+                [&elements, index](ElementT &&shrinkValue) -> Maybe<T> {
+                    detail::CollectionBuilder<T> builder;
+                    for (std::size_t i = 0; i < elements.size(); i++) {
+                        bool success = (i == index) ? builder.add(shrinkValue)
+                            : builder.add(elements[i]);
+                        if (success)
+                            return Nothing;
+                    }
+                    return std::move(builder.result());
+                },
+                shrinkElement(std::move(value)));
         },
-        seq::index(),
-        seq::fromContainer(elements));
+        seq::index(), seq::fromContainer(elements));
 }
 
 template<typename T>

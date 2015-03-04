@@ -354,7 +354,51 @@ TEST_CASE("seq::mapcat") {
              auto seq2 = seq::fromContainer(std::move(c2));
              auto mapper = [](int &&a, int &&b) { return seq::just(a, b); };
 
-             assertEqualCopies(seq::mapcat(mapper, seq1, seq2));
+TEST_CASE("seq::mapMaybe") {
+    prop("removes elements for which mapper evaluates to Nothing",
+         [](const std::vector<int> &elements) {
+             const auto seq = seq::fromContainer(elements);
+             const auto pred = [](int x) { return (x % 2) == 0; };
+             const auto maybeSeq = seq::mapMaybe(
+                 [=](int x) -> Maybe<int> {
+                     return pred(x) ? Maybe<int>(x) : Nothing;
+                 }, seq);
+             RC_ASSERT(maybeSeq == seq::filter(pred, seq));
+         });
+
+    prop("for elements that are not Nothing, unwraps the contents",
+         [](const std::vector<int> &e1, const std::vector<int> &e2) {
+             const auto seq1 = seq::fromContainer(e1);
+             const auto seq2 = seq::fromContainer(e2);
+             const auto mapper = [](int x, int y) { return x + y; };
+             const auto maybeSeq = seq::mapMaybe(
+                 [=](int x, int y) -> Maybe<int> { return mapper(x, y); },
+                 seq1, seq2);
+             RC_ASSERT(maybeSeq == seq::map(mapper, seq1, seq2));
+         });
+
+    prop("copies are equal",
+         [](const std::vector<int> &e1, const std::vector<int> &e2) {
+             const auto seq1 = seq::fromContainer(e1);
+             const auto seq2 = seq::fromContainer(e2);
+             assertEqualCopies(
+                 seq::mapMaybe(
+                     [=](int x, int y) -> Maybe<int> { return x + y; },
+                     seq1, seq2));
+         });
+
+    prop("does not copy elements",
+         [](std::vector<CopyGuard> e1, std::vector<CopyGuard> e2) {
+             auto seq1 = seq::fromContainer(std::move(e1));
+             auto seq2 = seq::fromContainer(std::move(e2));
+             auto seq = seq::mapMaybe(
+                     [=](CopyGuard x, CopyGuard y)
+                         -> Maybe<std::pair<CopyGuard, CopyGuard>>
+                     {
+                         return {{std::move(x), std::move(y)}};
+                     },
+                     std::move(seq1), std::move(seq2));
+             while (seq.next());
          });
 }
 

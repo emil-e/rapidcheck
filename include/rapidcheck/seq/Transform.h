@@ -51,6 +51,13 @@ template<typename ...Ts, typename Mapper>
 Seq<typename std::result_of<Mapper(Ts...)>::type::ValueType>
 mapcat(Mapper &&mapper, Seq<Ts> ...seqs);
 
+//! Like `map` but expects the mapping functor to return a `Maybe`. If `Nothing`
+//! is returned, the element is skipped. Otherwise, the `Maybe` is unwrapped and
+//! included in the resulting `Seq`.
+template<typename ...Ts, typename Mapper>
+Seq<typename std::result_of<Mapper(Ts...)>::type::ValueType>
+mapMaybe(Mapper &&mapper, Seq<Ts> ...seqs);
+
 //! Creates a `Seq` which infinitely repeats the given `Seq`.
 template<typename T>
 Seq<T> cycle(Seq<T> seq);
