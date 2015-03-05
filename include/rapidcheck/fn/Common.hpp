@@ -7,7 +7,9 @@ template<typename T>
 class Constant
 {
 public:
-    template<typename Arg>
+    template<typename Arg,
+             typename = typename std::enable_if<
+                 !std::is_same<Decay<Arg>, Constant>::value>::type>
     explicit Constant(Arg &&arg)
         : m_value(std::forward<Arg>(arg)) {}
 
