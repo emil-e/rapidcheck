@@ -3,6 +3,7 @@
 
 #include "rapidcheck/shrinkable/Transform.h"
 #include "rapidcheck/shrinkable/Create.h"
+#include "rapidcheck/shrinkable/Operations.h"
 
 #include "util/Generators.h"
 #include "util/CopyGuard.h"
@@ -67,3 +68,24 @@ TEST_CASE("shrinkable::mapShrinks") {
          });
 }
 
+TEST_CASE("shrinkable::filter") {
+    prop("returns Nothing if predicate returns false for value",
+         [](int x) {
+             const auto shrinkable = shrinkable::just(x);
+             RC_ASSERT(!shrinkable::filter(fn::constant(false), shrinkable));
+         });
+
+    prop("returned shrinkable does not contain any value for which predicate"
+         " returns false",
+         [] {
+             const auto pred = [](int x) { return (x % 2) == 0; };
+             const auto shrinkable = *gen::suchThat<Shrinkable<int>>(
+                 [&](const Shrinkable<int> &x) {
+                     return pred(x.value());
+                 });
+             const auto filtered = *shrinkable::filter(pred, shrinkable);
+             RC_ASSERT(shrinkable::all(filtered, [&](const Shrinkable<int> &s) {
+                 return pred(s.value());
+             }));
+         });
+}

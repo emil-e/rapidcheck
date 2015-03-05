@@ -16,6 +16,12 @@ map(Mapper &&mapper, Shrinkable<T> shrinkable);
 template<typename T, typename Mapper>
 Shrinkable<T> mapShrinks(Mapper &&mapper, Shrinkable<T> shrinkable);
 
+//! Recursively filters the given shrinkable using the given predicate. Any
+//! subtree with a root for which the predicate returns false is discarded,
+//! including the passed in root which is why this function returns a `Maybe`.
+template<typename T, typename Predicate>
+Maybe<Shrinkable<T>> filter(Predicate pred, Shrinkable<T> shrinkable);
+
 } // namespace shrinkable
 } // namespace rc
 

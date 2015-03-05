@@ -68,5 +68,18 @@ Shrinkable<T> mapShrinks(Mapper &&mapper, Shrinkable<T> shrinkable)
                                 std::move(shrinkable));
 }
 
+template<typename T, typename Predicate>
+Maybe<Shrinkable<T>> filter(Predicate pred, Shrinkable<T> shrinkable)
+{
+    if (!pred(shrinkable.value()))
+        return Nothing;
+
+    return shrinkable::mapShrinks([=](Seq<Shrinkable<T>> &&shrinks) {
+        return seq::mapMaybe([=](Shrinkable<T> &&shrink) {
+            return shrinkable::filter(pred, std::move(shrink));
+        }, std::move(shrinks));
+    }, std::move(shrinkable));
+}
+
 } // namespace shrinkable
 } // namespace rc
