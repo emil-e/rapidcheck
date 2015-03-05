@@ -2,11 +2,8 @@
 
 namespace rc {
 
-//! Tag struct that can be used to construct a `Maybe` to an initialized state.
-struct NothingType {
-    //! Implicit conversion to false.
-    operator bool() const { return false; }
-};
+//! Tag struct that can be used to construct a `Maybe` to an uninitialized state.
+struct NothingType {};
 
 //! Singleton NothingType value.
 constexpr NothingType Nothing = NothingType();
