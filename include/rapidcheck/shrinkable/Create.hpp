@@ -59,7 +59,7 @@ lambda(Value &&value, Shrink &&shrinks)
 template<typename T, typename Value, typename>
 Shrinkable<T> just(Value &&value, Seq<Shrinkable<T>> shrinks)
 {
-    return shrinkable::lambda(fn::constant(std::forward<T>(value)),
+    return shrinkable::lambda(fn::constant(std::forward<Value>(value)),
                               fn::constant(std::move(shrinks)));
 }
 
