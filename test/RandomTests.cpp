@@ -3,65 +3,9 @@
 
 #include "rapidcheck/Random.h"
 
+#include "util/ArbitraryRandom.h"
+
 using namespace rc;
-
-struct Sequence
-{
-    std::vector<bool> splits;
-    uint64_t nexts;
-};
-
-void showValue(const Sequence &seq, std::ostream &os)
-{
-    os << "splits(" << seq.splits.size() << ")=";
-    show(seq.splits, os);
-    os << ", nexts=" << seq.nexts;
-}
-
-void runSequence(const Sequence &seq, Random &random)
-{
-    for (bool x : seq.splits) {
-        if (!x)
-            random.split();
-        else
-            random = random.split();
-    }
-
-    for (uint64_t i = 0; i < seq.nexts; i++)
-        random.next();
-}
-
-namespace rc {
-
-template<>
-class Arbitrary<Sequence> : public gen::Generator<Sequence>
-{
-public:
-    Sequence generate() const override
-    {
-        auto values = *gen::pairOf(
-            gen::arbitrary<std::vector<bool>>(),
-            gen::ranged<uint64_t>(0, 10000));
-        Sequence seq;
-        seq.splits = values.first;
-        seq.nexts = values.second;
-        return seq;
-    }
-};
-
-template<>
-class Arbitrary<Random> : public gen::Generator<Random>
-{
-public:
-    Random generate() const override
-    {
-        Random random(*gen::arbitrary<Random::Key>());
-        runSequence(*gen::arbitrary<Sequence>(), random);
-        return random;
-    }
-};
-
-} // namespace rc
 
 TEST_CASE("Random") {
     prop("different keys yield inequal generators",
