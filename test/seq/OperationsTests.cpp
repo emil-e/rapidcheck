@@ -80,3 +80,17 @@ TEST_CASE("seq::all") {
              RC_ASSERT(!seq::all(seq, [=](int x) { return x == value; }));
          });
 }
+
+TEST_CASE("seq::any") {
+    prop("seq::any(..., pred) != seq::all(..., !pred)",
+         [] {
+             auto someNumber = gen::ranged<std::size_t>(0, 200);
+             int x = *someNumber;
+             auto elements = *gen::collection<std::vector<int>>(someNumber);
+             auto seq = seq::fromContainer(elements);
+             const auto pred = [=](int y) { return x == y; };
+             const auto npred = [=](int y) { return x != y; };
+             RC_ASSERT(seq::any(seq, pred) != seq::all(seq, npred));
+         });
+}
+

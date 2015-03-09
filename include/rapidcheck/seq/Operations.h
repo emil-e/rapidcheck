@@ -27,6 +27,11 @@ bool contains(Seq<T> seq, const T &value);
 template<typename T, typename Predicate>
 bool all(Seq<T> seq, Predicate pred);
 
+//! Returns true if the given predicate matches any of the elements in the given
+//! `Seq`.
+template<typename T, typename Predicate>
+bool any(Seq<T> seq, Predicate pred);
+
 } // namespace seq
 } // namespace rc
 

@@ -59,5 +59,17 @@ bool all(Seq<T> seq, Predicate pred)
     return true;
 }
 
+template<typename T, typename Predicate>
+bool any(Seq<T> seq, Predicate pred)
+{
+    Maybe<T> x;
+    while ((x = seq.next())) {
+        if (pred(*x))
+            return true;
+    }
+
+    return false;
+}
+
 } // namespace seq
 } // namespace rc
