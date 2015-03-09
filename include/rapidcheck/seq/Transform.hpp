@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rapidcheck/detail/Meta.h"
+#include "rapidcheck/detail/IntSequence.h"
 #include "rapidcheck/seq/Create.h"
 
 namespace rc {
