@@ -19,6 +19,7 @@ add_library(rapidcheck
   src/detail/RoseNode.cpp
   src/detail/Utility.cpp
   src/gen/Generator.cpp
+  src/newgen/detail/GenerationHandler.cpp
   )
 
 target_include_directories(rapidcheck PUBLIC include)
