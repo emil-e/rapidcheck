@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/seq/Transform.h"
+
 namespace rc {
 namespace shrinkable {
 namespace detail {

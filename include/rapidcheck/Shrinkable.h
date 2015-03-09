@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/Seq.h"
+
 namespace rc {
 
 //! A `Shrinkable` describes a value in addition to all the possible ways of
