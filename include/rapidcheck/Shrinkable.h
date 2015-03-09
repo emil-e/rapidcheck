@@ -38,8 +38,8 @@ public:
 
     Shrinkable(const Shrinkable &other);
     Shrinkable &operator=(const Shrinkable &rhs);
-    Shrinkable(Shrinkable &&other) = default;
-    Shrinkable &operator=(Shrinkable &&rhs) = default;
+    Shrinkable(Shrinkable &&other) noexcept = default;
+    Shrinkable &operator=(Shrinkable &&rhs) noexcept = default;
 
 private:
     class IShrinkableImpl;

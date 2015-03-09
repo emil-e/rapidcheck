@@ -55,8 +55,8 @@ public:
 
     Seq(const Seq &other);
     Seq &operator=(const Seq &rhs);
-    Seq(Seq &&other) = default;
-    Seq &operator=(Seq &&rhs) = default;
+    Seq(Seq &&other) noexcept = default;
+    Seq &operator=(Seq &&rhs) noexcept = default;
 
 private:
     class ISeqImpl;
