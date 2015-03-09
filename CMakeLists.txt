@@ -20,6 +20,7 @@ add_library(rapidcheck
   src/detail/Utility.cpp
   src/gen/Generator.cpp
   src/newgen/detail/GenerationHandler.cpp
+  src/newgen/detail/Recipe.cpp
   )
 
 target_include_directories(rapidcheck PUBLIC include)
