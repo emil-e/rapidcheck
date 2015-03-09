@@ -71,5 +71,17 @@ bool any(Seq<T> seq, Predicate pred)
     return false;
 }
 
+template<typename T>
+Maybe<T> at(Seq<T> seq, std::size_t index)
+{
+    for (std::size_t i = 0; i < index; i++) {
+        auto x = seq.next();
+        if (!x)
+            return Nothing;
+    }
+
+    return seq.next();
+}
+
 } // namespace seq
 } // namespace rc

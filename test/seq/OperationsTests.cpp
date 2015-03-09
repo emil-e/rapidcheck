@@ -94,3 +94,21 @@ TEST_CASE("seq::any") {
          });
 }
 
+TEST_CASE("seq::at") {
+    prop("returns the element at the given position if index < size",
+         [] {
+             const auto elements = *gen::suchThat<std::vector<int>>(
+                 [](const std::vector<int> &x) { return !x.empty(); });
+             std::size_t i = *gen::ranged<std::size_t>(0, elements.size());
+             auto x = seq::at(seq::fromContainer(elements), i);
+             RC_ASSERT(x);
+             RC_ASSERT(*x == elements[i]);
+         });
+
+    prop("returns Nothing for indexes past end",
+         [](int x) {
+             std::size_t n = *gen::ranged<std::size_t>(0, 100);
+             std::size_t i = *gen::ranged<std::size_t>(n, 200);
+             RC_ASSERT(!seq::at(seq::take(n, seq::repeat(x)), i));
+         });
+}

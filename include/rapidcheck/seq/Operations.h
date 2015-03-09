@@ -32,6 +32,11 @@ bool all(Seq<T> seq, Predicate pred);
 template<typename T, typename Predicate>
 bool any(Seq<T> seq, Predicate pred);
 
+//! Returns the item at the given index or `Nothing` if the `Seq` ends before
+//! that index. O(n) complexity.
+template<typename T>
+Maybe<T> at(Seq<T> seq, std::size_t index);
+
 } // namespace seq
 } // namespace rc
 
