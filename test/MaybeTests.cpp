@@ -12,6 +12,12 @@
 using namespace rc;
 using namespace rc::test;
 
+TEST_CASE("Nothing") {
+    SECTION("convertible to boolean false") {
+        REQUIRE_FALSE(Nothing);
+    }
+}
+
 TEST_CASE("Maybe") {
     Logger foo("foo");
     Logger bar("bar");

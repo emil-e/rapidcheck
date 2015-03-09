@@ -36,7 +36,7 @@ public:
     std::pair<std::string, std::string> describe() const;
 
     //! Returns `true` if this `Any` is non-null.
-    operator bool() const;
+    explicit operator bool() const;
 
     //! Returns `true` if this `Any` is copyable. Non-copyable `Any` will throw
     //! an exception if a copy is attempted.

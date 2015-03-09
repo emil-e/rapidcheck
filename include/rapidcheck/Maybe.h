@@ -2,8 +2,11 @@
 
 namespace rc {
 
-//! Tag struct that can be used to construct a `Maybe` to an uninitialized state.
-struct NothingType {};
+//! Tag struct that can be used to construct a `Maybe` to an initialized state.
+struct NothingType {
+    //! Explicit conversion to false.
+    explicit operator bool() const { return false; }
+};
 
 //! Singleton NothingType value.
 constexpr NothingType Nothing = NothingType();
@@ -64,7 +67,7 @@ public:
     const T *operator->() const;
 
     //! Returns true if this `Maybe` is initialized.
-    operator bool() const;
+    explicit operator bool() const;
 
     Maybe(const Maybe &other) noexcept(
         std::is_nothrow_copy_constructible<T>::value);
