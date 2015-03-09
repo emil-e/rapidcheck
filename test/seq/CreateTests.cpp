@@ -118,8 +118,10 @@ TEST_CASE("seq::fromContainer") {
 TEST_CASE("seq::fromIteratorRange") {
     prop("creates a sequence that returns the values in the range",
          [] (const std::vector<int> &elements) {
-             const int start = *gen::ranged<int>(0, elements.size());
-             const int end = *gen::ranged<int>(start, elements.size());
+             const int r1 = *gen::ranged<int>(0, elements.size() + 1);
+             const int r2 = *gen::ranged<int>(0, elements.size() + 1);
+             const int start = std::min(r1, r2);
+             const int end = std::max(r1, r2);
              const auto startIt = elements.begin() + start;
              const auto endIt = elements.begin() + end;
              std::vector<int> subElements(startIt, endIt);

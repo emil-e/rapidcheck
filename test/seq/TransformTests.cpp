@@ -14,7 +14,8 @@ using namespace rc::test;
 TEST_CASE("seq::drop") {
     prop("drops the first N elements from the given seq",
          [] (const std::vector<int> &elements) {
-             std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
+             std::size_t n = *gen::ranged<std::size_t>(
+                 0, (elements.size() + 1) * 2);
              std::size_t start = std::min(elements.size(), n);
              std::vector<int> rest(elements.begin() + start, elements.end());
              RC_ASSERT(seq::drop(n, seq::fromContainer(elements)) ==
@@ -23,13 +24,15 @@ TEST_CASE("seq::drop") {
 
     prop("copies are equal",
          [] (const std::vector<int> &elements) {
-             std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
+             std::size_t n = *gen::ranged<std::size_t>(
+                 0, (elements.size() + 1) * 2);
              assertEqualCopies(seq::drop(n, seq::fromContainer(elements)));
          });
 
     prop("does not copy items",
          [] (std::vector<CopyGuard> elements) {
-             std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
+             std::size_t n = *gen::ranged<std::size_t>(
+                 0, (elements.size() + 1) * 2);
              auto seq = seq::drop(n, seq::fromContainer(std::move(elements)));
              while (seq.next());
          });
@@ -42,7 +45,8 @@ TEST_CASE("seq::drop") {
 TEST_CASE("seq::take") {
     prop("takes the first N elements from the given seq",
          [] (const std::vector<int> &elements) {
-             std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
+             std::size_t n = *gen::ranged<std::size_t>(
+                 0, (elements.size() + 1) * 2);
              std::size_t start = std::min(elements.size(), n);
              std::vector<int> head(elements.begin(), elements.begin() + start);
              RC_ASSERT(seq::take(n, seq::fromContainer(elements)) ==
@@ -51,14 +55,16 @@ TEST_CASE("seq::take") {
 
     prop("copies are equal",
          [] (const std::vector<int> &elements) {
-             std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
+             std::size_t n = *gen::ranged<std::size_t>(
+                 0, (elements.size() + 1) * 2);
              std::size_t start = std::min(elements.size(), n);
              assertEqualCopies(seq::take(n, seq::fromContainer(elements)));
          });
 
     prop("does not copy items",
          [] (std::vector<CopyGuard> elements) {
-             std::size_t n = *gen::ranged<std::size_t>(0, elements.size() * 2);
+             std::size_t n = *gen::ranged<std::size_t>(
+                 0, (elements.size() + 1) * 2);
              std::size_t start = std::min(elements.size(), n);
              auto seq = seq::take(n, seq::fromContainer(std::move(elements)));
              while (seq.next());

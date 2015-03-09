@@ -14,7 +14,7 @@ public:
 
     T generate() const override
     {
-        if (m_max < m_min) {
+        if (m_max <= m_min) {
             std::string msg;
             msg += "Invalid range [" + std::to_string(m_min);
             msg += ", " + std::to_string(m_max) + ")";

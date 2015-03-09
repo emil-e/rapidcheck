@@ -18,7 +18,7 @@ class ErraticInt : public gen::Generator<int>
 {
 public:
     int generate() const override
-    { return gen::ranged<int>(0, gen::currentSize()).generate(); }
+    { return gen::ranged<int>(0, gen::currentSize() + 1).generate(); }
 
     Seq<int> shrink(int value) const override
     {
@@ -273,7 +273,7 @@ TEST_CASE("Rose") {
     prop("shrinking of one value does not affect other unrelated values",
          [] (const TestCase &testCase) {
              // TODO this test is a bit hard to understand, document or refactor
-             auto size = *gen::ranged<std::size_t>(0, gen::currentSize());
+             auto size = *gen::ranged<std::size_t>(0, gen::currentSize() + 1);
              std::vector<ErraticSum> generators(size);
              auto generator = gen::scale(0.1, VectorGen<ErraticSum>(generators));
              Rose<std::vector<int>> rose(&generator, testCase);
@@ -296,7 +296,7 @@ TEST_CASE("Rose") {
 
     prop("honors the NoShrink parameter",
          [] (const TestCase &testCase) {
-             auto size = *gen::ranged<int>(1, gen::currentSize() + 1);
+             auto size = *gen::ranged<int>(0, gen::currentSize() + 1) + 1;
              auto i = *gen::ranged<int>(0, size);
              auto elementGen = gen::scale(0.05, gen::arbitrary<std::vector<uint8_t>>());
              OptionalShrink<decltype(elementGen)> shrinkGen(elementGen, true);

@@ -18,7 +18,7 @@ struct VectorTests
         templatedProp<T>(
             "uses the given generator for elements",
             [] {
-                auto size = *gen::ranged<std::size_t>(0, gen::currentSize());
+                auto size = *gen::ranged<std::size_t>(0, gen::currentSize() + 1);
                 auto egen = gen::arbitrary<typename T::value_type>();
                 auto elements = *gen::noShrink(gen::vector<T>(size, egen));
                 for (const auto &e : elements)
@@ -28,7 +28,7 @@ struct VectorTests
         templatedProp<T>(
             "generates collections of the given size",
             [] {
-                auto size = *gen::ranged<std::size_t>(0, gen::currentSize());
+                auto size = *gen::ranged<std::size_t>(0, gen::currentSize() + 1);
                 auto egen = gen::arbitrary<typename T::value_type>();
                 auto elements = *gen::noShrink(gen::vector<T>(size, egen));
                 auto actualSize = std::distance(begin(elements),
@@ -48,7 +48,7 @@ struct NonCopyableVectorTests
         templatedProp<T>(
             "works with non-copyable types",
             [] {
-                auto size = *gen::ranged<std::size_t>(0, gen::currentSize());
+                auto size = *gen::ranged<std::size_t>(0, gen::currentSize() + 1);
                 auto coll = *gen::noShrink(
                     gen::vector<T>(size, gen::arbitrary<Element>()));
                 for (const auto &e : coll)

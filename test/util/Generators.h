@@ -61,7 +61,7 @@ public:
     detail::TestCase generate() const override
     {
         detail::TestCase testCase;
-        testCase.size = *gen::ranged<int>(0, gen::currentSize());
+        testCase.size = *gen::ranged<int>(0, gen::currentSize() + 1);
         testCase.seed = *gen::arbitrary<decltype(testCase.seed)>();
         return testCase;
     }

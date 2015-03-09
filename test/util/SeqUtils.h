@@ -11,11 +11,14 @@ template<typename T>
 void assertEqualCopies(Seq<T> seq)
 {
     std::size_t len = seq::length(seq);
-    std::size_t n = *gen::ranged<std::size_t>(0, len * 2);
-    while (n--)
-        seq.next();
+    if (len != 0) {
+        std::size_t n = *gen::ranged<std::size_t>(0, len * 2);
+        while (n--)
+            seq.next();
+    }
     const auto copy = seq;
     RC_ASSERT(copy == seq);
+
 }
 
 } // namespace test
