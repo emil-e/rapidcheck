@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/detail/IntSequence.h"
+
 namespace rc {
 namespace detail {
 
@@ -14,7 +16,7 @@ struct ApplyTupleImpl<std::tuple<Ts...>,
                       Callable,
                       IndexSequence<Indexes...>>
 {
-    typedef typename std::result_of<Callable(Ts...)>::type ReturnType;
+    typedef typename std::result_of<Callable(Ts &&...)>::type ReturnType;
 
     static ReturnType apply(std::tuple<Ts...> &&tuple, Callable &&callable)
     { return callable(std::move(std::get<Indexes>(tuple))...); }
@@ -25,10 +27,9 @@ struct ApplyTupleImpl<std::tuple<Ts...> &,
                       Callable,
                       IndexSequence<Indexes...>>
 {
-    typedef typename std::result_of<Callable(Ts...)>::type ReturnType;
+    typedef typename std::result_of<Callable(Ts &...)>::type ReturnType;
 
-    static typename std::result_of<Callable(Ts...)>::type
-    apply(std::tuple<Ts...> &tuple, Callable &&callable)
+    static ReturnType apply(std::tuple<Ts...> &tuple, Callable &&callable)
     { return callable(std::get<Indexes>(tuple)...); }
 };
 
@@ -37,10 +38,9 @@ struct ApplyTupleImpl<const std::tuple<Ts...> &,
                       Callable,
                       IndexSequence<Indexes...>>
 {
-    typedef typename std::result_of<Callable(Ts...)>::type ReturnType;
+    typedef typename std::result_of<Callable(const Ts &...)>::type ReturnType;
 
-    static typename std::result_of<Callable(Ts...)>::type
-    apply(const std::tuple<Ts...> &tuple, Callable &&callable)
+    static ReturnType apply(const std::tuple<Ts...> &tuple, Callable &&callable)
     { return callable(std::get<Indexes>(tuple)...); }
 };
 
