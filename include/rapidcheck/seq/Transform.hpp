@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rapidcheck/detail/IntSequence.h"
+#include "rapidcheck/detail/ApplyTuple.h"
 #include "rapidcheck/seq/Create.h"
 
 namespace rc {
@@ -120,38 +120,42 @@ private:
     Seq<T> m_seq;
 };
 
-static inline bool allTrue() { return true; }
-
-template<typename T, typename ...Ts>
-bool allTrue(const T &arg, const Ts &...args)
-{ return arg && allTrue(args...); }
-
-template<typename Mapper, typename Indexes, typename ...Ts>
-class MapSeq;
-
-template<typename Mapper,
-         std::size_t ...Indexes,
-         typename ...Ts>
-class MapSeq<Mapper, ::rc::detail::IndexSequence<Indexes...>, Ts...>
+template<typename Mapper, typename ...Ts>
+class MapSeq
 {
 public:
+    typedef typename std::result_of<Mapper(Ts...)>::type U;
+
     template<typename MapperArg>
     MapSeq(MapperArg &&mapper, Seq<Ts> ...seqs)
         : m_mapper(std::forward<MapperArg>(mapper))
         , m_seqs(std::move(seqs)...) {}
 
-    Maybe<typename std::result_of<Mapper(Ts...)>::type> operator()()
+    Maybe<U> operator()()
     {
-        std::tuple<Maybe<Ts>...> values(std::get<Indexes>(m_seqs).next()...);
-        if (!allTrue(std::get<Indexes>(values)...)) {
+        return rc::detail::applyTuple(m_seqs, [this](Seq<Ts> &...seqs) {
+            return mapMaybes(seqs.next()...);
+        });
+    }
+
+private:
+    Maybe<U> mapMaybes(Maybe<Ts> &&...maybes)
+    {
+        if (!allTrue(maybes...)) {
             m_seqs = std::tuple<Seq<Ts>...>();
             return Nothing;
         }
 
-        return m_mapper(std::move(*std::get<Indexes>(values))...);
+        return m_mapper(std::move(*maybes)...);
     }
 
-private:
+    static bool allTrue() { return true; }
+
+    template<typename MaybeT, typename ...MaybeTs>
+    static bool allTrue(const MaybeT &arg, const MaybeTs &...args)
+    { return arg && allTrue(args...); }
+
+
     Mapper m_mapper;
     std::tuple<Seq<Ts>...> m_seqs;
 };
@@ -253,8 +257,7 @@ template<typename ...Ts, typename Mapper>
 Seq<typename std::result_of<Mapper(Ts...)>::type>
 map(Mapper &&mapper, Seq<Ts> ...seqs)
 {
-    typedef ::rc::detail::MakeIndexSequence<sizeof...(Ts)> Indexes;
-    return makeSeq<detail::MapSeq<Decay<Mapper>, Indexes, Ts...>>(
+    return makeSeq<detail::MapSeq<Decay<Mapper>, Ts...>>(
         std::forward<Mapper>(mapper), std::move(seqs)...);
 }
 
