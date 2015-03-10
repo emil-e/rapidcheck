@@ -10,6 +10,7 @@ add_executable(rapidcheck_tests
   arbitrary/CollectionTests.cpp
   arbitrary/NumericTests.cpp
   detail/AnyTests.cpp
+  detail/ApplyTupleTests.cpp
   detail/BitStreamTests.cpp
   detail/ConfigurationTests.cpp
   detail/ExpressionCaptorTests.cpp
