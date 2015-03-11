@@ -33,6 +33,7 @@ add_executable(rapidcheck_tests
   gen/TextTests.cpp
   gen/TupleTests.cpp
   main.cpp
+  newgen/TupleTests.cpp
   newgen/detail/RecipeTests.cpp
   predicate/PredicatesTests.cpp
   seq/CreateTests.cpp
