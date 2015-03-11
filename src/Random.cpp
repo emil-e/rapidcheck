@@ -15,6 +15,8 @@ constexpr uint64_t kTweak[2] = { 13, 37 };
 
 }
 
+Random::Random() : Random({0, 0, 0, 0}) {}
+
 Random::Random(const Key &key)
     : m_key(key)
     , m_block()

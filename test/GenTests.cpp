@@ -30,7 +30,7 @@ TEST_CASE("Gen") {
         prop("passes the arguments to the functor",
              [](const Random &random, int size) {
                  bool called = false;
-                 Random passedRandom(0);
+                 Random passedRandom;
                  int passedSize;
                  Gen<int> gen([&](const Random &random, int size) {
                      called = true;
@@ -73,7 +73,7 @@ TEST_CASE("Gen") {
         SECTION("passes erased self to onGenerate") {
             auto result = shrinkable::map(
                 [](Any &&any) { return std::move(any.get<int>()); },
-                handler.passedGenerator(Random(0), 0));
+                handler.passedGenerator(Random(), 0));
             REQUIRE(result == shrinkable::just(1337));
             REQUIRE(handler.wasCalled);
         }

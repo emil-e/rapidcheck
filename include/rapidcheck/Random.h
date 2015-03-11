@@ -21,6 +21,9 @@ public:
     //! Type of a generated random number.
     typedef uint64_t Number;
 
+    //! Constructs a Random engine with a `{0, 0, 0, 0}` key.
+    Random();
+
     //! Constructs a Random engine from a full size 256-bit key.
     Random(const Key &key);
 

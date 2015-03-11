@@ -36,7 +36,7 @@ void sample(int sz, const Generator<T> &generator, uint64_t seed)
     ImplicitParam<param::Size> size(sz);
 
     RandomEngine engine(seed);
-    ImplicitParam<param::Random> random(Random(0));
+    ImplicitParam<param::Random> random{Random()};
 
     show(*generator, std::cout);
     std::cout << std::endl;

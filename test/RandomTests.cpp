@@ -8,6 +8,10 @@
 using namespace rc;
 
 TEST_CASE("Random") {
+    SECTION("default constructor is same as all-zero seed") {
+        REQUIRE(Random() == Random({0, 0, 0, 0}));
+    }
+
     prop("different keys yield inequal generators",
          [] {
              auto key1 = *gen::arbitrary<Random::Key>();

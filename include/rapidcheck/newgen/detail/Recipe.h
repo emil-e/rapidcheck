@@ -18,7 +18,7 @@ struct Recipe
 {
     typedef std::vector<Shrinkable<rc::detail::Any>> Ingredients;
 
-    Random random = Random(0);
+    Random random;
     int size = 0;
     Ingredients ingredients;
     std::size_t numFixed = 0;
