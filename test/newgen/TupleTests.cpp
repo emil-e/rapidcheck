@@ -22,19 +22,19 @@ TEST_CASE("newgen::tuple") {
          " generators",
          [](int x1, int x2, int x3) {
              // TODO newgen::constant
-             auto gen = newgen::tuple(newgen::just(x1),
+             const auto gen = newgen::tuple(newgen::just(x1),
                                       newgen::just(x2),
                                       newgen::just(x3));
-             auto shrinkable = gen(Random(), 0);
+             const auto shrinkable = gen(Random(), 0);
              RC_ASSERT(shrinkable.value() == std::make_tuple(x1, x2, x3));
          });
 
     prop("shrinks components from left to right",
          [] {
              auto number = gen::ranged<int>(0, 3);
-             int x1 = *number;
-             int x2 = *number;
-             int x3 = *number;
+             const int x1 = *number;
+             const int x2 = *number;
+             const int x3 = *number;
              auto gen = newgen::tuple(countDownGen(x1),
                                       countDownGen(x2),
                                       countDownGen(x3));
@@ -46,7 +46,7 @@ TEST_CASE("newgen::tuple") {
                          auto shrinks = s.shrinks();
 
                          for (int x = std::get<0>(value) - 1; x >= 0; x--) {
-                             auto shrink = shrinks.next();
+                             const auto shrink = shrinks.next();
                              const auto expected = std::make_tuple(
                                  x, std::get<1>(value), std::get<2>(value));
                              if (!shrink || (shrink->value() != expected))
@@ -54,7 +54,7 @@ TEST_CASE("newgen::tuple") {
                          }
 
                          for (int x = std::get<1>(value) - 1; x >= 0; x--) {
-                             auto shrink = shrinks.next();
+                             const auto shrink = shrinks.next();
                              const auto expected = std::make_tuple(
                                  std::get<0>(value), x, std::get<2>(value));
                              if (!shrink || (shrink->value() != expected))
@@ -62,7 +62,7 @@ TEST_CASE("newgen::tuple") {
                          }
 
                          for (int x = std::get<2>(value) - 1; x >= 0; x--) {
-                             auto shrink = shrinks.next();
+                             const auto shrink = shrinks.next();
                              const auto expected = std::make_tuple(
                                  std::get<0>(value), std::get<1>(value), x);
                              if (!shrink || (shrink->value() != expected))
@@ -75,22 +75,22 @@ TEST_CASE("newgen::tuple") {
 
     prop("passes the right size of each generator",
          [] {
-             int size = *gen::nonNegative<int>();
-             auto gen = Gen<int>([](const Random &random, int size) {
+             const int size = *gen::nonNegative<int>();
+             const auto gen = Gen<int>([](const Random &random, int size) {
                  return shrinkable::just(size);
              });
 
-             auto result = newgen::tuple(gen, gen, gen)(Random(), size);
+             const auto result = newgen::tuple(gen, gen, gen)(Random(), size);
              RC_ASSERT(result.value() == std::make_tuple(size, size, size));
          });
 
     prop("splits the generator N times and passes the splits from left to right",
          [](const Random &random) {
-             auto gen = Gen<Random>([](const Random &random, int size) {
+             const auto gen = Gen<Random>([](const Random &random, int size) {
                  return shrinkable::just(random);
              });
 
-             auto result = newgen::tuple(gen, gen, gen)(random, 0);
+             const auto result = newgen::tuple(gen, gen, gen)(random, 0);
              Random r(random);
              std::tuple<Random, Random, Random> expected;
              std::get<0>(expected) = r.split();
