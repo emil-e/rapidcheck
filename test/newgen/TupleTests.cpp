@@ -3,12 +3,14 @@
 
 #include "util/ArbitraryRandom.h"
 #include "util/Predictable.h"
+#include "util/GenUtils.h"
 
 #include "rapidcheck/newgen/Tuple.h"
 #include "rapidcheck/newgen/Create.h"
 #include "rapidcheck/shrinkable/Operations.h"
 
 using namespace rc;
+using namespace rc::test;
 
 Gen<int> countDownGen(int value) {
     return [=](const Random &random, int size) {
@@ -77,21 +79,17 @@ TEST_CASE("newgen::tuple") {
     prop("passes the right size of each generator",
          [] {
              const int size = *gen::nonNegative<int>();
-             const auto gen = Gen<int>([](const Random &random, int size) {
-                 return shrinkable::just(size);
-             });
-
-             const auto result = newgen::tuple(gen, gen, gen)(Random(), size);
+             const auto result = newgen::tuple(genSize(),
+                                               genSize(),
+                                               genSize())(Random(), size);
              RC_ASSERT(result.value() == std::make_tuple(size, size, size));
          });
 
     prop("splits the generator N times and passes the splits from left to right",
          [](const Random &random) {
-             const auto gen = Gen<Random>([](const Random &random, int size) {
-                 return shrinkable::just(random);
-             });
-
-             const auto result = newgen::tuple(gen, gen, gen)(random, 0);
+             const auto result = newgen::tuple(genRandom(),
+                                               genRandom(),
+                                               genRandom())(random, 0);
              Random r(random);
              std::tuple<Random, Random, Random> expected;
              std::get<0>(expected) = r.split();
