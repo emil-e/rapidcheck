@@ -4,6 +4,7 @@
 #include "util/ArbitraryRandom.h"
 
 #include "rapidcheck/newgen/Tuple.h"
+#include "rapidcheck/newgen/Create.h"
 #include "rapidcheck/shrinkable/Operations.h"
 
 using namespace rc;
@@ -21,10 +22,9 @@ TEST_CASE("newgen::tuple") {
          " generators",
          [](int x1, int x2, int x3) {
              // TODO newgen::constant
-             auto gen = newgen::tuple(
-                 Gen<int>(fn::constant(shrinkable::just(x1))),
-                 Gen<int>(fn::constant(shrinkable::just(x2))),
-                 Gen<int>(fn::constant(shrinkable::just(x3))));
+             auto gen = newgen::tuple(newgen::just(x1),
+                                      newgen::just(x2),
+                                      newgen::just(x3));
              auto shrinkable = gen(Random(), 0);
              RC_ASSERT(shrinkable.value() == std::make_tuple(x1, x2, x3));
          });
