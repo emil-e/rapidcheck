@@ -2,6 +2,7 @@
 #include <rapidcheck-catch.h>
 
 #include "util/ArbitraryRandom.h"
+#include "util/Predictable.h"
 
 #include "rapidcheck/newgen/Tuple.h"
 #include "rapidcheck/newgen/Create.h"
@@ -97,5 +98,24 @@ TEST_CASE("newgen::tuple") {
              std::get<1>(expected) = r.split();
              std::get<2>(expected) = r.split();
              RC_ASSERT(result.value() == expected);
+         });
+
+    prop("works with non-copyable types",
+         [](int v1, int v2) {
+             const auto xgen = newgen::map([](int x) {
+                 NonCopyable nc;
+                 nc.value = x;
+                 return nc;
+             }, newgen::just(v1));
+             const auto ygen = newgen::map([](int x) {
+                 NonCopyable nc;
+                 nc.value = x;
+                 return nc;
+             }, newgen::just(v2));
+
+             const auto shrinkable = newgen::tuple(xgen, ygen)(Random(), 0);
+             const auto result = shrinkable.value();
+             RC_ASSERT(std::get<0>(result).value == v1);
+             RC_ASSERT(std::get<1>(result).value == v2);
          });
 }
