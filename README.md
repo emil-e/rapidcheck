@@ -8,7 +8,7 @@ A common example is testing a list reversal function. For such a function, doubl
 
     rc::prop(
         "double reversal yields the original value",
-        [] (const std::vector &l0) {
+        [] (const std::vector<int> &l0) {
             auto l1(l0);
             std::reverse(l1.begin(), l1.end());
             std::reverse(l1.begin(), l1.end());
