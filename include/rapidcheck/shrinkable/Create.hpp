@@ -46,6 +46,8 @@ private:
 
 } // namespace detail
 
+// TODO test _all_ of these?
+
 template<typename Value, typename Shrink>
 Shrinkable<typename std::result_of<Value()>::type>
 lambda(Value &&value, Shrink &&shrinks)
@@ -54,6 +56,15 @@ lambda(Value &&value, Shrink &&shrinks)
         Impl;
     return makeShrinkable<Impl>(std::forward<Value>(value),
                                 std::forward<Shrink>(shrinks));
+}
+
+template<typename Value, typename Shrink>
+Shrinkable<typename std::result_of<Value()>::type>
+lambda(Value &&value)
+{
+    typedef typename std::result_of<Value()>::type T;
+    return shrinkable::lambda(std::forward<Value>(value),
+                              fn::constant(Seq<Shrinkable<T>>()));
 }
 
 template<typename T, typename Value, typename>
