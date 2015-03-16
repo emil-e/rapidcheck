@@ -19,6 +19,7 @@ add_library(rapidcheck
   src/detail/RoseNode.cpp
   src/detail/Utility.cpp
   src/gen/Generator.cpp
+  src/newgen/detail/ExecHandler.cpp
   src/newgen/detail/GenerationHandler.cpp
   src/newgen/detail/Recipe.cpp
   )
