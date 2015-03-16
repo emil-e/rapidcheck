@@ -39,8 +39,18 @@ public:
     //! pick a value in an impure context.
     T operator*() const;
 
+    Gen(const Gen &other);
+    Gen &operator=(const Gen &rhs);
+    Gen(Gen &&other) = default;
+    Gen &operator=(Gen &&rhs) = default;
+
 private:
-    std::function<Shrinkable<T>(const Random &, int)> m_impl;
+    class IGenImpl;
+
+    template<typename Impl>
+    class GenImpl;
+
+    std::unique_ptr<IGenImpl> m_impl;
 };
 
 } // namespace rc

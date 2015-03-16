@@ -17,7 +17,7 @@ public:
         : m_mapper(std::forward<MapperArg>(mapper))
         , m_gen(std::move(gen)) {}
 
-    Shrinkable<U> operator()(const Random &random, int size)
+    Shrinkable<U> operator()(const Random &random, int size) const
     { return shrinkable::map(m_mapper, m_gen(random, size)); }
 
 private:

@@ -10,16 +10,40 @@
 namespace rc {
 
 template<typename T>
+class Gen<T>::IGenImpl
+{
+public:
+    virtual Shrinkable<T> generate(const Random &random, int size) const = 0;
+    virtual std::unique_ptr<IGenImpl> copy() const = 0;
+    virtual ~IGenImpl() = default;
+};
+
+template<typename T>
+template<typename Impl>
+class Gen<T>::GenImpl : public IGenImpl
+{
+public:
+    template<typename ...Args>
+    GenImpl(Args &&...args) : m_impl(std::forward<Args>(args)...) {}
+
+    Shrinkable<T> generate(const Random &random, int size) const override
+    { return m_impl(random, size); }
+
+    std::unique_ptr<IGenImpl> copy() const override
+    { return std::unique_ptr<IGenImpl>(new GenImpl(*this)); }
+
+private:
+    const Impl m_impl;
+};
+
+template<typename T>
 template<typename Impl, typename>
 Gen<T>::Gen(Impl &&impl)
-    : m_impl(std::forward<Impl>(impl))
-{
-    assert(m_impl);
-}
+    : m_impl(new GenImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}
 
 template<typename T>
 Shrinkable<T> Gen<T>::operator()(const Random &random, int size) const
-{ return m_impl(random, size); }
+{ return m_impl->generate(random, size); }
 
 template<typename T>
 T Gen<T>::operator*() const
@@ -29,6 +53,16 @@ T Gen<T>::operator*() const
     const auto handler = ImplicitParam<CurrentHandler>::value();
     return std::move(
         handler->onGenerate(newgen::map(&Any::of<T>, *this)).template get<T>());
+}
+
+template<typename T>
+Gen<T>::Gen(const Gen &other) : m_impl(other.m_impl->copy()) {}
+
+template<typename T>
+Gen<T> &Gen<T>::operator=(const Gen &rhs)
+{
+    m_impl = rhs.m_impl->copy();
+    return *this;
 }
 
 } // namespace rc
