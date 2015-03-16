@@ -2,6 +2,8 @@
 
 #include "rapidcheck/gen/Generator.h"
 #include "rapidcheck/arbitrary/Numeric.h"
+#include "rapidcheck/newgen/Arbitrary.h"
+#include "rapidcheck/newgen/Numeric.h"
 
 namespace rc {
 
@@ -105,6 +107,34 @@ public:
         value.value = Predictable::predictableValue;
         value.extra = gen::arbitrary<int>().generate();
         return value;
+    }
+};
+
+template<>
+struct NewArbitrary<Predictable>
+{
+    static Gen<Predictable> arbitrary()
+    {
+        return newgen::map([](int extra) {
+            Predictable predictable;
+            predictable.value = Predictable::predictableValue;
+            predictable.extra = extra;
+            return predictable;
+        }, newgen::arbitrary<int>());
+    }
+};
+
+template<>
+struct NewArbitrary<NonCopyable>
+{
+    static Gen<NonCopyable> arbitrary()
+    {
+        return newgen::map([](int extra) {
+            NonCopyable predictable;
+            predictable.value = Predictable::predictableValue;
+            predictable.extra = extra;
+            return predictable;
+        }, newgen::arbitrary<int>());
     }
 };
 
