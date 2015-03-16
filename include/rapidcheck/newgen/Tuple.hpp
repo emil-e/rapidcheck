@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/shrinkable/Create.h"
+#include "rapidcheck/newgen/Arbitrary.h"
 
 namespace rc {
 namespace newgen {
@@ -60,6 +61,23 @@ private:
     std::tuple<Gen<Ts>...> m_gens;
 };
 
+// Specialization for empty tuples.
+template<>
+class TupleGen<rc::detail::IndexSequence<>>
+{
+public:
+    Shrinkable<std::tuple<>> operator()(const Random &random, int size) const
+    { return shrinkable::just(std::tuple<>()); }
+};
+
+template<typename ...Ts>
+struct DefaultArbitrary<std::tuple<Ts...>>
+{
+    static Gen<std::tuple<Ts...>> arbitrary()
+    {
+        return newgen::tuple(newgen::arbitrary<Ts>()...);
+    }
+};
 
 } // namespace detail
 
