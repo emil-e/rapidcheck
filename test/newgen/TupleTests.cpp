@@ -12,14 +12,6 @@
 using namespace rc;
 using namespace rc::test;
 
-Gen<int> countDownGen(int value) {
-    return [=](const Random &random, int size) {
-        return shrinkable::shrinkRecur(value, [](int x) {
-            return seq::range(x - 1, -1);
-        });
-    };
-};
-
 TEST_CASE("newgen::tuple") {
     prop("the root value is a tuple of the root values from the composed"
          " generators",
@@ -38,9 +30,9 @@ TEST_CASE("newgen::tuple") {
              const int x1 = *number;
              const int x2 = *number;
              const int x3 = *number;
-             auto gen = newgen::tuple(countDownGen(x1),
-                                      countDownGen(x2),
-                                      countDownGen(x3));
+             auto gen = newgen::tuple(genCountdown(x1),
+                                      genCountdown(x2),
+                                      genCountdown(x3));
              RC_ASSERT(
                  shrinkable::all(
                      gen(Random(), 0),
