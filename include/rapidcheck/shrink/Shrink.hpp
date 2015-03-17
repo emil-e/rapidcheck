@@ -80,5 +80,45 @@ Seq<T> towards(T value, T target)
     return seq::takeWhile([=](T x) { return x != value; }, std::move(shrinks));
 }
 
+template<typename T>
+Seq<T> integral(T value)
+{
+    if (value < 0) {
+        // Drop the zero from towards and put that before the negation value
+        // so we don't have duplicate zeroes
+        return seq::concat(
+            seq::just<T>(static_cast<T>(0),
+                         static_cast<T>(-value)),
+            seq::drop(1, shrink::towards<T>(value, 0)));
+    }
+
+    return shrink::towards<T>(value, 0);
+}
+
+template<typename T>
+Seq<T> real(T value)
+{
+    std::vector<T> shrinks;
+
+    if (value != 0)
+        shrinks.push_back(0.0);
+
+    if (value < 0)
+        shrinks.push_back(-value);
+
+    T truncated = std::trunc(value);
+    if (std::abs(truncated) < std::abs(value))
+        shrinks.push_back(truncated);
+
+    return seq::fromContainer(shrinks);
+}
+
+Seq<bool> boolean(bool value)
+{
+    return value
+        ? seq::just(false)
+        : Seq<bool>();
+}
+
 } // namespace shrink
 } // namespace rc

@@ -57,15 +57,6 @@ struct SignedProperties
             [] {
                 generatesSuchThat<T>([] (T x) { return x < 0; });
             });
-
-        templatedProp<T>(
-            "shrinks negative values to their positive equivalent",
-            [] {
-                T value = *gen::negative<T>();
-                auto shrink = gen::arbitrary<T>().shrink(value).next();
-                RC_ASSERT(shrink);
-                RC_ASSERT(*shrink == -value);
-            });
     }
 };
 
@@ -87,14 +78,6 @@ struct RealProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
-            "shrinks to nearest integer",
-            [] {
-                T value = *gen::nonZero<T>();
-                RC_PRE(value != std::trunc(value));
-                auto seq = gen::arbitrary<T>().shrink(value);
-                RC_ASSERT(seq::contains(seq, std::trunc(value)));
-            });
     }
 };
 
@@ -119,12 +102,4 @@ TEST_CASE("gen::arbitrary<bool>") {
                      break;
              }
          });
-
-    SECTION("shrinks 'true' to 'false'") {
-        REQUIRE(gen::arbitrary<bool>().shrink(true) == seq::just(false));
-    }
-
-    SECTION("does not shrink 'false'") {
-        REQUIRE(gen::arbitrary<bool>().shrink(false) == Seq<bool>());
-    }
 }

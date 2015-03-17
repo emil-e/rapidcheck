@@ -43,15 +43,7 @@ public:
     }
 
     Seq<T> shrink(T value) const override
-    {
-        if (value < 0) {
-            return seq::concat(
-                seq::just<T>(-value),
-                shrink::towards<T>(value, 0));
-        } else {
-            return shrink::towards<T>(value, 0);
-        }
-    }
+    { return shrink::integral(value); }
 };
 
 // Base for float and double arbitrary instances
@@ -67,18 +59,7 @@ public:
     }
 
     Seq<T> shrink(T value) const override
-    {
-        std::vector<T> shrinks;
-
-        if (value < 0)
-            shrinks.push_back(-value);
-
-        T truncated = std::trunc(value);
-        if (std::abs(truncated) < std::abs(value))
-            shrinks.push_back(truncated);
-
-        return seq::fromContainer(shrinks);
-    }
+    { return shrink::real(value); }
 };
 
 template<>
@@ -98,11 +79,7 @@ public:
     }
 
     Seq<bool> shrink(bool value) const override
-    {
-        return value
-            ? seq::just(false)
-            : Seq<bool>();
-    }
+    { return shrink::boolean(value); }
 };
 
 } // namespace rc

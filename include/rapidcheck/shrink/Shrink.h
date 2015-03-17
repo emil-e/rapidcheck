@@ -26,6 +26,17 @@ Seq<T> eachElement(T collection, ShrinkElement shrinkElement);
 template<typename T>
 Seq<T> towards(T value, T target);
 
+//! Shrinks an arbitrary integral value.
+template<typename T>
+Seq<T> integral(T value);
+
+//! Shrinks an arbitrary real value.
+template<typename T>
+Seq<T> real(T value);
+
+//! Shrinks an arbitrary boolean value.
+inline Seq<bool> boolean(bool value);
+
 } // namespace shrink
 } // namespace rc
 

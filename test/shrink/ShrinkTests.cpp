@@ -232,3 +232,111 @@ struct ShrinkTowardsProperties
 TEST_CASE("shrink::towards") {
     meta::forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
 }
+
+namespace {
+
+struct IntegralProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "always tries zero first",
+            [] {
+                T value = *gen::nonZero<T>();
+                RC_ASSERT(*shrink::integral<T>(value).next() == 0);
+            });
+
+        TEMPLATED_SECTION(T, "zero has no shrinks") {
+            REQUIRE(!shrink::integral<T>(0).next());
+        }
+
+        templatedProp<T>(
+            "never contains original value",
+            [](T x) {
+                RC_ASSERT(!seq::contains(shrink::integral<T>(x), x));
+            });
+    }
+};
+
+struct SignedIntegralProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "shrinks negative values to their positive equivalent",
+            [] {
+                T value = *gen::negative<T>();
+                RC_ASSERT(seq::contains<T>(shrink::integral<T>(value), -value));
+            });
+
+        templatedProp<T>(
+            "always tries zero first",
+            [] {
+                T value = *gen::nonZero<T>();
+                RC_ASSERT(*shrink::integral<T>(value).next() == 0);
+            });
+
+        TEMPLATED_SECTION(T, "zero has no shrinks") {
+            REQUIRE(!shrink::integral<T>(0).next());
+        }
+    }
+};
+
+} // namespace
+
+TEST_CASE("shrink::integral") {
+    meta::forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
+    meta::forEachType<SignedIntegralProperties, RC_SIGNED_INTEGRAL_TYPES>();
+}
+
+namespace {
+
+struct RealProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "shrinks to nearest integer",
+            [] {
+                T value = *gen::nonZero<T>();
+                RC_PRE(value != std::trunc(value));
+                RC_ASSERT(seq::contains(shrink::real(value), std::trunc(value)));
+            });
+
+        TEMPLATED_SECTION(T, "zero has no shrinks") {
+            REQUIRE(!shrink::real<T>(0.0).next());
+        }
+
+        templatedProp<T>(
+            "tries 0.0 first",
+            [] {
+                T value = *gen::nonZero<T>();
+                REQUIRE(*shrink::real<T>(value).next() == 0.0);
+            });
+
+        templatedProp<T>(
+            "never contains original value",
+            [](T x) {
+                RC_ASSERT(!seq::contains(shrink::real<T>(x), x));
+            });
+    }
+};
+
+} // namespace
+
+TEST_CASE("shrink::real") {
+    meta::forEachType<RealProperties, RC_REAL_TYPES>();
+}
+
+TEST_CASE("shrink::bool") {
+    SECTION("shrinks 'true' to 'false'") {
+        REQUIRE(shrink::boolean(true) == seq::just(false));
+    }
+
+    SECTION("does not shrink 'false'") {
+        REQUIRE(!shrink::boolean(false).next());
+    }
+}
