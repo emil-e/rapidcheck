@@ -6,6 +6,7 @@
 #include "util/ArbitraryRandom.h"
 
 using namespace rc;
+using namespace rc::test;
 
 TEST_CASE("Random") {
     SECTION("default constructor is same as all-zero seed") {
@@ -33,7 +34,8 @@ TEST_CASE("Random") {
          });
 
     prop("next modifies state",
-         [](Random r1) {
+         [] {
+             Random r1 = *TrulyArbitraryRandom();
              Random r2(r1);
              r2.next();
              RC_ASSERT(r1 != r2);
@@ -74,15 +76,16 @@ TEST_CASE("Random") {
          });
 
     prop("different number of nexts yield different sequences",
-         [](Random r1) {
+         [] {
+             Random r1 = *TrulyArbitraryRandom();
              Random r2(r1);
              auto gen = gen::ranged<int>(0, 2000);
              int n1 = *gen;
              int n2 = *gen::distinctFrom(gen, n1);
 
-             for (std::size_t i = 0; i < n1; i++)
+             while (n1-- > 0)
                  r1.next();
-             for (std::size_t i = 0; i < n2; i++)
+             while (n2-- > 0)
                  r2.next();
 
              for (std::size_t i = 0; i < 4; i++)
@@ -91,13 +94,15 @@ TEST_CASE("Random") {
          });
 
     prop("copies are equal",
-         [](Random r1) {
+         [] {
+             Random r1 = *TrulyArbitraryRandom();
              Random r2(r1);
              RC_ASSERT(r1 == r2);
          });
 
     prop("copies yield equal random numbers",
-         [](Random r1) {
+         [] {
+             Random r1 = *TrulyArbitraryRandom();
              Random r2(r1);
 
              // The first N numbers could theoretically be equal even if
@@ -112,7 +117,8 @@ TEST_CASE("Random") {
     // Somewhat dubious test, I know. Hopefully, if something totally breaks,
     // it'll let us know at least.
     prop("has uniform distribution",
-         [](Random random) {
+         [] {
+             Random random = *TrulyArbitraryRandom();
              std::array<uint64_t, 16> bins;
              bins.fill(0);
              const std::size_t nSamples = 200000;

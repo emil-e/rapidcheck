@@ -1,6 +1,7 @@
 #include "rapidcheck/Random.h"
 
 #include <iostream>
+#include <cassert>
 
 #include "rapidcheck/Show.h"
 
@@ -30,6 +31,7 @@ Random::Random(uint64_t seed)
 
 Random Random::split()
 {
+    assert(m_counter == 0);
     Random right(*this);
     append(false);
     right.append(true);
