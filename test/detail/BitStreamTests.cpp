@@ -13,7 +13,9 @@ template<typename T>
 class SeqSource
 {
 public:
-    template<typename Arg>
+    template<typename Arg,
+             typename = typename std::enable_if<
+                 !std::is_same<Decay<Arg>, SeqSource>::value>::type>
     SeqSource(Arg &&arg)
         : m_seq(std::forward<Arg>(arg)),
           m_requested(0) {}
@@ -172,5 +174,23 @@ TEST_CASE("BitStream") {
 
                  RC_ASSERT(source.requested() == 0);
              });
+    }
+
+    SECTION("bitStreamOf") {
+        SECTION("copies source if const") {
+            auto source = makeSource(seq::just(0, 1));
+            const auto &constSource = source;
+            auto stream = bitStreamOf(constSource);
+            stream.next<int>();
+            REQUIRE(source.next() == 0);
+        }
+
+        SECTION("references source if non-const") {
+            auto source = makeSource(seq::just(0, 1));
+            auto &nonConstSource = source;
+            auto stream = bitStreamOf(nonConstSource);
+            stream.next<int>();
+            REQUIRE(source.next() == 1);
+        }
     }
 }

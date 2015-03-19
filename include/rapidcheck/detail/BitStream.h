@@ -12,7 +12,7 @@ template<typename Source>
 class BitStream
 {
 public:
-    explicit BitStream(Source &source);
+    explicit BitStream(Source source);
 
     //! Returns the next value of the given type with maximum size.
     template<typename T>
@@ -28,14 +28,18 @@ public:
     T nextWithSize(int size);
 
 private:
-    Source &m_source;
+    Source m_source;
     uint64_t m_bits;
     int m_numBits;
 };
 
-//! Returns a bitstream with the given source.
+//! Returns a bitstream with the given source as a reference.
 template<typename Source>
-BitStream<Source> bitStreamOf(Source &source);
+BitStream<Source &> bitStreamOf(Source &source);
+
+//! Returns a bitstream with the given source as a copy.
+template<typename Source>
+BitStream<Source> bitStreamOf(const Source &source);
 
 } // namespace detail
 } // namespace rc

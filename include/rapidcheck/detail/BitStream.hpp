@@ -11,7 +11,7 @@ constexpr int numBits()
 { return std::numeric_limits<T>::digits + (std::is_signed<T>::value ? 1 : 0); }
 
 template<typename Source>
-BitStream<Source>::BitStream(Source &source)
+BitStream<Source>::BitStream(Source source)
     : m_source(source)
     , m_bits(0)
     , m_numBits(0) {}
@@ -67,7 +67,12 @@ T BitStream<Source>::nextWithSize(int size)
 }
 
 template<typename Source>
-BitStream<Source> bitStreamOf(Source &source)
+BitStream<Source &> bitStreamOf(Source &source)
+{ return BitStream<Source &>(source); }
+
+//! Returns a bitstream with the given source as a copy.
+template<typename Source>
+BitStream<Source> bitStreamOf(const Source &source)
 { return BitStream<Source>(source); }
 
 } // namespace detail
