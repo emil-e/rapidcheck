@@ -10,6 +10,13 @@ namespace shrinkable {
 template<typename T, typename Predicate>
 bool all(const Shrinkable<T> &shrinkable, Predicate predicate);
 
+//! Finds a local minimum that satisfies the given predicate. Returns a pair of
+//! the minimum value and the number of acceptable values encountered on the way
+//! there.
+template<typename Predicate, typename T>
+std::pair<T, int> findLocalMin(const Shrinkable<T> &shrinkable,
+                               Predicate pred);
+
 } // namespace shrinkable
 } // namespace rc
 

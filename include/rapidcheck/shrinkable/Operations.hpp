@@ -16,5 +16,24 @@ bool all(const Shrinkable<T> &shrinkable, Predicate predicate)
     });
 }
 
+template<typename Predicate, typename T>
+std::pair<T, int> findLocalMin(const Shrinkable<T> &shrinkable,
+                               Predicate pred)
+{
+    std::pair<T, int> result(shrinkable.value(), 0);
+    Seq<Shrinkable<T>> shrinks = shrinkable.shrinks();
+    Maybe<Shrinkable<T>> shrink;
+    while ((shrink = shrinks.next())) {
+        T value = shrink->value();
+        if (pred(value)) {
+            result.first = std::move(value);
+            shrinks = shrink->shrinks();
+            result.second++;
+        }
+    }
+
+    return result;
+}
+
 } // namespace shrinkable
 } // namespace rc
