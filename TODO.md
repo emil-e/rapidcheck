@@ -77,3 +77,8 @@
 - safer boolean for Maybe?
 - Nothing for Seq
 - Should Seq really allow comparison with different types?
+- Seq and Shrinkable exception safety
+- replace typedef with using
+- CLANGFORMAT
+- TEST EXCEPTIONS AS INTEGRATION, DISCARDING ETC
+- support arbitrary split/next sequences for Random. should be possible with different encoding.
