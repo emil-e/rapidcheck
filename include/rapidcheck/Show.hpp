@@ -56,13 +56,14 @@ void showValue(
     os << (value ? "true" : "false");
 }
 
-template<typename T>
-void showValue(
-    T value,
-    typename std::enable_if<
-    std::is_same<T, uint8_t>::value, std::ostream>::type &os)
+template <typename T>
+void showValue(T value,
+               typename std::enable_if<
+                   (std::is_same<T, char>::value ||
+                    std::is_same<T, unsigned char>::value),
+                   std::ostream>::type &os)
 {
-    os << int(value);
+    os << static_cast<int>(value);
 }
 
 void showValue(const std::string &value, std::ostream &os);
