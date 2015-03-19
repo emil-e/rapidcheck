@@ -108,4 +108,27 @@ TEST_CASE("newgen::tuple") {
              RC_ASSERT(std::get<0>(result).value == v1);
              RC_ASSERT(std::get<1>(result).value == v2);
          });
+
+    prop("recursive shrink test",
+         []{
+             static const auto makeShrinkable = [](int x) {
+                 return shrinkable::shrinkRecur(100, [](int value) {
+                     return shrink::towards(value, 0);
+                 });
+             };
+             int target = *gen::ranged<int>(0, 100);
+             Gen<int> gen1 = fn::constant(makeShrinkable(200));
+             Gen<int> gen2 = fn::constant(makeShrinkable(100));
+             Gen<int> gen3 = fn::constant(makeShrinkable(200));
+             const auto shrinkable = newgen::tuple(gen1, gen2, gen3)(Random(), 0);
+             const auto result = shrinkable::findLocalMin(
+                 shrinkable, [=](const std::tuple<int, int, int> &x) {
+                     return
+                         (std::get<1>(x) >= target) &&
+                         (std::get<0>(x) > std::get<1>(x)) &&
+                         (std::get<2>(x) > std::get<1>(x));
+                 });
+             RC_ASSERT(result.first ==
+                       std::make_tuple(target + 1, target, target + 1));
+         });
 }
