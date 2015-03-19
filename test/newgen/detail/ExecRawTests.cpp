@@ -15,6 +15,8 @@ using namespace rc;
 using namespace rc::test;
 using namespace rc::newgen::detail;
 
+namespace {
+
 template<int N>
 Gen<std::pair<std::vector<int>, Recipe>> testExecGen()
 {
@@ -27,6 +29,8 @@ Gen<std::pair<std::vector<int>, Recipe>> testExecGen()
             return values;
         });
 }
+
+} // namespace
 
 TEST_CASE("execRaw") {
     SECTION("uses correct arbitrary instance for arguments") {
