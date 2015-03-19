@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include <numeric>
+
 #include "rapidcheck/Random.h"
 
 #include "util/ArbitraryRandom.h"
@@ -120,17 +122,20 @@ TEST_CASE("Random") {
          [] {
              Random random = *TrulyArbitraryRandom();
              std::array<uint64_t, 16> bins;
+             static constexpr uint64_t kBinSize =
+                 std::numeric_limits<uint64_t>::max() / 16;
              bins.fill(0);
-             const std::size_t nSamples = 200000;
+             static constexpr std::size_t nSamples = 200000;
              for (std::size_t i = 0; i < nSamples; i++)
-                 bins[random.next() % bins.size()]++;
+                 bins[random.next() / kBinSize]++;
 
              double ideal = nSamples / static_cast<double>(bins.size());
-             double error = 0.0;
-             for (auto x : bins) {
-                 double diff = 1.0 - (x / ideal);
-                 error += (diff * diff);
-             }
+             double error = std::accumulate(
+                 begin(bins), end(bins), 0.0,
+                 [=](double error, double x) {
+                     double diff = 1.0 - (x / ideal);
+                     return error + (diff * diff);
+                 });
 
              RC_ASSERT(error < 0.01);
          });
