@@ -9,7 +9,7 @@ namespace newgen {
 namespace detail {
 
 template<typename Callable>
-std::pair<Decay<rc::detail::ReturnType<Callable>>, Recipe>
+std::pair<rc::detail::ReturnType<Callable>, Recipe>
 execWithRecipe(Callable callable, Recipe recipe)
 {
     using namespace rc::detail;
@@ -24,7 +24,7 @@ execWithRecipe(Callable callable, Recipe recipe)
 }
 
 template<typename Callable>
-Seq<Shrinkable<std::pair<Decay<rc::detail::ReturnType<Callable>>, Recipe>>>
+Seq<Shrinkable<std::pair<rc::detail::ReturnType<Callable>, Recipe>>>
 shrinksOfRecipe(Callable callable, Recipe recipe)
 {
     return seq::map(
@@ -34,7 +34,7 @@ shrinksOfRecipe(Callable callable, Recipe recipe)
 }
 
 template<typename Callable>
-Shrinkable<std::pair<Decay<rc::detail::ReturnType<Callable>>, Recipe>>
+Shrinkable<std::pair<rc::detail::ReturnType<Callable>, Recipe>>
 shrinkableWithRecipe(Callable callable, Recipe recipe)
 {
     typedef rc::detail::ReturnType<Callable> T;
@@ -46,7 +46,7 @@ shrinkableWithRecipe(Callable callable, Recipe recipe)
 }
 
 template<typename Callable>
-Gen<std::pair<Decay<rc::detail::ReturnType<Callable>>, Recipe>>
+Gen<std::pair<rc::detail::ReturnType<Callable>, Recipe>>
 execRaw(Callable callable)
 {
     return [=](const Random &random, int size) {
