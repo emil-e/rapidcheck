@@ -40,45 +40,47 @@ struct IntegralProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
-            "all bits can be either 1 or 0",
-            [](Random random) {
-                T ones = 0;
-                T zeroes = 0;
-                while (!isAllOnes(ones) || !isAllOnes(zeroes)) {
-                    T value = newgen::arbitrary<T>()(
-                        random.split(), gen::kNominalSize).value();
-                    ones |= value;
-                    zeroes |= ~value;
-                }
-            });
+        TEMPLATED_SECTION(T, "when size >= gen::kNominalSize") {
+            templatedProp<T>(
+                "all bits can be either 1 or 0",
+                [](Random random) {
+                    T ones = 0;
+                    T zeroes = 0;
+                    while (!isAllOnes(ones) || !isAllOnes(zeroes)) {
+                        T value = newgen::arbitrary<T>()(
+                            random.split(), gen::kNominalSize).value();
+                        ones |= value;
+                        zeroes |= ~value;
+                    }
+                });
 
-        templatedProp<T>(
-            "values are uniformly distributed over entire range",
-            [](Random random) {
-                using UInt = typename std::make_unsigned<T>::type;
+            templatedProp<T>(
+                "values are uniformly distributed over entire range",
+                [](Random random) {
+                    using UInt = typename std::make_unsigned<T>::type;
 
-                std::array<uint64_t, 8> bins;
-                static constexpr UInt kBinSize =
-                    std::numeric_limits<UInt>::max() / bins.size();
-                bins.fill(0);
+                    std::array<uint64_t, 8> bins;
+                    static constexpr UInt kBinSize =
+                        std::numeric_limits<UInt>::max() / bins.size();
+                    bins.fill(0);
 
-                static constexpr std::size_t nSamples = 10000;
-                for (std::size_t i = 0; i < nSamples; i++) {
-                    UInt value = newgen::arbitrary<T>()(random.split(), gen::kNominalSize).value();
-                    bins[value / kBinSize]++;
-                }
+                    static constexpr std::size_t nSamples = 10000;
+                    for (std::size_t i = 0; i < nSamples; i++) {
+                        UInt value = newgen::arbitrary<T>()(random.split(), gen::kNominalSize).value();
+                        bins[value / kBinSize]++;
+                    }
 
-                double ideal = nSamples / static_cast<double>(bins.size());
-                double error = std::accumulate(
-                    begin(bins), end(bins), 0.0,
-                    [=](double error, double x) {
-                        double diff = 1.0 - (x / ideal);
-                        return error + (diff * diff);
-                    });
+                    double ideal = nSamples / static_cast<double>(bins.size());
+                    double error = std::accumulate(
+                        begin(bins), end(bins), 0.0,
+                        [=](double error, double x) {
+                            double diff = 1.0 - (x / ideal);
+                            return error + (diff * diff);
+                        });
 
-                RC_ASSERT(error < 0.1);
-            });
+                    RC_ASSERT(error < 0.1);
+                });
+        }
 
         templatedProp<T>(
             "monotonically increasing size yields monotonically inscreasing"
