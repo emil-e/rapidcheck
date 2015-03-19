@@ -5,6 +5,7 @@
 
 #include "rapidcheck/newgen/Arbitrary.h"
 #include "rapidcheck/newgen/Numeric.h"
+#include "rapidcheck/shrinkable/Operations.h"
 
 #include "util/Util.h"
 #include "util/Meta.h"
@@ -94,6 +95,29 @@ struct IntegralProperties
                     RC_ASSERT(value >= prev);
                     prev = value;
                 }
+            });
+
+        templatedProp<T>(
+            "recursive shrink test",
+            [](const Random &random) {
+                int size = *gen::ranged<int>(0, 200);
+                const auto shrinkable = newgen::arbitrary<T>()(random, size);
+                T start = shrinkable.value();
+                T target;
+                std::pair<T, int> result;
+                if (start < 0) {
+                    target = *gen::ranged<T>(start, 1);
+                    result = shrinkable::findLocalMin(
+                        shrinkable,
+                        [=](T x) { return x <= target; });
+                } else {
+                    target = *gen::ranged<T>(0, start + 1);
+                    result = shrinkable::findLocalMin(
+                        shrinkable,
+                        [=](T x) { return x >= target; });
+                }
+
+                RC_ASSERT(result.first == target);
             });
     }
 };
