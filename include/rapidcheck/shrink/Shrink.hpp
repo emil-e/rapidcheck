@@ -7,6 +7,32 @@
 namespace rc {
 namespace shrink {
 
+template<typename Container>
+Seq<Container> newRemoveChunks(Container elements)
+{
+    using Range = std::pair<std::size_t, std::size_t>;
+
+    std::size_t size = elements.size();
+    auto ranges = seq::mapcat(
+        [=](std::size_t rangeSize) {
+            return seq::map([=](std::size_t rangeStart) {
+                return std::make_pair(rangeStart,
+                                      rangeStart + rangeSize);
+            }, seq::range<std::size_t>(0, size - rangeSize + 1));
+        },
+        seq::range<std::size_t>(size, 0));
+
+    return seq::map([=](const Range &range) {
+        Container newElements;
+        newElements.reserve(range.second - range.first);
+        const auto start = begin(elements);
+        const auto fin = end(elements);
+        newElements.insert(end(newElements), start, start + range.first);
+        newElements.insert(end(newElements), start + range.second, fin);
+        return newElements;
+    },  std::move(ranges));
+}
+
 template<typename T>
 Seq<T> removeChunks(T collection)
 {
@@ -32,6 +58,21 @@ Seq<T> removeChunks(T collection)
             builder.add(elements[i]);
         return std::move(builder.result());
     },  std::move(ranges));
+}
+
+template<typename Container, typename Shrink>
+Seq<Container> newEachElement(Container elements, Shrink shrink)
+{
+    using T = typename Container::value_type;
+
+    const auto size = std::distance(begin(elements), end(elements));
+    return seq::mapcat([=](std::size_t i) {
+        return seq::map([=](T &&shrinkValue) {
+            auto newElements = elements;
+            *(begin(newElements) + i) = std::move(shrinkValue);
+            return newElements;
+        }, shrink(*(begin(elements) + i)));
+    }, seq::range<std::size_t>(0, size));
 }
 
 template<typename T, typename ShrinkElement>

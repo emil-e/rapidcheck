@@ -85,6 +85,79 @@ struct RemoveChunksProperties
     }
 };
 
+struct NewRemoveChunksProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        static const auto fewValues = gen::scale(0.3, gen::arbitrary<T>());
+        // TODO non-empty generator
+        static const auto fewNonEmptyValues = gen::suchThat(
+            fewValues,
+            [](const T &x) { return !x.empty(); });
+
+        templatedProp<T>(
+            "first tries empty collection",
+            [] {
+                const auto collection = *fewNonEmptyValues;
+                RC_ASSERT(shrink::newRemoveChunks(collection).next()->empty());
+            });
+
+        templatedProp<T>(
+            "successively increases in size for each shrink",
+            [] {
+                const auto seq = shrink::newRemoveChunks(*fewValues);
+                T c;
+                seq::forEach(std::move(seq), [&](T &&next) {
+                    RC_ASSERT(next.size() >= c.size());
+                    c = std::move(next);
+                });
+            });
+
+        templatedProp<T>(
+            "shrinks to a subset of the original",
+            [] {
+                const auto elements = *fewValues;
+                const auto seq = shrink::newRemoveChunks(elements);
+                seq::forEach(std::move(seq), [&](T &&c) {
+                    auto diff(setDifference<char>(c, elements));
+                    RC_ASSERT(diff.size() == 0);
+                });
+            });
+
+        templatedProp<T>(
+            "every removal of consecutive elements is a possible shrink",
+            [] {
+                const auto elements = *fewNonEmptyValues;
+                const auto size = elements.size();
+                const auto a = *gen::ranged<int>(0, size + 1);
+                const auto b = *gen::distinctFrom(gen::ranged<int>(0, size + 1), a);
+                const auto left = std::min(a, b);
+                const auto right = std::max(a, b);
+
+                T shrink;
+                shrink.reserve(size - (right - left));
+                shrink.insert(end(shrink),
+                              begin(elements),
+                              begin(elements) + left);
+                shrink.insert(end(shrink),
+                              begin(elements) + right,
+                              end(elements));
+
+                RC_ASSERT(seq::contains(shrink::newRemoveChunks(elements),
+                                        shrink));
+            });
+
+        templatedProp<T>(
+            "never yields the original value",
+            [] {
+                auto elements = *fewValues;
+                RC_ASSERT(!seq::contains(shrink::newRemoveChunks(elements),
+                                         elements));
+            });
+    }
+};
+
 } // namespace
 
 TEST_CASE("shrink::removeChunks") {
@@ -92,6 +165,12 @@ TEST_CASE("shrink::removeChunks") {
                       RC_GENERIC_CONTAINERS(int),
                       std::string,
                       std::wstring>();
+}
+
+TEST_CASE("shrink::newRemoveChunks") {
+    meta::forEachType<NewRemoveChunksProperties,
+                      std::vector<char>,
+                      std::string>();
 }
 
 namespace {
@@ -182,6 +261,36 @@ struct EachElementProperties
     }
 };
 
+struct NewEachElementProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "every shrink for every element is tried in order",
+            [] {
+                const auto elements = *gen::collection<T>(
+                    gen::nonNegative<char>());
+                auto seq = shrink::newEachElement(
+                    elements,
+                    [=] (char x) {
+                        return seq::range(x - 1, -1);
+                    });
+
+                for (std::size_t i = 0; i < elements.size(); i++) {
+                    auto x = elements[i];
+                    while (x > 0) {
+                        auto expected = elements;
+                        expected[i] = --x;
+                        RC_ASSERT(*seq.next() == expected);
+                    }
+                }
+
+                RC_ASSERT(!seq.next());
+            });
+    }
+};
+
 } // namespace
 
 TEST_CASE("shrink::eachElement") {
@@ -189,6 +298,12 @@ TEST_CASE("shrink::eachElement") {
                       RC_GENERIC_CONTAINERS(int),
                       RC_STRING_TYPES,
                       std::array<int, 100>>();
+}
+
+TEST_CASE("shrink::newEachElement") {
+    meta::forEachType<NewEachElementProperties,
+                      std::vector<char>,
+                      std::string>();
 }
 
 namespace {
