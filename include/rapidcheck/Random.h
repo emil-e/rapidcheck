@@ -12,6 +12,7 @@ namespace rc {
 class Random
 {
     friend bool operator==(const Random &lhs, const Random &rhs);
+    friend bool operator<(const Random &lhs, const Random &rhs);
     friend std::ostream &operator<<(std::ostream &os, const Random &random);
 
 public:
@@ -30,8 +31,8 @@ public:
     //! Constructs a Random engine from a 64-bit seed.
     Random(uint64_t seed);
 
-    //! Creates a second generator from this one. Both `split` and `next` should
-    //! not be called on the same state.
+    //! Splits this generator into to separate independent generators. The first
+    //! generator will be assigned to this one and the second will be returned.
     Random split();
 
     //! Returns the next random number. Both `split` and `next` should not be
@@ -60,3 +61,17 @@ private:
 bool operator!=(const Random &lhs, const Random &rhs);
 
 } // namespace rc
+
+namespace std {
+
+template<>
+struct hash<rc::Random>
+{
+    typedef rc::Random argument_type;
+    typedef std::size_t result_type;
+
+    std::size_t operator()(const rc::Random &r) const
+    { return static_cast<std::size_t>(rc::Random(r).next()); }
+};
+
+} // namespace std

@@ -6,9 +6,37 @@
 #include "rapidcheck/Random.h"
 
 #include "util/ArbitraryRandom.h"
+#include "util/Util.h"
+#include "util/Meta.h"
 
 using namespace rc;
 using namespace rc::test;
+
+namespace {
+
+struct AssociativeProperties
+{
+    template<typename Map>
+    static void exec()
+    {
+        templatedProp<Map>(
+            "can be used as key in STL associative containers",
+            [](const std::vector<std::pair<Random, int>> &pairs) {
+                Map map(begin(pairs), end(pairs));
+                std::vector<std::pair<Random, int>> extracted;
+                extracted.reserve(pairs.size());
+                std::transform(
+                    begin(pairs), end(pairs), std::back_inserter(extracted),
+                    [&](const std::pair<Random, int> &p) {
+                        return std::make_pair(p.first, map[p.first]);
+                    });
+
+                RC_ASSERT(extracted == pairs);
+            });
+    };
+};
+
+}
 
 TEST_CASE("Random") {
     SECTION("default constructor is same as all-zero seed") {
@@ -139,4 +167,8 @@ TEST_CASE("Random") {
 
              RC_ASSERT(error < 0.01);
          });
+
+    meta::forEachType<AssociativeProperties,
+                      std::map<Random, int>,
+                      std::unordered_map<Random, int>>();
 }

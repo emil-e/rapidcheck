@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <functional>
 
 #include "rapidcheck/Show.h"
 
@@ -257,6 +258,21 @@ bool operator==(const Random &lhs, const Random &rhs)
 
 bool operator!=(const Random &lhs, const Random &rhs)
 { return !(lhs == rhs); }
+
+bool operator<(const Random &lhs, const Random &rhs)
+{
+    return
+        std::tie(lhs.m_key,
+                 lhs.m_block,
+                 lhs.m_bits,
+                 lhs.m_counter,
+                 lhs.m_bitsi) <
+        std::tie(rhs.m_key,
+                 rhs.m_block,
+                 rhs.m_bits,
+                 rhs.m_counter,
+                 rhs.m_bitsi);
+}
 
 std::ostream &operator<<(std::ostream &os, const Random &random)
 {
