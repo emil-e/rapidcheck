@@ -109,7 +109,8 @@ TEST_CASE("newgen::tuple") {
              RC_ASSERT(std::get<1>(result).value == v2);
          });
 
-    prop("recursive shrink test",
+    prop("finds minimum two of the values must larger than a third value which"
+         " must be larger than some other value",
          []{
              static const auto makeShrinkable = [](int x) {
                  return shrinkable::shrinkRecur(100, [](int value) {
