@@ -76,6 +76,14 @@ struct DefaultArbitrary<std::tuple<Ts...>>
     static Gen<std::tuple<Ts...>> arbitrary()
     {
         return newgen::tuple(newgen::arbitrary<Ts>()...);
+
+template<typename T1, typename T2>
+struct DefaultArbitrary<std::pair<T1, T2>>
+{
+    static Gen<std::pair<Decay<T1>, Decay<T2>>> arbitrary()
+    {
+        return newgen::pair(newgen::arbitrary<Decay<T1>>(),
+                            newgen::arbitrary<Decay<T2>>());
     }
 };
 
@@ -86,6 +94,14 @@ Gen<std::tuple<Ts...>> tuple(Gen<Ts> ...gens)
 {
     return detail::TupleGen<rc::detail::MakeIndexSequence<sizeof...(Ts)>, Ts...>(
         std::move(gens)...);
+}
+
+template<typename T1, typename T2>
+Gen<std::pair<T1, T2>> pair(Gen<T1> gen1, Gen<T2> gen2)
+{
+    return newgen::cast<std::pair<T1, T2>>(
+        newgen::tuple(std::move(gen1),
+                      std::move(gen2)));
 }
 
 } // namespace newgen
