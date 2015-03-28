@@ -5,25 +5,23 @@
 
 namespace rc {
 namespace detail {
-namespace sfinae {
 
-template<typename T, typename = decltype(std::declval<T>() == std::declval<T>())>
-std::true_type isEqualityComparable(const T &);
-std::false_type isEqualityComparable(...);
+#define RC_SFINAE_TRAIT(Name, expression)                               \
+    namespace sfinae {                                                  \
+    template<typename T, typename = expression>                         \
+        std::true_type test##Name(const T &);                           \
+        std::false_type test##Name(...);                                \
+    }                                                                   \
+                                                                        \
+    template<typename T>                                                \
+    using Name = decltype(sfinae::test##Name(std::declval<T>()));
 
-template<typename T, typename = decltype(std::cout << std::declval<T>())>
-std::true_type isStreamInsertible(const T &);
-std::false_type isStreamInsertible(...);
 
-} // namespace sfinae
+RC_SFINAE_TRAIT(IsEqualityComparable,
+                        decltype(std::declval<T>() == std::declval<T>()))
 
-template<typename T>
-using IsEqualityComparable = decltype(
-    sfinae::isEqualityComparable(std::declval<T>()));
-
-template<typename T>
-using IsStreamInsertible = decltype(
-    sfinae::isStreamInsertible(std::declval<T>()));
+RC_SFINAE_TRAIT(IsStreamInsertible,
+                        decltype(std::cout << std::declval<T>()))
 
 } // namespace detail
 } // namespace rc
