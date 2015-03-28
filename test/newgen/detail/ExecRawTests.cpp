@@ -21,11 +21,11 @@ template<int N>
 Gen<std::pair<std::vector<int>, Recipe>> testExecGen()
 {
     return execRaw(
-        [=](const Countdown<N> &n) {
+        [=](const FixedCountdown<N> &n) {
             std::vector<int> values;
             values.push_back(n.value);
             while (values.size() < (n.value + 1))
-                values.push_back(*genCountdown(N));
+                values.push_back(*genFixedCountdown(N));
             return values;
         });
 }
@@ -48,22 +48,22 @@ TEST_CASE("execRaw") {
     }
 
     SECTION("shrinks arguments like a tuple") {
-        typedef std::tuple<Countdown<1>,
-                           Countdown<2>,
-                           Countdown<3>> TupleT;
+        typedef std::tuple<FixedCountdown<1>,
+                           FixedCountdown<2>,
+                           FixedCountdown<3>> TupleT;
 
         auto execShrinkable = execRaw([](
-            const Countdown<1> &a,
-            const Countdown<2> &b,
-            const Countdown<3> &c)
+            const FixedCountdown<1> &a,
+            const FixedCountdown<2> &b,
+            const FixedCountdown<3> &c)
         {
             return std::make_tuple(a, b, c);
         })(Random(), 0);
 
         auto tupleShrinkable = newgen::tuple(
-            newgen::arbitrary<Countdown<1>>(),
-            newgen::arbitrary<Countdown<2>>(),
-            newgen::arbitrary<Countdown<3>>())(Random(), 0);
+            newgen::arbitrary<FixedCountdown<1>>(),
+            newgen::arbitrary<FixedCountdown<2>>(),
+            newgen::arbitrary<FixedCountdown<3>>())(Random(), 0);
 
         auto mappedShrinkable = shrinkable::map(
             [](std::pair<TupleT, Recipe> &&x) {
@@ -130,7 +130,7 @@ TEST_CASE("execRaw") {
              int expectedSize = *gen::nonNegative<int>();
              int n = *gen::ranged<int>(1, 10);
              auto shrinkable = execRaw([=](const PassedSize &sz) {
-                 *genCountdown(3); // Force some shrinks
+                 *genFixedCountdown(3); // Force some shrinks
                  std::vector<int> sizes;
                  sizes.push_back(sz.value);
                  while (sizes.size() < n)
@@ -164,7 +164,7 @@ TEST_CASE("execRaw") {
                      randoms.push_back(*genRandom());
                  // Force some shrinks, must be last because it will steal a
                  // random split otherwise
-                 *genCountdown(3);
+                 *genFixedCountdown(3);
                  return randoms;
              })(initial, 0);
 
@@ -195,7 +195,7 @@ TEST_CASE("execRaw") {
             shrinkable::all(
                 testExecGen<3>()(Random(), 0),
                 [](const Shrinkable<std::pair<std::vector<int>, Recipe>> &x) {
-                    typedef std::tuple<Countdown<3>> ArgTuple;
+                    typedef std::tuple<FixedCountdown<3>> ArgTuple;
                     const auto pair = x.value();
                     const auto recipe = pair.second;
 

@@ -30,9 +30,9 @@ TEST_CASE("newgen::tuple") {
              const int x1 = *number;
              const int x2 = *number;
              const int x3 = *number;
-             auto gen = newgen::tuple(genCountdown(x1),
-                                      genCountdown(x2),
-                                      genCountdown(x3));
+             auto gen = newgen::tuple(genFixedCountdown(x1),
+                                      genFixedCountdown(x2),
+                                      genFixedCountdown(x3));
              RC_ASSERT(
                  shrinkable::all(
                      gen(Random(), 0),
