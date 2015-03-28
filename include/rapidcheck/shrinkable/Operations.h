@@ -17,6 +17,10 @@ template<typename Predicate, typename T>
 std::pair<T, int> findLocalMin(const Shrinkable<T> &shrinkable,
                                Predicate pred);
 
+//! Returns a `Seq` of the immediate shrink values.
+template<typename T>
+Seq<T> immediateShrinks(const Shrinkable<T> &shrinkable);
+
 } // namespace shrinkable
 } // namespace rc
 

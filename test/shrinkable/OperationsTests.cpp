@@ -4,6 +4,8 @@
 #include "rapidcheck/shrinkable/Operations.h"
 #include "rapidcheck/shrinkable/Create.h"
 
+#include "util/Generators.h"
+
 using namespace rc;
 
 TEST_CASE("shrinkable::all") {
@@ -78,5 +80,15 @@ TEST_CASE("shrinkable::findLocalMin") {
              const auto result = shrinkable::findLocalMin(shrinkable, pred);
              RC_ASSERT(result.first == expected);
              RC_ASSERT(result.second == expected.size());
+         });
+}
+
+TEST_CASE("shrinkable::immediateShrinks") {
+    prop("returns a Seq of the values of the immediate shrinks of the"
+         " Shrinkable",
+         [](int x, const Seq<int> &seq) {
+             const auto shrinkable = shrinkable::just(
+                 x, seq::map(&shrinkable::just<int>, seq));
+             RC_ASSERT(shrinkable::immediateShrinks(shrinkable) == seq);
          });
 }
