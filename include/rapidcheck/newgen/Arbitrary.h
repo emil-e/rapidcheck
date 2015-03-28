@@ -14,7 +14,7 @@ namespace newgen {
 
 //! Returns a generator for arbitrary values of `T`.
 template<typename T>
-Gen<T> arbitrary();
+decltype(NewArbitrary<T>::arbitrary()) arbitrary();
 
 } // namespace newgen
 } // namespace rc

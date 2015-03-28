@@ -10,9 +10,9 @@ struct DefaultArbitrary;
 } // namespace detail
 
 template<typename T>
-Gen<T> arbitrary()
+decltype(NewArbitrary<T>::arbitrary()) arbitrary()
 {
-    static const Gen<T> instance = rc::NewArbitrary<T>::arbitrary();
+    static const auto instance = rc::NewArbitrary<T>::arbitrary();
     return instance;
 }
 
@@ -21,7 +21,7 @@ Gen<T> arbitrary()
 template<typename T>
 struct NewArbitrary
 {
-    static Gen<T> arbitrary()
+    static decltype(newgen::detail::DefaultArbitrary<T>::arbitrary()) arbitrary()
     { return newgen::detail::DefaultArbitrary<T>::arbitrary(); }
 };
 
