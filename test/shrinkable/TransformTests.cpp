@@ -89,6 +89,14 @@ TEST_CASE("shrinkable::filter") {
              }));
          });
 
+    prop("if the filter returns true for every value, the returned shrinkable"
+         " is equal to the original",
+         [](Shrinkable<int> shrinkable) {
+             RC_ASSERT(*shrinkable::filter(fn::constant(true), shrinkable) ==
+                       shrinkable);
+         });
+}
+
 TEST_CASE("shrinkable::pair") {
     prop("has no shrinks if the two Shrinkables have no shrinks",
          [](int a, int b) {
