@@ -30,13 +30,6 @@ TEST_CASE("shrinkable::map") {
 
              RC_ASSERT(shrinkable.shrinks() == expected);
          });
-
-    prop("does not copy shrinkable on construction",
-         [](Shrinkable<CopyGuard> from) {
-             const auto shrinkable = shrinkable::map(
-                 [](CopyGuard &&x) { return std::move(x); },
-                 std::move(from));
-         });
 }
 
 TEST_CASE("shrinkable::mapShrinks") {
@@ -58,13 +51,6 @@ TEST_CASE("shrinkable::mapShrinks") {
                  fn::constant(Seq<Shrinkable<int>>()),
                  shrinkable::just(x));
              RC_ASSERT(shrinkable.value() == x);
-         });
-
-    prop("does not copy shrinkable on construction",
-         [](Shrinkable<CopyGuard> from) {
-             const auto shrinkable = shrinkable::mapShrinks(
-                 fn::constant(Seq<Shrinkable<CopyGuard>>()),
-                 std::move(from));
          });
 }
 

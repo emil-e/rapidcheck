@@ -7,12 +7,15 @@ namespace rc {
 //! A `Shrinkable` describes a value in addition to all the possible ways of
 //! shrinking that value.
 //!
-//! `Shrinkable` is implemented as a type erased implementation object which
-//! must have the following:
+//! `Shrinkable` is backed by a type erased implementation object which must
+//! have the following:
 //!   - A method `T value() const` which returns the value.
 //!   - A method `Seq<Shrinkable<T>> shrinks() const` which returns a `Seq` of
 //!     the possible shrinks.
-//!   - A copy constructor which produces a functionally identical object.
+//!
+//! A Shrinkable is immutable and the implementation object is shared when the
+//! shrinkable is copied which is why the implementation object needs no copy
+//! constructor.
 template<typename T>
 class Shrinkable
 {
@@ -36,20 +39,16 @@ public:
     //! Returns a `Seq` of all the possible shrinks of this `Shrinkable`.
     Seq<Shrinkable<T>> shrinks() const;
 
-    Shrinkable(const Shrinkable &other);
-    Shrinkable &operator=(const Shrinkable &rhs);
-    Shrinkable(Shrinkable &&other) noexcept = default;
-    Shrinkable &operator=(Shrinkable &&rhs) noexcept = default;
-
 private:
     class IShrinkableImpl;
 
-    explicit Shrinkable(std::unique_ptr<IShrinkableImpl> impl);
+    explicit Shrinkable(std::shared_ptr
+                        <IShrinkableImpl> impl);
 
     template<typename Impl>
     class ShrinkableImpl;
 
-    std::unique_ptr<IShrinkableImpl> m_impl;
+    std::shared_ptr<const IShrinkableImpl> m_impl;
 };
 
 //! Two `Shrinkable`s are equal if the have the same value and the same shrinks.

@@ -8,7 +8,6 @@ class Shrinkable<T>::IShrinkableImpl
 public:
     virtual T value() const = 0;
     virtual Seq<Shrinkable<T>> shrinks() const = 0;
-    virtual std::unique_ptr<IShrinkableImpl> copy() const = 0;
     virtual ~IShrinkableImpl() = default;
 };
 
@@ -24,9 +23,6 @@ public:
     T value() const override { return m_impl.value(); }
     Seq<Shrinkable<T>> shrinks() const override { return m_impl.shrinks(); }
 
-    std::unique_ptr<IShrinkableImpl> copy() const override
-    { return std::unique_ptr<IShrinkableImpl>(new ShrinkableImpl(m_impl)); }
-
 private:
     Impl m_impl;
 };
@@ -34,7 +30,7 @@ private:
 template<typename T>
 template<typename Impl, typename>
 Shrinkable<T>::Shrinkable(Impl &&impl)
-    : m_impl(new ShrinkableImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}
+    : m_impl(std::make_shared<ShrinkableImpl<Decay<Impl>>>(std::forward<Impl>(impl))) {}
 
 template<typename T>
 T Shrinkable<T>::value() const { return m_impl->value(); }
@@ -43,18 +39,7 @@ template<typename T>
 Seq<Shrinkable<T>> Shrinkable<T>::shrinks() const { return m_impl->shrinks(); }
 
 template<typename T>
-Shrinkable<T>::Shrinkable(const Shrinkable &other)
-    : m_impl(other.m_impl->copy()) {}
-
-template<typename T>
-Shrinkable<T> &Shrinkable<T>::operator=(const Shrinkable &rhs)
-{
-    m_impl = rhs.m_impl->copy();
-    return *this;
-}
-
-template<typename T>
-Shrinkable<T>::Shrinkable(std::unique_ptr<IShrinkableImpl> impl)
+Shrinkable<T>::Shrinkable(std::shared_ptr<IShrinkableImpl> impl)
     : m_impl(std::move(impl)) {}
 
 template<typename Impl, typename ...Args>
@@ -66,8 +51,8 @@ makeShrinkable(Args &&...args)
     typedef typename Shrinkable<T>::template ShrinkableImpl<Impl> ShrinkableImpl;
 
     return Shrinkable<T>(
-        std::unique_ptr<IShrinkableImpl>(
-            new ShrinkableImpl(std::forward<Args>(args)...)));
+        std::shared_ptr<IShrinkableImpl>(
+            std::make_shared<ShrinkableImpl>(std::forward<Args>(args)...)));
 }
 
 template<typename T>

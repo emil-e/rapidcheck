@@ -113,58 +113,6 @@ TEST_CASE("Shrinkable") {
         REQUIRE(value.second == expectedLog);
     }
 
-    SECTION("copy construction copies the implementation object") {
-        LoggingShrinkable original(LoggingShrinkableImpl("foobar"));
-        auto copy(original);
-
-        const auto value = copy.value();
-        std::vector<std::string> expectedLog{
-            "constructed as foobar",
-            "move constructed",
-            "copy constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
-    }
-
-    SECTION("copy assignment copies the implementation object") {
-        LoggingShrinkable original(LoggingShrinkableImpl("foobar"));
-        LoggingShrinkable copy(LoggingShrinkableImpl("blah"));
-        copy = original;
-
-        const auto value = copy.value();
-        std::vector<std::string> expectedLog{
-            "constructed as foobar",
-            "move constructed",
-            "copy constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
-    }
-
-    SECTION("move construction neither moves nor copies") {
-        LoggingShrinkable original(LoggingShrinkableImpl("foobar"));
-        LoggingShrinkable moved(std::move(original));
-
-        const auto value = moved.value();
-        std::vector<std::string> expectedLog{
-            "constructed as foobar",
-            "move constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
-    }
-
-    SECTION("move assignment neither moves nor copies") {
-        LoggingShrinkable original(LoggingShrinkableImpl("foobar"));
-        LoggingShrinkable moved(LoggingShrinkableImpl("blah"));
-        moved = std::move(original);
-
-        const auto value = moved.value();
-        std::vector<std::string> expectedLog{
-            "constructed as foobar",
-            "move constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
-    }
-
     SECTION("operator==/operator!=") {
         propConformsToEquals<Shrinkable<int>>();
 
