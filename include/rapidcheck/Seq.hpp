@@ -61,12 +61,12 @@ Seq<typename std::result_of<Impl()>::type::ValueType> makeSeq(Args &&...args)
     return seq;
 }
 
-template<typename A, typename B>
-bool operator==(Seq<A> lhs, Seq<B> rhs)
+template<typename T>
+bool operator==(Seq<T> lhs, Seq<T> rhs)
 {
     while (true) {
-        Maybe<A> a(lhs.next());
-        Maybe<B> b(rhs.next());
+        Maybe<T> a(lhs.next());
+        Maybe<T> b(rhs.next());
         if (a != b)
             return false;
 
@@ -75,8 +75,8 @@ bool operator==(Seq<A> lhs, Seq<B> rhs)
     }
 }
 
-template<typename A, typename B>
-bool operator!=(Seq<A> lhs, Seq<B> rhs)
+template<typename T>
+bool operator!=(Seq<T> lhs, Seq<T> rhs)
 { return !(std::move(lhs) == std::move(rhs)); }
 
 template<typename T>

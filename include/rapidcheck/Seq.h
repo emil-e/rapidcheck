@@ -69,11 +69,11 @@ private:
 
 //! Two `Seq`s are considered equal if they return equal values. Note that this
 //! requires either copying or moving of the `Seq`s.
-template<typename A, typename B>
-bool operator==(Seq<A> lhs, Seq<B> rhs);
+template<typename T>
+bool operator==(Seq<T> lhs, Seq<T> rhs);
 
-template<typename A, typename B>
-bool operator!=(Seq<A> lhs, Seq<B> rhs);
+template<typename T>
+bool operator!=(Seq<T> lhs, Seq<T> rhs);
 
 template<typename T>
 std::ostream &operator<<(std::ostream &os, Seq<T> seq);

@@ -454,10 +454,10 @@ TEST_CASE("seq::cycle") {
 }
 
 TEST_CASE("seq::cast") {
-    prop("returns Seq is equal to original seq except for type",
+    prop("casting to a larger type and then back yields Seq equal to original",
          [](const std::vector<uint8_t> &elements) {
              const auto seq = seq::fromContainer(elements);
-             RC_ASSERT(seq::cast<int>(seq) == seq);
+             RC_ASSERT(seq::cast<uint8_t>(seq::cast<int>(seq)) == seq);
          });
 
     prop("copies are equal",
