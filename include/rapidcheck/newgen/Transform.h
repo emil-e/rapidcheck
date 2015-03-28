@@ -1,12 +1,20 @@
 #pragma once
 
 namespace rc {
+
+template<typename T> class Gen;
+
 namespace newgen {
 
 //! Returns a generator based on the given generator but mapped with the given
 //! mapping function.
 template<typename T, typename Mapper>
 Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper, Gen<T> gen);
+
+//! Returns a generator that casts the generated values to `T` using
+//! `static_cast<T>(...)`.
+template<typename T, typename U>
+Gen<T> cast(Gen<U> gen);
 
 } // namespace newgen
 } // namespace rc

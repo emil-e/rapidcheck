@@ -34,5 +34,13 @@ Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper, Gen<T> gen)
                                             std::move(gen));
 }
 
+template<typename T, typename U>
+Gen<T> cast(Gen<U> gen)
+{
+    return newgen::map(
+        [](U &&x) { return static_cast<T>(std::move(x)); },
+        std::move(gen));
+}
+
 } // namespace newgen
 } // namespace rc
