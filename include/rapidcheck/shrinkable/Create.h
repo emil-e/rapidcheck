@@ -13,7 +13,7 @@ lambda(Value &&value, Shrink &&shrinks);
 
 //! Creates a `Shrinkable` with no shrinks from a callable which returns the
 //! value.
-template<typename Value, typename Shrink>
+template<typename Value>
 Shrinkable<typename std::result_of<Value()>::type>
 lambda(Value &&value);
 

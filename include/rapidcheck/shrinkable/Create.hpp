@@ -58,7 +58,7 @@ lambda(Value &&value, Shrink &&shrinks)
                                 std::forward<Shrink>(shrinks));
 }
 
-template<typename Value, typename Shrink>
+template<typename Value>
 Shrinkable<typename std::result_of<Value()>::type>
 lambda(Value &&value)
 {
