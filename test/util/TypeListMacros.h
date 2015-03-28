@@ -41,6 +41,18 @@
     std::unordered_multiset<T>,                 \
     std::unordered_multimap<T, T>
 
+#define RC_MAP_CONTAINERS(T)                    \
+    std::map<T, T>,                             \
+    std::unordered_map<T, T>,                   \
+    std::multimap<T, T>,                        \
+    std::unordered_multimap<T, T>
+
+#define RC_SET_CONTAINERS(T)                    \
+    std::set<T>,                                \
+    std::unordered_set<T>,                      \
+    std::multiset<T>,                           \
+    std::unordered_multiset<T>
+
 #define RC_GENERIC_CONTAINERS(T)                            \
     RC_ORDERED_CONTAINERS(T),                               \
     RC_UNORDERED_CONTAINERS(T)
