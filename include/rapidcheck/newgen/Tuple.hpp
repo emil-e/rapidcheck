@@ -73,9 +73,11 @@ public:
 template<typename ...Ts>
 struct DefaultArbitrary<std::tuple<Ts...>>
 {
-    static Gen<std::tuple<Ts...>> arbitrary()
+    static Gen<std::tuple<Decay<Ts>...>> arbitrary()
     {
-        return newgen::tuple(newgen::arbitrary<Ts>()...);
+        return newgen::tuple(newgen::arbitrary<Decay<Ts>>()...);
+    }
+};
 
 template<typename T1, typename T2>
 struct DefaultArbitrary<std::pair<T1, T2>>
