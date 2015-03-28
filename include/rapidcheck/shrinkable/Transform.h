@@ -22,6 +22,11 @@ Shrinkable<T> mapShrinks(Mapper &&mapper, Shrinkable<T> shrinkable);
 template<typename T, typename Predicate>
 Maybe<Shrinkable<T>> filter(Predicate pred, Shrinkable<T> shrinkable);
 
+//! Given two `Shrinkables`, returns a `Shrinkable` pair that first shrinks the
+//! first element and then the second.
+template<typename T1, typename T2>
+Shrinkable<std::pair<T1, T2>> pair(Shrinkable<T1> s1, Shrinkable<T2> s2);
+
 } // namespace shrinkable
 } // namespace rc
 

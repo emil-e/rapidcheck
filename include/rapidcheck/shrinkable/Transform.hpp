@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/seq/Transform.h"
 
 namespace rc {
@@ -81,6 +82,26 @@ Maybe<Shrinkable<T>> filter(Predicate pred, Shrinkable<T> shrinkable)
             return shrinkable::filter(pred, std::move(shrink));
         }, std::move(shrinks));
     }, std::move(shrinkable));
+}
+
+template<typename T1, typename T2>
+Shrinkable<std::pair<T1, T2>> pair(Shrinkable<T1> s1, Shrinkable<T2> s2)
+{
+    return shrinkable::map(
+        [](const std::pair<Shrinkable<T1>, Shrinkable<T2>> &p) {
+            return std::make_pair(p.first.value(), p.second.value());
+        },
+        shrinkable::shrinkRecur(
+            std::make_pair(s1, s2),
+            [](const std::pair<Shrinkable<T1>, Shrinkable<T2>> &p) {
+                return seq::concat(
+                    seq::map([=](Shrinkable<T1> &&s) {
+                        return std::make_pair(std::move(s), p.second);
+                    }, p.first.shrinks()),
+                    seq::map([=](Shrinkable<T2> &&s) {
+                        return std::make_pair(p.first, std::move(s));
+                    }, p.second.shrinks()));
+            }));
 }
 
 } // namespace shrinkable

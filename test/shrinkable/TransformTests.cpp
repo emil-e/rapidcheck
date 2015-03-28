@@ -88,4 +88,38 @@ TEST_CASE("shrinkable::filter") {
                  return pred(s.value());
              }));
          });
+
+TEST_CASE("shrinkable::pair") {
+    prop("has no shrinks if the two Shrinkables have no shrinks",
+         [](int a, int b) {
+             REQUIRE(shrinkable::pair(shrinkable::just(a),
+                                      shrinkable::just(b)) ==
+                     shrinkable::just(std::make_pair(a, b)));
+         });
+
+    prop("shrinks first element and then the second one",
+         [] {
+             const auto a = *gen::ranged<int>(0, 3);
+             const auto b = *gen::ranged<int>(0, 3);
+             const auto makeShrinkable = [](int x) {
+                 return shrinkable::shrinkRecur(x, [](int v) {
+                     return seq::range(v - 1, -1);
+                 });
+             };
+             const auto shrinkable = shrinkable::pair(
+                 makeShrinkable(a),
+                 makeShrinkable(b));
+             const auto expected = shrinkable::shrinkRecur(
+                 std::make_pair(a, b), [](const std::pair<int, int> &p) {
+                     return seq::concat(
+                         seq::map([=](int x) {
+                             return std::make_pair(x, p.second);
+                         }, seq::range(p.first - 1, -1)),
+                         seq::map([=](int x) {
+                             return std::make_pair(p.first, x);
+                         }, seq::range(p.second - 1, -1)));
+                 });
+
+             RC_ASSERT(shrinkable == expected);
+         });
 }
