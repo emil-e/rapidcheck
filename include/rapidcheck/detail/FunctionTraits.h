@@ -13,7 +13,7 @@ struct MemberFunctionTraitsImpl<Ret (T::*)(Args...)>
 {
     typedef Ret ReturnType;
     typedef TypeList<Args...> ArgTypes;
-    typedef std::function<ReturnType(Args...)> StdFunction;
+    typedef Ret FunctionType(Args...);
     typedef T Target;
 };
 
@@ -22,7 +22,7 @@ struct MemberFunctionTraitsImpl<Ret (T::*)(Args...) const>
 {
     typedef Ret ReturnType;
     typedef TypeList<Args...> ArgTypes;
-    typedef std::function<ReturnType(Args...)> StdFunction;
+    typedef Ret FunctionType(Args...);
     typedef T Target;
 };
 
@@ -37,7 +37,7 @@ struct FunctionTraitsImpl<Ret (*)(Args...)>
 {
     typedef Ret ReturnType;
     typedef TypeList<Args...> ArgTypes;
-    typedef std::function<ReturnType(Args...)> StdFunction;
+    typedef Ret FunctionType(Args...);
 };
 
 
@@ -53,9 +53,9 @@ using ReturnType = typename FunctionTraits<T>::ReturnType;
 template<typename T>
 using ArgTypes = typename FunctionTraits<T>::ArgTypes;
 
-//1 The std::function type that can be created from `T`.
+//! The signature of T.
 template<typename T>
-using StdFunction = typename FunctionTraits<T>::StdFunction;
+using FunctionType = typename FunctionTraits<T>::FunctionType;
 
 } // namespace detail
 } // namespace rc
