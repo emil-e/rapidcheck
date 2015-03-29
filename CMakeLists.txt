@@ -18,6 +18,7 @@ add_library(rapidcheck
   src/detail/RandomEngine.cpp
   src/detail/Results.cpp
   src/detail/RoseNode.cpp
+  src/detail/TestParams.cpp
   src/detail/Utility.cpp
   src/gen/Generator.cpp
   src/newgen/detail/ExecHandler.cpp
