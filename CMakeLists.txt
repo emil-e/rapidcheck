@@ -14,6 +14,7 @@ add_library(rapidcheck
   src/detail/ExpressionCaptor.cpp
   src/detail/ImplicitParam.cpp
   src/detail/MapParser.cpp
+  src/detail/NewProperty.cpp
   src/detail/RandomEngine.cpp
   src/detail/Results.cpp
   src/detail/RoseNode.cpp
