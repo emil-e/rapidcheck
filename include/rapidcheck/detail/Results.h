@@ -6,6 +6,8 @@
 namespace rc {
 namespace detail {
 
+typedef std::vector<std::pair<std::string, std::string>> Counterexample;
+
 //! Describes a particular test case.
 struct TestCase
 {
@@ -67,7 +69,7 @@ struct FailureResult
     //! The number of shrinks performed.
     int numShrinks;
     //! The counterexample.
-    std::vector<std::pair<std::string, std::string>> counterExample;
+    Counterexample counterExample;
 };
 
 std::ostream &operator<<(std::ostream &os, const detail::FailureResult &result);
