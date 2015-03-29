@@ -6,6 +6,8 @@
 
 namespace rc {
 
+using GenerationFailure = gen::GenerationFailure;
+
 class Random;
 
 //! This class is the type of RapidCheck generators. A generator is essentially

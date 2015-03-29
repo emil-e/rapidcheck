@@ -11,8 +11,10 @@
 #include "util/Meta.h"
 #include "util/TypeListMacros.h"
 #include "util/ArbitraryRandom.h"
+#include "util/GenUtils.h"
 
 using namespace rc;
+using namespace rc::test;
 
 namespace {
 
@@ -173,4 +175,84 @@ TEST_CASE("arbitrary integers") {
 TEST_CASE("arbitrary reals") {
     meta::forEachType<NumericProperties, RC_REAL_TYPES>();
     meta::forEachType<SignedProperties, RC_REAL_TYPES>();
+}
+
+namespace {
+
+struct InRangeProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "never generates values outside of range",
+            [](const GenParams &params) {
+                // TODO range generator
+                const auto a = *gen::arbitrary<T>();
+                const auto b = *gen::distinctFrom(a);
+                const auto min = std::min(a, b);
+                const auto max = std::max(a, b);
+                const auto value = newgen::inRange<T>(
+                    min, max)(params.random, params.size).value();
+                RC_ASSERT(value >= min && value < max);
+            });
+
+        templatedProp<T>(
+            "throws if min <= max",
+            [](const GenParams &params) {
+                // TODO range generator
+                const auto a = *gen::arbitrary<T>();
+                const auto b = *gen::distinctFrom(a);
+                const auto gen = newgen::inRange<T>(
+                    std::max(a, b), std::min(a, b));
+                try {
+                    gen(params.random, params.size);
+                } catch (const GenerationFailure &e) {
+                    // TODO RC_ASSERT_THROWS
+                    RC_SUCCEED("Threw GenerationFailure");
+                }
+                RC_FAIL("Did not throw GenerationFailure");
+            });
+
+        templatedProp<T>(
+            "has no shrinks",
+            [](const GenParams &params) {
+                // TODO range generator
+                const auto a = *gen::arbitrary<T>();
+                const auto b = *gen::distinctFrom(a);
+                const auto shrinkable = newgen::inRange<T>(
+                    std::min(a, b), std::max(a, b))(
+                        params.random, params.size);
+                RC_ASSERT(!shrinkable.shrinks().next());
+            });
+
+        templatedProp<T>(
+            "generates all values in range",
+            [](const GenParams &params) {
+                const auto size = *gen::ranged<T>(1, 20);
+                const auto min = *gen::ranged<T>(
+                    std::numeric_limits<T>::min(),
+                    std::numeric_limits<T>::max() - size);
+
+                const auto gen = newgen::inRange<T>(min, min + size);
+                Random r(params.random);
+                std::vector<int> counts(size, 0);
+                for (std::size_t i = 0; i < 2000000; i++) {
+                    const auto x = gen(r.split(), params.size).value();
+                    counts[x - min]++;
+                    const auto done = std::find(begin(counts),
+                                                end(counts), 0) == end(counts);
+                    if (done)
+                        RC_SUCCEED("All generated");
+                }
+
+                RC_FAIL("Gave up");
+            });
+    }
+};
+
+} // namespace
+
+TEST_CASE("newgen::inRange") {
+    meta::forEachType<InRangeProperties, RC_INTEGRAL_TYPES>();
 }

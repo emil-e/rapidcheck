@@ -63,5 +63,23 @@ struct DefaultArbitrary<bool>
 };
 
 } // namespace detail
+
+template<typename T>
+Gen<T> inRange(T min, T max)
+{
+    return [=](const Random &random, int size) {
+        if (max <= min) {
+            std::string msg;
+            msg += "Invalid range [" + std::to_string(min);
+            msg += ", " + std::to_string(max) + ")";
+            throw GenerationFailure(msg);
+        }
+
+        const auto rangeSize = Random::Number(max - min);
+        const auto x = Random(random).next() % rangeSize;
+        return shrinkable::just<T>(static_cast<T>(x) + min);
+    };
+}
+
 } // namespace newgen
 } // namespace rc
