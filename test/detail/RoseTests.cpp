@@ -136,7 +136,7 @@ struct CurrentValue : public RoseCommand
     }
 };
 
-struct Example : public RoseCommand
+struct GetExample : public RoseCommand
 {
     void run(const RoseModel &s0, Rose<RoseModel::ValueT> &rose) const override
     {
@@ -265,7 +265,7 @@ TEST_CASE("Rose") {
              Rose<RoseModel::ValueT> rose(&generator, testCase);
              state::check(s0, rose, state::anyCommand<
                           CurrentValue,
-                          Example,
+                          GetExample,
                           NextShrink,
                           AcceptShrink>);
          });

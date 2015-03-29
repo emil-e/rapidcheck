@@ -77,14 +77,14 @@ private:
     Callable m_callable;
 };
 
-Gen<std::pair<CaseResult, Counterexample>> mapToResultPair(
+Gen<CaseDescription> mapToCaseDescription(
     Gen<std::pair<CaseResult, newgen::detail::Recipe>> gen);
 
 template<typename Callable>
 NewProperty toNewProperty(Callable &&callable)
 {
     using Wrapper = PropertyWrapper<Decay<Callable>>;
-    return mapToResultPair(
+    return mapToCaseDescription(
         newgen::detail::execRaw(
             Wrapper(std::forward<Callable>(callable))));
 }

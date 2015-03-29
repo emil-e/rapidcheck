@@ -6,7 +6,13 @@
 namespace rc {
 namespace detail {
 
-typedef Gen<std::pair<CaseResult, Counterexample>> NewProperty;
+struct CaseDescription
+{
+    CaseResult result;
+    Example example;
+};
+
+typedef Gen<CaseDescription> NewProperty;
 
 //! Takes a callable and converts it into a generator of a `CaseResult` and a
 //! counterexample. That is, a `NewProperty`.

@@ -137,7 +137,7 @@ struct NewArbitrary<Fixed<N>>
 } // namespace rc
 
 TEST_CASE("toNewProperty") {
-    using ShrinkableResult = Shrinkable<std::pair<CaseResult, Counterexample>>;
+    using ShrinkableResult = Shrinkable<CaseDescription>;
 
     prop("counterexample contains descriptions of picked values",
          [](const GenParams &params) {
@@ -149,7 +149,7 @@ TEST_CASE("toNewProperty") {
                  });
              const auto shrinkable = gen(params.random, params.size);
 
-             Counterexample expected;
+             Example expected;
              expected.reserve(n + 1);
              using ArgsTuple = std::tuple<Fixed<1>, Fixed<2>, Fixed<3>>;
              expected.emplace_back(
@@ -164,7 +164,7 @@ TEST_CASE("toNewProperty") {
                  [&](const ShrinkableResult &value,
                     const ShrinkableResult &shrink)
                  {
-                     RC_ASSERT(value.value().second == expected);
+                     RC_ASSERT(value.value().example == expected);
                  });
          });
 
@@ -180,9 +180,10 @@ TEST_CASE("toNewProperty") {
                  shrinkable,
                  [](const ShrinkableResult &value,
                     const ShrinkableResult &shrink) {
-                     const auto p = value.value();
-                     RC_ASSERT((p.first.type == CaseResult::Type::Success) ==
-                               ((std::stoi(p.second.back().second) % 2) == 0));
+                     const auto desc = value.value();
+                     RC_ASSERT(
+                         (desc.result.type == CaseResult::Type::Success) ==
+                         ((std::stoi(desc.example.back().second) % 2) == 0));
                  });
          });
 }

@@ -3,12 +3,12 @@
 namespace rc {
 namespace detail {
 
-Gen<std::pair<CaseResult, Counterexample>> mapToResultPair(
+Gen<CaseDescription> mapToCaseDescription(
     Gen<std::pair<CaseResult, newgen::detail::Recipe>> gen)
 {
     return newgen::map(
         [](std::pair<CaseResult, newgen::detail::Recipe> &&p) {
-            Counterexample example;
+            Example example;
             const auto &ingr = p.second.ingredients;
             example.reserve(ingr.size());
             std::transform(
@@ -17,7 +17,10 @@ Gen<std::pair<CaseResult, Counterexample>> mapToResultPair(
                     return s.value().describe();
                 });
 
-            return std::make_pair(std::move(p.first), std::move(example));
+            CaseDescription description;
+            description.result = std::move(p.first);
+            description.example = std::move(example);
+            return description;
         }, std::move(gen));
 }
 
