@@ -2,6 +2,7 @@
 #include <rapidcheck-catch.h>
 
 #include "rapidcheck/newgen/Transform.h"
+#include "rapidcheck/newgen/Create.h"
 
 #include "util/GenUtils.h"
 #include "util/Predictable.h"
@@ -31,16 +32,8 @@ TEST_CASE("newgen::map") {
     SECTION("works with non-copyable types") {
         const auto value = newgen::map(
             [](NonCopyable &&nc) { return std::move(nc); },
-            Gen<NonCopyable>([](const Random &, int) {
-                return shrinkable::lambda([] {
-                    NonCopyable nc;
-                    nc.value = 1337;
-                    nc.extra = 1337;
-                    return nc;
-                });
-            }))(Random(), 0).value();
-        RC_ASSERT(value.value == 1337);
-        RC_ASSERT(value.extra == 1337);
+            newgen::arbitrary<NonCopyable>())(Random(), 0).value();
+        REQUIRE(isArbitraryPredictable(value));
     }
 
     prop("uses newgen::arbitrary if no generator is specified",
@@ -51,6 +44,20 @@ TEST_CASE("newgen::map") {
              RC_ASSERT(isArbitraryPredictable(value));
          });
 
+    prop("finds minimum where string represtation of unsigned integer must be"
+         " longer than some value",
+         [](const Random &random) {
+             const auto gen = newgen::map(
+                 [](unsigned int x) { return std::to_string(x); },
+                 newgen::arbitrary<unsigned int>());
+             const auto n = *gen::ranged(2, 7);
+             std::string expected(n, '0');
+             expected[0] = '1';
+             const auto result = searchGen(
+                 random, gen::kNominalSize, gen,
+                 [=](const std::string &x) { return x.size() >= n; });
+             RC_ASSERT(result == expected);
+         });
 }
 
 TEST_CASE("newgen::cast") {
