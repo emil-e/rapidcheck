@@ -10,6 +10,11 @@ namespace newgen {
 template<typename T, typename Mapper>
 Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper, Gen<T> gen);
 
+//! Convenience function which calls `map(Predicate, Gen<T>)` with
+//! `newgen::arbitrary<T>`
+template<typename T, typename Mapper>
+Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper);
+
 //! Returns a generator that casts the generated values to `T` using
 //! `static_cast<T>(...)`.
 template<typename T, typename U>

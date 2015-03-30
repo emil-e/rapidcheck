@@ -34,6 +34,10 @@ Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper, Gen<T> gen)
                                             std::move(gen));
 }
 
+template<typename T, typename Mapper>
+Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper)
+{ return newgen::map(std::forward<Mapper>(mapper), newgen::arbitrary<T>()); }
+
 template<typename T, typename U>
 Gen<T> cast(Gen<U> gen)
 {

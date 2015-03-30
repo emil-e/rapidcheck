@@ -42,6 +42,15 @@ TEST_CASE("newgen::map") {
         RC_ASSERT(value.value == 1337);
         RC_ASSERT(value.extra == 1337);
     }
+
+    prop("uses newgen::arbitrary if no generator is specified",
+         [](const GenParams &params) {
+             const auto value = newgen::map<Predictable>(
+                 [](Predictable &&x) { return std::move(x); })(
+                     params.random, params.size).value();
+             RC_ASSERT(isArbitraryPredictable(value));
+         });
+
 }
 
 TEST_CASE("newgen::cast") {
