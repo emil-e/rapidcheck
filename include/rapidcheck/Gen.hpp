@@ -4,10 +4,16 @@
 
 #include "rapidcheck/detail/Any.h"
 #include "rapidcheck/detail/ImplicitParam.h"
-#include "rapidcheck/newgen/Transform.h"
 #include "rapidcheck/newgen/detail/GenerationHandler.h"
 
 namespace rc {
+namespace newgen {
+
+// Forward declare this so we don't need to include Transform.h
+template<typename T, typename Mapper>
+Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper, Gen<T> gen);
+
+} // namespace newgen
 
 template<typename T>
 class Gen<T>::IGenImpl

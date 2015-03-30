@@ -1,9 +1,8 @@
 #pragma once
 
+#include "rapidcheck/Gen.h"
+
 namespace rc {
-
-template<typename T> class Gen;
-
 namespace newgen {
 
 //! Returns a generator based on the given generator but mapped with the given

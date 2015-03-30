@@ -2,6 +2,7 @@
 
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/newgen/Arbitrary.h"
+#include "rapidcheck/newgen/Transform.h"
 
 namespace rc {
 namespace newgen {
