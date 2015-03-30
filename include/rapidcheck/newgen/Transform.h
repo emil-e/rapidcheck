@@ -20,6 +20,17 @@ Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper);
 template<typename T, typename U>
 Gen<T> cast(Gen<U> gen);
 
+//! Returns a generator that uses the given generator to generate only values
+//! that match the given predicate. Throws a `GenerationFailure` if such a value
+//! cannot be generated after an unspecified number of tries.
+template<typename T, typename Predicate>
+Gen<T> suchThat(Predicate &&pred, Gen<T> gen);
+
+//! Convenience function which calls `suchThat(Predicate, Gen<T>)` with
+//! `newgen::arbitrary<T>`
+template<typename T, typename Predicate>
+Gen<T> suchThat(Predicate &&pred);
+
 } // namespace newgen
 } // namespace rc
 

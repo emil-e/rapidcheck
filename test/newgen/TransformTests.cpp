@@ -7,6 +7,7 @@
 #include "util/GenUtils.h"
 #include "util/Predictable.h"
 #include "util/Generators.h"
+#include "util/ShrinkableUtils.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -67,4 +68,55 @@ TEST_CASE("newgen::cast") {
              const auto cast = newgen::cast<uint8_t>(newgen::cast<int>(gen));
              RC_ASSERT(cast(Random(), 0) == shrinkable);
          });
+}
+
+TEST_CASE("newgen::suchThat") {
+    prop("generated value always matches predicate",
+         [](const GenParams &params) {
+             const auto gen = newgen::suchThat(
+                 [](int x) { return (x % 2) == 0; },
+                 newgen::arbitrary<int>());
+             const auto shrinkable = gen(params.random, params.size);
+             onAnyPath(
+                 shrinkable,
+                 [](const Shrinkable<int> &value,
+                    const Shrinkable<int> &shrink) {
+                     RC_ASSERT((value.value() % 2) == 0);
+                 });
+         });
+
+    prop("if predicate returns true for every value, returned shrinkable is"
+         " unchanged",
+         [](const GenParams &params, const Shrinkable<int> &shrinkable) {
+             const Gen<int> underlying(fn::constant(shrinkable));
+             const auto gen = newgen::suchThat(fn::constant(true), underlying);
+             RC_ASSERT(underlying(params.random, params.size) ==
+                       gen(params.random, params.size));
+         });
+
+    prop("throws GenerationFailure if value cannot be generated",
+         [](const GenParams &params) {
+             const auto gen = newgen::suchThat(fn::constant(false),
+                                               newgen::just<int>(0));
+             try {
+                 gen(params.random, params.size);
+             } catch (const GenerationFailure &e) {
+                 RC_SUCCEED("Threw GenerationFailure");
+             }
+             RC_FAIL("Didn't throw GenerationFailure");
+         });
+
+    prop("uses newgen::arbitrary if no generator is specified",
+         [](const GenParams &params) {
+             const auto value = newgen::suchThat<Predictable>(
+                 fn::constant(true))(params.random, params.size).value();
+             RC_ASSERT(isArbitraryPredictable(value));
+         });
+
+    SECTION("works with non-copyable types") {
+        const auto value = newgen::suchThat(
+            fn::constant(true),
+            newgen::arbitrary<Predictable>())(Random(), 0).value();
+        REQUIRE(isArbitraryPredictable(value));
+    }
 }
