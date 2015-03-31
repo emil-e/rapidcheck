@@ -100,7 +100,7 @@ struct IntegralProperties
             });
 
         templatedProp<T>(
-            "recursive shrink test",
+            "finds minimum where value must be larger/smaller than some value",
             [](const Random &random) {
                 int size = *gen::ranged<int>(0, 200);
                 const auto shrinkable = newgen::arbitrary<T>()(random, size);
