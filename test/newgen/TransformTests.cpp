@@ -106,6 +106,15 @@ TEST_CASE("newgen::suchThat") {
              RC_FAIL("Didn't throw GenerationFailure");
          });
 
+    prop("passes the passed size to the underlying generator on the first try",
+         [] {
+             const auto size = *gen::ranged<int>(0, 2000);
+             const auto gen = newgen::suchThat(fn::constant(true),
+                                               genPassedParams());
+             const auto params = gen(Random(), size).value();
+             RC_ASSERT(params.size == size);
+         });
+
     prop("uses newgen::arbitrary if no generator is specified",
          [](const GenParams &params) {
              const auto value = newgen::suchThat<Predictable>(
