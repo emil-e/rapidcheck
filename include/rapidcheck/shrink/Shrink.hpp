@@ -87,7 +87,7 @@ Seq<T> eachElement(T collection, ShrinkElement shrinkElement)
     for (auto &&item : collection)
         elements.push_back(std::move(item));
 
-    return seq::mapcat(
+    return seq::join(seq::zipWith(
         [elements, shrinkElement](std::size_t index, ElementT &&value) {
             // TODO this capturing... safe to capture by reference?
             return seq::mapMaybe(
@@ -103,7 +103,7 @@ Seq<T> eachElement(T collection, ShrinkElement shrinkElement)
                 },
                 shrinkElement(std::move(value)));
         },
-        seq::index(), seq::fromContainer(elements));
+        seq::index(), seq::fromContainer(elements)));
 }
 
 template<typename T>

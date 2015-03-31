@@ -21,17 +21,20 @@ Seq<T> dropWhile(Predicate &&pred, Seq<T> seq);
 template<typename T, typename Predicate>
 Seq<T> takeWhile(Predicate &&pred, Seq<T> seq);
 
+//! Maps the elements of the given `Seq` using the given callable.
+template<typename T, typename Mapper>
+Seq<typename std::result_of<Mapper(T)>::type>
+map(Mapper &&mapper, Seq<T> seq);
+
 //! Takes elements from the given `Seq`s and passes them as arguments to the
-//! given callable and returns a `Seq` of such return values. For a single
-//! `Seq`, this is regular "map" function but for more than one, it's what is
-//! usually called "zipping with" a function. The length of the returned `Seq`
-//! will be the length of the shortest `Seq` passed in.
+//! given callable and returns a `Seq` of such return values. The length of the
+//! returned `Seq` will be the length of the shortest `Seq` passed in.
 //!
 //! Fun fact: Also works with no sequences and in that case returns an infinite
 //! sequence of the return values of calling the given callable.
-template<typename ...Ts, typename Mapper>
-Seq<typename std::result_of<Mapper(Ts...)>::type>
-map(Mapper &&mapper, Seq<Ts> ...seqs);
+template<typename ...Ts, typename Zipper>
+Seq<typename std::result_of<Zipper(Ts...)>::type>
+zipWith(Zipper &&zipper, Seq<Ts> ...seqs);
 
 //! Skips elements not matching the given predicate from the given stream.
 template<typename T, typename Predicate>
@@ -47,16 +50,16 @@ Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs);
 
 //! Maps each tuple elements of the given to `Seq`s to further `Seq`s and
 //! concatenates them into one `Seq`. Sometimes called a "flat map".
-template<typename ...Ts, typename Mapper>
-Seq<typename std::result_of<Mapper(Ts...)>::type::ValueType>
-mapcat(Mapper &&mapper, Seq<Ts> ...seqs);
+template<typename T, typename Mapper>
+Seq<typename std::result_of<Mapper(T)>::type::ValueType>
+mapcat(Mapper &&mapper, Seq<T> seq);
 
 //! Like `map` but expects the mapping functor to return a `Maybe`. If `Nothing`
 //! is returned, the element is skipped. Otherwise, the `Maybe` is unwrapped and
 //! included in the resulting `Seq`.
-template<typename ...Ts, typename Mapper>
-Seq<typename std::result_of<Mapper(Ts...)>::type::ValueType>
-mapMaybe(Mapper &&mapper, Seq<Ts> ...seqs);
+template<typename T, typename Mapper>
+Seq<typename std::result_of<Mapper(T)>::type::ValueType>
+mapMaybe(Mapper &&mapper, Seq<T> seq);
 
 //! Creates a `Seq` which infinitely repeats the given `Seq`.
 template<typename T>
