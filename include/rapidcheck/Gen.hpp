@@ -11,7 +11,8 @@ namespace newgen {
 
 // Forward declare this so we don't need to include Transform.h
 template<typename T, typename Mapper>
-Gen<typename std::result_of<Mapper(T)>::type> map(Gen<T> gen, Mapper &&mapper);
+Gen<Decay<typename std::result_of<Mapper(T)>::type>>
+map(Gen<T> gen, Mapper &&mapper);
 
 } // namespace newgen
 

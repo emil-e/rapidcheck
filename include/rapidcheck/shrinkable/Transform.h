@@ -7,7 +7,7 @@ namespace shrinkable {
 
 //! Maps the given shrinkable recursively using the given mapping callable.
 template<typename T, typename Mapper>
-Shrinkable<typename std::result_of<Mapper(T)>::type>
+Shrinkable<Decay<typename std::result_of<Mapper(T)>::type>>
 map(Shrinkable<T> shrinkable, Mapper &&mapper);
 
 //! Returns a shrinkable equal to the given shrinkable but with the shrinks

@@ -23,7 +23,7 @@ Seq<T> takeWhile(Seq<T> seq, Predicate &&pred);
 
 //! Maps the elements of the given `Seq` using the given callable.
 template<typename T, typename Mapper>
-Seq<typename std::result_of<Mapper(T)>::type>
+Seq<Decay<typename std::result_of<Mapper(T)>::type>>
 map(Seq<T> seq, Mapper &&mapper);
 
 //! Takes elements from the given `Seq`s and passes them as arguments to the
@@ -33,7 +33,7 @@ map(Seq<T> seq, Mapper &&mapper);
 //! Fun fact: Also works with no sequences and in that case returns an infinite
 //! sequence of the return values of calling the given callable.
 template<typename ...Ts, typename Zipper>
-Seq<typename std::result_of<Zipper(Ts...)>::type>
+Seq<Decay<typename std::result_of<Zipper(Ts...)>::type>>
 zipWith(Zipper &&zipper, Seq<Ts> ...seqs);
 
 //! Skips elements not matching the given predicate from the given stream.

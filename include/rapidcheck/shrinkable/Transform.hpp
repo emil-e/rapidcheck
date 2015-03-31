@@ -11,7 +11,7 @@ template<typename T, typename Mapper>
 class MapShrinkable
 {
 public:
-    typedef typename std::result_of<Mapper(T)>::type U;
+    typedef Decay<typename std::result_of<Mapper(T)>::type> U;
 
     template<typename MapperArg>
     MapShrinkable(Shrinkable<T> shrinkable, MapperArg &&mapper)
@@ -55,7 +55,7 @@ private:
 } // namespace detail
 
 template<typename T, typename Mapper>
-Shrinkable<typename std::result_of<Mapper(T)>::type>
+Shrinkable<Decay<typename std::result_of<Mapper(T)>::type>>
 map(Shrinkable<T> shrinkable, Mapper &&mapper)
 {
     typedef detail::MapShrinkable<T, Decay<Mapper>> Impl;

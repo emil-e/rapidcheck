@@ -124,7 +124,7 @@ template<typename Mapper, typename T>
 class MapSeq
 {
 public:
-    typedef typename std::result_of<Mapper(T)>::type U;
+    typedef Decay<typename std::result_of<Mapper(T)>::type> U;
 
     template<typename MapperArg>
     MapSeq(Seq<T> seq, MapperArg &&mapper)
@@ -151,7 +151,7 @@ template<typename Zipper, typename ...Ts>
 class ZipWithSeq
 {
 public:
-    typedef typename std::result_of<Zipper(Ts...)>::type U;
+    typedef Decay<typename std::result_of<Zipper(Ts...)>::type> U;
 
     template<typename ZipperArg>
     ZipWithSeq(ZipperArg &&zipper, Seq<Ts> ...seqs)
@@ -281,7 +281,7 @@ Seq<T> takeWhile(Seq<T> seq, Predicate &&pred)
 }
 
 template<typename T, typename Mapper>
-Seq<typename std::result_of<Mapper(T)>::type>
+Seq<Decay<typename std::result_of<Mapper(T)>::type>>
 map(Seq<T> seq, Mapper &&mapper)
 {
     return makeSeq<detail::MapSeq<Decay<Mapper>, T>>(
@@ -289,7 +289,7 @@ map(Seq<T> seq, Mapper &&mapper)
 }
 
 template<typename ...Ts, typename Zipper>
-Seq<typename std::result_of<Zipper(Ts...)>::type>
+Seq<Decay<typename std::result_of<Zipper(Ts...)>::type>>
 zipWith(Zipper &&zipper, Seq<Ts> ...seqs)
 {
     return makeSeq<detail::ZipWithSeq<Decay<Zipper>, Ts...>>(

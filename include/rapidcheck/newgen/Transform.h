@@ -8,12 +8,13 @@ namespace newgen {
 //! Returns a generator based on the given generator but mapped with the given
 //! mapping function.
 template<typename T, typename Mapper>
-Gen<typename std::result_of<Mapper(T)>::type> map(Gen<T> gen, Mapper &&mapper);
+Gen<Decay<typename std::result_of<Mapper(T)>::type>>
+map(Gen<T> gen, Mapper &&mapper);
 
 //! Convenience function which calls `map(Gen<T>, Mapper)` with
 //! `newgen::arbitrary<T>`
 template<typename T, typename Mapper>
-Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper);
+Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(Mapper &&mapper);
 
 //! Returns a generator that casts the generated values to `T` using
 //! `static_cast<T>(...)`.

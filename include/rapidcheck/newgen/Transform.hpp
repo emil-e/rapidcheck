@@ -11,7 +11,7 @@ template<typename T, typename Mapper>
 class MapGen
 {
 public:
-    typedef typename std::result_of<Mapper(T)>::type U;
+    typedef Decay<typename std::result_of<Mapper(T)>::type> U;
 
     template<typename MapperArg>
     MapGen(Gen<T> gen, MapperArg &&mapper)
@@ -60,14 +60,15 @@ private:
 } // namespace detail
 
 template<typename T, typename Mapper>
-Gen<typename std::result_of<Mapper(T)>::type> map(Gen<T> gen, Mapper &&mapper)
+Gen<Decay<typename std::result_of<Mapper(T)>::type>>
+map(Gen<T> gen, Mapper &&mapper)
 {
     return detail::MapGen<T, Decay<Mapper>>(std::move(gen),
                                             std::forward<Mapper>(mapper));
 }
 
 template<typename T, typename Mapper>
-Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper)
+Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(Mapper &&mapper)
 { return newgen::map(newgen::arbitrary<T>(), std::forward<Mapper>(mapper)); }
 
 template<typename T, typename U>
