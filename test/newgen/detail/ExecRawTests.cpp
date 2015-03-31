@@ -216,5 +216,10 @@ TEST_CASE("execRaw") {
                 }));
     }
 
-    // TODO test non-copyables!
+    SECTION("works with non-copyable types") {
+        auto shrinkable = execRaw([=](NonCopyable nc) {
+            return std::move(nc);
+        })(Random(), 0);
+        REQUIRE(isArbitraryPredictable(shrinkable.value().first));
+    }
 }
