@@ -22,9 +22,9 @@ public:
 
     Seq<int> shrink(int value) const override
     {
-        return seq::map(
-            [=](int x) { return ((value + 2) * (x + 1)) % 100; },
-            seq::range(0, 10));
+        return seq::map(seq::range(0, 10), [=](int x) {
+            return ((value + 2) * (x + 1)) % 100;
+        });
     }
 };
 

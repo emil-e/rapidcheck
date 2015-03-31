@@ -34,23 +34,27 @@ TEST_CASE("gen::tupleOf") {
                                      gen::arbitrary<int>()).shrink(tuple);
 
              auto expected = seq::concat(
-                 seq::map([&](int x) {
-                     return std::make_tuple(x,
-                                            std::get<1>(tuple),
-                                            std::get<2>(tuple));
-                 }, gen::arbitrary<int>().shrink(std::get<0>(tuple))),
-
-                 seq::map([&](int x) {
-                     return std::make_tuple(std::get<0>(tuple),
-                                            x,
-                                            std::get<2>(tuple));
-                 }, gen::arbitrary<int>().shrink(std::get<1>(tuple))),
-
-                 seq::map([&](int x) {
+                 seq::map(
+                     gen::arbitrary<int>().shrink(std::get<0>(tuple)),
+                     [&](int x) {
+                         return std::make_tuple(x,
+                                                std::get<1>(tuple),
+                                                std::get<2>(tuple));
+                     }),
+                 seq::map(
+                     gen::arbitrary<int>().shrink(std::get<1>(tuple)),
+                     [&](int x) {
+                         return std::make_tuple(std::get<0>(tuple),
+                                                x,
+                                                std::get<2>(tuple));
+                     }),
+                 seq::map(
+                     gen::arbitrary<int>().shrink(std::get<2>(tuple)),
+                     [&](int x) {
                      return std::make_tuple(std::get<0>(tuple),
                                             std::get<1>(tuple),
                                             x);
-                 }, gen::arbitrary<int>().shrink(std::get<2>(tuple))));
+                     }));
 
              RC_ASSERT(seq == expected);
          });
@@ -80,13 +84,15 @@ TEST_CASE("gen::pairOf") {
 
              auto expected = seq::concat(
                  seq::map(
+                     gen::arbitrary<int>().shrink(pair.first),
                      [&](int x) {
                          return std::make_pair(x, pair.second);
-                     }, gen::arbitrary<int>().shrink(pair.first)),
+                     }),
                  seq::map(
+                     gen::arbitrary<int>().shrink(pair.second),
                      [&](int x) {
                          return std::make_pair(pair.first, x);
-                     }, gen::arbitrary<int>().shrink(pair.second)));
+                     }));
 
              RC_ASSERT(seq == expected);
          });

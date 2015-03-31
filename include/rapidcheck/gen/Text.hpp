@@ -20,8 +20,8 @@ public:
     {
         // TODO improve?
         return seq::takeWhile(
-            [=](T x) { return x != value; },
-            seq::cast<T>(seq::fromContainer(std::string("abcABC123"))));
+            seq::cast<T>(seq::fromContainer(std::string("abcABC123"))),
+            [=](T x) { return x != value; });
     }
 };
 

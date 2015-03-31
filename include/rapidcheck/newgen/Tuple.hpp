@@ -36,9 +36,11 @@ private:
     static Shrinkable<std::tuple<Ts...>> joinTuple(
         std::tuple<Shrinkable<Ts>...> &&tuple)
     {
-        return shrinkable::map([](std::tuple<Shrinkable<Ts>...> &&st) {
-            return std::make_tuple(std::get<Indexes>(st).value()...);
-        }, shrinkable::shrinkRecur(std::move(tuple), &TupleGen::shrinkTuple));
+        return shrinkable::map(
+            shrinkable::shrinkRecur(std::move(tuple), &TupleGen::shrinkTuple),
+            [](std::tuple<Shrinkable<Ts>...> &&st) {
+                return std::make_tuple(std::get<Indexes>(st).value()...);
+            });
     }
 
     static Seq<std::tuple<Shrinkable<Ts>...>> shrinkTuple(
@@ -52,11 +54,13 @@ private:
         const std::tuple<Shrinkable<Ts>...> &tuple)
     {
         typedef typename std::tuple_element<N, std::tuple<Ts...>>::type T;
-        return seq::map([=](Shrinkable<T> &&cshrink) {
-            auto shrink(tuple);
-            std::get<N>(shrink) = cshrink;
-            return shrink;
-        }, std::get<N>(tuple).shrinks());
+        return seq::map(
+            std::get<N>(tuple).shrinks(),
+            [=](Shrinkable<T> &&cshrink) {
+                auto shrink(tuple);
+                std::get<N>(shrink) = cshrink;
+                return shrink;
+            });
     }
 
     std::tuple<Gen<Ts>...> m_gens;

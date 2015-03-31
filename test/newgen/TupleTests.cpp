@@ -92,16 +92,16 @@ TEST_CASE("newgen::tuple") {
 
     prop("works with non-copyable types",
          [](int v1, int v2) {
-             const auto xgen = newgen::map([](int x) {
+             const auto xgen = newgen::map(newgen::just(v1), [](int x) {
                  NonCopyable nc;
                  nc.value = x;
                  return nc;
-             }, newgen::just(v1));
-             const auto ygen = newgen::map([](int x) {
+             });
+             const auto ygen = newgen::map(newgen::just(v2), [](int x) {
                  NonCopyable nc;
                  nc.value = x;
                  return nc;
-             }, newgen::just(v2));
+             });
 
              const auto shrinkable = newgen::tuple(xgen, ygen)(Random(), 0);
              const auto result = shrinkable.value();

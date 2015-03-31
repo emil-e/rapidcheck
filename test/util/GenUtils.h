@@ -156,11 +156,11 @@ struct NewArbitrary<test::FixedCountdown<N>>
 {
     static Gen<test::FixedCountdown<N>> arbitrary()
     {
-        return newgen::map([](int x) {
+        return newgen::map(test::genFixedCountdown(N), [](int x) {
             test::FixedCountdown<N> countdown;
             countdown.value = x;
             return countdown;
-        }, test::genFixedCountdown(N));
+        });
     }
 };
 

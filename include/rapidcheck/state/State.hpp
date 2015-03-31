@@ -105,14 +105,13 @@ public:
     Seq<CommandsT> shrink(CommandsT commands) const override
     {
         return seq::filter(
-            [&](const CommandsT &commands) {
-                return isValidCommand(commands, m_initialState);
-            },
-            seq::map(
+            seq::map(shrink::removeChunks(commands.commands()),
                 [](std::vector<CommandSP> &&x) {
                     return CommandsT(std::move(x));
-                },
-                shrink::removeChunks(commands.commands())));
+                }),
+            [&](const CommandsT &commands) {
+                return isValidCommand(commands, m_initialState);
+            });
     }
 
 private:

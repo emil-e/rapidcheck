@@ -61,7 +61,7 @@ class DropWhileSeq
 {
 public:
     template<typename PredArg>
-    DropWhileSeq(PredArg &&pred, Seq<T> seq)
+    DropWhileSeq(Seq<T> seq, PredArg &&pred)
         : m_pred(std::forward<PredArg>(pred))
         , m_dropped(false)
         , m_seq(std::move(seq)) {}
@@ -97,7 +97,7 @@ class TakeWhileSeq
 {
 public:
     template<typename PredArg>
-    TakeWhileSeq(PredArg &&pred, Seq<T> seq)
+    TakeWhileSeq(Seq<T> seq, PredArg &&pred)
         : m_pred(std::forward<PredArg>(pred))
         , m_seq(std::move(seq)) {}
 
@@ -127,7 +127,7 @@ public:
     typedef typename std::result_of<Mapper(T)>::type U;
 
     template<typename MapperArg>
-    MapSeq(MapperArg &&mapper, Seq<T> seq)
+    MapSeq(Seq<T> seq, MapperArg &&mapper)
         : m_mapper(std::forward<MapperArg>(mapper))
         , m_seq(std::move(seq)) {}
 
@@ -192,7 +192,7 @@ class FilterSeq
 {
 public:
     template<typename PredArg>
-    FilterSeq(PredArg predicate, Seq<T> seq)
+    FilterSeq(Seq<T> seq, PredArg predicate)
         : m_predicate(std::forward<PredArg>(predicate))
         , m_seq(std::move(seq)) {}
 
@@ -267,25 +267,25 @@ Seq<T> take(std::size_t n, Seq<T> seq)
 }
 
 template<typename T, typename Predicate>
-Seq<T> dropWhile(Predicate &&pred, Seq<T> seq)
+Seq<T> dropWhile(Seq<T> seq, Predicate &&pred)
 {
     return makeSeq<detail::DropWhileSeq<Decay<Predicate>, T>>(
-        std::forward<Predicate>(pred), std::move(seq));
+        std::move(seq), std::forward<Predicate>(pred));
 }
 
 template<typename T, typename Predicate>
-Seq<T> takeWhile(Predicate &&pred, Seq<T> seq)
+Seq<T> takeWhile(Seq<T> seq, Predicate &&pred)
 {
     return makeSeq<detail::TakeWhileSeq<Decay<Predicate>, T>>(
-        std::forward<Predicate>(pred), std::move(seq));
+        std::move(seq), std::forward<Predicate>(pred));
 }
 
 template<typename T, typename Mapper>
 Seq<typename std::result_of<Mapper(T)>::type>
-map(Mapper &&mapper, Seq<T> seq)
+map(Seq<T> seq, Mapper &&mapper)
 {
     return makeSeq<detail::MapSeq<Decay<Mapper>, T>>(
-        std::forward<Mapper>(mapper), std::move(seq));
+        std::move(seq), std::forward<Mapper>(mapper));
 }
 
 template<typename ...Ts, typename Zipper>
@@ -297,10 +297,10 @@ zipWith(Zipper &&zipper, Seq<Ts> ...seqs)
 }
 
 template<typename T, typename Predicate>
-Seq<T> filter(Predicate &&pred, Seq<T> seq)
+Seq<T> filter(Seq<T> seq, Predicate &&pred)
 {
     return makeSeq<detail::FilterSeq<Decay<Predicate>, T>>(
-        std::forward<Predicate>(pred), std::move(seq));
+        std::move(seq), std::forward<Predicate>(pred));
 }
 
 template<typename T>
@@ -313,22 +313,21 @@ Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs)
 
 template<typename T, typename Mapper>
 Seq<typename std::result_of<Mapper(T)>::type::ValueType>
-mapcat(Mapper &&mapper, Seq<T> seq)
+mapcat(Seq<T> seq, Mapper &&mapper)
 {
-    return seq::join(seq::map(std::forward<Mapper>(mapper),
-                              std::move(seq)));
+    return seq::join(seq::map(std::move(seq), std::forward<Mapper>(mapper)));
 }
 
 template<typename T, typename Mapper>
 Seq<typename std::result_of<Mapper(T)>::type::ValueType>
-mapMaybe(Mapper &&mapper, Seq<T> seq)
+mapMaybe(Seq<T> seq, Mapper &&mapper)
 {
     typedef typename std::result_of<Mapper(T)>::type::ValueType U;
     return seq::map(
-        [](Maybe<U> &&x) { return std::move(*x); },
-        seq::filter([](const Maybe<U> &x) { return !!x; },
-                    seq::map(std::forward<Mapper>(mapper),
-                             std::move(seq))));
+        seq::filter(
+            seq::map(std::move(seq), std::forward<Mapper>(mapper)),
+            [](const Maybe<U> &x) { return !!x; }),
+        [](Maybe<U> &&x) { return std::move(*x); });
 }
 
 template<typename T>
@@ -337,9 +336,9 @@ Seq<T> cycle(Seq<T> seq) { return seq::join(seq::repeat(std::move(seq))); }
 template<typename T, typename U>
 Seq<T> cast(Seq<U> seq)
 {
-    return seq::map(
-        [](U &&x) { return static_cast<T>(std::move(x)); },
-        std::move(seq));
+    return seq::map(std::move(seq), [](U &&x) {
+        return static_cast<T>(std::move(x));
+    });
 }
 
 } // namespace seq

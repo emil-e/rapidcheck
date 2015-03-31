@@ -91,15 +91,14 @@ shrink(Value &&value, Shrink &&shrinkf)
 }
 
 template<typename T, typename Shrink>
-Shrinkable<Decay<T>> shrinkRecur(T &&value, Shrink &&shrinkf)
+Shrinkable<Decay<T>> shrinkRecur(T &&value, const Shrink &shrinkf)
 {
     return shrinkable::shrink(
         fn::constant(std::forward<T>(value)),
         [=](Decay<T> &&x) {
-            return seq::map(
-                [=](Decay<T> &&xshrink) {
-                    return shrinkable::shrinkRecur(std::move(xshrink), shrinkf);
-                }, shrinkf(std::move(x)));
+            return seq::map(shrinkf(std::move(x)), [=](Decay<T> &&xshrink) {
+                return shrinkable::shrinkRecur(std::move(xshrink), shrinkf);
+            });
         });
 }
 

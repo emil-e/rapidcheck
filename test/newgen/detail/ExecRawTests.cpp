@@ -66,9 +66,10 @@ TEST_CASE("execRaw") {
             newgen::arbitrary<FixedCountdown<3>>())(Random(), 0);
 
         auto mappedShrinkable = shrinkable::map(
+            execShrinkable,
             [](std::pair<TupleT, Recipe> &&x) {
                 return std::move(x.first);
-            }, execShrinkable);
+            });
 
         REQUIRE(mappedShrinkable == tupleShrinkable);
     }
@@ -139,9 +140,10 @@ TEST_CASE("execRaw") {
              })(Random(), expectedSize);
 
              auto valueShrinkable = shrinkable::map(
+                 shrinkable,
                  [](std::pair<std::vector<int>, Recipe> &&x) {
                      return std::move(x.first);
-                 }, shrinkable);
+                 });
 
              RC_ASSERT(
                  shrinkable::all(
@@ -178,9 +180,10 @@ TEST_CASE("execRaw") {
                  expected.push_back(r.split());
 
              auto valueShrinkable = shrinkable::map(
+                 shrinkable,
                  [](std::pair<std::vector<Random>, Recipe> &&x) {
                      return std::move(x.first);
-                 }, shrinkable);
+                 });
 
              RC_ASSERT(
                  shrinkable::all(
@@ -212,4 +215,6 @@ TEST_CASE("execRaw") {
                     return actual == pair.first;
                 }));
     }
+
+    // TODO test non-copyables!
 }

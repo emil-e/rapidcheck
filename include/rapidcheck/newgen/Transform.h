@@ -8,9 +8,9 @@ namespace newgen {
 //! Returns a generator based on the given generator but mapped with the given
 //! mapping function.
 template<typename T, typename Mapper>
-Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper, Gen<T> gen);
+Gen<typename std::result_of<Mapper(T)>::type> map(Gen<T> gen, Mapper &&mapper);
 
-//! Convenience function which calls `map(Predicate, Gen<T>)` with
+//! Convenience function which calls `map(Gen<T>, Mapper)` with
 //! `newgen::arbitrary<T>`
 template<typename T, typename Mapper>
 Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper);
@@ -24,9 +24,9 @@ Gen<T> cast(Gen<U> gen);
 //! that match the given predicate. Throws a `GenerationFailure` if such a value
 //! cannot be generated after an unspecified number of tries.
 template<typename T, typename Predicate>
-Gen<T> suchThat(Predicate &&pred, Gen<T> gen);
+Gen<T> suchThat(Gen<T> gen, Predicate &&pred);
 
-//! Convenience function which calls `suchThat(Predicate, Gen<T>)` with
+//! Convenience function which calls `suchThat(Gen<T>, Predicate)` with
 //! `newgen::arbitrary<T>`
 template<typename T, typename Predicate>
 Gen<T> suchThat(Predicate &&pred);

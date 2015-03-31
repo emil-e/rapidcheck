@@ -115,12 +115,12 @@ struct NewArbitrary<Predictable>
 {
     static Gen<Predictable> arbitrary()
     {
-        return newgen::map([](int extra) {
+        return newgen::map(newgen::arbitrary<int>(), [](int extra) {
             Predictable predictable;
             predictable.value = Predictable::predictableValue;
             predictable.extra = extra;
             return predictable;
-        }, newgen::arbitrary<int>());
+        });
     }
 };
 
@@ -129,12 +129,12 @@ struct NewArbitrary<NonCopyable>
 {
     static Gen<NonCopyable> arbitrary()
     {
-        return newgen::map([](int extra) {
+        return newgen::map(newgen::arbitrary<int>(), [](int extra) {
             NonCopyable predictable;
             predictable.value = Predictable::predictableValue;
             predictable.extra = extra;
             return predictable;
-        }, newgen::arbitrary<int>());
+        });
     }
 };
 

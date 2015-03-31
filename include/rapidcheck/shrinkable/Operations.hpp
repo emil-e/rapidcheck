@@ -38,8 +38,9 @@ std::pair<T, int> findLocalMin(const Shrinkable<T> &shrinkable,
 template<typename T>
 Seq<T> immediateShrinks(const Shrinkable<T> &shrinkable)
 {
-    return seq::map([](const Shrinkable<T> &shrink) { return shrink.value(); },
-                    shrinkable.shrinks());
+    return seq::map(shrinkable.shrinks(), [](const Shrinkable<T> &shrink) {
+        return shrink.value();
+    });
 }
 
 } // namespace shrinkable

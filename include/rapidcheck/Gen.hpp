@@ -11,7 +11,7 @@ namespace newgen {
 
 // Forward declare this so we don't need to include Transform.h
 template<typename T, typename Mapper>
-Gen<typename std::result_of<Mapper(T)>::type> map(Mapper &&mapper, Gen<T> gen);
+Gen<typename std::result_of<Mapper(T)>::type> map(Gen<T> gen, Mapper &&mapper);
 
 } // namespace newgen
 
@@ -58,7 +58,7 @@ T Gen<T>::operator*() const
     using rc::newgen::detail::param::CurrentHandler;
     const auto handler = ImplicitParam<CurrentHandler>::value();
     return std::move(
-        handler->onGenerate(newgen::map(&Any::of<T>, *this)).template get<T>());
+        handler->onGenerate(newgen::map(*this, &Any::of<T>)).template get<T>());
 }
 
 template<typename T>

@@ -28,7 +28,7 @@ TEST_CASE("shrinkable::all") {
              // TODO sized ranged
              int x = *gen::ranged<int>(0, 5);
              const auto shrinkable = shrinkable::just(
-                 x, seq::map(&shrinkable::just<int>, seq::range(x - 1, -1)));
+                 x, seq::map(seq::range(x - 1, -1), &shrinkable::just<int>));
 
              RC_ASSERT(!shrinkable::all( shrinkable,
                                          [](const Shrinkable<int> &s) {
@@ -70,11 +70,11 @@ TEST_CASE("shrinkable::findLocalMin") {
 
              const auto shrinkable = shrinkable::shrinkRecur(
                  std::vector<int>(), [](const std::vector<int> &vec) {
-                     return seq::map([=](int x) {
+                     return seq::map(seq::range<int>(100, -1), [=](int x) {
                          auto shrink = vec;
                          shrink.push_back(x);
                          return shrink;
-                     }, seq::range<int>(100, -1));
+                     });
                  });
 
              const auto result = shrinkable::findLocalMin(shrinkable, pred);
@@ -88,7 +88,7 @@ TEST_CASE("shrinkable::immediateShrinks") {
          " Shrinkable",
          [](int x, const Seq<int> &seq) {
              const auto shrinkable = shrinkable::just(
-                 x, seq::map(&shrinkable::just<int>, seq));
+                 x, seq::map(seq, &shrinkable::just<int>));
              RC_ASSERT(shrinkable::immediateShrinks(shrinkable) == seq);
          });
 }

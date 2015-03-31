@@ -57,7 +57,7 @@ struct DefaultArbitrary<bool>
         return [](const Random &random, int size) {
             return shrinkable::shrinkRecur(
                 rc::detail::bitStreamOf(random).next<bool>(),
-                shrink::boolean);
+                &shrink::boolean);
         };
     }
 };

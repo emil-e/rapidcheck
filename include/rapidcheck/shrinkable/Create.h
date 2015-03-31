@@ -39,7 +39,7 @@ shrink(Value &&value, Shrink &&shrinkf);
 //! returns a `Seq<T>` of possible shrinks when called with the value. It does
 //! by recursively applying this function to the sequence of shrinks.
 template<typename T, typename Shrink>
-Shrinkable<Decay<T>> shrinkRecur(T &&value, Shrink &&shrinkf);
+Shrinkable<Decay<T>> shrinkRecur(T &&value, const Shrink &shrinkf);
 
 } // namespace shrinkable
 } // namespace rc

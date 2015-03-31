@@ -17,16 +17,19 @@ TEST_CASE("shrinkable::map") {
     prop("maps value()",
          [](int x) {
              const auto shrinkable = shrinkable::map(
-                 doubleIt, shrinkable::just(x));
+                 shrinkable::just(x),
+                 doubleIt);
              RC_ASSERT(shrinkable.value() == doubleIt(x));
          });
 
     prop("maps shrinks()",
          [](Shrinkable<int> from) {
-             const auto shrinkable = shrinkable::map(doubleIt, from);
-             const auto expected = seq::map([](Shrinkable<int> &&shrink) {
-                 return shrinkable::map(doubleIt, shrink);
-             }, from.shrinks());
+             const auto shrinkable = shrinkable::map(from, doubleIt);
+             const auto expected = seq::map(
+                 from.shrinks(),
+                 [](Shrinkable<int> &&shrink) {
+                     return shrinkable::map(shrink, doubleIt);
+                 });
 
              RC_ASSERT(shrinkable.shrinks() == expected);
          });
@@ -36,20 +39,22 @@ TEST_CASE("shrinkable::mapShrinks") {
     prop("maps shrinks with the given mapping callable",
          [](Shrinkable<int> shrinkable) {
              const auto mapper = [](Seq<Shrinkable<int>> &&shrinkable) {
-                 return seq::map([](const Shrinkable<int> &shrink) {
-                     return shrinkable::just(shrink.value());
-                 }, std::move(shrinkable));
+                 return seq::map(
+                     std::move(shrinkable),
+                     [](const Shrinkable<int> &shrink) {
+                         return shrinkable::just(shrink.value());
+                     });
              };
 
-             const auto mapped = shrinkable::mapShrinks(mapper, shrinkable);
+             const auto mapped = shrinkable::mapShrinks(shrinkable, mapper);
              RC_ASSERT(mapped.shrinks() == mapper(shrinkable.shrinks()));
          });
 
     prop("leaves value unaffected",
          [](int x) {
              const auto shrinkable = shrinkable::mapShrinks(
-                 fn::constant(Seq<Shrinkable<int>>()),
-                 shrinkable::just(x));
+                 shrinkable::just(x),
+                 fn::constant(Seq<Shrinkable<int>>()));
              RC_ASSERT(shrinkable.value() == x);
          });
 }
@@ -58,7 +63,7 @@ TEST_CASE("shrinkable::filter") {
     prop("returns Nothing if predicate returns false for value",
          [](int x) {
              const auto shrinkable = shrinkable::just(x);
-             RC_ASSERT(!shrinkable::filter(fn::constant(false), shrinkable));
+             RC_ASSERT(!shrinkable::filter(shrinkable, fn::constant(false)));
          });
 
     prop("returned shrinkable does not contain any value for which predicate"
@@ -69,7 +74,7 @@ TEST_CASE("shrinkable::filter") {
                  [&](const Shrinkable<int> &x) {
                      return pred(x.value());
                  });
-             const auto filtered = *shrinkable::filter(pred, shrinkable);
+             const auto filtered = *shrinkable::filter(shrinkable, pred);
              RC_ASSERT(shrinkable::all(filtered, [&](const Shrinkable<int> &s) {
                  return pred(s.value());
              }));
@@ -78,7 +83,7 @@ TEST_CASE("shrinkable::filter") {
     prop("if the filter returns true for every value, the returned shrinkable"
          " is equal to the original",
          [](Shrinkable<int> shrinkable) {
-             RC_ASSERT(*shrinkable::filter(fn::constant(true), shrinkable) ==
+             RC_ASSERT(*shrinkable::filter(shrinkable, fn::constant(true)) ==
                        shrinkable);
          });
 }
@@ -106,12 +111,12 @@ TEST_CASE("shrinkable::pair") {
              const auto expected = shrinkable::shrinkRecur(
                  std::make_pair(a, b), [](const std::pair<int, int> &p) {
                      return seq::concat(
-                         seq::map([=](int x) {
+                         seq::map(seq::range(p.first - 1, -1), [=](int x) {
                              return std::make_pair(x, p.second);
-                         }, seq::range(p.first - 1, -1)),
-                         seq::map([=](int x) {
+                         }),
+                         seq::map(seq::range(p.second - 1, -1), [=](int x) {
                              return std::make_pair(p.first, x);
-                         }, seq::range(p.second - 1, -1)));
+                         }));
                  });
 
              RC_ASSERT(shrinkable == expected);

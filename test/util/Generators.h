@@ -154,8 +154,8 @@ public:
         while ((x = seq.next()))
             values.push_back(*x);
         return seq::map(
-            [](std::vector<T> &&x) { return seq::fromContainer(x); },
-            gen::arbitrary<std::vector<T>>().shrink(std::move(values)));
+            gen::arbitrary<std::vector<T>>().shrink(std::move(values)),
+            [](std::vector<T> &&x) { return seq::fromContainer(x); });
     }
 };
 
@@ -197,12 +197,16 @@ public:
     Seq<Shrinkable<T>> shrink(const Shrinkable<T> &value) const
     {
         return seq::concat(
-            seq::map([=](T &&x) {
-                return shrinkable::just(std::move(x), value.shrinks());
-            }, gen::arbitrary<T>().shrink(value.value())),
-            seq::map([=](Seq<Shrinkable<T>> &&x) {
-                return shrinkable::just(value.value(), std::move(x));
-            }, gen::arbitrary<Seq<Shrinkable<T>>>().shrink(value.shrinks())));
+            seq::map(
+                gen::arbitrary<T>().shrink(value.value()),
+                [=](T &&x) {
+                    return shrinkable::just(std::move(x), value.shrinks());
+                }),
+            seq::map(
+                gen::arbitrary<Seq<Shrinkable<T>>>().shrink(value.shrinks()),
+                [=](Seq<Shrinkable<T>> &&x) {
+                    return shrinkable::just(value.value(), std::move(x));
+                }));
     }
 };
 

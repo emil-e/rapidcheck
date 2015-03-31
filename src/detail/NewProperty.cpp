@@ -7,6 +7,7 @@ Gen<CaseDescription> mapToCaseDescription(
     Gen<std::pair<CaseResult, newgen::detail::Recipe>> gen)
 {
     return newgen::map(
+        std::move(gen),
         [](std::pair<CaseResult, newgen::detail::Recipe> &&p) {
             Example example;
             const auto &ingr = p.second.ingredients;
@@ -21,7 +22,7 @@ Gen<CaseDescription> mapToCaseDescription(
             description.result = std::move(p.first);
             description.example = std::move(example);
             return description;
-        }, std::move(gen));
+        });
 }
 
 } // namespace detail

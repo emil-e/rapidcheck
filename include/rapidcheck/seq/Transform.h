@@ -15,16 +15,16 @@ Seq<T> take(std::size_t n, Seq<T> seq);
 
 //! Drops all elements until the given predicate returns true.
 template<typename T, typename Predicate>
-Seq<T> dropWhile(Predicate &&pred, Seq<T> seq);
+Seq<T> dropWhile(Seq<T> seq, Predicate &&pred);
 
 //! Takes elements until there is an element which does not match the predicate.
 template<typename T, typename Predicate>
-Seq<T> takeWhile(Predicate &&pred, Seq<T> seq);
+Seq<T> takeWhile(Seq<T> seq, Predicate &&pred);
 
 //! Maps the elements of the given `Seq` using the given callable.
 template<typename T, typename Mapper>
 Seq<typename std::result_of<Mapper(T)>::type>
-map(Mapper &&mapper, Seq<T> seq);
+map(Seq<T> seq, Mapper &&mapper);
 
 //! Takes elements from the given `Seq`s and passes them as arguments to the
 //! given callable and returns a `Seq` of such return values. The length of the
@@ -38,7 +38,7 @@ zipWith(Zipper &&zipper, Seq<Ts> ...seqs);
 
 //! Skips elements not matching the given predicate from the given stream.
 template<typename T, typename Predicate>
-Seq<T> filter(Predicate &&pred, Seq<T> seq);
+Seq<T> filter(Seq<T> seq, Predicate &&pred);
 
 //! Takes `Seq<Seq<T>>` and joins them together into a `Seq<T>`.
 template<typename T>
@@ -52,14 +52,14 @@ Seq<T> concat(Seq<T> seq, Seq<Ts> ...seqs);
 //! concatenates them into one `Seq`. Sometimes called a "flat map".
 template<typename T, typename Mapper>
 Seq<typename std::result_of<Mapper(T)>::type::ValueType>
-mapcat(Mapper &&mapper, Seq<T> seq);
+mapcat(Seq<T> seq, Mapper &&mapper);
 
 //! Like `map` but expects the mapping functor to return a `Maybe`. If `Nothing`
 //! is returned, the element is skipped. Otherwise, the `Maybe` is unwrapped and
 //! included in the resulting `Seq`.
 template<typename T, typename Mapper>
 Seq<typename std::result_of<Mapper(T)>::type::ValueType>
-mapMaybe(Mapper &&mapper, Seq<T> seq);
+mapMaybe(Seq<T> seq, Mapper &&mapper);
 
 //! Creates a `Seq` which infinitely repeats the given `Seq`.
 template<typename T>

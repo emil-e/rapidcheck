@@ -71,7 +71,6 @@ struct GenerateCollection
                                           const Gen<T> &gen)
     {
         return shrinkable::map(
-            &toContainer<Container, T>,
             shrinkable::shrinkRecur(
                 generateShrinkables(
                     random,
@@ -79,7 +78,8 @@ struct GenerateCollection
                     count,
                     gen,
                     fn::constant(true)),
-                &shrinksOf<T>));
+                &shrinksOf<T>),
+            &toContainer<Container, T>);
     };
 };
 
@@ -102,12 +102,14 @@ struct GenerateContainer<Set, true, false>
             shrink::newRemoveChunks(shrinkables),
             shrink::newEachElement(
                 shrinkables, [=](const Shrinkable<T> &s) {
-                    return seq::filter([=](const Shrinkable<T> &x) {
-                        // Here we filter out shrinks that collide with another
-                        // value in the set because that would produce an
-                        // identical set.
-                        return set->find(x.value()) == set->end();
-                    }, s.shrinks());
+                    return seq::filter(
+                        s.shrinks(),
+                        [=](const Shrinkable<T> &x) {
+                            // Here we filter out shrinks that collide with
+                            // another value in the set because that would
+                            // produce an identical set.
+                            return set->find(x.value()) == set->end();
+                        });
                 }));
     }
 
@@ -126,10 +128,10 @@ struct GenerateContainer<Set, true, false>
             });
 
         return shrinkable::map(
-            &toContainer<Set, T>,
             shrinkable::shrinkRecur(
                 std::move(shrinkables),
-                &shrinksOf<T>));
+                &shrinksOf<T>),
+            &toContainer<Set, T>);
     };
 };
 
@@ -183,6 +185,7 @@ struct GenerateContainer<Map, true, true>
             shrink::newEachElement(
                 shrinkablePairs, [=](const Shrinkable<std::pair<K, V>> &elem) {
                     return seq::filter(
+                        elem.shrinks(),
                         [=](const Shrinkable<std::pair<K, V>> &elemShrink) {
                             // Here we filter out values with keys that collide
                             // with other keys of the map. However, if the key
@@ -193,7 +196,7 @@ struct GenerateContainer<Map, true, true>
                             return
                                 (map->find(shrinkValue.first) == map->end()) ||
                                 (shrinkValue.first == elem.value().first);
-                        }, elem.shrinks());
+                        });
                 }));
     }
 
@@ -206,10 +209,10 @@ struct GenerateContainer<Map, true, true>
         const Gen<V> &valueGen)
     {
         return shrinkable::map(
-            &toContainer<Map, std::pair<K, V>>,
             shrinkable::shrinkRecur(
                 generatePairs(random, size, count, keyGen, valueGen),
-                &shrinksOf<K, V>));
+                &shrinksOf<K, V>),
+            &toContainer<Map, std::pair<K, V>>);
     };
 };
 

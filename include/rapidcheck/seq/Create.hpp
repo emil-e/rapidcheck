@@ -157,9 +157,9 @@ Seq<T> range(T start, T end)
         return Seq<T>();
 
     return seq::takeWhile(
-        [=](T x) { return x != end; },
         (start < end) ? seq::iterate(start, [](int x) { return ++x; })
-                      : seq::iterate(start, [](int x) { return --x; }));
+                      : seq::iterate(start, [](int x) { return --x; }),
+        [=](T x) { return x != end; });
 }
 
 Seq<std::size_t> index()

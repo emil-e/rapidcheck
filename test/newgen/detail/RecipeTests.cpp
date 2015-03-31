@@ -29,7 +29,7 @@ public:
             numIngredients,
             gen::map(gen::arbitrary<Shrinkable<int>>(),
                      [](Shrinkable<int> &&s) {
-                         return shrinkable::map(&Any::of<int>, std::move(s));
+                         return shrinkable::map(std::move(s), &Any::of<int>);
                      }));
         recipe.numFixed = *gen::ranged<std::size_t>(
             0, recipe.ingredients.size());
@@ -43,8 +43,9 @@ namespace {
 
 Shrinkable<int> mapToInt(Shrinkable<Any> shrinkable)
 {
-    return shrinkable::map([](const Any &x) { return x.get<int>(); },
-                           std::move(shrinkable));
+    return shrinkable::map(std::move(shrinkable), [](const Any &x) {
+        return x.get<int>();
+    });
 }
 
 bool equalsAsInt(Shrinkable<Any> lhs, Shrinkable<Any> rhs)

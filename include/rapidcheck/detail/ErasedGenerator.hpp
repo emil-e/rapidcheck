@@ -19,8 +19,8 @@ template<typename T>
 Seq<Any> ErasedGenerator<T>::shrink(Any value) const
 {
     return seq::map(
-        [](T &&x) { return Any::of(std::move(x)); },
-        m_generator->shrink(std::move(value.get<T>())));
+        m_generator->shrink(std::move(value.get<T>())),
+        [](T &&x) { return Any::of(std::move(x)); });
 }
 
 } // namespace detail

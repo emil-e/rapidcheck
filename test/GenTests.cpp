@@ -72,8 +72,8 @@ TEST_CASE("Gen") {
 
         SECTION("passes erased self to onGenerate") {
             auto result = shrinkable::map(
-                [](Any &&any) { return std::move(any.get<int>()); },
-                handler.passedGenerator(Random(), 0));
+                handler.passedGenerator(Random(), 0),
+                [](Any &&any) { return std::move(any.get<int>()); });
             REQUIRE(result == shrinkable::just(1337));
             REQUIRE(handler.wasCalled);
         }

@@ -49,16 +49,20 @@ private:
         // Shrink the head and map it by append the unshrunk tail,
         // then shrink the tail and map it by prepending the unshrink head.
         return seq::concat(
-            seq::map([=] (HeadT &&x) -> TupleT {
-                         return std::tuple_cat(
-                             std::tuple<HeadT>(std::move(x)),
-                             detail::tupleTail(value));
-            }, m_headGenerator.shrink(std::get<0>(value))),
-            seq::map([=] (TailT &&x) -> TupleT {
-                         return std::tuple_cat(
-                             std::tuple<HeadT>(std::get<0>(value)),
-                             std::move(x));
-            }, m_tailGenerator.shrink(detail::tupleTail(value))));
+            seq::map(
+                m_headGenerator.shrink(std::get<0>(value)),
+                [=] (HeadT &&x) -> TupleT {
+                    return std::tuple_cat(
+                        std::tuple<HeadT>(std::move(x)),
+                        detail::tupleTail(value));
+                }),
+            seq::map(
+                m_tailGenerator.shrink(detail::tupleTail(value)),
+                [=] (TailT &&x) -> TupleT {
+                    return std::tuple_cat(
+                        std::tuple<HeadT>(std::get<0>(value)),
+                        std::move(x));
+                }));
     }
 
     Gen m_headGenerator;
@@ -88,12 +92,12 @@ public:
     Seq<PairT> shrink(PairT value) const override
     {
         return seq::map(
-            [] (std::tuple<T1, T2> &&x) {
+            m_generator.shrink(std::tuple<T1, T2>(std::move(value.first),
+                                                  std::move(value.second))),
+            [](std::tuple<T1, T2> &&x) {
                 return PairT(std::move(std::get<0>(x)),
                              std::move(std::get<1>(x)));
-            },
-            m_generator.shrink(std::tuple<T1, T2>(std::move(value.first),
-                                                  std::move(value.second))));
+            });
     }
 
 private:

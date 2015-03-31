@@ -14,15 +14,17 @@ Seq<Container> newRemoveChunks(Container elements)
 
     std::size_t size = elements.size();
     auto ranges = seq::mapcat(
+        seq::range<std::size_t>(size, 0),
         [=](std::size_t rangeSize) {
-            return seq::map([=](std::size_t rangeStart) {
-                return std::make_pair(rangeStart,
-                                      rangeStart + rangeSize);
-            }, seq::range<std::size_t>(0, size - rangeSize + 1));
-        },
-        seq::range<std::size_t>(size, 0));
+            return seq::map(
+                seq::range<std::size_t>(0, size - rangeSize + 1),
+                [=](std::size_t rangeStart) {
+                    return std::make_pair(rangeStart,
+                                          rangeStart + rangeSize);
+                });
+        });
 
-    return seq::map([=](const Range &range) {
+    return seq::map(std::move(ranges), [=](const Range &range) {
         Container newElements;
         newElements.reserve(range.second - range.first);
         const auto start = begin(elements);
@@ -30,7 +32,7 @@ Seq<Container> newRemoveChunks(Container elements)
         newElements.insert(end(newElements), start, start + range.first);
         newElements.insert(end(newElements), start + range.second, fin);
         return newElements;
-    },  std::move(ranges));
+    });
 }
 
 template<typename T>
@@ -42,22 +44,26 @@ Seq<T> removeChunks(T collection)
 
     std::size_t size = elements.size();
     auto ranges = seq::mapcat(
+        seq::range<std::size_t>(size, 0),
         [=](std::size_t rangeSize) {
-            return seq::map([=](std::size_t rangeStart) {
-                return std::make_pair(rangeStart,
-                                      rangeStart + rangeSize);
-            }, seq::range<std::size_t>(0, size - rangeSize + 1));
-        },
-        seq::range<std::size_t>(size, 0));
+            return seq::map(
+                seq::range<std::size_t>(0, size - rangeSize + 1),
+                [=](std::size_t rangeStart) {
+                    return std::make_pair(rangeStart,
+                                          rangeStart + rangeSize);
+                });
+        });
 
-    return seq::map([=](const std::pair<std::size_t, std::size_t> &range) {
-        detail::CollectionBuilder<T> builder;
-        for (std::size_t i = 0; i < range.first; i++)
-            builder.add(elements[i]);
-        for (std::size_t i = range.second; i < size; i++)
-            builder.add(elements[i]);
-        return std::move(builder.result());
-    },  std::move(ranges));
+    return seq::map(
+        std::move(ranges),
+        [=](const std::pair<std::size_t, std::size_t> &range) {
+            detail::CollectionBuilder<T> builder;
+            for (std::size_t i = 0; i < range.first; i++)
+                builder.add(elements[i]);
+            for (std::size_t i = range.second; i < size; i++)
+                builder.add(elements[i]);
+            return std::move(builder.result());
+        });
 }
 
 template<typename Container, typename Shrink>
@@ -66,13 +72,13 @@ Seq<Container> newEachElement(Container elements, Shrink shrink)
     using T = typename Container::value_type;
 
     const auto size = std::distance(begin(elements), end(elements));
-    return seq::mapcat([=](std::size_t i) {
-        return seq::map([=](T &&shrinkValue) {
+    return seq::mapcat(seq::range<std::size_t>(0, size), [=](std::size_t i) {
+        return seq::map(shrink(*(begin(elements) + i)), [=](T &&shrinkValue) {
             auto newElements = elements;
             *(begin(newElements) + i) = std::move(shrinkValue);
             return newElements;
-        }, shrink(*(begin(elements) + i)));
-    }, seq::range<std::size_t>(0, size));
+        });
+    });
 }
 
 template<typename T, typename ShrinkElement>
@@ -91,6 +97,7 @@ Seq<T> eachElement(T collection, ShrinkElement shrinkElement)
         [elements, shrinkElement](std::size_t index, ElementT &&value) {
             // TODO this capturing... safe to capture by reference?
             return seq::mapMaybe(
+                shrinkElement(std::move(value)),
                 [&elements, index](ElementT &&shrinkValue) -> Maybe<T> {
                     detail::CollectionBuilder<T> builder;
                     for (std::size_t i = 0; i < elements.size(); i++) {
@@ -100,8 +107,7 @@ Seq<T> eachElement(T collection, ShrinkElement shrinkElement)
                             return Nothing;
                     }
                     return std::move(builder.result());
-                },
-                shrinkElement(std::move(value)));
+                });
         },
         seq::index(), seq::fromContainer(elements)));
 }
@@ -113,12 +119,10 @@ Seq<T> towards(T value, T target)
 
     UInt maxDiff = (value < target) ? (target - value) : (value - target);
     auto diffs = seq::iterate(maxDiff, [](UInt diff) { return diff / 2; });
-    auto shrinks = seq::map(
-        [=](UInt x) -> T {
-            return (value < target) ? (value + x) : (value - x);
-        },
-        std::move(diffs));
-    return seq::takeWhile([=](T x) { return x != value; }, std::move(shrinks));
+    auto shrinks = seq::map(std::move(diffs), [=](UInt x) -> T {
+        return (value < target) ? (value + x) : (value - x);
+    });
+    return seq::takeWhile(std::move(shrinks), [=](T x) { return x != value; });
 }
 
 template<typename T>

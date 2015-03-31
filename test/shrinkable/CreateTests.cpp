@@ -93,9 +93,9 @@ TEST_CASE("shrinkable::shrinkRecur") {
                  start, gen::arbitrary<bool>());
 
              const auto shrink = [](int x) {
-                 return seq::map(
-                     [](int x) { return x - 1; },
-                     seq::range(x, 0));
+                 return seq::map(seq::range(x, 0), [](int x) {
+                     return x - 1;
+                 });
              };
 
              auto shrinkable = shrinkable::shrinkRecur(start, shrink);

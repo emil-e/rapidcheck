@@ -17,23 +17,24 @@ TEST_CASE("newgen::map") {
          [](const Shrinkable<int> &shrinkable) {
              const auto mapper = [](int x) { return x * x; };
              const auto mapped = newgen::map(
-                 mapper,
-                 Gen<int>(fn::constant(shrinkable)))(Random(), 0);
-             RC_ASSERT(shrinkable::map(mapper, shrinkable) == mapped);
+                 Gen<int>(fn::constant(shrinkable)),
+                 mapper)(Random(), 0);
+             RC_ASSERT(shrinkable::map(shrinkable, mapper) == mapped);
          });
 
     prop("forwards the parameter to the generator",
          [](const GenParams &params) {
              const auto gen = newgen::map(
-                 [](GenParams &&x) { return std::move(x); },
-                 genPassedParams());
+                 genPassedParams(),
+                 [](GenParams &&x) { return std::move(x); });
              RC_ASSERT(gen(params.random, params.size).value() == params);
          });
 
     SECTION("works with non-copyable types") {
         const auto value = newgen::map(
-            [](NonCopyable &&nc) { return std::move(nc); },
-            newgen::arbitrary<NonCopyable>())(Random(), 0).value();
+            newgen::arbitrary<NonCopyable>(),
+            [](NonCopyable &&nc) { return std::move(nc); })(
+                Random(), 0).value();
         REQUIRE(isArbitraryPredictable(value));
     }
 
@@ -49,8 +50,8 @@ TEST_CASE("newgen::map") {
          " longer than some value",
          [](const Random &random) {
              const auto gen = newgen::map(
-                 [](unsigned int x) { return std::to_string(x); },
-                 newgen::arbitrary<unsigned int>());
+                 newgen::arbitrary<unsigned int>(),
+                 [](unsigned int x) { return std::to_string(x); });
              const auto n = *gen::ranged(2, 7);
              std::string expected(n, '0');
              expected[0] = '1';
@@ -74,8 +75,8 @@ TEST_CASE("newgen::suchThat") {
     prop("generated value always matches predicate",
          [](const GenParams &params) {
              const auto gen = newgen::suchThat(
-                 [](int x) { return (x % 2) == 0; },
-                 newgen::arbitrary<int>());
+                 newgen::arbitrary<int>(),
+                 [](int x) { return (x % 2) == 0; });
              const auto shrinkable = gen(params.random, params.size);
              onAnyPath(
                  shrinkable,
@@ -89,15 +90,15 @@ TEST_CASE("newgen::suchThat") {
          " unchanged",
          [](const GenParams &params, const Shrinkable<int> &shrinkable) {
              const Gen<int> underlying(fn::constant(shrinkable));
-             const auto gen = newgen::suchThat(fn::constant(true), underlying);
+             const auto gen = newgen::suchThat(underlying, fn::constant(true));
              RC_ASSERT(underlying(params.random, params.size) ==
                        gen(params.random, params.size));
          });
 
     prop("throws GenerationFailure if value cannot be generated",
          [](const GenParams &params) {
-             const auto gen = newgen::suchThat(fn::constant(false),
-                                               newgen::just<int>(0));
+             const auto gen = newgen::suchThat(newgen::just<int>(0),
+                                               fn::constant(false));
              try {
                  gen(params.random, params.size);
              } catch (const GenerationFailure &e) {
@@ -109,8 +110,8 @@ TEST_CASE("newgen::suchThat") {
     prop("passes the passed size to the underlying generator on the first try",
          [] {
              const auto size = *gen::ranged<int>(0, 2000);
-             const auto gen = newgen::suchThat(fn::constant(true),
-                                               genPassedParams());
+             const auto gen = newgen::suchThat(genPassedParams(),
+                                               fn::constant(true));
              const auto params = gen(Random(), size).value();
              RC_ASSERT(params.size == size);
          });
@@ -124,8 +125,8 @@ TEST_CASE("newgen::suchThat") {
 
     SECTION("works with non-copyable types") {
         const auto value = newgen::suchThat(
-            fn::constant(true),
-            newgen::arbitrary<Predictable>())(Random(), 0).value();
+            newgen::arbitrary<NonCopyable>(),
+            fn::constant(true))(Random(), 0).value();
         REQUIRE(isArbitraryPredictable(value));
     }
 }

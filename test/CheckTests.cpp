@@ -46,8 +46,8 @@ public:
     Seq<int> shrink(int value) const override
     {
         return seq::takeWhile(
-            [](int x) { return x >= 0; },
-            seq::iterate(value - 1, [](int x) { return --x; }));
+            seq::iterate(value - 1, [](int x) { return --x; }),
+            [](int x) { return x >= 0; });
     }
 
 private:

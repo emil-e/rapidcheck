@@ -30,8 +30,8 @@ public:
 
     Seq<test::Box> shrink(const test::Box &box)
     {
-        return seq::map([](int x) { return test::Box(x); },
-                        gen::arbitrary<int>().shrink(box.value));
+        return seq::map(gen::arbitrary<int>().shrink(box.value),
+                        [](int x) { return test::Box(x); });
     }
 };
 

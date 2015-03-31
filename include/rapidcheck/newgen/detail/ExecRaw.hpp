@@ -28,9 +28,10 @@ Seq<Shrinkable<std::pair<rc::detail::ReturnType<Callable>, Recipe>>>
 shrinksOfRecipe(Callable callable, Recipe recipe)
 {
     return seq::map(
+        shrinkRecipe(std::move(recipe)),
         [=](Recipe &&shrunkRecipe) {
             return shrinkableWithRecipe(callable, shrunkRecipe);
-        }, shrinkRecipe(std::move(recipe)));
+        });
 }
 
 template<typename Callable>
