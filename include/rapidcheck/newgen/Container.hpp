@@ -284,7 +284,7 @@ Gen<Container> container(Gen<Ts> ...gens)
         Random r(random);
         int count = r.split().next() % (size + 1);
         auto shrinkables = Generate::generateElements(
-            r, size, count, std::move(gens)...);
+            r, size, count, gens...);
 
         using Elements = decltype(shrinkables);
         return shrinkable::map(
@@ -306,7 +306,7 @@ Gen<Container> container(std::size_t count, Gen<Ts> ...gens)
 
     return [=](const Random &random, int size) {
         auto shrinkables = Generate::generateElements(
-            random, size, count, std::move(gens)...);
+            random, size, count, gens...);
 
         using Elements = decltype(shrinkables);
         return shrinkable::map(
