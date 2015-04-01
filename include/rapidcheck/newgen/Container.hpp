@@ -54,33 +54,27 @@ template<typename Container>
 struct GenerateCollection
 {
     template<typename T>
-    static Seq<Shrinkables<T>> shrinksOf(const Shrinkables<T> &shrinkables)
+    static Shrinkables<T> generateElements(const Random &random,
+                                           int size,
+                                           int count,
+                                           const Gen<T> &gen)
     {
-        return seq::concat(
-            shrink::newRemoveChunks(shrinkables),
-            shrink::newEachElement(
-                shrinkables, [](const Shrinkable<T> &s) {
-                    return s.shrinks();
-                }));
+        return generateShrinkables(
+            random,
+            size,
+            count,
+            gen,
+            fn::constant(true));
     }
 
     template<typename T>
-    static Shrinkable<Container> generate(const Random &random,
-                                          int size,
-                                          int count,
-                                          const Gen<T> &gen)
+    static Seq<Shrinkables<T>> shrinkElements(const Shrinkables<T> &shrinkables)
     {
-        return shrinkable::map(
-            shrinkable::shrinkRecur(
-                generateShrinkables(
-                    random,
-                    size,
-                    count,
-                    gen,
-                    fn::constant(true)),
-                &shrinksOf<T>),
-            &toContainer<Container, T>);
-    };
+        return shrink::newEachElement(
+            shrinkables, [](const Shrinkable<T> &s) {
+                return s.shrinks();
+            });
+    }
 };
 
 template<typename Container,
@@ -92,54 +86,46 @@ template<typename Set>
 struct GenerateContainer<Set, true, false>
 {
     template<typename T>
-    static Seq<Shrinkables<T>> shrinksOf(const Shrinkables<T> &shrinkables)
-    {
-        // We use a shared_ptr here both because T might not be copyable and
-        // because we don't really need to copy it since we don't modify it.
-        std::shared_ptr<const Set> set = std::make_shared<Set>(
-            toContainer<Set>(shrinkables));
-        return seq::concat(
-            shrink::newRemoveChunks(shrinkables),
-            shrink::newEachElement(
-                shrinkables, [=](const Shrinkable<T> &s) {
-                    return seq::filter(
-                        s.shrinks(),
-                        [=](const Shrinkable<T> &x) {
-                            // Here we filter out shrinks that collide with
-                            // another value in the set because that would
-                            // produce an identical set.
-                            return set->find(x.value()) == set->end();
-                        });
-                }));
-    }
-
-    template<typename T>
-    static Shrinkable<Set> generate(const Random &random,
-                                    int size,
-                                    int count,
-                                    const Gen<T> &gen)
+    static Shrinkables<T> generateElements(const Random &random,
+                                           int size,
+                                           int count,
+                                           const Gen<T> &gen)
     {
         Set set;
-        auto shrinkables = generateShrinkables(
+        return generateShrinkables(
             random, size, count, gen,
             [&](const Shrinkable<T> &s) {
                 // We want only values that can be inserted
                 return set.insert(s.value()).second;
             });
+    }
 
-        return shrinkable::map(
-            shrinkable::shrinkRecur(
-                std::move(shrinkables),
-                &shrinksOf<T>),
-            &toContainer<Set, T>);
-    };
+    template<typename T>
+    static Seq<Shrinkables<T>> shrinkElements(const Shrinkables<T> &shrinkables)
+    {
+        // We use a shared_ptr here both because T might not be copyable and
+        // because we don't really need to copy it since we don't modify it.
+        std::shared_ptr<const Set> set = std::make_shared<Set>(
+            toContainer<Set>(shrinkables));
+        return shrink::newEachElement(
+            shrinkables, [=](const Shrinkable<T> &s) {
+                return seq::filter(
+                    s.shrinks(),
+                    [=](const Shrinkable<T> &x) {
+                        // Here we filter out shrinks that collide with
+                        // another value in the set because that would
+                        // produce an identical set.
+                        return set->find(x.value()) == set->end();
+                    });
+            });
+    }
 };
 
 template<typename Map>
 struct GenerateContainer<Map, true, true>
 {
     template<typename K, typename V>
-    static ShrinkablePairs<K, V> generatePairs(
+    static ShrinkablePairs<K, V> generateElements(
         const Random &random,
         int size,
         int count,
@@ -173,54 +159,40 @@ struct GenerateContainer<Map, true, true>
     }
 
     template<typename K, typename V>
-    static Seq<ShrinkablePairs<K, V>> shrinksOf(
+    static Seq<ShrinkablePairs<K, V>> shrinkElements(
         const ShrinkablePairs<K, V> &shrinkablePairs)
     {
         // We use a shared_ptr here both because K and V might not be copyable
         // and because we don't really need to copy it since we don't modify it.
         std::shared_ptr<const Map> map = std::make_shared<Map>(
             toContainer<Map>(shrinkablePairs));
-        return seq::concat(
-            shrink::newRemoveChunks(shrinkablePairs),
-            shrink::newEachElement(
-                shrinkablePairs, [=](const Shrinkable<std::pair<K, V>> &elem) {
-                    return seq::filter(
-                        elem.shrinks(),
-                        [=](const Shrinkable<std::pair<K, V>> &elemShrink) {
-                            // Here we filter out values with keys that collide
-                            // with other keys of the map. However, if the key
-                            // is the same, that means that something else
-                            // in this shrink since we expect shrinks to not
-                            // equal the original.
-                            const auto shrinkValue = elemShrink.value();
-                            return
-                                (map->find(shrinkValue.first) == map->end()) ||
-                                (shrinkValue.first == elem.value().first);
-                        });
-                }));
+        return shrink::newEachElement(
+            shrinkablePairs, [=](const Shrinkable<std::pair<K, V>> &elem) {
+                return seq::filter(
+                    elem.shrinks(),
+                    [=](const Shrinkable<std::pair<K, V>> &elemShrink) {
+                        // Here we filter out values with keys that collide
+                        // with other keys of the map. However, if the key
+                        // is the same, that means that something else
+                        // in this shrink since we expect shrinks to not
+                        // equal the original.
+                        // NOTE: This places the restriction that the key must
+                        // have an equality operator that works but that's
+                        // usually true for types used as keys anyway.
+                        const auto shrinkValue = elemShrink.value();
+                        return
+                            (map->find(shrinkValue.first) == map->end()) ||
+                            (shrinkValue.first == elem.value().first);
+                    });
+            });
     }
-
-    template<typename K, typename V>
-    static Shrinkable<Map> generate(
-        const Random &random,
-        int size,
-        int count,
-        const Gen<K> &keyGen,
-        const Gen<V> &valueGen)
-    {
-        return shrinkable::map(
-            shrinkable::shrinkRecur(
-                generatePairs(random, size, count, keyGen, valueGen),
-                &shrinksOf<K, V>),
-            &toContainer<Map, std::pair<K, V>>);
-    };
 };
 
 template<typename MultiMap>
-struct GenerateMultiMap
+struct GenerateMultiMap : public GenerateCollection<MultiMap>
 {
     template<typename K, typename V>
-    static Shrinkable<MultiMap> generate(
+    static ShrinkablePairs<K, V> generateElements(
         const Random &random,
         int size,
         int count,
@@ -229,7 +201,7 @@ struct GenerateMultiMap
     {
         // We treat this as a normal collection since we don't need to worry
         // about duplicate keys et.c.
-        return GenerateCollection<MultiMap>::generate(
+        return GenerateCollection<MultiMap>::generateElements(
             random, size, count, newgen::pair(keyGen, valueGen));
     }
 };
@@ -305,11 +277,24 @@ SPECIALIZE_SEQUENCE_ARBITRARY2(std::unordered_multimap)
 template<typename Container, typename ...Ts>
 Gen<Container> container(Gen<Ts> ...gens)
 {
+    using namespace detail;
+    using Generate = GenerateContainer<Container>;
+
     return [=](const Random &random, int size) {
         Random r(random);
         int count = r.split().next() % (size + 1);
-        return detail::GenerateContainer<Container>::generate(
+        auto shrinkables = Generate::generateElements(
             random, size, count, std::move(gens)...);
+
+        using Elements = decltype(shrinkables);
+        return shrinkable::map(
+            shrinkable::shrinkRecur(
+                std::move(shrinkables), [](const Elements &elements) {
+                    return seq::concat(
+                        shrink::newRemoveChunks(elements),
+                        Generate::shrinkElements(elements));
+                }),
+            &toContainer<Container, typename Elements::value_type::ValueType>);
     };
 }
 
