@@ -93,5 +93,9 @@ Gen<T> suchThat(Predicate &&pred)
                             std::forward<Predicate>(pred));
 }
 
+template<typename T>
+Gen<T> resize(int size, Gen<T> gen)
+{ return [=](const Random &random, int) { return gen(random, size); }; }
+
 } // namespace newgen
 } // namespace rc

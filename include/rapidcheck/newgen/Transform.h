@@ -32,6 +32,11 @@ Gen<T> suchThat(Gen<T> gen, Predicate &&pred);
 template<typename T, typename Predicate>
 Gen<T> suchThat(Predicate &&pred);
 
+//! Returns a version of the given generator that always uses the specified
+//! size.
+template<typename T>
+Gen<T> resize(int size, Gen<T> gen);
+
 } // namespace newgen
 } // namespace rc
 

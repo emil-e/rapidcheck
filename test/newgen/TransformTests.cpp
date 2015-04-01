@@ -130,3 +130,20 @@ TEST_CASE("newgen::suchThat") {
         REQUIRE(isArbitraryPredictable(value));
     }
 }
+
+TEST_CASE("newgen::resize") {
+    prop("always uses the specified size",
+         [](const GenParams &params) {
+             const auto size = *gen::ranged<int>(0, 2000);
+             const auto gen = newgen::resize(size, genPassedParams());
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value.size == size);
+         });
+
+    prop("passes through random generator unchanged",
+         [](const GenParams &params) {
+             const auto gen = newgen::resize(0, genPassedParams());
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value.random == params.random);
+         });
+}
