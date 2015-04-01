@@ -109,5 +109,14 @@ Gen<T> scale(double scale, Gen<T> gen)
     };
 }
 
+template<typename T>
+Gen<T> noShrink(Gen<T> gen)
+{
+    return [=](const Random &random, int size) {
+        return shrinkable::mapShrinks(
+            gen(random, size), fn::constant(Seq<Shrinkable<T>>()));
+    };
+}
+
 } // namespace newgen
 } // namespace rc

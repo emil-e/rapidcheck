@@ -163,3 +163,26 @@ TEST_CASE("newgen::scale") {
              RC_ASSERT(value.random == params.random);
          });
 }
+
+TEST_CASE("newgen::noShrink") {
+    prop("returned shrinkable has expected value",
+         [](const GenParams &params, int x) {
+             const auto gen = newgen::noShrink(newgen::just(x));
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value == x);
+         });
+
+    prop("returned shrinkable has no shrinks",
+         [](const GenParams &params) {
+             const auto gen = newgen::noShrink(newgen::arbitrary<int>());
+             const auto shrinkable = gen(params.random, params.size);
+             RC_ASSERT(!shrinkable.shrinks().next());
+         });
+
+    prop("passes generation params unchanged",
+         [](const GenParams &params) {
+             const auto gen = newgen::noShrink(genPassedParams());
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value == params);
+         });
+}
