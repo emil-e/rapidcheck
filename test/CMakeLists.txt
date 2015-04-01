@@ -38,6 +38,7 @@ add_executable(rapidcheck_tests
   newgen/CreateTests.cpp
   newgen/ExecTests.cpp
   newgen/NumericTests.cpp
+  newgen/SelectTests.cpp
   newgen/TransformTests.cpp
   newgen/TupleTests.cpp
   newgen/detail/ExecRawTests.cpp
