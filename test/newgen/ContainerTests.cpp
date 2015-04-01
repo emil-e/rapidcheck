@@ -500,4 +500,6 @@ TEST_CASE("newgen::container(std::size_t)") {
 
     meta::forEachType<ParamsFixedProperties,
                       RC_GENERIC_CONTAINERS(GenParams)>();
+
+    // TODO shrink tests?
 }

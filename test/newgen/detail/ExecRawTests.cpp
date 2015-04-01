@@ -222,4 +222,6 @@ TEST_CASE("execRaw") {
         })(Random(), 0);
         REQUIRE(isArbitraryPredictable(shrinkable.value().first));
     }
+
+    // TODO shrink tests?
 }
