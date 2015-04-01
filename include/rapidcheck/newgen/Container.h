@@ -11,6 +11,10 @@ namespace newgen {
 template<typename Container, typename ...Ts>
 Gen<Container> container(Gen<Ts> ...gens);
 
+//! Same as `newgen::container` but with explicitly requested container size.
+template<typename Container, typename ...Ts>
+Gen<Container> container(std::size_t count, Gen<Ts> ...gens);
+
 } // namespace newgen
 } // namespace rc
 

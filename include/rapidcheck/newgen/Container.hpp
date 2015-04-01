@@ -298,5 +298,25 @@ Gen<Container> container(Gen<Ts> ...gens)
     };
 }
 
+template<typename Container, typename ...Ts>
+Gen<Container> container(std::size_t count, Gen<Ts> ...gens)
+{
+    using namespace detail;
+    using Generate = GenerateContainer<Container>;
+
+    return [=](const Random &random, int size) {
+        auto shrinkables = Generate::generateElements(
+            random, size, count, std::move(gens)...);
+
+        using Elements = decltype(shrinkables);
+        return shrinkable::map(
+            shrinkable::shrinkRecur(
+                std::move(shrinkables), [](const Elements &elements) {
+                    return Generate::shrinkElements(elements);
+                }),
+            &toContainer<Container, typename Elements::value_type::ValueType>);
+    };
+}
+
 } // namespace newgen
 } // namespace rc

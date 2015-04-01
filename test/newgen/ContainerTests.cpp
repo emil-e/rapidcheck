@@ -26,6 +26,10 @@ struct Generators
     template<typename T>
     static Gen<Container> make(Gen<T> gen)
     { return newgen::container<Container>(std::move(gen)); }
+
+    template<typename T>
+    static Gen<Container> make(std::size_t count, Gen<T> gen)
+    { return newgen::container<Container>(count, std::move(gen)); }
 };
 
 template<typename Container>
@@ -34,11 +38,15 @@ struct Generators<Container, true>
     template<typename T>
     static Gen<Container> make(Gen<T> gen)
     { return newgen::container<Container>(gen, gen); }
+
+    template<typename T>
+    static Gen<Container> make(std::size_t count, Gen<T> gen)
+    { return newgen::container<Container>(count, gen, gen); }
 };
 
-template<typename Container, typename T>
-Gen<Container> makeGen(Gen<T> gen)
-{ return Generators<Container>::make(std::move(gen)); }
+template<typename Container, typename ...Args>
+Gen<Container> makeGen(Args &&...args)
+{ return Generators<Container>::make(std::forward<Args>(args)...); }
 
 bool hasSize(int size, const std::pair<const GenParams, GenParams> &p)
 { return (p.first.size == size) && (p.second.size == size); }
@@ -140,27 +148,6 @@ struct ParamsProperties
                         begin(value), end(value),
                         [&](const Element &x) {
                             return insertRandoms(randoms, x);
-                        }));
-            });
-    }
-};
-
-struct ArbitraryProperties
-{
-    template<typename T>
-    static void exec()
-    {
-        using Element = typename T::value_type;
-
-        templatedProp<T>(
-            "uses the correct NewArbitrary instance",
-            [] {
-                const auto value = newgen::arbitrary<T>()(Random(), 0).value();
-                RC_ASSERT(
-                    std::all_of(
-                        begin(value), end(value),
-                        [](const Element &x) {
-                            return isArbitraryPredictable(x);
                         }));
             });
     }
@@ -373,6 +360,27 @@ struct MultiMapProperties
     }
 };
 
+struct ArbitraryProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        using Element = typename T::value_type;
+
+        templatedProp<T>(
+            "uses the correct NewArbitrary instance",
+            [] {
+                const auto value = newgen::arbitrary<T>()(Random(), 0).value();
+                RC_ASSERT(
+                    std::all_of(
+                        begin(value), end(value),
+                        [](const Element &x) {
+                            return isArbitraryPredictable(x);
+                        }));
+            });
+    }
+};
+
 } // namespace
 
 TEST_CASE("newgen::container") {
@@ -382,10 +390,6 @@ TEST_CASE("newgen::container") {
 
     meta::forEachType<ParamsProperties,
                       RC_GENERIC_CONTAINERS(GenParams)>();
-
-    meta::forEachType<ArbitraryProperties,
-                      RC_GENERIC_CONTAINERS(Predictable),
-                      RC_GENERIC_CONTAINERS(NonCopyable)>();
 
     meta::forEachType<SequenceProperties,
                       RC_SEQUENCE_CONTAINERS(int),
@@ -406,4 +410,94 @@ TEST_CASE("newgen::container") {
     meta::forEachType<MultiMapProperties,
                       std::multimap<int, int>,
                       std::unordered_multimap<int, int>>();
+
+    meta::forEachType<ArbitraryProperties,
+                      RC_GENERIC_CONTAINERS(Predictable),
+                      RC_GENERIC_CONTAINERS(NonCopyable)>();
+}
+
+namespace {
+
+struct GenericFixedProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "generated value always has the requested number of elements",
+            [](const GenParams &params) {
+                const auto count = *gen::ranged<std::size_t>(0, 10);
+                const auto shrinkable = makeGen<T>(count, genCountdown())(
+                    params.random, params.size);
+                onAnyPath(
+                    shrinkable,
+                    [=](const Shrinkable<T> &value,
+                       const Shrinkable<T> &shrink) {
+                        RC_ASSERT(containerSize(shrink.value()) == count);
+                    });
+            });
+
+        templatedProp<T>(
+            "none of the shrinks equal the original value",
+            [](const GenParams &params) {
+                const auto count = *gen::ranged<std::size_t>(0, 10);
+                const auto shrinkable = makeGen<T>(count, genCountdown())(
+                    params.random, params.size);
+                onAnyPath(
+                    shrinkable,
+                    [](const Shrinkable<T> &value,
+                       const Shrinkable<T> &shrink) {
+                        RC_ASSERT(value.value() != shrink.value());
+                    });
+            });
+    }
+};
+
+struct ParamsFixedProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        using Element = typename T::value_type;
+
+        templatedProp<T>(
+            "passes the correct size to the element generators",
+            [](const GenParams &params) {
+                const auto count = *gen::ranged<std::size_t>(0, 10);
+                const auto value = makeGen<T>(count, genPassedParams())(
+                    params.random, params.size).value();
+                RC_ASSERT(
+                    std::all_of(
+                        begin(value), end(value),
+                        [&](const Element &x) {
+                            return hasSize(params.size, x);
+                        }));
+            });
+
+        templatedProp<T>(
+            "the random generators passed to element generators are unique",
+            [](const GenParams &params) {
+                const auto count = *gen::ranged<std::size_t>(0, 10);
+                const auto value = makeGen<T>(count, genPassedParams())(
+                    params.random, params.size).value();
+                std::unordered_set<Random> randoms;
+                RC_ASSERT(
+                    std::all_of(
+                        begin(value), end(value),
+                        [&](const Element &x) {
+                            return insertRandoms(randoms, x);
+                        }));
+            });
+    }
+};
+
+} // namespace
+
+TEST_CASE("newgen::container(std::size_t)") {
+    meta::forEachType<GenericFixedProperties,
+                      RC_GENERIC_CONTAINERS(int),
+                      std::basic_string<int>>();
+
+    meta::forEachType<ParamsFixedProperties,
+                      RC_GENERIC_CONTAINERS(GenParams)>();
 }
