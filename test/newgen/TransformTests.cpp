@@ -147,3 +147,19 @@ TEST_CASE("newgen::resize") {
              RC_ASSERT(value.random == params.random);
          });
 }
+
+TEST_CASE("newgen::scale") {
+    prop("scales the size by the specified factor",
+         [](const GenParams &params) {
+             const auto gen = newgen::scale(2.0, genPassedParams());
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value.size == params.size * 2);
+         });
+
+    prop("passes through random generator unchanged",
+         [](const GenParams &params) {
+             const auto gen = newgen::scale(2.0, genPassedParams());
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value.random == params.random);
+         });
+}

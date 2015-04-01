@@ -37,6 +37,11 @@ Gen<T> suchThat(Predicate &&pred);
 template<typename T>
 Gen<T> resize(int size, Gen<T> gen);
 
+//! Returns a version of the given generator that scales the size by the given
+//! factor before passing it to the underlying generator.
+template<typename T>
+Gen<T> scale(double scale, Gen<T> gen);
+
 } // namespace newgen
 } // namespace rc
 

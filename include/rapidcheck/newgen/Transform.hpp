@@ -95,7 +95,19 @@ Gen<T> suchThat(Predicate &&pred)
 
 template<typename T>
 Gen<T> resize(int size, Gen<T> gen)
-{ return [=](const Random &random, int) { return gen(random, size); }; }
+{
+    return [=](const Random &random, int) {
+        return gen(random, size);
+    };
+}
+
+template<typename T>
+Gen<T> scale(double scale, Gen<T> gen)
+{
+    return [=](const Random &random, int size) {
+        return gen(random, size * scale);
+    };
+}
 
 } // namespace newgen
 } // namespace rc
