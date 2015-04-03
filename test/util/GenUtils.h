@@ -53,12 +53,25 @@ inline Gen<int> genFixedCountdown(int value)
 };
 
 template<int N>
-struct FixedCountdown { int value; };
+struct FixedCountdown {
+    FixedCountdown() : value(0) {}
+    FixedCountdown(int x) : value(x) {}
+
+    int value;
+};
 
 template<int N>
 inline bool operator==(const FixedCountdown<N> &lhs,
                        const FixedCountdown<N> &rhs)
 { return lhs.value == rhs.value; }
+
+template<int N>
+inline std::ostream &operator<<(std::ostream &os,
+                                const FixedCountdown<N> &value)
+{
+    os << value.value;
+    return os;
+}
 
 struct GenParams
 {
