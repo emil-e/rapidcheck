@@ -117,6 +117,17 @@ TEST_CASE("Seq") {
         REQUIRE(value->second == expectedLog);
     }
 
+    SECTION("if exception is throw on next(), Seq ends immediately") {
+        auto x = 0;
+        const auto seq = Seq<int>([x]() mutable -> Maybe<int> {
+            if (x == 3)
+                throw std::string("foobar");
+            return ++x;
+        });
+
+        REQUIRE(seq == seq::just(1, 2, 3));
+    }
+
     SECTION("operator==/operator!=") {
         propConformsToEquals<Seq<std::string>>();
 

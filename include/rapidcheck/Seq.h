@@ -21,7 +21,7 @@ namespace rc {
 //! The implementation class must meet the following requirements:
 //!   - It must provide a method `Maybe<T> operator()()` (i.e. it must be a
 //!     functor) which returns the next value or nothing if there are no more
-//!     values.
+//!     values. If this method throws, it is treated the same as `Nothing`.
 //!   - It must have a copy constructor that produces a semantically identical
 //!     copy. This means that it should provide equal values to the original.
 //!
@@ -51,7 +51,7 @@ public:
     explicit Seq(Impl &&impl);
 
     //! Returns the next value.
-    Maybe<T> next();
+    Maybe<T> next() noexcept;
 
     Seq(const Seq &other);
     Seq &operator=(const Seq &rhs);

@@ -36,8 +36,15 @@ Seq<T>::Seq(Impl &&impl)
     : m_impl(new SeqImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}
 
 template<typename T>
-Maybe<T> Seq<T>::next()
-{ return m_impl ? m_impl->next() : Nothing; }
+Maybe<T> Seq<T>::next() noexcept
+{
+    try {
+        return m_impl ? m_impl->next() : Nothing;
+    } catch (...) {
+        m_impl.reset();
+        return Nothing;
+    }
+}
 
 template<typename T>
 Seq<T>::Seq(const Seq &other)
