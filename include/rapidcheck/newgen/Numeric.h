@@ -10,6 +10,22 @@ namespace newgen {
 template<typename T>
 Gen<T> inRange(T min, T max);
 
+//! Generates a value that is not equal to `0`.
+template<typename T>
+Gen<T> nonZero();
+
+//! Generates a value which is greater than `0`.
+template<typename T>
+Gen<T> positive();
+
+//! Generates a value which is less than `0`.
+template<typename T>
+Gen<T> negative();
+
+//! Generates a value which is not less than `0`.
+template<typename T>
+Gen<T> nonNegative();
+
 } // namespace newgen
 } // namespace rc
 

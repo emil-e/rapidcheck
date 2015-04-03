@@ -3,6 +3,7 @@
 #include "rapidcheck/detail/BitStream.h"
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/shrink/Shrink.h"
+#include "rapidcheck/newgen/Transform.h"
 
 namespace rc {
 namespace newgen {
@@ -79,6 +80,35 @@ Gen<T> inRange(T min, T max)
         const auto x = Random(random).next() % rangeSize;
         return shrinkable::just<T>(static_cast<T>(x) + min);
     };
+}
+
+
+template<typename T>
+Gen<T> nonZero()
+{
+    return newgen::suchThat(newgen::arbitrary<T>(),
+                            [](T x) { return x != 0; });
+}
+
+template<typename T>
+Gen<T> positive()
+{
+    return newgen::suchThat(newgen::arbitrary<T>(),
+                            [](T x) { return x > 0; });
+}
+
+template<typename T>
+Gen<T> negative()
+{
+    return newgen::suchThat(newgen::arbitrary<T>(),
+                            [](T x) { return x < 0; });
+}
+
+template<typename T>
+Gen<T> nonNegative()
+{
+    return newgen::suchThat(newgen::arbitrary<T>(),
+                            [](T x) { return x >= 0; });
 }
 
 } // namespace newgen

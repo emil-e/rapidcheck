@@ -12,6 +12,7 @@
 #include "util/TypeListMacros.h"
 #include "util/ArbitraryRandom.h"
 #include "util/GenUtils.h"
+#include "util/ShrinkableUtils.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -255,4 +256,120 @@ struct InRangeProperties
 
 TEST_CASE("newgen::inRange") {
     meta::forEachType<InRangeProperties, RC_INTEGRAL_TYPES>();
+}
+
+namespace {
+
+struct NonZeroProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "never generates zero",
+            [=](const GenParams &params) {
+                const auto shrinkable = newgen::nonZero<T>()(
+                    params.random, params.size);
+                onAnyPath(
+                    shrinkable,
+                    [](const Shrinkable<T> &value,
+                       const Shrinkable<T> &shrink) {
+                        RC_ASSERT(value.value() != 0);
+                    });
+            });
+    }
+};
+
+} // namespace
+
+TEST_CASE("newgen::nonZero") {
+    meta::forEachType<NonZeroProperties,
+                      RC_NUMERIC_TYPES>();
+}
+
+namespace {
+
+struct PositiveProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "always generates positive values",
+            [=](const GenParams &params) {
+                const auto shrinkable = newgen::positive<T>()(
+                    params.random, params.size);
+                onAnyPath(
+                    shrinkable,
+                    [](const Shrinkable<T> &value,
+                       const Shrinkable<T> &shrink) {
+                        RC_ASSERT(value.value() > 0);
+                    });
+            });
+    }
+};
+
+} // namespace
+
+TEST_CASE("newgen::positive") {
+    meta::forEachType<PositiveProperties,
+                      RC_NUMERIC_TYPES>();
+}
+
+namespace {
+
+struct NegativeProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "always generates negative values",
+            [=](const GenParams &params) {
+                const auto shrinkable = newgen::negative<T>()(
+                    params.random, params.size);
+                onAnyPath(
+                    shrinkable,
+                    [](const Shrinkable<T> &value,
+                       const Shrinkable<T> &shrink) {
+                        RC_ASSERT(value.value() < 0);
+                    });
+            });
+    }
+};
+
+} // namespace
+
+TEST_CASE("newgen::negative") {
+    meta::forEachType<NegativeProperties,
+                      RC_SIGNED_TYPES>();
+}
+
+namespace {
+
+struct NonNegativeProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "always generates non-negative values",
+            [=](const GenParams &params) {
+                const auto shrinkable = newgen::nonNegative<T>()(
+                    params.random, params.size);
+                onAnyPath(
+                    shrinkable,
+                    [](const Shrinkable<T> &value,
+                       const Shrinkable<T> &shrink) {
+                        RC_ASSERT(value.value() >= 0);
+                    });
+            });
+    }
+};
+
+} // namespace
+
+TEST_CASE("newgen::nonNegative") {
+    meta::forEachType<NonNegativeProperties,
+                      RC_NUMERIC_TYPES>();
 }
