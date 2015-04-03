@@ -13,6 +13,11 @@ Gen<typename Decay<Container>::value_type> elementOf(Container &&container);
 template<typename T, typename ...Ts>
 Gen<Decay<T>> element(T &&element, Ts &&...elements);
 
+//! Returns a generator which randomly generates using one of the specified
+//! generators.
+template<typename T, typename ...Ts>
+Gen<T> oneOf(Gen<T> gen, Gen<Ts> ...gens);
+
 } // namespace newgen
 } // namespace rc
 

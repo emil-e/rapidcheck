@@ -30,6 +30,25 @@ private:
     Container m_container;
 };
 
+template<typename T>
+class OneOfGen
+{
+public:
+    template<typename ...Ts>
+    OneOfGen(Gen<Ts> ...gens)
+        : m_gens{std::move(gens)...} {}
+
+    Shrinkable<T> operator()(const Random &random, int size) const
+    {
+        Random r(random);
+        const auto i = r.split().next() % m_gens.size();
+        return m_gens[i](r, size);
+    }
+
+private:
+    std::vector<Gen<T>> m_gens;
+};
+
 } // namespace detail
 
 template<typename Container>
@@ -46,6 +65,10 @@ Gen<Decay<T>> element(T &&element, Ts &&...elements)
     return detail::ElementOfGen<Vector>(Vector{
             std::forward<T>(element), std::forward<Ts>(elements)...});
 }
+
+template<typename T, typename ...Ts>
+Gen<T> oneOf(Gen<T> gen, Gen<Ts> ...gens)
+{ return detail::OneOfGen<T>(std::move(gen), std::move(gens)...); }
 
 } // namespace newgen
 } // namespace rc

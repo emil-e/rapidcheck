@@ -1,12 +1,14 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include "rapidcheck/newgen/Create.h"
 #include "rapidcheck/newgen/Select.h"
 
 #include "util/Meta.h"
 #include "util/Util.h"
 #include "util/TypeListMacros.h"
 #include "util/GenUtils.h"
+#include "util/Predictable.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -86,10 +88,46 @@ TEST_CASE("newgen::element") {
          });
 }
 
+TEST_CASE("newgen::oneOf") {
+    prop("all generated elements come from one of the generators",
+         [](const GenParams &params,
+            const std::string &a,
+            const std::string &b,
+            const std::string &c) {
+             const auto gen = newgen::oneOf(newgen::just(a),
+                                            newgen::just(b),
+                                            newgen::just(c));
+             const auto x = gen(params.random, params.size).value();
+             RC_ASSERT((x == a) || (x == b) || (x == c));
+         });
+
+    prop("all generators are eventually used",
+         [](const GenParams &params,
+            const std::string &a,
+            const std::string &b,
+            const std::string &c) {
+             const auto gen = newgen::oneOf(newgen::just(a),
+                                            newgen::just(b),
+                                            newgen::just(c));
+             std::set<std::string> all{a, b, c};
              std::set<std::string> generated;
              Random r(params.random);
              while (all != generated)
                  generated.insert(gen(r.split(), params.size).value());
              RC_SUCCEED("All values generated");
+         });
+
+    prop("passes the correct size to the generators",
+         [](const GenParams &params) {
+             const auto gen = newgen::oneOf(genPassedParams());
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value.size == params.size);
+         });
+
+    prop("works with non-copyable types",
+         [](const GenParams &params) {
+             const auto gen = newgen::oneOf(newgen::arbitrary<NonCopyable>());
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(isArbitraryPredictable(value));
          });
 }
