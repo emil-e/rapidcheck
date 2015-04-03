@@ -5,6 +5,7 @@
 #include "rapidcheck/detail/Any.h"
 #include "rapidcheck/detail/ImplicitParam.h"
 #include "rapidcheck/newgen/detail/GenerationHandler.h"
+#include "rapidcheck/shrinkable/Create.h"
 
 namespace rc {
 namespace newgen {
@@ -49,8 +50,17 @@ Gen<T>::Gen(Impl &&impl)
     : m_impl(new GenImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}
 
 template<typename T>
-Shrinkable<T> Gen<T>::operator()(const Random &random, int size) const
-{ return m_impl->generate(random, size); }
+Shrinkable<T> Gen<T>::operator()(const Random &random, int size) const noexcept
+{
+    try {
+        return m_impl->generate(random, size);
+    } catch(...) {
+        auto exception = std::current_exception();
+        return shrinkable::lambda([=]() -> T {
+            std::rethrow_exception(exception);
+        });
+    }
+}
 
 template<typename T>
 T Gen<T>::operator*() const

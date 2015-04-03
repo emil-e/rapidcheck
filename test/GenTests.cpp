@@ -53,6 +53,23 @@ TEST_CASE("Gen") {
 
                  RC_ASSERT(gen(random, size) == shrinkable::just(x));
              });
+
+        prop("if exception is thrown in generation function, shrinkable is"
+             " returned that rethrows the exception on call to value()",
+             [](const std::string &message) {
+                 Gen<int> gen([=](const Random &random, int size) -> Shrinkable<int> {
+                     throw GenerationFailure(message);
+                 });
+
+                 const auto shrinkable = gen(Random(), 0);
+                 try {
+                     shrinkable.value();
+                 } catch (const GenerationFailure &e) {
+                     RC_ASSERT(e.what() == message);
+                     RC_SUCCEED("Threw correct exception");
+                 }
+                 RC_FAIL("Did not throw correct exception");
+             });
     }
 
     SECTION("operator*") {

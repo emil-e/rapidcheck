@@ -36,7 +36,7 @@ public:
     //!
     //! @return a random generated `Shrinkable`
     Shrinkable<T> operator()(const Random &random,
-                             int size = gen::kNominalSize) const;
+                             int size = gen::kNominalSize) const noexcept;
 
     //! The meaning of this operator depends on the context in which it is used
     //! but mainly, it is used when creating a generator using `newgen::exec` to
