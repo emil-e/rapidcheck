@@ -62,20 +62,30 @@ TEST_CASE("newgen::elementOf") {
 
 TEST_CASE("newgen::element") {
     prop("all generated elements are arguments",
-         [](const GenParams &params) {
-             const auto gen = newgen::element(std::string("foo"),
-                                              std::string("bar"),
-                                              std::string("baz"));
+         [](const GenParams &params,
+            const std::string &a,
+            const std::string &b,
+            const std::string &c) {
+             const auto gen = newgen::element(a, b, c);
              const auto x = gen(params.random, params.size).value();
-             RC_ASSERT((x == "foo") || (x == "bar") || (x == "baz"));
+             RC_ASSERT((x == a) || (x == b) || (x == c));
          });
 
-    prop("all generated elements are arguments",
-         [](const GenParams &params) {
-             const auto gen = newgen::element(std::string("foo"),
-                                              std::string("bar"),
-                                              std::string("baz"));
-             std::set<std::string> all{"foo", "bar", "baz"};
+    prop("all elements are eventually generated",
+         [](const GenParams &params,
+            const std::string &a,
+            const std::string &b,
+            const std::string &c) {
+             const auto gen = newgen::element(a, b, c);
+             std::set<std::string> all{a, b, c};
+             std::set<std::string> generated;
+             Random r(params.random);
+             while (all != generated)
+                 generated.insert(gen(r.split(), params.size).value());
+             RC_SUCCEED("All values generated");
+         });
+}
+
              std::set<std::string> generated;
              Random r(params.random);
              while (all != generated)
