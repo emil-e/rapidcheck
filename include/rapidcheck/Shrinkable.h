@@ -11,7 +11,8 @@ namespace rc {
 //! have the following:
 //!   - A method `T value() const` which returns the value.
 //!   - A method `Seq<Shrinkable<T>> shrinks() const` which returns a `Seq` of
-//!     the possible shrinks.
+//!     the possible shrinks. If this method throws, it is treated as if it had
+//!     returned an empty `Seq`.
 //!
 //! A Shrinkable is immutable and the implementation object is shared when the
 //! shrinkable is copied which is why the implementation object needs no copy
@@ -37,7 +38,7 @@ public:
     T value() const;
 
     //! Returns a `Seq` of all the possible shrinks of this `Shrinkable`.
-    Seq<Shrinkable<T>> shrinks() const;
+    Seq<Shrinkable<T>> shrinks() const noexcept;
 
 private:
     class IShrinkableImpl;

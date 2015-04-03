@@ -36,7 +36,14 @@ template<typename T>
 T Shrinkable<T>::value() const { return m_impl->value(); }
 
 template<typename T>
-Seq<Shrinkable<T>> Shrinkable<T>::shrinks() const { return m_impl->shrinks(); }
+Seq<Shrinkable<T>> Shrinkable<T>::shrinks() const noexcept
+{
+    try {
+        return m_impl->shrinks();
+    } catch (...) {
+        return Seq<Shrinkable<T>>();
+    }
+}
 
 template<typename T>
 Shrinkable<T>::Shrinkable(std::shared_ptr<IShrinkableImpl> impl)

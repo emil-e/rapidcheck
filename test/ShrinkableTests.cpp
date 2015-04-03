@@ -90,6 +90,16 @@ TEST_CASE("Shrinkable") {
         REQUIRE(shrinksCalled);
     }
 
+    SECTION("if shrinks() throws, an empty Seq is returned") {
+        Shrinkable<int> shrinkable = makeMockShrinkable(
+            [] { return 0; },
+            []() -> Seq<Shrinkable<int>> {
+                throw std::string("foobar");
+            });
+
+        REQUIRE(!shrinkable.shrinks().next());
+    }
+
     SECTION("copies implementation if constructed from lvalue") {
         LoggingShrinkableImpl impl("foobar");
         LoggingShrinkable shrinkable(impl);
