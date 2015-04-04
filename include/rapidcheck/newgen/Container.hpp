@@ -2,8 +2,9 @@
 
 #include "rapidcheck/newgen/Arbitrary.h"
 #include "rapidcheck/newgen/Tuple.h"
-#include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/newgen/detail/ShrinkValueIterator.h"
+#include "rapidcheck/shrink/Shrink.h"
+#include "rapidcheck/shrinkable/Create.h"
 
 namespace rc {
 namespace newgen {
