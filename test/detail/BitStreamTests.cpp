@@ -40,10 +40,11 @@ SeqSource<T> makeSource(Seq<T> seq) { return SeqSource<T>(std::move(seq)); }
 
 TEST_CASE("BitStream") {
     SECTION("next") {
-        const auto bitSizes = gen::collection<std::vector<int>>(
-            gen::ranged(0, 100));
+        const auto bitSizes = newgen::container<std::vector<int>>(
+            newgen::inRange(0, 100));
 
-        prop("requests the correct number of bits",
+        newprop(
+            "requests the correct number of bits",
              [=] {
                  auto source = makeSource(seq::repeat<char>(0xAB));
                  auto stream = bitStreamOf(source);
@@ -61,12 +62,13 @@ TEST_CASE("BitStream") {
                  RC_ASSERT(source.requested() == expected);
              });
 
-        prop("spills no bits",
+        newprop(
+            "spills no bits",
              [=](uint64_t x) {
                  auto source = makeSource(seq::repeat(x));
                  auto stream = bitStreamOf(source);
 
-                 auto sizes = *gen::suchThat(
+                 auto sizes = *newgen::suchThat(
                      bitSizes,
                      [](const std::vector<int> &x) {
                          return std::accumulate(begin(x), end(x), 0) >= 64;
@@ -86,7 +88,8 @@ TEST_CASE("BitStream") {
                  RC_ASSERT(value == x);
              });
 
-        prop("takes multiple values per request if required to fill result",
+        newprop(
+            "takes multiple values per request if required to fill result",
              [](uint8_t byte) {
                  auto source = makeSource(seq::take(8, seq::repeat(byte)));
                  auto stream = bitStreamOf(source);
@@ -100,19 +103,21 @@ TEST_CASE("BitStream") {
                  RC_ASSERT(value == expected);
              });
 
-        prop("does not return more bits than requested (unsigned)",
+        newprop(
+            "does not return more bits than requested (unsigned)",
              [=](uint64_t x) {
                  auto source = makeSource(seq::repeat(x));
                  auto stream = bitStreamOf(source);
-                 int n = *gen::ranged(0, 64);
+                 int n = *newgen::inRange(0, 64);
                  RC_ASSERT((stream.next<uint64_t>(n) & ~bitMask<uint64_t>(n)) == 0);
              });
 
-        prop("does not return more bits than requested (signed)",
+        newprop(
+            "does not return more bits than requested (signed)",
              [=](uint64_t x) {
                  auto source = makeSource(seq::repeat(x));
                  auto stream = bitStreamOf(source);
-                 int64_t n = *gen::ranged(0LL, 64LL);
+                 int64_t n = *newgen::inRange(0LL, 64LL);
                  bool sign = (x & (1LL << (n - 1LL))) != 0;
                  int64_t mask = ~bitMask<int64_t>(n);
                  if (sign)
@@ -121,7 +126,8 @@ TEST_CASE("BitStream") {
                      RC_ASSERT((stream.next<int64_t>(n) & mask) == 0);
              });
 
-        prop("works with booleans",
+        newprop(
+            "works with booleans",
              [](uint64_t x) {
                  auto source = makeSource(seq::just(x));
                  auto stream = bitStreamOf(source);
@@ -136,25 +142,27 @@ TEST_CASE("BitStream") {
     }
 
     SECTION("nextWithSize") {
-        prop("requests full number of bits for kNominalSize",
+        newprop(
+            "requests full number of bits for kNominalSize",
              [=] {
                  auto source = makeSource(seq::repeat<char>(0xAB));
                  auto stream = bitStreamOf(source);
 
-                 int n = *gen::ranged(0, 100);
+                 int n = *newgen::inRange(0, 100);
                  for (int i = 0; i < n; i++)
                      stream.nextWithSize<char>(gen::kNominalSize);
 
                  RC_ASSERT(source.requested() == n);
              });
 
-        prop("requests half number of bits for kNominalSize / 2",
+        newprop(
+            "requests half number of bits for kNominalSize / 2",
              [=] {
                  auto source = makeSource(seq::repeat<char>(0xAB));
                  auto stream = bitStreamOf(source);
 
-                 int n = *gen::suchThat(
-                     gen::ranged(0, 100),
+                 int n = *newgen::suchThat(
+                     newgen::inRange(0, 100),
                      [](int x) { return (x % 2) == 0; });
 
                  for (int i = 0; i < n; i++)
@@ -163,12 +171,13 @@ TEST_CASE("BitStream") {
                  RC_ASSERT(source.requested() == (n / 2));
              });
 
-        prop("requests no bits for size 0",
+        newprop(
+            "requests no bits for size 0",
              [=] {
                  auto source = makeSource(seq::repeat<char>(0xAB));
                  auto stream = bitStreamOf(source);
 
-                 int n = *gen::ranged(0, 100);
+                 int n = *newgen::inRange(0, 100);
                  for (int i = 0; i < n; i++)
                      stream.nextWithSize<char>(0);
 
