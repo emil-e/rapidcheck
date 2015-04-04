@@ -11,29 +11,31 @@ using namespace rc::detail;
 
 TEST_CASE("Configuration") {
     SECTION("operator==/operator!=") {
-        propConformsToEquals<Configuration>();
-        PROP_REPLACE_MEMBER_INEQUAL(Configuration, seed);
-        PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSuccess);
-        PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSize);
-        PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxDiscardRatio);
+        newpropConformsToEquals<Configuration>();
+        NEWPROP_REPLACE_MEMBER_INEQUAL(Configuration, seed);
+        NEWPROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSuccess);
+        NEWPROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSize);
+        NEWPROP_REPLACE_MEMBER_INEQUAL(Configuration, maxDiscardRatio);
     }
 
     SECTION("operator<<") {
-        propConformsToOutputOperator<Configuration>();
+        newpropConformsToOutputOperator<Configuration>();
     }
 }
 
 TEST_CASE("configFromString") {
-    prop("emtpy string yields default config",
-         [] (const Configuration &config) {
-             RC_ASSERT(configFromString("", config) == config);
-         });
+    newprop(
+        "emtpy string yields default config",
+        [] (const Configuration &config) {
+            RC_ASSERT(configFromString("", config) == config);
+        });
 
-    prop("ignores unknown keys",
-         [] (const Configuration &config) {
-             RC_ASSERT(configFromString("foo=bar stuff=things", config) ==
-                     config);
-         });
+    newprop(
+        "ignores unknown keys",
+        [] (const Configuration &config) {
+            RC_ASSERT(configFromString("foo=bar stuff=things", config) ==
+                      config);
+        });
 
     SECTION("throws on invalid seed") {
         REQUIRE_THROWS_AS(configFromString("seed=foobar"),
@@ -70,23 +72,26 @@ TEST_CASE("configFromString") {
                           ConfigurationException);
     }
 
-    prop("configFromString(configToString(x)) == x",
-         [] (const Configuration &config) {
-             RC_ASSERT(configFromString(configToString(config)) == config);
-         });
+    newprop(
+        "configFromString(configToString(x)) == x",
+        [] (const Configuration &config) {
+            RC_ASSERT(configFromString(configToString(config)) == config);
+        });
 }
 
 
 TEST_CASE("configToMinimalString") {
-    prop("is always shorter or same size as configFromString",
-         [] (const Configuration &config) {
-             RC_ASSERT(configToMinimalString(config).size() <=
-                       configToString(config).size());
-         });
+    newprop(
+        "is always shorter or same size as configFromString",
+        [] (const Configuration &config) {
+            RC_ASSERT(configToMinimalString(config).size() <=
+                      configToString(config).size());
+        });
 
-    prop("configFromString(configToMinimalString(x)) == x",
-         [] (const Configuration &config) {
-             RC_ASSERT(configFromString(configToMinimalString(config)) ==
-                       config);
-         });
+    newprop(
+        "configFromString(configToMinimalString(x)) == x",
+        [] (const Configuration &config) {
+            RC_ASSERT(configFromString(configToMinimalString(config)) ==
+                      config);
+        });
 }

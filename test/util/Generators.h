@@ -55,6 +55,22 @@ public:
 };
 
 template<>
+struct NewArbitrary<detail::Configuration>
+{
+    static Gen<detail::Configuration> arbitrary()
+    {
+        return newgen::exec([]{
+            detail::Configuration config;
+            config.seed = *newgen::arbitrary<detail::RandomEngine::Seed>();
+            config.maxSuccess = *newgen::inRange<int>(0, 1000);
+            config.maxSize = *newgen::inRange<int>(0, 1000);
+            config.maxDiscardRatio = *newgen::inRange<int>(0, 100);
+            return config;
+        });
+    }
+};
+
+template<>
 class Arbitrary<detail::TestCase> : public gen::Generator<detail::TestCase>
 {
 public:
