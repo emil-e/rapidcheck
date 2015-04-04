@@ -35,4 +35,13 @@ public:
     }
 };
 
+template<>
+struct NewArbitrary<test::Box>
+{
+    static Gen<test::Box> arbitrary()
+    {
+        return newgen::cast<test::Box>(newgen::arbitrary<int>());
+    }
+};
+
 } // namespace rc
