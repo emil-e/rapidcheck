@@ -16,3 +16,21 @@ TEST_CASE("newgen::just") {
                        shrinkable::just(value));
          });
 }
+
+TEST_CASE("newgen::lazy") {
+    SECTION("does not call callable on creation") {
+        bool called = false;
+        const auto gen = newgen::lazy([&]{
+            called = true;
+            return newgen::just(1);
+        });
+        REQUIRE_FALSE(called);
+    }
+
+    prop("passes parameters unchanged",
+         [](const GenParams &params) {
+             const auto gen = newgen::lazy(&genPassedParams);
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value == params);
+         });
+}
