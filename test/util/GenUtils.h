@@ -139,6 +139,24 @@ public:
 };
 
 template<>
+class NewArbitrary<test::GenParams>
+{
+public:
+    static Gen<test::GenParams> arbitrary()
+    {
+        return newgen::map(
+            newgen::pair(newgen::arbitrary<Random>(),
+                         newgen::inRange<int>(0, 200)),
+            [](const std::pair<Random, int> &p) {
+                test::GenParams params;
+                params.random = p.first;
+                params.size = p.second;
+                return params;
+            });
+    }
+};
+
+template<>
 struct NewArbitrary<test::PassedSize>
 {
     static Gen<test::PassedSize> arbitrary()
