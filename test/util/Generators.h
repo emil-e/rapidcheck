@@ -97,6 +97,18 @@ public:
 };
 
 template<>
+struct NewArbitrary<detail::CaseResult::Type>
+{
+    static Gen<detail::CaseResult::Type> arbitrary()
+    {
+        return newgen::element(
+            detail::CaseResult::Type::Success,
+            detail::CaseResult::Type::Failure,
+            detail::CaseResult::Type::Discard);
+    }
+};
+
+template<>
 class Arbitrary<detail::CaseResult> : public gen::Generator<detail::CaseResult>
 {
 public:
@@ -106,6 +118,20 @@ public:
         result.type = *gen::arbitrary<detail::CaseResult::Type>();
         result.description = *gen::arbitrary<std::string>();
         return result;
+    }
+};
+
+template<>
+struct NewArbitrary<detail::CaseResult>
+{
+    static Gen<detail::CaseResult> arbitrary()
+    {
+        return newgen::exec([]{
+            detail::CaseResult result;
+            result.type = *newgen::arbitrary<detail::CaseResult::Type>();
+            result.description = *newgen::arbitrary<std::string>();
+            return result;
+        });
     }
 };
 
