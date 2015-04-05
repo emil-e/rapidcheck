@@ -265,6 +265,16 @@ public:
 };
 
 template<typename T>
+struct NewArbitrary<Seq<T>>
+{
+    static Gen<Seq<T>> arbitrary()
+    {
+        return newgen::map<std::vector<T>>(
+            &seq::fromContainer<std::vector<T>>);
+    }
+};
+
+template<typename T>
 class Arbitrary<Maybe<T>> : public gen::Generator<Maybe<T>>
 {
 public:
@@ -312,6 +322,25 @@ public:
                 [=](Seq<Shrinkable<T>> &&x) {
                     return shrinkable::just(value.value(), std::move(x));
                 }));
+    }
+};
+
+template <typename T>
+struct NewArbitrary<Shrinkable<T>>
+{
+    static Gen<Shrinkable<T>> arbitrary()
+    {
+        // TODO fapply
+        return newgen::map(
+            newgen::tuple(
+                newgen::arbitrary<T>(),
+                newgen::scale(
+                    0.25,
+                    newgen::lazy(&newgen::arbitrary<Seq<Shrinkable<T>>>))),
+            [](std::pair<T, Seq<Shrinkable<T>>> &&p) {
+                return shrinkable::just(std::move(p.first),
+                                        std::move(p.second));
+            });
     }
 };
 
