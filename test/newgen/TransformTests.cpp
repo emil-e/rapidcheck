@@ -186,3 +186,32 @@ TEST_CASE("newgen::noShrink") {
              RC_ASSERT(value == params);
          });
 }
+
+TEST_CASE("newgen::withSize") {
+    prop("passes the current size to the callable",
+         [](const GenParams &params) {
+             const auto gen = newgen::withSize([](int size) {
+                 return newgen::just(size);
+             });
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value == params.size);
+         });
+
+    prop("generates what the returned generator generates",
+         [](const GenParams &params, int x) {
+             const auto gen = newgen::withSize([=](int size) {
+                 return newgen::just(x);
+             });
+             const auto shrinkable = gen(params.random, params.size);
+             RC_ASSERT(shrinkable == shrinkable::just(x));
+         });
+
+    prop("passes generation params unchanged",
+         [](const GenParams &params) {
+             const auto gen = newgen::withSize([](int size) {
+                 return genPassedParams();
+             });
+             const auto value = gen(params.random, params.size).value();
+             RC_ASSERT(value == params);
+         });
+}

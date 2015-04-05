@@ -118,5 +118,14 @@ Gen<T> noShrink(Gen<T> gen)
     };
 }
 
+template<typename Callable>
+Gen<typename std::result_of<Callable(int)>::type::ValueType>
+withSize(Callable &&callable)
+{
+    return [=](const Random &random, int size) {
+        return callable(size)(random, size);
+    };
+}
+
 } // namespace newgen
 } // namespace rc

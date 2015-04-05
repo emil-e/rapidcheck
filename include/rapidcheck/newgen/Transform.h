@@ -48,6 +48,12 @@ Gen<T> scale(double scale, Gen<T> gen);
 template<typename T>
 Gen<T> noShrink(Gen<T> gen);
 
+//! Creates a generator by taking a callable which gets passed the current size
+//! and is expected to return a generator.
+template<typename Callable>
+Gen<typename std::result_of<Callable(int)>::type::ValueType>
+withSize(Callable &&callable);
+
 } // namespace newgen
 } // namespace rc
 
