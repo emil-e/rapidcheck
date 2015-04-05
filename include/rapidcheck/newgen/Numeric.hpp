@@ -31,6 +31,9 @@ Shrinkable<T> real(const Random &random, int size)
 template<typename T>
 struct DefaultArbitrary
 {
+    // If you ended up here, it means that RapidCheck wanted to generate an
+    // arbitrary value of some type but you haven't declared a specialization of
+    // NewArbitrary for your type. Check the template stack trace to see which type it is.
     static_assert(
         std::is_integral<T>::value,
         "No NewArbitrary specialization for type T");
