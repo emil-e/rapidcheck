@@ -389,7 +389,8 @@ TEST_CASE("newgen::container") {
                       std::basic_string<int>>();
 
     meta::forEachType<ParamsProperties,
-                      RC_GENERIC_CONTAINERS(GenParams)>();
+                      RC_GENERIC_CONTAINERS(GenParams),
+                      std::array<GenParams, 5>>();
 
     meta::forEachType<SequenceProperties,
                       RC_SEQUENCE_CONTAINERS(int),
@@ -413,7 +414,9 @@ TEST_CASE("newgen::container") {
 
     meta::forEachType<ArbitraryProperties,
                       RC_GENERIC_CONTAINERS(Predictable),
-                      RC_GENERIC_CONTAINERS(NonCopyable)>();
+                      RC_GENERIC_CONTAINERS(NonCopyable),
+                      std::array<Predictable, 5>,
+                      std::array<NonCopyable, 5>>();
 }
 
 namespace {
@@ -500,6 +503,20 @@ TEST_CASE("newgen::container(std::size_t)") {
 
     meta::forEachType<ParamsFixedProperties,
                       RC_GENERIC_CONTAINERS(GenParams)>();
+
+    prop("throws GenerationFailure for std::array if count != N",
+         [](const GenParams &params) {
+             const auto count = *gen::distinctFrom(3);
+             const auto gen = newgen::container<std::array<int, 3>>(
+                 newgen::arbitrary<int>());
+             const auto shrinkable = gen(params.random, params.size);
+             try {
+                 shrinkable.value();
+             } catch (const GenerationFailure &e) {
+                 RC_SUCCEED("Threw GenerationFailure");
+             }
+             RC_FAIL("Did not throw GenerationFailure");
+         });
 
     // TODO shrink tests?
 }

@@ -29,7 +29,7 @@ Container toContainer(const Shrinkables<T> &shrinkables)
 template<typename T, typename Predicate>
 Shrinkables<T> generateShrinkables(const Random &random,
                                    int size,
-                                   int count,
+                                   std::size_t count,
                                    const Gen<T> &gen,
                                    Predicate predicate)
 {
@@ -52,12 +52,12 @@ Shrinkables<T> generateShrinkables(const Random &random,
 }
 
 template<typename Container>
-struct GenerateCollection
+struct CollectionHelper
 {
     template<typename T>
     static Shrinkables<T> generateElements(const Random &random,
                                            int size,
-                                           int count,
+                                           std::size_t count,
                                            const Gen<T> &gen)
     {
         return generateShrinkables(
@@ -81,15 +81,15 @@ struct GenerateCollection
 template<typename Container,
          bool = IsAssociativeContainer<Container>::value,
          bool = IsMapContainer<Container>::value>
-struct GenerateContainer : public GenerateCollection<Container> {};
+struct ContainerHelper : public CollectionHelper<Container> {};
 
 template<typename Set>
-struct GenerateContainer<Set, true, false>
+struct ContainerHelper<Set, true, false>
 {
     template<typename T>
     static Shrinkables<T> generateElements(const Random &random,
                                            int size,
-                                           int count,
+                                           std::size_t count,
                                            const Gen<T> &gen)
     {
         Set set;
@@ -123,13 +123,13 @@ struct GenerateContainer<Set, true, false>
 };
 
 template<typename Map>
-struct GenerateContainer<Map, true, true>
+struct ContainerHelper<Map, true, true>
 {
     template<typename K, typename V>
     static ShrinkablePairs<K, V> generateElements(
         const Random &random,
         int size,
-        int count,
+        std::size_t count,
         const Gen<K> &keyGen,
         const Gen<V> &valueGen)
     {
@@ -190,39 +190,123 @@ struct GenerateContainer<Map, true, true>
 };
 
 template<typename MultiMap>
-struct GenerateMultiMap : public GenerateCollection<MultiMap>
+struct MultiMapHelper : public CollectionHelper<MultiMap>
 {
     template<typename K, typename V>
     static ShrinkablePairs<K, V> generateElements(
         const Random &random,
         int size,
-        int count,
+        std::size_t count,
         const Gen<K> &keyGen,
         const Gen<V> &valueGen)
     {
         // We treat this as a normal collection since we don't need to worry
         // about duplicate keys et.c.
-        return GenerateCollection<MultiMap>::generateElements(
+        return CollectionHelper<MultiMap>::generateElements(
             random, size, count, newgen::pair(keyGen, valueGen));
     }
 };
 
 template<typename ...Args>
-struct GenerateContainer<std::multiset<Args...>, true, false>
-    : public GenerateCollection<std::multiset<Args...>> {};
+struct ContainerHelper<std::multiset<Args...>, true, false>
+    : public CollectionHelper<std::multiset<Args...>> {};
 
 template<typename ...Args>
-struct GenerateContainer<std::unordered_multiset<Args...>, true, false>
-    : public GenerateCollection<std::unordered_multiset<Args...>> {};
+struct ContainerHelper<std::unordered_multiset<Args...>, true, false>
+    : public CollectionHelper<std::unordered_multiset<Args...>> {};
 
 template<typename ...Args>
-struct GenerateContainer<std::multimap<Args...>, true, true>
-    : public GenerateMultiMap<std::multimap<Args...>> {};
+struct ContainerHelper<std::multimap<Args...>, true, true>
+    : public MultiMapHelper<std::multimap<Args...>> {};
 
 template<typename ...Args>
-struct GenerateContainer<std::unordered_multimap<Args...>, true, true>
-    : public GenerateMultiMap<std::unordered_multimap<Args...>> {};
+struct ContainerHelper<std::unordered_multimap<Args...>, true, true>
+    : public MultiMapHelper<std::unordered_multimap<Args...>> {};
 
+template<typename Container>
+struct GenerateContainer
+{
+    template<typename ...Ts>
+    static Shrinkable<Container> generate(const Random &random,
+                                          int size,
+                                          Gen<Ts> ...gens)
+    {
+        using Helper = ContainerHelper<Container>;
+
+        Random r(random);
+        std::size_t count = r.split().next() % (size + 1);
+        auto shrinkables =
+            Helper::generateElements(r, size, count, gens...);
+
+        using Elements = decltype(shrinkables);
+        return shrinkable::map(
+            shrinkable::shrinkRecur(
+                std::move(shrinkables), [](const Elements &elements) {
+                    return seq::concat(
+                        shrink::newRemoveChunks(elements),
+                        Helper::shrinkElements(elements));
+                }),
+            &toContainer<Container, typename Elements::value_type::ValueType>);
+    }
+
+    template<typename ...Ts>
+    static Shrinkable<Container> generate(std::size_t count,
+                                          const Random &random,
+                                          int size,
+                                          Gen<Ts> ...gens)
+    {
+        using Helper = ContainerHelper<Container>;
+
+        auto shrinkables =
+            Helper::generateElements(random, size, count, gens...);
+
+        using Elements = decltype(shrinkables);
+        return shrinkable::map(
+            shrinkable::shrinkRecur(
+                std::move(shrinkables), [](const Elements &elements) {
+                    return Helper::shrinkElements(elements);
+                }),
+            &toContainer<Container, typename Elements::value_type::ValueType>);
+    }
+};
+
+template<typename T, std::size_t N>
+struct GenerateContainer<std::array<T, N>>
+{
+    typedef std::array<T, N> Array;
+
+    template<typename U>
+    static Shrinkable<Array> generate(const Random &random,
+                                      int size,
+                                      const Gen<U> &gen)
+    {
+        return shrinkable::map(
+            shrinkable::shrinkRecur(
+                generateShrinkables(random, size, N, gen, fn::constant(true)),
+                [](const Shrinkables<U> &elements) {
+                    return CollectionHelper<Array>::shrinkElements(elements);
+                }),
+            [](const Shrinkables<U> &elements) {
+                Array array;
+                for (std::size_t i = 0; i < N; i++)
+                    array[i] = elements[i].value();
+                return array;
+            });
+    }
+
+    template<typename U>
+    static Shrinkable<Array> generate(std::size_t count,
+                                      const Random &random,
+                                      int size,
+                                      const Gen<U> &gen)
+    {
+        if (count != N) {
+            throw GenerationFailure(
+                "Count must be equal to length of array for std::array");
+        }
+        return generate(random, size, gen);
+    }
+};
 
 template<typename Container>
 struct ContainerArbitrary1
@@ -273,49 +357,31 @@ SPECIALIZE_SEQUENCE_ARBITRARY2(std::unordered_multimap)
 #undef SPECIALIZE_SEQUENCE_ARBITRARY1
 #undef SPECIALIZE_SEQUENCE_ARBITRARY2
 
+// std::array is a bit special since it has non-type template params
+template<typename T, std::size_t N>
+struct DefaultArbitrary<std::array<T, N>>
+{
+    static Gen<std::array<T, N>> arbitrary()
+    { return newgen::container<std::array<T, N>>(newgen::arbitrary<T>()); }
+};
+
 } // namespace detail
 
 template<typename Container, typename ...Ts>
 Gen<Container> container(Gen<Ts> ...gens)
 {
-    using namespace detail;
-    using Generate = GenerateContainer<Container>;
-
     return [=](const Random &random, int size) {
-        Random r(random);
-        int count = r.split().next() % (size + 1);
-        auto shrinkables = Generate::generateElements(
-            r, size, count, gens...);
-
-        using Elements = decltype(shrinkables);
-        return shrinkable::map(
-            shrinkable::shrinkRecur(
-                std::move(shrinkables), [](const Elements &elements) {
-                    return seq::concat(
-                        shrink::newRemoveChunks(elements),
-                        Generate::shrinkElements(elements));
-                }),
-            &toContainer<Container, typename Elements::value_type::ValueType>);
+        return detail::GenerateContainer<Container>::generate(
+            random, size, gens...);
     };
 }
 
 template<typename Container, typename ...Ts>
 Gen<Container> container(std::size_t count, Gen<Ts> ...gens)
 {
-    using namespace detail;
-    using Generate = GenerateContainer<Container>;
-
     return [=](const Random &random, int size) {
-        auto shrinkables = Generate::generateElements(
-            random, size, count, gens...);
-
-        using Elements = decltype(shrinkables);
-        return shrinkable::map(
-            shrinkable::shrinkRecur(
-                std::move(shrinkables), [](const Elements &elements) {
-                    return Generate::shrinkElements(elements);
-                }),
-            &toContainer<Container, typename Elements::value_type::ValueType>);
+        return detail::GenerateContainer<Container>::generate(
+            count, random, size, gens...);
     };
 }
 
