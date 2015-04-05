@@ -84,6 +84,24 @@ public:
 };
 
 template<>
+struct NewArbitrary<detail::TestCase>
+{
+    static Gen<detail::TestCase> arbitrary()
+    {
+        return newgen::exec([]{
+            detail::TestCase testCase;
+            testCase.size = *newgen::withSize([](int size) {
+                // TODO this should be replaced by a sized ranged generator
+                // instead
+                return newgen::inRange<int>(0, size + 1);
+            });
+            testCase.seed = *newgen::arbitrary<decltype(testCase.seed)>();
+            return testCase;
+        });
+    }
+};
+
+template<>
 class Arbitrary<detail::CaseResult::Type>
     : public gen::Generator<detail::CaseResult::Type>
 {
@@ -149,6 +167,19 @@ public:
 };
 
 template<>
+struct NewArbitrary<detail::SuccessResult>
+{
+    static Gen<detail::SuccessResult> arbitrary()
+    {
+        return newgen::map(newgen::positive<int>(), [](int s) {
+            detail::SuccessResult result;
+            result.numSuccess = s;
+            return result;
+        });
+    }
+};
+
+template<>
 class Arbitrary<detail::FailureResult>
     : public gen::Generator<detail::FailureResult>
 {
@@ -167,6 +198,24 @@ public:
 };
 
 template<>
+struct NewArbitrary<detail::FailureResult>
+{
+    static Gen<detail::FailureResult> arbitrary()
+    {
+        return newgen::exec([]{
+            detail::FailureResult result;
+            result.numSuccess = *newgen::positive<int>();
+            result.failingCase = *newgen::arbitrary<detail::TestCase>();
+            result.description = *newgen::arbitrary<std::string>();
+            result.numShrinks = *newgen::positive<int>();
+            result.counterExample = *newgen::arbitrary<
+                decltype(result.counterExample)>();
+            return result;
+        });
+    }
+};
+
+template<>
 class Arbitrary<detail::GaveUpResult>
     : public gen::Generator<detail::GaveUpResult>
 {
@@ -177,6 +226,20 @@ public:
         result.numSuccess = *gen::positive<int>();
         result.description = *gen::arbitrary<std::string>();
         return result;
+    }
+};
+
+template<>
+struct NewArbitrary<detail::GaveUpResult>
+{
+    static Gen<detail::GaveUpResult> arbitrary()
+    {
+        return newgen::exec([]{
+            detail::GaveUpResult result;
+            result.numSuccess = *newgen::positive<int>();
+            result.description = *newgen::arbitrary<std::string>();
+            return result;
+        });
     }
 };
 
