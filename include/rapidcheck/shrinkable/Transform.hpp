@@ -72,7 +72,7 @@ Shrinkable<T> mapShrinks(Shrinkable<T> shrinkable, Mapper &&mapper)
 }
 
 template<typename T, typename Predicate>
-Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate pred)
+Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate &&pred)
 {
     if (!pred(shrinkable.value()))
         return Nothing;

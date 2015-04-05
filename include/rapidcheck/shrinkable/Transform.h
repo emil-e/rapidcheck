@@ -20,7 +20,7 @@ Shrinkable<T> mapShrinks(Shrinkable<T> shrinkable, Mapper &&mapper);
 //! subtree with a root for which the predicate returns false is discarded,
 //! including the passed in root which is why this function returns a `Maybe`.
 template<typename T, typename Predicate>
-Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate pred);
+Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate &&pred);
 
 //! Given two `Shrinkables`, returns a `Shrinkable` pair that first shrinks the
 //! first element and then the second.
