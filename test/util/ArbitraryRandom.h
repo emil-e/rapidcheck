@@ -50,18 +50,18 @@ struct NewArbitrary<Random>
 namespace test {
 
 // This will also generate Randoms where next() has been called
-class TrulyArbitraryRandom : public gen::Generator<Random>
+inline Gen<Random> trulyArbitraryRandom()
 {
-public:
-    Random generate() const override
-    {
-        auto random = *gen::arbitrary<Random>();
-        auto nexts = *gen::ranged<int>(0, 10000);
-        while (nexts-- > 0)
-            random.next();
-        return random;
-    }
-};
+    return newgen::map(
+        newgen::pair(newgen::arbitrary<Random>(),
+                     newgen::inRange<int>(0, 10000)),
+        [](std::pair<Random, int> &&p){
+            auto nexts = p.second;
+            while (nexts-- > 0)
+                p.first.next();
+            return p.first;
+        });
+}
 
 } // namespace test
 } // namespace rc
