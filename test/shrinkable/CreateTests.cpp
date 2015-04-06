@@ -40,12 +40,13 @@ TEST_CASE("shrinkable::lambda") {
 }
 
 TEST_CASE("shrinkable::just") {
-    prop("creates a shrinkable which returns the given value and shrinks",
-         [](int value, const Seq<Shrinkable<int>> &shrinks) {
-             const auto shrinkable = shrinkable::just(value, shrinks);
-             RC_ASSERT(shrinkable.value() == value);
-             RC_ASSERT(shrinkable.shrinks() == shrinks);
-         });
+    newprop(
+        "creates a shrinkable which returns the given value and shrinks",
+        [](int value, const Seq<Shrinkable<int>> &shrinks) {
+            const auto shrinkable = shrinkable::just(value, shrinks);
+            RC_ASSERT(shrinkable.value() == value);
+            RC_ASSERT(shrinkable.shrinks() == shrinks);
+        });
 
     SECTION("does not copy on construction if rvalues") {
         const auto shrinkable = shrinkable::just(
@@ -78,39 +79,41 @@ TEST_CASE("shrinkable::shrink") {
 }
 
 TEST_CASE("shrinkable::shrinkRecur") {
-    prop("returns a shrinkable with the given value",
-         [](int x) {
-             const auto shrinkable = shrinkable::shrinkRecur(
-                 x, [](int) { return Seq<int>(); });
-             RC_ASSERT(shrinkable.value() == x);
-         });
+    newprop(
+        "returns a shrinkable with the given value",
+        [](int x) {
+            const auto shrinkable = shrinkable::shrinkRecur(
+                x, [](int) { return Seq<int>(); });
+            RC_ASSERT(shrinkable.value() == x);
+        });
 
-    prop("recursively applies the shrinking function",
-         [] {
-             int start = *gen::ranged(0, 100);
-             // TODO vector version that takes no generator
-             const auto actions = *gen::vector<std::vector<bool>>(
-                 start, gen::arbitrary<bool>());
+    newprop(
+        "recursively applies the shrinking function",
+        [] {
+            int start = *newgen::inRange(0, 100);
+            // TODO vector version that takes no generator
+            const auto actions = *newgen::container<std::vector<bool>>(
+                start, newgen::arbitrary<bool>());
 
-             const auto shrink = [](int x) {
-                 return seq::map(seq::range(x, 0), [](int x) {
-                     return x - 1;
-                 });
-             };
+            const auto shrink = [](int x) {
+                return seq::map(seq::range(x, 0), [](int x) {
+                    return x - 1;
+                });
+            };
 
-             auto shrinkable = shrinkable::shrinkRecur(start, shrink);
-             auto shrinks = shrinkable.shrinks();
-             int expected = start;
-             for (bool branch : actions) {
-                 RC_ASSERT(shrinkable.value() == expected);
-                 if (branch)
-                     shrinks = shrinkable.shrinks();
-                 shrinkable = *shrinks.next();
-                 expected--;
-             }
+            auto shrinkable = shrinkable::shrinkRecur(start, shrink);
+            auto shrinks = shrinkable.shrinks();
+            int expected = start;
+            for (bool branch : actions) {
+                RC_ASSERT(shrinkable.value() == expected);
+                if (branch)
+                    shrinks = shrinkable.shrinks();
+                shrinkable = *shrinks.next();
+                expected--;
+            }
 
-             RC_ASSERT(shrinkable == shrinkable::just(expected));
-         });
+            RC_ASSERT(shrinkable == shrinkable::just(expected));
+        });
 
     SECTION("does not copy value on construction if rvalue") {
         const auto shrinkable = shrinkable::shrinkRecur(
