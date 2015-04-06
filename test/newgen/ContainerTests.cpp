@@ -54,7 +54,7 @@ bool hasSize(int size, const std::pair<const GenParams, GenParams> &p)
 bool hasSize(int size, const GenParams &params) { return size == params.size; }
 
 bool insertRandoms(std::unordered_set<Random> &randoms,
-                  const std::pair<const GenParams, GenParams> &p)
+                   const std::pair<const GenParams, GenParams> &p)
 {
     return
         randoms.insert(p.first.random).second &&
@@ -70,7 +70,7 @@ struct GenericProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "generated container never has more elements than the current size",
             [](const GenParams &params) {
                 const auto value = makeGen<T>(genCountdown())(
@@ -78,7 +78,7 @@ struct GenericProperties
                 RC_ASSERT(std::distance(begin(value), end(value)) <= params.size);
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "first shrink is empty",
             [](const GenParams &params) {
                 const auto shrinkable = makeGen<T>(genCountdown())(
@@ -87,12 +87,12 @@ struct GenericProperties
                 RC_ASSERT(shrinkable.shrinks().next()->value().empty());
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "the size of each shrink is the same or smaller than the original",
             [](const GenParams &params) {
                 const auto shrinkable = makeGen<T>(genCountdown())(
                     params.random, params.size);
-                onAnyPath(
+                newOnAnyPath(
                     shrinkable,
                     [](const Shrinkable<T> &value,
                        const Shrinkable<T> &shrink) {
@@ -102,12 +102,12 @@ struct GenericProperties
                     });
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "none of the shrinks equal the original value",
             [](const GenParams &params) {
                 const auto shrinkable = makeGen<T>(genCountdown())(
                     params.random, params.size);
-                onAnyPath(
+                newOnAnyPath(
                     shrinkable,
                     [](const Shrinkable<T> &value,
                        const Shrinkable<T> &shrink) {
@@ -124,7 +124,7 @@ struct ParamsProperties
     {
         using Element = typename T::value_type;
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "passes the correct size to the element generators",
             [](const GenParams &params) {
                 const auto value = makeGen<T>(genPassedParams())(
@@ -137,7 +137,7 @@ struct ParamsProperties
                         }));
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "the random generators passed to element generators are unique",
             [](const GenParams &params) {
                 const auto value = makeGen<T>(genPassedParams())(
@@ -158,24 +158,25 @@ struct SequenceProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "finds minimum where a particular range of consecutive elements"
             " must be removed at once",
             [](const Random &random) {
-                int size = *gen::ranged<int>(0, 50);
+                int size = *newgen::inRange<int>(0, 50);
                 const auto shrinkable = newgen::container<T>(
                     newgen::arbitrary<int>())(random, size);
                 const auto value = shrinkable.value();
 
-                const auto i1 = *gen::ranged<std::size_t>(
+                const auto i1 = *newgen::inRange<std::size_t>(
                     0, containerSize(value));
-                const auto i2 = *gen::distinctFrom(
-                    gen::ranged<std::size_t>(0, containerSize(value)), i1);
+                const auto i2 = *newgen::distinctFrom(
+                    newgen::inRange<std::size_t>(0, containerSize(value)), i1);
+                // TODO range generator
                 const auto il = std::min(i1, i2);
                 const auto ir = std::max(i1, i2);
                 std::array<int, 2> values{
                     *std::next(begin(value), il),
-                    *std::next(begin(value), ir)};
+                        *std::next(begin(value), ir)};
 
                 const auto pred = [&](const T &x) {
                     return std::search(
@@ -188,12 +189,12 @@ struct SequenceProperties
                 RC_ASSERT(result.first == expected);
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "finds minimum where some elements need to be larger than some value",
             [](const Random &random) {
-                int size = *gen::ranged<int>(0, 50);
+                int size = *newgen::inRange<int>(0, 50);
 
-                const int target = *gen::ranged<int>(0, 10);
+                const int target = *newgen::inRange<int>(0, 10);
                 const auto gen = newgen::container<T>(newgen::arbitrary<int>());
                 const auto result = searchGen(
                     random, size, gen,
@@ -221,14 +222,14 @@ struct SetProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "finds minimum where some elements need to be larger than some value",
             [](const Random &random) {
-                int size = *gen::ranged<int>(0, 50);
+                int size = *newgen::inRange<int>(0, 50);
 
                 const auto gen = newgen::container<T>(newgen::arbitrary<int>());
 
-                const int target = *gen::ranged<int>(0, 10);
+                const int target = *newgen::inRange<int>(0, 10);
                 const auto result = searchGen(
                     random, size, gen,
                     [=](const T &x) {
@@ -236,8 +237,8 @@ struct SetProperties
                         for (const auto &e : x) {
                             if (e >= target) {
                                 count++;
-                            if (count >= 2)
-                                return true;
+                                if (count >= 2)
+                                    return true;
                             }
                         }
 
@@ -255,14 +256,14 @@ struct MultiSetProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "finds minimum where some elements need to be larger than some value",
             [](const Random &random) {
-                int size = *gen::ranged<int>(0, 50);
+                int size = *newgen::inRange<int>(0, 50);
 
                 const auto gen = newgen::container<T>(newgen::arbitrary<int>());
 
-                const int target = *gen::ranged<int>(0, 10);
+                const int target = *newgen::inRange<int>(0, 10);
                 const auto result = searchGen(
                     random, size, gen,
                     [=](const T &x) {
@@ -270,8 +271,8 @@ struct MultiSetProperties
                         for (const auto &e : x) {
                             if (e >= target) {
                                 count++;
-                            if (count >= 2)
-                                return true;
+                                if (count >= 2)
+                                    return true;
                             }
                         }
 
@@ -289,18 +290,18 @@ struct MapProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "finds minimum where at least two key-value pairs must have values"
             " greater than a certain value",
             [](const Random &random) {
-                int size = *gen::ranged<int>(0, 50);
+                int size = *newgen::inRange<int>(0, 50);
                 using Pair = std::pair<const int, int>;
 
                 const auto gen = newgen::container<T>(
                     newgen::arbitrary<int>(),
                     newgen::arbitrary<int>());
 
-                const int target = *gen::ranged<int>(0, 10);
+                const int target = *newgen::inRange<int>(0, 10);
                 const auto result = searchGen(
                     random, size, gen,
                     [=](const T &x) {
@@ -327,18 +328,18 @@ struct MultiMapProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "finds minimum where at least two key-value pairs must have values"
             " greater than a certain value",
             [](const Random &random) {
-                int size = *gen::ranged<int>(0, 50);
+                int size = *newgen::inRange<int>(0, 50);
                 using Pair = std::pair<const int, int>;
 
                 const auto gen = newgen::container<T>(
                     newgen::arbitrary<int>(),
                     newgen::arbitrary<int>());
 
-                const int target = *gen::ranged<int>(0, 10);
+                const int target = *newgen::inRange<int>(0, 10);
                 const auto result = searchGen(
                     random, size, gen,
                     [=](const T &x) {
@@ -367,7 +368,7 @@ struct ArbitraryProperties
     {
         using Element = typename T::value_type;
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "uses the correct NewArbitrary instance",
             [] {
                 const auto value = newgen::arbitrary<T>()(Random(), 0).value();
@@ -426,27 +427,27 @@ struct GenericFixedProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "generated value always has the requested number of elements",
             [](const GenParams &params) {
-                const auto count = *gen::ranged<std::size_t>(0, 10);
+                const auto count = *newgen::inRange<std::size_t>(0, 10);
                 const auto shrinkable = makeGen<T>(count, genCountdown())(
                     params.random, params.size);
-                onAnyPath(
+                newOnAnyPath(
                     shrinkable,
                     [=](const Shrinkable<T> &value,
-                       const Shrinkable<T> &shrink) {
+                        const Shrinkable<T> &shrink) {
                         RC_ASSERT(containerSize(shrink.value()) == count);
                     });
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "none of the shrinks equal the original value",
             [](const GenParams &params) {
-                const auto count = *gen::ranged<std::size_t>(0, 10);
+                const auto count = *newgen::inRange<std::size_t>(0, 10);
                 const auto shrinkable = makeGen<T>(count, genCountdown())(
                     params.random, params.size);
-                onAnyPath(
+                newOnAnyPath(
                     shrinkable,
                     [](const Shrinkable<T> &value,
                        const Shrinkable<T> &shrink) {
@@ -463,10 +464,10 @@ struct ParamsFixedProperties
     {
         using Element = typename T::value_type;
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "passes the correct size to the element generators",
             [](const GenParams &params) {
-                const auto count = *gen::ranged<std::size_t>(0, 10);
+                const auto count = *newgen::inRange<std::size_t>(0, 10);
                 const auto value = makeGen<T>(count, genPassedParams())(
                     params.random, params.size).value();
                 RC_ASSERT(
@@ -477,10 +478,10 @@ struct ParamsFixedProperties
                         }));
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "the random generators passed to element generators are unique",
             [](const GenParams &params) {
-                const auto count = *gen::ranged<std::size_t>(0, 10);
+                const auto count = *newgen::inRange<std::size_t>(0, 10);
                 const auto value = makeGen<T>(count, genPassedParams())(
                     params.random, params.size).value();
                 std::unordered_set<Random> randoms;
@@ -504,19 +505,23 @@ TEST_CASE("newgen::container(std::size_t)") {
     meta::forEachType<ParamsFixedProperties,
                       RC_GENERIC_CONTAINERS(GenParams)>();
 
-    prop("throws GenerationFailure for std::array if count != N",
-         [](const GenParams &params) {
-             const auto count = *gen::distinctFrom(3);
-             const auto gen = newgen::container<std::array<int, 3>>(
-                 newgen::arbitrary<int>());
-             const auto shrinkable = gen(params.random, params.size);
-             try {
-                 shrinkable.value();
-             } catch (const GenerationFailure &e) {
-                 RC_SUCCEED("Threw GenerationFailure");
-             }
-             RC_FAIL("Did not throw GenerationFailure");
-         });
+    newprop(
+        "throws GenerationFailure for std::array if count != N",
+        [](const GenParams &params) {
+            const auto count = *newgen::distinctFrom(3);
+            const auto gen = newgen::container<std::array<int, 3>>(
+                newgen::arbitrary<int>());
+            const auto shrinkable = gen(params.random, params.size);
+            try {
+                shrinkable.value();
+            } catch (const GenerationFailure &e) {
+                RC_SUCCEED("Threw GenerationFailure");
+            } catch (const std::exception &e) {
+                std::cout << e.what() << std::endl;
+                RC_FAIL("Threw other exception");
+            }
+            RC_FAIL("Did not throw GenerationFailure");
+        });
 
     // TODO shrink tests?
 }
