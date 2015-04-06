@@ -90,20 +90,20 @@ struct NewRemoveChunksProperties
     template<typename T>
     static void exec()
     {
-        static const auto fewValues = gen::scale(0.3, gen::arbitrary<T>());
+        static const auto fewValues = newgen::scale(0.3, newgen::arbitrary<T>());
         // TODO non-empty generator
-        static const auto fewNonEmptyValues = gen::suchThat(
+        static const auto fewNonEmptyValues = newgen::suchThat(
             fewValues,
             [](const T &x) { return !x.empty(); });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "first tries empty collection",
             [] {
                 const auto collection = *fewNonEmptyValues;
                 RC_ASSERT(shrink::newRemoveChunks(collection).next()->empty());
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "successively increases in size for each shrink",
             [] {
                 const auto seq = shrink::newRemoveChunks(*fewValues);
@@ -114,7 +114,7 @@ struct NewRemoveChunksProperties
                 });
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "shrinks to a subset of the original",
             [] {
                 const auto elements = *fewValues;
@@ -125,13 +125,13 @@ struct NewRemoveChunksProperties
                 });
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "every removal of consecutive elements is a possible shrink",
             [] {
                 const auto elements = *fewNonEmptyValues;
                 const auto size = elements.size();
-                const auto a = *gen::ranged<int>(0, size + 1);
-                const auto b = *gen::distinctFrom(gen::ranged<int>(0, size + 1), a);
+                const auto a = *newgen::inRange<int>(0, size + 1);
+                const auto b = *newgen::distinctFrom(newgen::inRange<int>(0, size + 1), a);
                 const auto left = std::min(a, b);
                 const auto right = std::max(a, b);
 
@@ -148,7 +148,7 @@ struct NewRemoveChunksProperties
                                         shrink));
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "never yields the original value",
             [] {
                 auto elements = *fewValues;
@@ -266,11 +266,11 @@ struct NewEachElementProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "every shrink for every element is tried in order",
             [] {
-                const auto elements = *gen::collection<T>(
-                    gen::nonNegative<char>());
+                const auto elements = *newgen::container<T>(
+                    newgen::nonNegative<char>());
                 auto seq = shrink::newEachElement(
                     elements,
                     [=] (char x) {
@@ -313,20 +313,20 @@ struct ShrinkTowardsProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "first tries target immediately",
             [] (T target) {
-                T value = *gen::distinctFrom(target);
+                T value = *newgen::distinctFrom(target);
                 auto seq = shrink::towards(value, target);
                 auto first = seq.next();
                 RC_ASSERT(first);
                 RC_ASSERT(*first == target);
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "tries an adjacent value last",
             [] (T target) {
-                T value = *gen::distinctFrom(target);
+                T value = *newgen::distinctFrom(target);
                 auto seq = shrink::towards(value, target);
                 auto fin = seq::last(seq);
                 RC_ASSERT(fin);
@@ -334,7 +334,7 @@ struct ShrinkTowardsProperties
                 RC_ASSERT(diff == 1);
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "shrinking towards self yields empty shrink",
             [] (T target) {
                 RC_ASSERT(!shrink::towards(target, target).next());
@@ -355,10 +355,10 @@ struct IntegralProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "always tries zero first",
             [] {
-                T value = *gen::nonZero<T>();
+                T value = *newgen::nonZero<T>();
                 RC_ASSERT(*shrink::integral<T>(value).next() == 0);
             });
 
@@ -366,7 +366,7 @@ struct IntegralProperties
             REQUIRE(!shrink::integral<T>(0).next());
         }
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "never contains original value",
             [](T x) {
                 RC_ASSERT(!seq::contains(shrink::integral<T>(x), x));
@@ -379,17 +379,17 @@ struct SignedIntegralProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "shrinks negative values to their positive equivalent",
             [] {
-                T value = *gen::negative<T>();
+                T value = *newgen::negative<T>();
                 RC_ASSERT(seq::contains<T>(shrink::integral<T>(value), -value));
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "always tries zero first",
             [] {
-                T value = *gen::nonZero<T>();
+                T value = *newgen::nonZero<T>();
                 RC_ASSERT(*shrink::integral<T>(value).next() == 0);
             });
 
@@ -413,10 +413,11 @@ struct RealProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "shrinks to nearest integer",
             [] {
-                T value = *gen::nonZero<T>();
+                T value = *newgen::scale(0.25, newgen::nonZero<T>());
+                std::cout << value << std::endl;
                 RC_PRE(value != std::trunc(value));
                 RC_ASSERT(seq::contains(shrink::real(value), std::trunc(value)));
             });
@@ -425,14 +426,14 @@ struct RealProperties
             REQUIRE(!shrink::real<T>(0.0).next());
         }
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "tries 0.0 first",
             [] {
-                T value = *gen::nonZero<T>();
+                T value = *newgen::nonZero<T>();
                 REQUIRE(*shrink::real<T>(value).next() == 0.0);
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "never contains original value",
             [](T x) {
                 RC_ASSERT(!seq::contains(shrink::real<T>(x), x));
