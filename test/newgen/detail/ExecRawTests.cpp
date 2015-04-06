@@ -160,40 +160,45 @@ TEST_CASE("execRaw") {
         });
 
     newprop(
-        "passes on sequentially split generators",
+        "passed generators are unique",
         [](const Random &initial) {
-            int n = *newgen::inRange<int>(1, 10);
-            auto shrinkable = execRaw([=](const PassedRandom &rnd) {
+            const auto n = *newgen::inRange<int>(1, 10);
+            const auto randoms = execRaw([=](const PassedRandom &rnd) {
+                std::set<Random> randoms;
+                randoms.insert(rnd.value);
+                while (randoms.size() < n)
+                    randoms.insert(*genRandom());
+                return randoms;
+            })(initial, 0).value().first;
+
+            RC_ASSERT(randoms.size() == n);
+        });
+
+    newprop(
+        "passed randoms do not change with shrinking",
+        [](const Random &initial) {
+            const auto n = *newgen::inRange<int>(1, 10);
+            const auto shrinkable = execRaw([=](const PassedRandom &rnd) {
                 std::vector<Random> randoms;
                 randoms.push_back(rnd.value);
                 while (randoms.size() < n)
                     randoms.push_back(*genRandom());
-                // Force some shrinks, must be last because it will steal a
-                // random split otherwise
                 *genFixedCountdown(3);
                 return randoms;
             })(initial, 0);
 
-            Random r(initial);
-            std::vector<Random> expected;
-            // The arguments are generated as a tuple so we want the same
-            // splitting behavior
-            expected.push_back(
-                std::get<0>(newgen::tuple(genRandom())(r.split(), 0).value()));
-            while (expected.size() < n)
-                expected.push_back(r.split());
-
-            auto valueShrinkable = shrinkable::map(
+            const auto valueShrinkable = shrinkable::map(
                 shrinkable,
                 [](std::pair<std::vector<Random>, Recipe> &&x) {
                     return std::move(x.first);
                 });
 
+            const auto head = valueShrinkable.value();
             RC_ASSERT(
                 shrinkable::all(
                     valueShrinkable,
                     [=](const Shrinkable<std::vector<Random>> &x) {
-                        return x.value() == expected;
+                        return x.value() == head;
                     }));
         });
 
