@@ -27,49 +27,52 @@ struct MockGenerationHandler : public GenerationHandler
 
 TEST_CASE("Gen") {
     SECTION("operator()") {
-        prop("passes the arguments to the functor",
-             [](const Random &random, int size) {
-                 bool called = false;
-                 Random passedRandom;
-                 int passedSize;
-                 Gen<int> gen([&](const Random &random, int size) {
-                     called = true;
-                     passedRandom = random;
-                     passedSize = size;
-                     return shrinkable::just(0);
-                 });
+        newprop(
+            "passes the arguments to the functor",
+            [](const Random &random, int size) {
+                bool called = false;
+                Random passedRandom;
+                int passedSize;
+                Gen<int> gen([&](const Random &random, int size) {
+                    called = true;
+                    passedRandom = random;
+                    passedSize = size;
+                    return shrinkable::just(0);
+                });
 
-                 gen(random, size);
-                 RC_ASSERT(called);
-                 RC_ASSERT(passedRandom == random);
-                 RC_ASSERT(passedSize == size);
-             });
+                gen(random, size);
+                RC_ASSERT(called);
+                RC_ASSERT(passedRandom == random);
+                RC_ASSERT(passedSize == size);
+            });
 
-        prop("returns the value returned by the functor",
-             [](const Random &random, int size, int x) {
-                 Gen<int> gen([=](const Random &random, int size) {
-                     return shrinkable::just(x);
-                 });
+        newprop(
+            "returns the value returned by the functor",
+            [](const Random &random, int size, int x) {
+                Gen<int> gen([=](const Random &random, int size) {
+                    return shrinkable::just(x);
+                });
 
-                 RC_ASSERT(gen(random, size) == shrinkable::just(x));
-             });
+                RC_ASSERT(gen(random, size) == shrinkable::just(x));
+            });
 
-        prop("if exception is thrown in generation function, shrinkable is"
-             " returned that rethrows the exception on call to value()",
-             [](const std::string &message) {
-                 Gen<int> gen([=](const Random &random, int size) -> Shrinkable<int> {
-                     throw GenerationFailure(message);
-                 });
+        newprop(
+            "if exception is thrown in generation function, shrinkable is"
+            " returned that rethrows the exception on call to value()",
+            [](const std::string &message) {
+                Gen<int> gen([=](const Random &random, int size) -> Shrinkable<int> {
+                    throw GenerationFailure(message);
+                });
 
-                 const auto shrinkable = gen(Random(), 0);
-                 try {
-                     shrinkable.value();
-                 } catch (const GenerationFailure &e) {
-                     RC_ASSERT(e.what() == message);
-                     RC_SUCCEED("Threw correct exception");
-                 }
-                 RC_FAIL("Did not throw correct exception");
-             });
+                const auto shrinkable = gen(Random(), 0);
+                try {
+                    shrinkable.value();
+                } catch (const GenerationFailure &e) {
+                    RC_ASSERT(e.what() == message);
+                    RC_SUCCEED("Threw correct exception");
+                }
+                RC_FAIL("Did not throw correct exception");
+            });
     }
 
     SECTION("operator*") {
