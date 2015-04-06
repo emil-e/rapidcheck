@@ -25,9 +25,9 @@ TEST_CASE("Not") {
     struct Test##Predicate                                              \
     {                                                                   \
         template<typename T>                                            \
-        static void exec()                                              \
+            static void exec()                                          \
         {                                                               \
-            templatedProp<T>(                                           \
+            newtemplatedProp<T>(                                        \
                 "implements " #expr,                                    \
                 [] (const T value, const T &arg) {                      \
                     RC_ASSERT(Predicate<T>(value)(arg) == (expr));      \
@@ -41,10 +41,11 @@ TEST_CASE("Not") {
                           std::string,                                  \
                           const NonCopyable &>();                       \
                                                                         \
-        prop("works when operands are of different type",               \
-             [] (const Apple value, const Orange &arg) {                \
-                 RC_ASSERT(Predicate<Apple>(value)(arg) == (expr));     \
-             });                                                        \
+        newprop(                                                        \
+            "works when operands are of different type",                \
+            [] (const Apple value, const Orange &arg) {                 \
+                RC_ASSERT(Predicate<Apple>(value)(arg) == (expr));      \
+            });                                                         \
     }
 
 DEFINE_BINARY_PREDICATE_TEST(Equals, arg == value)
