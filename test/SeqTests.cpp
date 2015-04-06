@@ -49,7 +49,7 @@ TEST_CASE("Seq") {
         const auto value = seq.next();
         std::vector<std::string> expectedLog{
             "constructed as foobar",
-            "copy constructed"};
+                "copy constructed"};
         REQUIRE(value->first == "foobar");
         REQUIRE(value->second == expectedLog);
     }
@@ -60,7 +60,7 @@ TEST_CASE("Seq") {
 
         std::vector<std::string> expectedLog{
             "constructed as foobar",
-            "move constructed"};
+                "move constructed"};
         REQUIRE(value->first == "foobar");
         REQUIRE(value->second == expectedLog);
     }
@@ -72,8 +72,8 @@ TEST_CASE("Seq") {
         const auto value = copy.next();
         std::vector<std::string> expectedLog{
             "constructed as foobar",
-            "move constructed",
-            "copy constructed"};
+                "move constructed",
+                "copy constructed"};
         REQUIRE(value->first == "foobar");
         REQUIRE(value->second == expectedLog);
     }
@@ -86,8 +86,8 @@ TEST_CASE("Seq") {
         const auto value = copy.next();
         std::vector<std::string> expectedLog{
             "constructed as foobar",
-            "move constructed",
-            "copy constructed"};
+                "move constructed",
+                "copy constructed"};
         REQUIRE(value->first == "foobar");
         REQUIRE(value->second == expectedLog);
     }
@@ -99,7 +99,7 @@ TEST_CASE("Seq") {
         const auto value = moved.next();
         std::vector<std::string> expectedLog{
             "constructed as foobar",
-            "move constructed"};
+                "move constructed"};
         REQUIRE(value->first == "foobar");
         REQUIRE(value->second == expectedLog);
     }
@@ -112,7 +112,7 @@ TEST_CASE("Seq") {
         const auto value = moved.next();
         std::vector<std::string> expectedLog{
             "constructed as foobar",
-            "move constructed"};
+                "move constructed"};
         REQUIRE(value->first == "foobar");
         REQUIRE(value->second == expectedLog);
     }
@@ -143,29 +143,33 @@ TEST_CASE("Seq") {
             REQUIRE(seq == Seq<int>());
         }
 
-        prop("sequences with different implementation classes can be equal",
-             [] (const std::string &a,
-                 const std::string &b,
-                 const std::string &c)
-             {
-                 auto seqJust = seq::just(a, b, c);
-                 std::vector<std::string> vec{a, b, c};
-                 auto seqContainer = seq::fromContainer(vec);
-                 RC_ASSERT(seqJust == seqContainer);
-             });
+        newprop(
+            "sequences with different implementation classes can be equal",
+            [] (const std::string &a,
+                const std::string &b,
+                const std::string &c)
+            {
+                auto seqJust = seq::just(a, b, c);
+                std::vector<std::string> vec{a, b, c};
+                auto seqContainer = seq::fromContainer(vec);
+                RC_ASSERT(seqJust == seqContainer);
+            });
 
-        prop("changing a single element leads to inequal sequences",
-             [] {
-                 const auto elements1 = *gen::suchThat<std::vector<std::string>>(
-                     [](const std::vector<std::string> &x) {
-                         return !x.empty();
-                     });
-                 auto elements2 = elements1;
-                 const auto i = *gen::ranged<std::size_t>(0, elements2.size());
-                 elements2[i] = *gen::distinctFrom(elements2[i]);
-                 RC_ASSERT(seq::fromContainer(elements1) !=
-                           seq::fromContainer(elements2));
-             });
+        newprop(
+            "changing a single element leads to inequal sequences",
+            [] {
+                // TODO non-empty generator
+                const auto elements1 =
+                    *newgen::suchThat<std::vector<std::string>>(
+                        [](const std::vector<std::string> &x) {
+                            return !x.empty();
+                        });
+                auto elements2 = elements1;
+                const auto i = *newgen::inRange<std::size_t>(0, elements2.size());
+                elements2[i] = *newgen::distinctFrom(elements2[i]);
+                RC_ASSERT(seq::fromContainer(elements1) !=
+                          seq::fromContainer(elements2));
+            });
     }
 
     SECTION("makeSeq") {
