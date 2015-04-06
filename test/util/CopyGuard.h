@@ -42,6 +42,13 @@ public:
     { return test::CopyGuard(*gen::arbitrary<int>()); }
 };
 
+template<>
+struct NewArbitrary<test::CopyGuard>
+{
+    static Gen<test::CopyGuard> arbitrary()
+    { return newgen::cast<test::CopyGuard>(newgen::arbitrary<int>()); }
+};
+
 } // namespace rc
 
 namespace std {
