@@ -176,6 +176,48 @@ TEST_CASE("toNewProperty") {
         });
 
     newprop(
+        "throws in counterexample is replaced with placeholders dscribing the"
+        " error",
+        [](const GenParams &params, const std::string &msg) {
+            const auto n = *newgen::inRange<std::size_t>(1, 10);
+            const auto throwIndex = *newgen::inRange<std::size_t>(0, n);
+            const auto gen = toNewProperty(
+                [=]{
+                    for (std::size_t i = 0; i < n; i++) {
+                        if (i == throwIndex) {
+                            // TODO maybe a "throws" generator?
+                            try {
+                                *Gen<int>([=](const Random &, int) -> Shrinkable<int> {
+                                    throw GenerationFailure(msg);
+                                });
+                            } catch (...) {}
+                        } else {
+                            *newgen::arbitrary<Fixed<1337>>();
+                        }
+                    }
+                });
+            const auto shrinkable = gen(params.random, params.size);
+
+            Example expected;
+            expected.reserve(n + 1);
+            expected.emplace_back(
+                typeToString<std::tuple<>>(), toString(std::tuple<>{}));
+            expected.insert(end(expected), n,
+                            std::make_pair(typeToString<Fixed<1337>>(),
+                                           toString(Fixed<1337>())));
+            // TODO better test
+            expected[throwIndex + 1] = {"Generation failure", msg};
+
+            onAnyPath(
+                shrinkable,
+                [&](const ShrinkableResult &value,
+                    const ShrinkableResult &shrink)
+                {
+                    RC_ASSERT(value.value().example == expected);
+                });
+        });
+
+    newprop(
         "case result corresponds to counter example",
         [](const GenParams &params) {
             const auto gen = toNewProperty(
