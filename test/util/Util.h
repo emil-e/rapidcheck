@@ -12,6 +12,12 @@ void templatedProp(const std::string &description, Testable testable)
          testable);
 }
 
+template<typename T, typename Testable>
+void newtemplatedProp(const std::string &description, Testable testable)
+{
+    newprop(description + " (" + detail::typeToString<T>() + ")",
+            testable);
+}
 
 #define TEMPLATED_SECTION(tparam, description)  \
     SECTION(std::string(description) + " (" +   \
