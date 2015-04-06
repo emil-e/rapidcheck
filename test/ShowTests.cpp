@@ -47,28 +47,31 @@ TEST_CASE("toString<T>") {
 }
 
 TEST_CASE("showCollection") {
-    prop("shows empty collection correctly",
-         [] (const std::string &prefix, const std::string &suffix) {
-             std::ostringstream os;
-             showCollection(prefix, suffix, std::vector<Box>(), os);
-             RC_ASSERT(os.str() == (prefix + suffix));
-         });
+    newprop(
+        "shows empty collection correctly",
+        [] (const std::string &prefix, const std::string &suffix) {
+            std::ostringstream os;
+            showCollection(prefix, suffix, std::vector<Box>(), os);
+            RC_ASSERT(os.str() == (prefix + suffix));
+        });
 
-    prop("shows single element correctly",
-         [&] (const std::string &prefix, const std::string &suffix, Box a) {
-             std::ostringstream os;
-             showCollection(prefix, suffix, std::vector<Box>{a}, os);
-             RC_ASSERT(os.str() == (prefix + a.str() + suffix));
-         });
+    newprop(
+        "shows single element correctly",
+        [&] (const std::string &prefix, const std::string &suffix, Box a) {
+            std::ostringstream os;
+            showCollection(prefix, suffix, std::vector<Box>{a}, os);
+            RC_ASSERT(os.str() == (prefix + a.str() + suffix));
+        });
 
-    prop("shows multiple elements correctly",
-         [&] (const std::string &prefix, const std::string &suffix,
-              Box a, Box b, Box c)
-         {
-             std::ostringstream os;
-             showCollection(prefix, suffix, std::vector<Box>{a, b, c}, os);
-             RC_ASSERT(
-                 os.str() ==
-                 (prefix + a.str() + ", " + b.str() + ", " + c.str() + suffix));
-         });
+    newprop(
+        "shows multiple elements correctly",
+        [&] (const std::string &prefix, const std::string &suffix,
+             Box a, Box b, Box c)
+        {
+            std::ostringstream os;
+            showCollection(prefix, suffix, std::vector<Box>{a, b, c}, os);
+            RC_ASSERT(
+                os.str() ==
+                (prefix + a.str() + ", " + b.str() + ", " + c.str() + suffix));
+        });
 }
