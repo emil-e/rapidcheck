@@ -23,8 +23,9 @@ Shrinkable<T> real(const Random &random, int size)
     // TODO this implementation sucks
     auto stream = rc::detail::bitStreamOf(random);
     double a = stream.nextWithSize<int64_t>(size);
-    double b = stream.nextWithSize<uint64_t>(size);
-    T value = a + (b / std::numeric_limits<uint64_t>::max());
+    double b = stream.next<uint64_t>() /
+        static_cast<double>(std::numeric_limits<uint64_t>::max());
+    T value = a + b;
     return shrinkable::shrinkRecur(value, &shrink::real<T>);
 }
 
