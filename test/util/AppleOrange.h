@@ -1,6 +1,8 @@
 #pragma once
 
 #include "rapidcheck/arbitrary/Collection.h"
+#include "rapidcheck/newgen/Arbitrary.h"
+#include "rapidcheck/newgen/Text.h"
 
 namespace rc {
 
@@ -24,6 +26,18 @@ public:
     { return Fruit<Tag>((*gen::arbitrary<std::string>()).c_str()); }
 };
 
+template<typename Tag>
+struct NewArbitrary<Fruit<Tag>>
+{
+    static Gen<Fruit<Tag>> arbitrary()
+    {
+        return newgen::map(
+            newgen::arbitrary<std::string>(),
+            [](const std::string &s) {
+                return Fruit<Tag>(s.c_str());
+            });
+    }
+};
 
 template<typename TagL, typename TagR>
 inline bool operator==(const Fruit<TagL> &lhs, const Fruit<TagR> &rhs)
