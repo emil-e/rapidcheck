@@ -45,20 +45,20 @@ struct IntegralProperties
     static void exec()
     {
         TEMPLATED_SECTION(T, "when size >= gen::kNominalSize") {
-            templatedProp<T>(
+            newtemplatedProp<T>(
                 "all bits can be either 1 or 0",
                 [](Random random) {
                     T ones = 0;
                     T zeroes = 0;
                     while (!isAllOnes(ones) || !isAllOnes(zeroes)) {
                         T value = newgen::arbitrary<T>()(
-                            random.split(), gen::kNominalSize).value();
+                            random.split()).value();
                         ones |= value;
                         zeroes |= ~value;
                     }
                 });
 
-            templatedProp<T>(
+            newtemplatedProp<T>(
                 "values are uniformly distributed over entire range",
                 [](Random random) {
                     using UInt = typename std::make_unsigned<T>::type;
@@ -70,7 +70,7 @@ struct IntegralProperties
 
                     static constexpr std::size_t nSamples = 10000;
                     for (std::size_t i = 0; i < nSamples; i++) {
-                        UInt value = newgen::arbitrary<T>()(random.split(), gen::kNominalSize).value();
+                        UInt value = newgen::arbitrary<T>()(random.split()).value();
                         bins[value / kBinSize]++;
                     }
 
@@ -86,7 +86,7 @@ struct IntegralProperties
                 });
         }
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "monotonically increasing size yields monotonically inscreasing"
             " abs(value)",
             [](const Random &random) {
@@ -100,21 +100,21 @@ struct IntegralProperties
                 }
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "finds minimum where value must be larger/smaller than some value",
             [](const Random &random) {
-                int size = *gen::ranged<int>(0, 200);
+                int size = *newgen::inRange<int>(0, 200);
                 const auto shrinkable = newgen::arbitrary<T>()(random, size);
                 T start = shrinkable.value();
                 T target;
                 std::pair<T, int> result;
                 if (start < 0) {
-                    target = *gen::ranged<T>(start, 1);
+                    target = *newgen::inRange<T>(start, 1);
                     result = shrinkable::findLocalMin(
                         shrinkable,
                         [=](T x) { return x <= target; });
                 } else {
-                    target = *gen::ranged<T>(0, start + 1);
+                    target = *newgen::inRange<T>(0, start + 1);
                     result = shrinkable::findLocalMin(
                         shrinkable,
                         [=](T x) { return x >= target; });
@@ -130,7 +130,7 @@ struct NumericProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "zero size always yields zero",
             [](const Random &random) {
                 auto shrinkable = newgen::arbitrary<T>()(random, 0);
@@ -144,11 +144,11 @@ struct SignedProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "P(value > 0) ~ P(value < 0)",
             [](Random random) {
                 static constexpr int kEnough = 5000;
-                int size = *gen::ranged<int>(50, 200);
+                int size = *newgen::inRange<int>(50, 200);
                 int n = 0;
                 for (int i = 0; i < kEnough; i++) {
                     T value =
@@ -185,12 +185,12 @@ struct InRangeProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "never generates values outside of range",
             [](const GenParams &params) {
                 // TODO range generator
-                const auto a = *gen::arbitrary<T>();
-                const auto b = *gen::distinctFrom(a);
+                const auto a = *newgen::arbitrary<T>();
+                const auto b = *newgen::distinctFrom(a);
                 const auto min = std::min(a, b);
                 const auto max = std::max(a, b);
                 const auto value = newgen::inRange<T>(
@@ -198,16 +198,17 @@ struct InRangeProperties
                 RC_ASSERT(value >= min && value < max);
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "throws if min <= max",
             [](const GenParams &params) {
                 // TODO range generator
-                const auto a = *gen::arbitrary<T>();
-                const auto b = *gen::distinctFrom(a);
+                const auto a = *newgen::arbitrary<T>();
+                const auto b = *newgen::distinctFrom(a);
                 const auto gen = newgen::inRange<T>(
                     std::max(a, b), std::min(a, b));
+                const auto shrinkable = gen(params.random, params.size);
                 try {
-                    gen(params.random, params.size);
+                    shrinkable.value();
                 } catch (const GenerationFailure &e) {
                     // TODO RC_ASSERT_THROWS
                     RC_SUCCEED("Threw GenerationFailure");
@@ -215,23 +216,23 @@ struct InRangeProperties
                 RC_FAIL("Did not throw GenerationFailure");
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "has no shrinks",
             [](const GenParams &params) {
                 // TODO range generator
-                const auto a = *gen::arbitrary<T>();
-                const auto b = *gen::distinctFrom(a);
+                const auto a = *newgen::arbitrary<T>();
+                const auto b = *newgen::distinctFrom(a);
                 const auto shrinkable = newgen::inRange<T>(
                     std::min(a, b), std::max(a, b))(
                         params.random, params.size);
                 RC_ASSERT(!shrinkable.shrinks().next());
             });
 
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "generates all values in range",
             [](const GenParams &params) {
-                const auto size = *gen::ranged<T>(1, 20);
-                const auto min = *gen::ranged<T>(
+                const auto size = *newgen::inRange<T>(1, 20);
+                const auto min = *newgen::inRange<T>(
                     std::numeric_limits<T>::min(),
                     std::numeric_limits<T>::max() - size);
 
@@ -265,7 +266,7 @@ struct NonZeroProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "never generates zero",
             [=](const GenParams &params) {
                 const auto shrinkable = newgen::nonZero<T>()(
@@ -294,7 +295,7 @@ struct PositiveProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "always generates positive values",
             [=](const GenParams &params) {
                 const auto shrinkable = newgen::positive<T>()(
@@ -323,7 +324,7 @@ struct NegativeProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "always generates negative values",
             [=](const GenParams &params) {
                 const auto shrinkable = newgen::negative<T>()(
@@ -352,7 +353,7 @@ struct NonNegativeProperties
     template<typename T>
     static void exec()
     {
-        templatedProp<T>(
+        newtemplatedProp<T>(
             "always generates non-negative values",
             [=](const GenParams &params) {
                 const auto shrinkable = newgen::nonNegative<T>()(
