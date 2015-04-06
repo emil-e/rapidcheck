@@ -34,7 +34,7 @@ Gen<std::pair<std::vector<int>, Recipe>> testExecGen()
 
 TEST_CASE("execRaw") {
     SECTION("uses correct arbitrary instance for arguments") {
-        auto values = execRaw([](
+        const auto values = execRaw([](
             const Predictable &a,
             const Predictable &b,
             const Predictable &c)
@@ -52,7 +52,7 @@ TEST_CASE("execRaw") {
                            FixedCountdown<2>,
                            FixedCountdown<3>> TupleT;
 
-        auto execShrinkable = execRaw([](
+        const auto execShrinkable = execRaw([](
             const FixedCountdown<1> &a,
             const FixedCountdown<2> &b,
             const FixedCountdown<3> &c)
@@ -60,12 +60,12 @@ TEST_CASE("execRaw") {
             return std::make_tuple(a, b, c);
         })(Random(), 0);
 
-        auto tupleShrinkable = newgen::tuple(
+        const auto tupleShrinkable = newgen::tuple(
             newgen::arbitrary<FixedCountdown<1>>(),
             newgen::arbitrary<FixedCountdown<2>>(),
             newgen::arbitrary<FixedCountdown<3>>())(Random(), 0);
 
-        auto mappedShrinkable = shrinkable::map(
+        const auto mappedShrinkable = shrinkable::map(
             execShrinkable,
             [](std::pair<TupleT, Recipe> &&x) {
                 return std::move(x.first);
@@ -82,11 +82,11 @@ TEST_CASE("execRaw") {
             const auto path = *newgen::container<std::vector<bool>>(
                 newgen::arbitrary<bool>());
 
-            std::vector<int> accepted = shrinkable.value().first;
+            auto accepted = shrinkable.value().first;
             auto acceptedShrinkable = shrinkable;
             auto shrinks = shrinkable.shrinks();
-            int i = 0;
-            int x = 5;
+            auto i = 0;
+            auto x = 5;
             for (bool accept : path) {
                 if (i >= accepted.size()) {
                     RC_ASSERT(!shrinks.next());
@@ -120,10 +120,10 @@ TEST_CASE("execRaw") {
         []{
             const auto shrinkable = testExecGen<5>()(Random(), 0);
 
-            int i = *newgen::inRange<int>(0, 5);
+            const auto i = *newgen::inRange<int>(0, 5);
             const auto shrink = *seq::at(shrinkable.shrinks(), i);
             const auto value = shrink.value().first;
-            int maxShrinks =
+            const auto maxShrinks =
                 std::accumulate(begin(value), end(value), 0);
             RC_ASSERT(seq::length(shrink.shrinks()) <= maxShrinks);
         });
@@ -131,9 +131,9 @@ TEST_CASE("execRaw") {
     newprop(
         "passes on the correct size",
         [] {
-            int expectedSize = *newgen::nonNegative<int>();
-            int n = *newgen::inRange<int>(1, 10);
-            auto shrinkable = execRaw([=](const PassedSize &sz) {
+            const auto expectedSize = *newgen::nonNegative<int>();
+            const auto n = *newgen::inRange<int>(1, 10);
+            const auto shrinkable = execRaw([=](const PassedSize &sz) {
                 *genFixedCountdown(3); // Force some shrinks
                 std::vector<int> sizes;
                 sizes.push_back(sz.value);
@@ -213,7 +213,7 @@ TEST_CASE("execRaw") {
 
                     std::vector<int> actual;
 
-                    auto argTuple =
+                    const auto argTuple =
                         recipe.ingredients.front().value().get<ArgTuple>();
                     actual.push_back(std::get<0>(argTuple).value);
 
@@ -226,7 +226,7 @@ TEST_CASE("execRaw") {
     }
 
     SECTION("works with non-copyable types") {
-        auto shrinkable = execRaw([=](NonCopyable nc) {
+        const auto shrinkable = execRaw([=](NonCopyable nc) {
             return std::move(nc);
         })(Random(), 0);
         REQUIRE(isArbitraryPredictable(shrinkable.value().first));
