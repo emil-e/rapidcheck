@@ -187,8 +187,19 @@ TEST_CASE("seq::range") {
 }
 
 TEST_CASE("seq::index") {
+    SECTION("returns an infinite sequence of increasing indexes from 0") {
+        auto seq = seq::index();
+        for (std::size_t i = 0; i < 2000; i++) {
+            auto x = seq.next();
+            RC_ASSERT(x);
+            RC_ASSERT(*x == i);
+        }
+    }
+
     newprop(
-        "returns an infinite sequence of increasing indexes from 0",
+        "copies are equal",
+        []{ assertEqualCopies(seq::take(2000, seq::index())); });
+}
 
 TEST_CASE("seq::subranges") {
     // TODO some kind of "small int" would be nice
