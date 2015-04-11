@@ -38,6 +38,12 @@ Seq<T> range(T start, T end);
 //! Returns a sequence of indexes starting from `0` and increasing.
 inline Seq<std::size_t> index();
 
+//! Returns a sequence of all the possible subranges (pair of indexes) of the
+//! given range from larger to smaller. The largest subrange (the first one)
+//! will be the entire range and the last group of subranges will have length
+//! `1`. If `start == end`, the returned `Seq` will be empty.
+inline Seq<std::pair<std::size_t, std::size_t>> subranges(std::size_t start,
+                                                          std::size_t end);
 
 } // namespace seq
 } // namespace rc

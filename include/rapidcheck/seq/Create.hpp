@@ -168,5 +168,23 @@ Seq<std::size_t> index()
                         [](std::size_t i) { return i + 1; });
 }
 
+Seq<std::pair<std::size_t, std::size_t>> subranges(std::size_t start,
+                                                   std::size_t end)
+{
+    if (start == end)
+        return Seq<std::pair<std::size_t, std::size_t>>();
+
+    return seq::mapcat(
+        seq::range<std::size_t>(end - start, 0),
+        [=](std::size_t rangeSize) {
+            return seq::map(
+                seq::range<std::size_t>(start, end - rangeSize + 1),
+                [=](std::size_t rangeStart) {
+                    return std::make_pair(rangeStart,
+                                          rangeStart + rangeSize);
+                });
+        });
+}
+
 } // namespace seq
 } // namespace rc

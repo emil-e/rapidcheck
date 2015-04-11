@@ -189,16 +189,45 @@ TEST_CASE("seq::range") {
 TEST_CASE("seq::index") {
     newprop(
         "returns an infinite sequence of increasing indexes from 0",
+
+TEST_CASE("seq::subranges") {
+    // TODO some kind of "small int" would be nice
+    static const auto smallInt = newgen::inRange<std::size_t>(0, 100);
+
+    newprop(
+        "ranges successively decrease in size",
         []{
-            auto seq = seq::index();
-            for (std::size_t i = 0; i < 2000; i++) {
-                auto x = seq.next();
-                RC_ASSERT(x);
-                RC_ASSERT(*x == i);
-            }
+            // TODO range generator
+            const auto a = *smallInt;
+            const auto b = *newgen::distinctFrom(smallInt, a);
+            const auto start = std::min(a, b);
+            const auto end = std::max(a, b);
+
+            auto lastSize = end - start;
+            using Range = std::pair<std::size_t, std::size_t>;
+            seq::forEach(seq::subranges(start, end), [&](const Range &r) {
+                const auto size = r.second - r.first;
+                RC_ASSERT(size <= lastSize);
+                lastSize = size;
+            });
         });
 
     newprop(
-        "copies are equal",
-        []{ assertEqualCopies(seq::take(2000, seq::index())); });
+        "yields all possible subranges",
+        []{
+            // TODO range generator
+            const auto a = *smallInt;
+            const auto b = *newgen::distinctFrom(smallInt, a);
+            const auto start = std::min(a, b);
+            const auto end = std::max(a, b);
+
+            const auto indexInRange = newgen::inRange<std::size_t>(start, end);
+            const auto as = *indexInRange;
+            const auto bs = *newgen::distinctFrom(indexInRange, as);
+            const auto starts = std::min(as, bs);
+            const auto ends = std::max(as, bs);
+
+            RC_ASSERT(seq::contains(seq::subranges(start, end),
+                                    {starts, ends}));
+        });
 }

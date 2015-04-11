@@ -10,29 +10,17 @@ namespace shrink {
 template<typename Container>
 Seq<Container> newRemoveChunks(Container elements)
 {
-    using Range = std::pair<std::size_t, std::size_t>;
-
-    std::size_t size = elements.size();
-    auto ranges = seq::mapcat(
-        seq::range<std::size_t>(size, 0),
-        [=](std::size_t rangeSize) {
-            return seq::map(
-                seq::range<std::size_t>(0, size - rangeSize + 1),
-                [=](std::size_t rangeStart) {
-                    return std::make_pair(rangeStart,
-                                          rangeStart + rangeSize);
-                });
+    return seq::map(
+        seq::subranges(0, elements.size()),
+        [=](const std::pair<std::size_t, std::size_t> &range) {
+            Container newElements;
+            newElements.reserve(range.second - range.first);
+            const auto start = begin(elements);
+            const auto fin = end(elements);
+            newElements.insert(end(newElements), start, start + range.first);
+            newElements.insert(end(newElements), start + range.second, fin);
+            return newElements;
         });
-
-    return seq::map(std::move(ranges), [=](const Range &range) {
-        Container newElements;
-        newElements.reserve(range.second - range.first);
-        const auto start = begin(elements);
-        const auto fin = end(elements);
-        newElements.insert(end(newElements), start, start + range.first);
-        newElements.insert(end(newElements), start + range.second, fin);
-        return newElements;
-    });
 }
 
 template<typename T>
@@ -43,19 +31,8 @@ Seq<T> removeChunks(T collection)
         elements.push_back(std::move(item));
 
     std::size_t size = elements.size();
-    auto ranges = seq::mapcat(
-        seq::range<std::size_t>(size, 0),
-        [=](std::size_t rangeSize) {
-            return seq::map(
-                seq::range<std::size_t>(0, size - rangeSize + 1),
-                [=](std::size_t rangeStart) {
-                    return std::make_pair(rangeStart,
-                                          rangeStart + rangeSize);
-                });
-        });
-
     return seq::map(
-        std::move(ranges),
+        seq::subranges(0, elements.size()),
         [=](const std::pair<std::size_t, std::size_t> &range) {
             detail::CollectionBuilder<T> builder;
             for (std::size_t i = 0; i < range.first; i++)
