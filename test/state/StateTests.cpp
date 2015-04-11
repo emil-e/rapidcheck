@@ -98,7 +98,7 @@ struct AlwaysDiscard : public StringVecCmd
 
 template<typename CommandT, typename GenerationFunc>
 CommandsGenerator<CommandT, GenerationFunc> commandsGenerator(
-    const typename CommandT::StateT &s0, GenerationFunc func)
+    const typename CommandT::State &s0, GenerationFunc func)
 {
     return CommandsGenerator<CommandT, GenerationFunc>(s0, std::move(func));
 }
@@ -227,7 +227,7 @@ TEST_CASE("CommandsGenerator") {
     prop("command sequences are always valid",
          [] (const StringVec &s0) {
              const auto commands = *commandsGenerator<StringVecCmd>(
-                 s0, anyCommand<PushBack, PopBack>);
+                 s0, &anyCommand<PushBack, PopBack>);
              RC_ASSERT(isValidCommand(commands, s0));
          });
 

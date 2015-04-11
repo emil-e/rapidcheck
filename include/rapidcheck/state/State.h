@@ -8,13 +8,13 @@ namespace state {
 //! Base class for commands used in testing of stateful systems.
 //!
 //! NOTE: Commands are assumed to be immutable so that they can be shared.
-template<typename State, typename Sut>
+template<typename StateT, typename SutT>
 class Command
 {
 public:
-    typedef Command<State, Sut> CommandT;
-    typedef State StateT;
-    typedef Sut SutT;
+    typedef StateT State;
+    typedef SutT Sut;
+    typedef Command<State, Sut> CommandType;
 
     //! Returns the state resulting from applying this command to the given
     //! state. Default implementation simply returns the given state.
@@ -61,8 +61,9 @@ bool isValidCommand(const Command<State, Sut> &command, const State &s0);
 //! the needed values in its constructor or discard itself immediately using
 //! `RC_PRE` or `RC_DISCARD`.
 template<typename Cmd, typename ...Cmds>
-std::shared_ptr<const typename Cmd::CommandT>
-anyCommand(const typename Cmd::StateT &state);
+std::shared_ptr<const typename Cmd::CommandType>
+anyCommand(const typename Cmd::State &state);
+
 
 } // namespace state
 } // namespace rc

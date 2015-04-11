@@ -7,39 +7,39 @@ namespace state {
 namespace detail {
 
 //! Collection of commands.
-template<typename CommandT>
+template<typename Cmd>
 class Commands
-    : public Command<typename CommandT::StateT, typename CommandT::SutT>
+    : public Command<typename Cmd::State, typename Cmd::Sut>
 {
 public:
-    typedef std::shared_ptr<const CommandT> CommandSP;
-    typedef typename CommandT::StateT StateT;
-    typedef typename CommandT::SutT SutT;
+    typedef std::shared_ptr<const Cmd> CmdSP;
+    typedef typename Cmd::State State;
+    typedef typename Cmd::Sut Sut;
 
     //! Constructs a new `Commands` from the given command vector.
-    explicit Commands(std::vector<CommandSP> commands =
-                      std::vector<CommandSP>())
+    explicit Commands(std::vector<CmdSP> commands =
+                      std::vector<CmdSP>())
         : m_commands(std::move(commands)) {}
 
     //! Returns a reference to the vector of commands.
-    const std::vector<CommandSP> &commands() const
+    const std::vector<CmdSP> &commands() const
     { return m_commands; }
 
     //! Appends a new command.
-    void append(CommandSP command)
+    void append(CmdSP command)
     { m_commands.push_back(std::move(command)); }
 
-    StateT nextState(const StateT &state) const override
+    State nextState(const State &state) const override
     {
-        StateT currentState = state;
+        State currentState = state;
         for (const auto &command : m_commands)
             currentState = command->nextState(currentState);
         return currentState;
     }
 
-    void run(const StateT &state, SutT &sut) const override
+    void run(const State &state, Sut &sut) const override
     {
-        StateT currentState = state;
+        State currentState = state;
         for (const auto &command : m_commands) {
             auto nextState = command->nextState(currentState);
             command->run(currentState, sut);
@@ -56,28 +56,65 @@ public:
     }
 
 private:
-    std::vector<CommandSP> m_commands;
+    std::vector<CmdSP> m_commands;
+};
+
+//! Collection of commands.
+template<typename Cmd>
+struct NewCommands : public Command<typename Cmd::State, typename Cmd::Sut>
+{
+public:
+    typedef std::shared_ptr<const Cmd> CmdSP;
+    typedef typename Cmd::State State;
+    typedef typename Cmd::Sut Sut;
+
+    State nextState(const State &state) const override
+    {
+        State currentState = state;
+        for (const auto &command : commands)
+            currentState = command->nextState(currentState);
+        return currentState;
+    }
+
+    void run(const State &state, Sut &sut) const override
+    {
+        State currentState = state;
+        for (const auto &command : commands) {
+            auto nextState = command->nextState(currentState);
+            command->run(currentState, sut);
+            currentState = nextState;
+        }
+    }
+
+    void show(std::ostream &os) const override
+    {
+        for (const auto &command : commands) {
+            command->show(os);
+            os << std::endl;
+        }
+    }
+
+    std::vector<CmdSP> commands;
 };
 
 template<typename Cmd, typename GenerationFunc>
 class CommandsGenerator : public gen::Generator<Commands<Cmd>>
 {
 public:
-    typedef Cmd CommandT;
-    typedef std::shared_ptr<const CommandT> CommandSP;
-    typedef Commands<CommandT> CommandsT;
-    typedef typename CommandT::StateT StateT;
-    typedef typename CommandT::SutT SutT;
+    typedef std::shared_ptr<const Cmd> CmdSP;
+    typedef Commands<Cmd> Cmds;
+    typedef typename Cmd::State State;
+    typedef typename Cmd::Sut Sut;
 
-    explicit CommandsGenerator(StateT initialState,
+    explicit CommandsGenerator(State initialState,
                                GenerationFunc generationFunc)
         : m_initialState(std::move(initialState))
         , m_generationFunc(std::move(generationFunc)) {}
 
-    CommandsT generate() const override
+    Cmds generate() const override
     {
-        CommandsT commands;
-        StateT currentState(m_initialState);
+        Cmds commands;
+        State currentState(m_initialState);
         int tries = 0;
         while (commands.commands().size() < gen::currentSize()) {
             auto command = *gen::lambda([=] {
@@ -102,40 +139,41 @@ public:
         return commands;
     }
 
-    Seq<CommandsT> shrink(CommandsT commands) const override
+    Seq<Cmds> shrink(Cmds commands) const override
     {
         return seq::filter(
             seq::map(shrink::removeChunks(commands.commands()),
-                [](std::vector<CommandSP> &&x) {
-                    return CommandsT(std::move(x));
+                [](std::vector<CmdSP> &&x) {
+                    return Cmds(std::move(x));
                 }),
-            [&](const CommandsT &commands) {
+            [&](const Cmds &commands) {
                 return isValidCommand(commands, m_initialState);
             });
     }
 
 private:
-    StateT m_initialState;
+    State m_initialState;
     GenerationFunc m_generationFunc;
 };
 
+
 template<typename Cmd, typename = typename std::is_constructible<
-                           Cmd, typename Cmd::StateT &&>::type>
+                           Cmd, typename Cmd::State &&>::type>
 struct CommandMaker;
 
 template<typename Cmd>
 struct CommandMaker<Cmd, std::true_type>
 {
-    static std::shared_ptr<const typename Cmd::CommandT> make(
-        const typename Cmd::StateT &state)
+    static std::shared_ptr<const typename Cmd::CommandType> make(
+        const typename Cmd::State &state)
     { return std::make_shared<Cmd>(state); }
 };
 
 template<typename Cmd>
 struct CommandMaker<Cmd, std::false_type>
 {
-    static std::shared_ptr<const typename Cmd::CommandT> make(
-        const typename Cmd::StateT &state)
+    static std::shared_ptr<const typename Cmd::CommandType> make(
+        const typename Cmd::State &state)
     { return std::make_shared<Cmd>(); }
 };
 
@@ -145,8 +183,8 @@ struct CommandPicker;
 template<typename Cmd>
 struct CommandPicker<Cmd>
 {
-    static std::shared_ptr<const typename Cmd::CommandT> pick(
-        const typename Cmd::StateT &state, int n)
+    static std::shared_ptr<const typename Cmd::CommandType> pick(
+        const typename Cmd::State &state, int n)
     {
         return CommandMaker<Cmd>::make(state);
     }
@@ -155,8 +193,8 @@ struct CommandPicker<Cmd>
 template<typename Cmd, typename ...Cmds>
 struct CommandPicker<Cmd, Cmds...>
 {
-    static std::shared_ptr<const typename Cmd::CommandT> pick(
-        const typename Cmd::StateT &state, int n)
+    static std::shared_ptr<const typename Cmd::CommandType> pick(
+        const typename Cmd::State &state, int n)
     {
         return (n == 0)
             ? CommandMaker<Cmd>::make(state)
@@ -203,8 +241,8 @@ bool isValidCommand(const Command<State, Sut> &command, const State &s0)
 }
 
 template<typename Cmd, typename ...Cmds>
-std::shared_ptr<const typename Cmd::CommandT> anyCommand(
-    const typename Cmd::StateT &state)
+std::shared_ptr<const typename Cmd::CommandType>
+anyCommand(const typename Cmd::State &state)
 {
     // TODO configurable
     for (int tries = 0; tries < 100; tries++) {
@@ -240,13 +278,13 @@ struct ShowType<rc::state::Command<State, Sut>>
     }
 };
 
-template<typename CommandT>
-struct ShowType<rc::state::detail::Commands<CommandT>>
+template<typename Cmd>
+struct ShowType<rc::state::detail::Commands<Cmd>>
 {
     static void showType(std::ostream &os)
     {
         os << "Commands<";
-        ::rc::detail::showType<CommandT>(os);
+        ::rc::detail::showType<Cmd>(os);
         os << ">";
     }
 };
