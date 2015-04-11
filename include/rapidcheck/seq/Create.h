@@ -36,7 +36,8 @@ template<typename T>
 Seq<T> range(T start, T end);
 
 //! Returns a sequence of indexes starting from `0` and increasing.
-static inline Seq<std::size_t> index();
+inline Seq<std::size_t> index();
+
 
 } // namespace seq
 } // namespace rc
