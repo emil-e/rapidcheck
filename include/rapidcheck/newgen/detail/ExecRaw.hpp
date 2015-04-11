@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rapidcheck/shrinkable/Create.h"
-#include "rapidcheck/newgen/Tuple.h"
+#include "rapidcheck/newgen/detail/FastTuple.h"
 #include "rapidcheck/newgen/detail/ExecHandler.h"
 
 namespace rc {
@@ -17,7 +17,7 @@ execWithRecipe(Callable callable, Recipe recipe)
     ExecHandler handler(resultRecipe);
     ImplicitParam<param::CurrentHandler> letHandler(&handler);
 
-    using ArgsTuple = tl::ToTuple<tl::DecayAll<ArgTypes<Callable>>>;
+    using ArgsTuple = tl::ToFastTuple<tl::DecayAll<ArgTypes<Callable>>>;
     return std::make_pair(
         applyTuple(*newgen::arbitrary<ArgsTuple>(), callable),
         std::move(resultRecipe));

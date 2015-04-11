@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/detail/FastTuple.h"
+
 namespace rc {
 namespace detail {
 
@@ -21,6 +23,19 @@ struct ToTupleImpl<TypeList<Types...>>
 //! Turns a `TypeList` into am `std::tuple`.
 template<typename T>
 using ToTuple = typename ToTupleImpl<T>::Type;
+
+template<typename T>
+struct ToFastTupleImpl;
+
+template<typename ...Types>
+struct ToFastTupleImpl<TypeList<Types...>>
+{
+    typedef rc::detail::FastTuple<Types...> Type;
+};
+
+//! Turns a `TypeList` into am `std::tuple`.
+template<typename T>
+using ToFastTuple = typename ToFastTupleImpl<T>::Type;
 
 template<typename T>
 struct DecayAllImpl;

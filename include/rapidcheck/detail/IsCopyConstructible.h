@@ -11,6 +11,8 @@
 #include <deque>
 #include <stack>
 
+#include "rapidcheck/detail/FastTuple.h"
+
 namespace rc {
 namespace detail {
 
@@ -121,6 +123,19 @@ struct IsCopyConstructible<std::tuple<Type, Types...>>
         bool,
         IsCopyConstructible<Type>::value &&
         IsCopyConstructible<std::tuple<Types...>>::value> {};
+
+template<typename ...Types>
+struct IsCopyConstructible<FastTuple<Types...>>;
+
+template<>
+struct IsCopyConstructible<FastTuple<>> : public std::true_type {};
+
+template<typename Type, typename ...Types>
+struct IsCopyConstructible<FastTuple<Type, Types...>>
+    : public std::integral_constant<
+        bool,
+        IsCopyConstructible<Type>::value &&
+        IsCopyConstructible<FastTuple<Types...>>::value> {};
 
 template<typename T1, typename T2>
 struct IsCopyConstructible<std::pair<T1, T2>>
