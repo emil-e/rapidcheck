@@ -510,7 +510,7 @@ TEST_CASE("newgen::container(std::size_t)") {
         [](const GenParams &params) {
             const auto count = *newgen::distinctFrom(3);
             const auto gen = newgen::container<std::array<int, 3>>(
-                newgen::arbitrary<int>());
+                count, newgen::arbitrary<int>());
             const auto shrinkable = gen(params.random, params.size);
             try {
                 shrinkable.value();
