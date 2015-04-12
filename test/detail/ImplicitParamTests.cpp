@@ -68,8 +68,7 @@ struct NewScope : public ImplicitCommand
 
 struct BindA : public ImplicitCommand
 {
-    BindA() : value(*gen::arbitrary<ParamA::ValueType>()) {}
-    ParamA::ValueType value;
+    ParamA::ValueType value = *newgen::arbitrary<ParamA::ValueType>();
 
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
@@ -95,8 +94,7 @@ struct BindA : public ImplicitCommand
 
 struct BindB : public ImplicitCommand
 {
-    BindB() : value(*gen::arbitrary<ParamB::ValueType>()) {}
-    ParamB::ValueType value;
+    ParamB::ValueType value = *newgen::arbitrary<ParamB::ValueType>();
 
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
@@ -122,8 +120,7 @@ struct BindB : public ImplicitCommand
 
 struct ModifyA : public ImplicitCommand
 {
-    ModifyA() : value(*gen::arbitrary<ParamA::ValueType>()) {}
-    ParamA::ValueType value;
+    ParamA::ValueType value = *newgen::arbitrary<ParamA::ValueType>();
 
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
@@ -149,8 +146,7 @@ struct ModifyA : public ImplicitCommand
 
 struct ModifyB : public ImplicitCommand
 {
-    ModifyB() : value(*gen::arbitrary<ParamB::ValueType>()) {}
-    ParamB::ValueType value;
+    ParamB::ValueType value = *newgen::arbitrary<ParamB::ValueType>();
 
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
@@ -251,21 +247,22 @@ struct PopScope : public ImplicitCommand
 } // namespace
 
 TEST_CASE("ImplicitParam") {
-    prop("stateful test",
-         [] {
-             ImplicitParamModel s0;
-             ImplicitParamSystem sut;
-             state::check(s0, sut,
-                          state::anyCommand<
-                          NewScope,
-                          BindA,
-                          BindB,
-                          ModifyA,
-                          ModifyB,
-                          PopA,
-                          PopB,
-                          PopScope>);
-         });
+    newprop(
+        "stateful test",
+        [] {
+            ImplicitParamModel s0;
+            ImplicitParamSystem sut;
+            state::newcheck(s0, sut,
+                            state::newAnyCommand<
+                            NewScope,
+                            BindA,
+                            BindB,
+                            ModifyA,
+                            ModifyB,
+                            PopA,
+                            PopB,
+                            PopScope>);
+        });
 
     SECTION("unit tests") {
         ImplicitScope scope;
