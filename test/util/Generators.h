@@ -298,6 +298,37 @@ public:
     }
 };
 
+template<typename T>
+inline Shrinkable<Maybe<T>> prependNothing(Shrinkable<Maybe<T>> &&s)
+{
+    return shrinkable::mapShrinks(
+        std::move(s),
+        [](Seq<Shrinkable<Maybe<T>>> &&shrinks) {
+            return seq::concat(
+                seq::just(shrinkable::just(Maybe<T>())),
+                seq::map(std::move(shrinks), &prependNothing<T>));
+        });
+};
+
+template<typename T>
+struct NewArbitrary<Maybe<T>>
+{
+    static Gen<Maybe<T>> arbitrary()
+    {
+        return [](const Random &random, int size) {
+            auto r = random;
+            const auto x = r.split().next() % (size + 1);
+            if (x == 0)
+                return shrinkable::just(Maybe<T>());
+
+            return prependNothing(
+                shrinkable::map(
+                    newgen::arbitrary<T>()(r, size),
+                    [](T &&x) -> Maybe<T> { return std::move(x); }));
+        };
+    }
+};
+
 template <typename T>
 class Arbitrary<Shrinkable<T>> : public gen::Generator<Shrinkable<T>>
 {
