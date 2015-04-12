@@ -14,7 +14,7 @@ namespace shrink {
 //! - `Container::insert(It, It, It)`
 //! - `Container::reserve(std::size_t)`
 template<typename Container>
-Seq<Container> newRemoveChunks(Container elements);
+Seq<Container> removeChunks(Container elements);
 
 //! Tries to shrink each element of the given container using the given
 //! callable to create sequences of shrinks for that element.
@@ -26,7 +26,7 @@ Seq<Container> newRemoveChunks(Container elements);
 //! @param shrink    A callable which returns a `Seq<T>` given an element
 //!                  to shrink.
 template<typename Container, typename Shrink>
-Seq<Container> newEachElement(Container elements, Shrink shrink);
+Seq<Container> eachElement(Container elements, Shrink shrink);
 
 //! Shrinks an integral value towards another integral value.
 //!

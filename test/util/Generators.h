@@ -10,45 +10,45 @@
 namespace rc {
 
 template<>
-struct NewArbitrary<detail::Configuration>
+struct Arbitrary<detail::Configuration>
 {
     static Gen<detail::Configuration> arbitrary()
     {
-        return newgen::exec([]{
+        return gen::exec([]{
             detail::Configuration config;
-            config.seed = *newgen::arbitrary<uint64_t>();
-            config.maxSuccess = *newgen::inRange<int>(0, 1000);
-            config.maxSize = *newgen::inRange<int>(0, 1000);
-            config.maxDiscardRatio = *newgen::inRange<int>(0, 100);
+            config.seed = *gen::arbitrary<uint64_t>();
+            config.maxSuccess = *gen::inRange<int>(0, 1000);
+            config.maxSize = *gen::inRange<int>(0, 1000);
+            config.maxDiscardRatio = *gen::inRange<int>(0, 100);
             return config;
         });
     }
 };
 
 template<>
-struct NewArbitrary<detail::TestCase>
+struct Arbitrary<detail::TestCase>
 {
     static Gen<detail::TestCase> arbitrary()
     {
-        return newgen::exec([]{
+        return gen::exec([]{
             detail::TestCase testCase;
-            testCase.size = *newgen::withSize([](int size) {
+            testCase.size = *gen::withSize([](int size) {
                 // TODO this should be replaced by a sized ranged generator
                 // instead
-                return newgen::inRange<int>(0, size + 1);
+                return gen::inRange<int>(0, size + 1);
             });
-            testCase.seed = *newgen::arbitrary<decltype(testCase.seed)>();
+            testCase.seed = *gen::arbitrary<decltype(testCase.seed)>();
             return testCase;
         });
     }
 };
 
 template<>
-struct NewArbitrary<detail::CaseResult::Type>
+struct Arbitrary<detail::CaseResult::Type>
 {
     static Gen<detail::CaseResult::Type> arbitrary()
     {
-        return newgen::element(
+        return gen::element(
             detail::CaseResult::Type::Success,
             detail::CaseResult::Type::Failure,
             detail::CaseResult::Type::Discard);
@@ -56,25 +56,25 @@ struct NewArbitrary<detail::CaseResult::Type>
 };
 
 template<>
-struct NewArbitrary<detail::CaseResult>
+struct Arbitrary<detail::CaseResult>
 {
     static Gen<detail::CaseResult> arbitrary()
     {
-        return newgen::exec([]{
+        return gen::exec([]{
             detail::CaseResult result;
-            result.type = *newgen::arbitrary<detail::CaseResult::Type>();
-            result.description = *newgen::arbitrary<std::string>();
+            result.type = *gen::arbitrary<detail::CaseResult::Type>();
+            result.description = *gen::arbitrary<std::string>();
             return result;
         });
     }
 };
 
 template<>
-struct NewArbitrary<detail::SuccessResult>
+struct Arbitrary<detail::SuccessResult>
 {
     static Gen<detail::SuccessResult> arbitrary()
     {
-        return newgen::map(newgen::positive<int>(), [](int s) {
+        return gen::map(gen::positive<int>(), [](int s) {
             detail::SuccessResult result;
             result.numSuccess = s;
             return result;
@@ -83,17 +83,17 @@ struct NewArbitrary<detail::SuccessResult>
 };
 
 template<>
-struct NewArbitrary<detail::FailureResult>
+struct Arbitrary<detail::FailureResult>
 {
     static Gen<detail::FailureResult> arbitrary()
     {
-        return newgen::exec([]{
+        return gen::exec([]{
             detail::FailureResult result;
-            result.numSuccess = *newgen::positive<int>();
-            result.failingCase = *newgen::arbitrary<detail::TestCase>();
-            result.description = *newgen::arbitrary<std::string>();
-            result.numShrinks = *newgen::positive<int>();
-            result.counterExample = *newgen::arbitrary<
+            result.numSuccess = *gen::positive<int>();
+            result.failingCase = *gen::arbitrary<detail::TestCase>();
+            result.description = *gen::arbitrary<std::string>();
+            result.numShrinks = *gen::positive<int>();
+            result.counterExample = *gen::arbitrary<
                 decltype(result.counterExample)>();
             return result;
         });
@@ -101,25 +101,25 @@ struct NewArbitrary<detail::FailureResult>
 };
 
 template<>
-struct NewArbitrary<detail::GaveUpResult>
+struct Arbitrary<detail::GaveUpResult>
 {
     static Gen<detail::GaveUpResult> arbitrary()
     {
-        return newgen::exec([]{
+        return gen::exec([]{
             detail::GaveUpResult result;
-            result.numSuccess = *newgen::positive<int>();
-            result.description = *newgen::arbitrary<std::string>();
+            result.numSuccess = *gen::positive<int>();
+            result.description = *gen::arbitrary<std::string>();
             return result;
         });
     }
 };
 
 template<typename T>
-struct NewArbitrary<Seq<T>>
+struct Arbitrary<Seq<T>>
 {
     static Gen<Seq<T>> arbitrary()
     {
-        return newgen::map<std::vector<T>>(
+        return gen::map<std::vector<T>>(
             &seq::fromContainer<std::vector<T>>);
     }
 };
@@ -137,7 +137,7 @@ inline Shrinkable<Maybe<T>> prependNothing(Shrinkable<Maybe<T>> &&s)
 };
 
 template<typename T>
-struct NewArbitrary<Maybe<T>>
+struct Arbitrary<Maybe<T>>
 {
     static Gen<Maybe<T>> arbitrary()
     {
@@ -149,24 +149,24 @@ struct NewArbitrary<Maybe<T>>
 
             return prependNothing(
                 shrinkable::map(
-                    newgen::arbitrary<T>()(r, size),
+                    gen::arbitrary<T>()(r, size),
                     [](T &&x) -> Maybe<T> { return std::move(x); }));
         };
     }
 };
 
 template <typename T>
-struct NewArbitrary<Shrinkable<T>>
+struct Arbitrary<Shrinkable<T>>
 {
     static Gen<Shrinkable<T>> arbitrary()
     {
         // TODO fapply
-        return newgen::map(
-            newgen::tuple(
-                newgen::arbitrary<T>(),
-                newgen::scale(
+        return gen::map(
+            gen::tuple(
+                gen::arbitrary<T>(),
+                gen::scale(
                     0.25,
-                    newgen::lazy(&newgen::arbitrary<Seq<Shrinkable<T>>>))),
+                    gen::lazy(&gen::arbitrary<Seq<Shrinkable<T>>>))),
             [](std::pair<T, Seq<Shrinkable<T>>> &&p) {
                 return shrinkable::just(std::move(p.first),
                                         std::move(p.second));

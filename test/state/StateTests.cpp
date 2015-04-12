@@ -21,11 +21,11 @@ namespace {
 typedef std::vector<std::string> StringVec;
 typedef Command<StringVec, StringVec> StringVecCmd;
 typedef std::shared_ptr<const StringVecCmd> StringVecCmdSP;
-typedef NewCommands<StringVecCmd> StringVecCmdsN;
+typedef Commands<StringVecCmd> StringVecCmdsN;
 
-struct NewPushBack : public StringVecCmd
+struct PushBack : public StringVecCmd
 {
-    NewPushBack() : value(*newgen::arbitrary<std::string>()) {}
+    PushBack() : value(*gen::arbitrary<std::string>()) {}
     std::string value;
 
     StringVec nextState(const StringVec &s0) const override
@@ -78,9 +78,9 @@ struct SomeCommand : StringVecCmd {};
 
 Gen<std::vector<StringVecCmdSP>> pushBackCommands()
 {
-    return newgen::container<std::vector<StringVecCmdSP>>(
-        newgen::exec([]() -> StringVecCmdSP {
-            return std::make_shared<NewPushBack>();
+    return gen::container<std::vector<StringVecCmdSP>>(
+        gen::exec([]() -> StringVecCmdSP {
+            return std::make_shared<PushBack>();
         }));
 }
 
@@ -104,7 +104,7 @@ struct AlwaysDiscard : public StringVecCmd
 
 TEST_CASE("Command") {
     SECTION("nextState") {
-        newprop(
+        prop(
             "default implementation returns unmodified state",
             [] (const StringVec &state) {
                 RC_ASSERT(StringVecCmd().nextState(state) == state);
@@ -112,7 +112,7 @@ TEST_CASE("Command") {
     }
 
     SECTION("run") {
-        newprop(
+        prop(
             "default implementation does not modify SUT",
             [] (const StringVec &state, const StringVec &sut) {
                 const auto pre = sut;
@@ -133,9 +133,9 @@ TEST_CASE("Command") {
     }
 }
 
-TEST_CASE("NewCommands") {
+TEST_CASE("Commands") {
     SECTION("nextState") {
-        newprop(
+        prop(
             "returns next state by applying the commands in sequence",
             [] (const StringVec &s0) {
                 StringVecCmdsN cmds;
@@ -153,7 +153,7 @@ TEST_CASE("NewCommands") {
     }
 
     SECTION("run") {
-        newprop(
+        prop(
             "runs the commands in sequence",
             [] (const StringVec &s0) {
                 StringVecCmdsN cmds;
@@ -173,7 +173,7 @@ TEST_CASE("NewCommands") {
     }
 
     SECTION("show") {
-        newprop(
+        prop(
             "displays each command on a separate line",
             [] {
                 StringVecCmdsN cmds;
@@ -193,13 +193,13 @@ TEST_CASE("NewCommands") {
 }
 
 TEST_CASE("isValidCommand") {
-    newprop(
+    prop(
         "returns true for valid commands",
         [] {
-            RC_ASSERT(isValidCommand(NewPushBack(), StringVec()));
+            RC_ASSERT(isValidCommand(PushBack(), StringVec()));
         });
 
-    newprop(
+    prop(
         "returns false for invalid commands",
         [] {
             RC_ASSERT(!isValidCommand(PopBack(), StringVec()));
@@ -248,7 +248,7 @@ std::set<Random> collectRandoms(const StringVecCmdsN &cmds)
 typedef std::vector<int> IntVec;
 typedef Command<IntVec, IntVec> IntVecCmd;
 typedef std::shared_ptr<const IntVecCmd> IntVecCmdSP;
-typedef NewCommands<IntVecCmd> IntVecCmds;
+typedef Commands<IntVecCmd> IntVecCmds;
 
 struct CountCmd : public IntVecCmd
 {
@@ -272,26 +272,26 @@ struct CountCmd : public IntVecCmd
 };
 
 TEST_CASE("genCommands") {
-    newprop(
+    prop(
         "command sequences are always valid",
         [](const GenParams &params, const StringVec &s0) {
             const auto gen = genCommands<StringVecCmd>(
-                s0, &newAnyCommand<NewPushBack, PopBack>);
-            newOnAnyPath(
+                s0, &anyCommand<PushBack, PopBack>);
+            onAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<StringVecCmdsN> &value,
-                   const Shrinkable<StringVecCmdsN> &shrink)
+                    const Shrinkable<StringVecCmdsN> &shrink)
                 {
                     RC_ASSERT(isValidCommand(value.value(), s0));
                 });
         });
 
-    newprop(
+    prop(
         "shrinks are shorter or equal length when compared to original",
         [](const GenParams &params, const StringVec &s0) {
             const auto gen = genCommands<StringVecCmd>(
-                s0, &newAnyCommand<NewPushBack, PopBack>);
-            newOnAnyPath(
+                s0, &anyCommand<PushBack, PopBack>);
+            onAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<StringVecCmdsN> &value,
                     const Shrinkable<StringVecCmdsN> &shrink)
@@ -301,7 +301,7 @@ TEST_CASE("genCommands") {
                 });
         });
 
-    newprop(
+    prop(
         "passed random generators are unique",
         [](const GenParams &params) {
             const auto gen = genCommands<StringVecCmd>(
@@ -312,12 +312,12 @@ TEST_CASE("genCommands") {
         });
 
 
-    newprop(
+    prop(
         "shrinks use a subset of the original random generators",
         [](const GenParams &params) {
             const auto gen = genCommands<StringVecCmd>(
                 StringVec(), &captureParams);
-            newOnAnyPath(
+            onAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<StringVecCmdsN> &value,
                     const Shrinkable<StringVecCmdsN> &shrink)
@@ -332,12 +332,12 @@ TEST_CASE("genCommands") {
                 });
         });
 
-    newprop(
+    prop(
         "passes the correct size",
         [](const GenParams &params) {
             const auto gen = genCommands<StringVecCmd>(
                 StringVec(), &captureParams);
-            newOnAnyPath(
+            onAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<StringVecCmdsN> &value,
                     const Shrinkable<StringVecCmdsN> &shrink)
@@ -351,21 +351,21 @@ TEST_CASE("genCommands") {
                 });
         });
 
-    newprop(
+    prop(
         "correctly threads the state when generating commands",
         [](const GenParams &params) {
             IntVec s0({0});
             const auto gen = genCommands<IntVecCmd>(
                 s0, [](const IntVec &vec) {
                     auto cmd = std::make_shared<const CountCmd>(vec.back() + 1);
-                    return newgen::just(
+                    return gen::just(
                         std::move(std::static_pointer_cast<const IntVecCmd>(cmd)));
                 });
 
-            newOnAnyPath(
+            onAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<IntVecCmds> &value,
-                   const Shrinkable<IntVecCmds> &shrink) {
+                    const Shrinkable<IntVecCmds> &shrink) {
                     auto sut = s0;
                     value.value().run(s0, sut);
                     int x = 0;
@@ -374,13 +374,13 @@ TEST_CASE("genCommands") {
                 });
         });
 
-    newprop(
+    prop(
         "finds minimum where one commands always fails",
         [](const GenParams &params, const StringVec &s0) {
             const auto gen = genCommands<StringVecCmd>(
-                s0, &newAnyCommand<
+                s0, &anyCommand<
                 AlwaysFail,
-                NewPushBack,
+                PushBack,
                 PopBack,
                 SomeCommand>);
             const auto result = searchGen(
@@ -405,11 +405,11 @@ TEST_CASE("genCommands") {
     // TODO test give up
 }
 
-TEST_CASE("newAnyCommand") {
-    newprop(
+TEST_CASE("anyCommand") {
+    prop(
         "returns one of the commands",
         [] (const GenParams &params, const StringVec &s0) {
-            const auto cmd = newAnyCommand<A, B, C>(s0)(
+            const auto cmd = anyCommand<A, B, C>(s0)(
                 params.random, params.size).value();
             const auto &id = typeid(*cmd);
             RC_ASSERT((id == typeid(A)) ||
@@ -417,11 +417,11 @@ TEST_CASE("newAnyCommand") {
                       (id == typeid(C)));
         });
 
-    newprop(
+    prop(
         "all commands are eventually returned",
         [] (const GenParams &params, const StringVec &s0) {
             auto r = params.random;
-            const auto gen = newAnyCommand<A, B, C>(s0);
+            const auto gen = anyCommand<A, B, C>(s0);
             std::set<std::type_index> all{ typeid(A), typeid(B), typeid(C) };
             std::set<std::type_index> generated;
             while (generated != all)
@@ -429,10 +429,10 @@ TEST_CASE("newAnyCommand") {
             RC_SUCCEED("All generated");
         });
 
-    newprop(
+    prop(
         "uses state constructor if there is one, passing it the state",
         [] (const GenParams &params, const StringVec &s0) {
-            const auto cmd = newAnyCommand<DualConstructible>(s0)(
+            const auto cmd = anyCommand<DualConstructible>(s0)(
                 params.random, params.size).value();
             RC_ASSERT(static_cast<const DualConstructible &>(*cmd).state ==
                       s0);
@@ -440,10 +440,10 @@ TEST_CASE("newAnyCommand") {
 }
 
 TEST_CASE("show(Command)") {
-    newprop(
+    prop(
         "passing a generic command to show yields the same as Command::show",
         [] {
-            NewPushBack cmd;
+            PushBack cmd;
             std::ostringstream expected;
             cmd.show(expected);
             std::ostringstream actual;
@@ -451,7 +451,7 @@ TEST_CASE("show(Command)") {
             RC_ASSERT(actual.str() == expected.str());
         });
 
-    newprop(
+    prop(
         "passing Commands to show yields the same result as Commands::show",
         [] {
             StringVecCmdsN cmds;
@@ -470,23 +470,23 @@ TEST_CASE("typeToString<Command<...>>") {
     REQUIRE(typeToString<CommandT>() == "Command<FFoo, BBar>");
 }
 
-TEST_CASE("typeToString<NewCommands<...>>") {
-    typedef NewCommands<Foo> CommandsT;
-    REQUIRE(typeToString<CommandsT>() == "NewCommands<FFoo>");
+TEST_CASE("typeToString<Commands<...>>") {
+    typedef Commands<Foo> CommandsT;
+    REQUIRE(typeToString<CommandsT>() == "Commands<FFoo>");
 }
 
-TEST_CASE("state::newcheck") {
-    newprop(
+TEST_CASE("state::check") {
+    prop(
         "if no command fails, check succeeds",
         [](const StringVec &s0, StringVec sut) {
-            state::newcheck(s0, sut, &newAnyCommand<NewPushBack>);
+            state::check(s0, sut, &anyCommand<PushBack>);
         });
 
-    newprop(
+    prop(
         "if some command fails, check fails",
         [](const StringVec &s0, StringVec sut) {
             try {
-                state::newcheck(s0, sut, &newAnyCommand<AlwaysFail>);
+                state::check(s0, sut, &anyCommand<AlwaysFail>);
                 RC_FAIL("Check succeeded");
             } catch (const CaseResult &result) {
                 RC_ASSERT(result.type == CaseResult::Type::Failure);

@@ -14,7 +14,7 @@ bool isFailure(const CaseDescription &desc)
 
 } // namespace
 
-TestResult checkProperty(const NewProperty &property, const TestParams &params)
+TestResult checkProperty(const Property &property, const TestParams &params)
 {
     TestCase currentCase;
     currentCase.size = 0;

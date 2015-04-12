@@ -22,11 +22,11 @@ inline void showValue(const Box &value, std::ostream &os)
 } // namespace test
 
 template<>
-struct NewArbitrary<test::Box>
+struct Arbitrary<test::Box>
 {
     static Gen<test::Box> arbitrary()
     {
-        return newgen::cast<test::Box>(newgen::arbitrary<int>());
+        return gen::cast<test::Box>(gen::arbitrary<int>());
     }
 };
 

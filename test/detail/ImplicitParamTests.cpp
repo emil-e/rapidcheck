@@ -68,7 +68,7 @@ struct NewScope : public ImplicitCommand
 
 struct BindA : public ImplicitCommand
 {
-    ParamA::ValueType value = *newgen::arbitrary<ParamA::ValueType>();
+    ParamA::ValueType value = *gen::arbitrary<ParamA::ValueType>();
 
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
@@ -94,7 +94,7 @@ struct BindA : public ImplicitCommand
 
 struct BindB : public ImplicitCommand
 {
-    ParamB::ValueType value = *newgen::arbitrary<ParamB::ValueType>();
+    ParamB::ValueType value = *gen::arbitrary<ParamB::ValueType>();
 
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
@@ -120,7 +120,7 @@ struct BindB : public ImplicitCommand
 
 struct ModifyA : public ImplicitCommand
 {
-    ParamA::ValueType value = *newgen::arbitrary<ParamA::ValueType>();
+    ParamA::ValueType value = *gen::arbitrary<ParamA::ValueType>();
 
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
@@ -146,7 +146,7 @@ struct ModifyA : public ImplicitCommand
 
 struct ModifyB : public ImplicitCommand
 {
-    ParamB::ValueType value = *newgen::arbitrary<ParamB::ValueType>();
+    ParamB::ValueType value = *gen::arbitrary<ParamB::ValueType>();
 
     ImplicitParamModel nextState(const ImplicitParamModel &s0) const override
     {
@@ -247,13 +247,13 @@ struct PopScope : public ImplicitCommand
 } // namespace
 
 TEST_CASE("ImplicitParam") {
-    newprop(
+    prop(
         "stateful test",
         [] {
             ImplicitParamModel s0;
             ImplicitParamSystem sut;
-            state::newcheck(s0, sut,
-                            state::newAnyCommand<
+            state::check(s0, sut,
+                            state::anyCommand<
                             NewScope,
                             BindA,
                             BindB,

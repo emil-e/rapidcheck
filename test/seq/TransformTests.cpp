@@ -12,10 +12,10 @@ using namespace rc;
 using namespace rc::test;
 
 TEST_CASE("seq::drop") {
-    newprop(
+    prop(
         "drops the first N elements from the given seq",
         [] (const std::vector<int> &elements) {
-            std::size_t n = *newgen::inRange<std::size_t>(
+            std::size_t n = *gen::inRange<std::size_t>(
                 0, (elements.size() + 1) * 2);
             std::size_t start = std::min(elements.size(), n);
             std::vector<int> rest(elements.begin() + start, elements.end());
@@ -23,18 +23,18 @@ TEST_CASE("seq::drop") {
                       seq::fromContainer(rest));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] (const std::vector<int> &elements) {
-            std::size_t n = *newgen::inRange<std::size_t>(
+            std::size_t n = *gen::inRange<std::size_t>(
                 0, (elements.size() + 1) * 2);
             assertEqualCopies(seq::drop(n, seq::fromContainer(elements)));
         });
 
-    newprop(
+    prop(
         "does not copy items",
         [] (std::vector<CopyGuard> elements) {
-            std::size_t n = *newgen::inRange<std::size_t>(
+            std::size_t n = *gen::inRange<std::size_t>(
                 0, (elements.size() + 1) * 2);
             auto seq = seq::drop(n, seq::fromContainer(std::move(elements)));
             while (seq.next());
@@ -46,10 +46,10 @@ TEST_CASE("seq::drop") {
 }
 
 TEST_CASE("seq::take") {
-    newprop(
+    prop(
         "takes the first N elements from the given seq",
         [] (const std::vector<int> &elements) {
-            std::size_t n = *newgen::inRange<std::size_t>(
+            std::size_t n = *gen::inRange<std::size_t>(
                 0, (elements.size() + 1) * 2);
             std::size_t start = std::min(elements.size(), n);
             std::vector<int> head(elements.begin(), elements.begin() + start);
@@ -57,19 +57,19 @@ TEST_CASE("seq::take") {
                       seq::fromContainer(head));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] (const std::vector<int> &elements) {
-            std::size_t n = *newgen::inRange<std::size_t>(
+            std::size_t n = *gen::inRange<std::size_t>(
                 0, (elements.size() + 1) * 2);
             std::size_t start = std::min(elements.size(), n);
             assertEqualCopies(seq::take(n, seq::fromContainer(elements)));
         });
 
-    newprop(
+    prop(
         "does not copy items",
         [] (std::vector<CopyGuard> elements) {
-            std::size_t n = *newgen::inRange<std::size_t>(
+            std::size_t n = *gen::inRange<std::size_t>(
                 0, (elements.size() + 1) * 2);
             std::size_t start = std::min(elements.size(), n);
             auto seq = seq::take(n, seq::fromContainer(std::move(elements)));
@@ -82,7 +82,7 @@ TEST_CASE("seq::take") {
 }
 
 TEST_CASE("seq::dropWhile") {
-    newprop(
+    prop(
         "drops all elements before the first element matching the predicate",
         [] (const std::vector<int> &elements, int limit) {
             const auto pred = [=](int x) { return x < limit; };
@@ -92,14 +92,14 @@ TEST_CASE("seq::dropWhile") {
                       seq::fromIteratorRange(it, end(elements)));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] (const std::vector<int> &elements, int limit) {
             const auto pred = [=](int x) { return x < limit; };
             assertEqualCopies(seq::dropWhile(seq::fromContainer(elements), pred));
         });
 
-    newprop(
+    prop(
         "does not copy items",
         [] (std::vector<CopyGuard> elements, int limit) {
             const auto pred = [=](const CopyGuard &x) { return x < limit; };
@@ -117,7 +117,7 @@ TEST_CASE("seq::dropWhile") {
 }
 
 TEST_CASE("seq::takeWhile") {
-    newprop(
+    prop(
         "takes all elements before the first element matching the predicate",
         [] (const std::vector<int> &elements, int limit) {
             const auto pred = [=](int x) { return x < limit; };
@@ -127,14 +127,14 @@ TEST_CASE("seq::takeWhile") {
                       seq::fromIteratorRange(begin(elements), it));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] (const std::vector<int> &elements, int limit) {
             const auto pred = [=](int x) { return x < limit; };
             assertEqualCopies(seq::takeWhile(seq::fromContainer(elements), pred));
         });
 
-    newprop(
+    prop(
         "does not copy items",
         [] (std::vector<CopyGuard> elements, int limit) {
             const auto pred = [=](const CopyGuard &x) { return x < limit; };
@@ -152,7 +152,7 @@ TEST_CASE("seq::takeWhile") {
 }
 
 TEST_CASE("seq::map") {
-    newprop(
+    prop(
         "maps elements using mapping callable",
         [] (const std::vector<int> &elements, int x)
         {
@@ -165,7 +165,7 @@ TEST_CASE("seq::map") {
                       seq::fromContainer(std::move(expectedElements)));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] (const std::vector<int> &elements, int x)
         {
@@ -174,7 +174,7 @@ TEST_CASE("seq::map") {
             assertEqualCopies(mapSeq);
         });
 
-    newprop(
+    prop(
         "does not copy elements",
         [] (std::vector<CopyGuard> elements) {
             const auto mapper = [](CopyGuard &&x) { return std::move(x); };
@@ -185,10 +185,10 @@ TEST_CASE("seq::map") {
 }
 
 TEST_CASE("seq::zipWith") {
-    newprop(
+    prop(
         "works with no sequences",
         [] (int x) {
-            std::size_t n = *newgen::inRange<std::size_t>(0, 1000);
+            std::size_t n = *gen::inRange<std::size_t>(0, 1000);
             const auto zipper = [=]{ return x; };
             auto zipSeq = seq::take(n, seq::zipWith(zipper));
             for (std::size_t i = 0; i < n; i++)
@@ -196,7 +196,7 @@ TEST_CASE("seq::zipWith") {
             RC_ASSERT(!zipSeq.next());
         });
 
-    newprop(
+    prop(
         "works with one sequence",
         [] (const std::vector<int> &elements, int x)
         {
@@ -209,7 +209,7 @@ TEST_CASE("seq::zipWith") {
                       seq::fromContainer(std::move(expectedElements)));
         });
 
-    newprop(
+    prop(
         "works with two sequences",
         [] (const std::vector<int> &e1,
             const std::vector<std::string> &e2)
@@ -228,7 +228,7 @@ TEST_CASE("seq::zipWith") {
                       seq::fromContainer(std::move(expectedElements)));
         });
 
-    newprop(
+    prop(
         "works with three sequences",
         [] (const std::vector<int> &e1,
             const std::vector<std::string> &e2,
@@ -249,7 +249,7 @@ TEST_CASE("seq::zipWith") {
                       seq::fromContainer(std::move(expectedElements)));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] (const std::vector<int> &e1,
             const std::vector<std::string> &e2,
@@ -265,7 +265,7 @@ TEST_CASE("seq::zipWith") {
             assertEqualCopies(zipSeq);
         });
 
-    newprop(
+    prop(
         "does not copy elements",
         [] (std::vector<CopyGuard> e1, std::vector<CopyGuard> e2) {
             const auto zipper = [](CopyGuard &&a, CopyGuard &&b) {
@@ -279,7 +279,7 @@ TEST_CASE("seq::zipWith") {
 }
 
 TEST_CASE("seq::filter") {
-    newprop(
+    prop(
         "returns a seq with only the elements not matching the predicate"
         " removed",
         [] (const std::vector<int> &elements, int limit) {
@@ -293,7 +293,7 @@ TEST_CASE("seq::filter") {
                       seq::fromContainer(std::move(expectedElements)));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] (const std::vector<int> &elements, int limit) {
             const auto pred = [=](int x) { return x < limit; };
@@ -304,7 +304,7 @@ TEST_CASE("seq::filter") {
             assertEqualCopies(seq::filter(seq::fromContainer(elements), pred));
         });
 
-    newprop(
+    prop(
         "does not copy elements",
         [] (std::vector<CopyGuard> elements, int limit) {
             const auto pred = [=](const CopyGuard &x) { return x.value < limit; };
@@ -314,11 +314,11 @@ TEST_CASE("seq::filter") {
 }
 
 TEST_CASE("seq::join") {
-    static const auto subgen = newgen::scale(
-        0.25, newgen::arbitrary<std::vector<int>>());
-    static const auto gen = newgen::container<std::vector<std::vector<int>>>(subgen);
+    static const auto subgen = gen::scale(
+        0.25, gen::arbitrary<std::vector<int>>());
+    static const auto gen = gen::container<std::vector<std::vector<int>>>(subgen);
 
-    newprop(
+    prop(
         "returns a seq with the elements of all seqs joined together",
         []{
             auto vectors = *gen;
@@ -337,7 +337,7 @@ TEST_CASE("seq::join") {
             RC_ASSERT(seq::join(seqs) == seq::fromContainer(expectedElements));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         []{
             auto vectors = *gen;
@@ -349,13 +349,13 @@ TEST_CASE("seq::join") {
             assertEqualCopies(seq::join(seqs));
         });
 
-    newprop(
+    prop(
         "does not copy elements",
         []{
             static const auto subguardgen =
-                newgen::scale(0.25, newgen::arbitrary<std::vector<CopyGuard>>());
+                gen::scale(0.25, gen::arbitrary<std::vector<CopyGuard>>());
             static const auto guardgen =
-                newgen::container<std::vector<std::vector<CopyGuard>>>(
+                gen::container<std::vector<std::vector<CopyGuard>>>(
                     subguardgen);
             auto vectors = *guardgen;
             auto seqs = seq::map(
@@ -369,7 +369,7 @@ TEST_CASE("seq::join") {
 }
 
 TEST_CASE("seq::concat") {
-    newprop(
+    prop(
         "joins the given sequences together",
         [] (const std::vector<int> &a,
             const std::vector<int> &b,
@@ -386,7 +386,7 @@ TEST_CASE("seq::concat") {
                       seq::fromContainer(expectedElements));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] (const std::vector<int> &a,
             const std::vector<int> &b,
@@ -397,7 +397,7 @@ TEST_CASE("seq::concat") {
                                           seq::fromContainer(c)));
         });
 
-    newprop(
+    prop(
         "does not copy elements",
         [] (std::vector<CopyGuard> a,
             std::vector<CopyGuard> b,
@@ -411,7 +411,7 @@ TEST_CASE("seq::concat") {
 }
 
 TEST_CASE("seq::mapcat") {
-    newprop(
+    prop(
         "equivalent to seq::join(seq::map(...))",
         [](std::vector<int> elements) {
             const auto seq = seq::fromContainer(std::move(elements));
@@ -423,7 +423,7 @@ TEST_CASE("seq::mapcat") {
                       seq::join(seq::map(seq, mapper)));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [](std::vector<int> elements) {
             const auto seq = seq::fromContainer(std::move(elements));
@@ -434,7 +434,7 @@ TEST_CASE("seq::mapcat") {
             assertEqualCopies(seq::mapcat(seq, mapper));
         });
 
-    newprop(
+    prop(
         "does not copy elements",
         [](std::vector<CopyGuard> elements) {
             auto seq = seq::fromContainer(std::move(elements));
@@ -447,7 +447,7 @@ TEST_CASE("seq::mapcat") {
 }
 
 TEST_CASE("seq::mapMaybe") {
-    newprop(
+    prop(
         "removes elements for which mapper evaluates to Nothing",
         [](const std::vector<int> &elements) {
             const auto seq = seq::fromContainer(elements);
@@ -458,7 +458,7 @@ TEST_CASE("seq::mapMaybe") {
             RC_ASSERT(maybeSeq == seq::filter(seq, pred));
         });
 
-    newprop(
+    prop(
         "for elements that are not Nothing, unwraps the contents",
         [](const std::vector<int> &elements) {
             const auto seq = seq::fromContainer(elements);
@@ -469,7 +469,7 @@ TEST_CASE("seq::mapMaybe") {
             RC_ASSERT(maybeSeq == seq::map(seq, mapper));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [](const std::vector<int> &elements) {
             const auto seq = seq::fromContainer(elements);
@@ -479,7 +479,7 @@ TEST_CASE("seq::mapMaybe") {
                 }));
         });
 
-    newprop(
+    prop(
         "does not copy elements",
         [](std::vector<CopyGuard> elements) {
             auto seq = seq::fromContainer(std::move(elements));
@@ -493,10 +493,10 @@ TEST_CASE("seq::mapMaybe") {
 }
 
 TEST_CASE("seq::cycle") {
-    newprop(
+    prop(
         "returns an infinite cycle of the given Seq",
         []{
-            auto elements = *newgen::suchThat<std::vector<int>>(
+            auto elements = *gen::suchThat<std::vector<int>>(
                 [](const std::vector<int> &x) { return !x.empty(); });
             auto seq = seq::cycle(seq::fromContainer(elements));
             auto it = begin(elements);
@@ -507,18 +507,18 @@ TEST_CASE("seq::cycle") {
             }
         });
 
-    newprop(
+    prop(
         "does not copy Seq on construction",
         []{
-            auto elements = *newgen::suchThat<std::vector<CopyGuard>>(
+            auto elements = *gen::suchThat<std::vector<CopyGuard>>(
                 [](const std::vector<CopyGuard> &x) { return !x.empty(); });
             auto seq = seq::cycle(seq::fromContainer(std::move(elements)));
         });
 
-    newprop(
+    prop(
         "copies are equal",
         []{
-            auto elements = *newgen::suchThat<std::vector<int>>(
+            auto elements = *gen::suchThat<std::vector<int>>(
                 [](const std::vector<int> &x) { return !x.empty(); });
             auto seq = seq::cycle(seq::fromContainer(elements));
             assertEqualCopies(seq::take(1000, std::move(seq)));
@@ -526,21 +526,21 @@ TEST_CASE("seq::cycle") {
 }
 
 TEST_CASE("seq::cast") {
-    newprop(
+    prop(
         "casting to a larger type and then back yields Seq equal to original",
         [](const std::vector<uint8_t> &elements) {
             const auto seq = seq::fromContainer(elements);
             RC_ASSERT(seq::cast<uint8_t>(seq::cast<int>(seq)) == seq);
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [](const std::vector<uint8_t> &elements) {
             assertEqualCopies(
                 seq::cast<int>(seq::fromContainer(elements)));
         });
 
-    newprop(
+    prop(
         "does not copy elements",
         [](std::vector<CopyGuard> elements) {
             auto seq = seq::cast<CopyGuard>(

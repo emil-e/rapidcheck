@@ -5,8 +5,8 @@
 namespace rc {
 
 template<typename T>
-void newpropConformsToEquals() {
-    newprop(
+void propConformsToEquals() {
+    prop(
         "copies are equal",
         [] (const T &x) {
             T copy(x);
@@ -16,7 +16,7 @@ void newpropConformsToEquals() {
             RC_ASSERT(!(copy != x));
         });
 
-    newprop(
+    prop(
         "== is the opposite of !=",
         [] (const T &x1, const T &x2) {
             RC_ASSERT((x1 == x2) == !(x1 != x2));
@@ -25,8 +25,8 @@ void newpropConformsToEquals() {
 }
 
 template<typename T>
-void newpropConformsToOutputOperator() {
-    newprop(
+void propConformsToOutputOperator() {
+    prop(
         "output equality reflects input equality",
         [] (const T &x1, const T &x2) {
             std::ostringstream s1;
@@ -37,12 +37,12 @@ void newpropConformsToOutputOperator() {
         });
 }
 
-#define NEWPROP_REPLACE_MEMBER_INEQUAL(Type, Member)            \
-    newprop(                                                    \
+#define PROP_REPLACE_MEMBER_INEQUAL(Type, Member)               \
+    prop(                                                       \
         "not equal if " #Member " not equal",                   \
         [] (const Type &x) {                                    \
             auto other(x);                                      \
-            other.Member = *newgen::distinctFrom(other.Member); \
+            other.Member = *gen::distinctFrom(other.Member); \
             RC_ASSERT(x != other);                              \
             RC_ASSERT(other != x);                              \
             RC_ASSERT(!(x == other));                           \

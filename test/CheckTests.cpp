@@ -8,9 +8,9 @@
 
 #include "rapidcheck/detail/Configuration.h"
 #include "rapidcheck/Check.h"
-#include "rapidcheck/newgen/Create.h"
-#include "rapidcheck/newgen/Container.h"
-#include "rapidcheck/newgen/Numeric.h"
+#include "rapidcheck/gen/Create.h"
+#include "rapidcheck/gen/Container.h"
+#include "rapidcheck/gen/Numeric.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -19,16 +19,16 @@ using namespace rc::detail;
 namespace rc {
 
 template<>
-class NewArbitrary<TestParams>
+class Arbitrary<TestParams>
 {
 public:
     static Gen<TestParams> arbitrary()
     {
-        return newgen::exec([]{
+        return gen::exec([]{
             TestParams params;
-            params.maxSuccess = *newgen::inRange(0, 100);
-            params.maxSize = *newgen::inRange(0, 101);
-            params.maxDiscardRatio = *newgen::inRange(0, 100);
+            params.maxSuccess = *gen::inRange(0, 100);
+            params.maxSize = *gen::inRange(0, 101);
+            params.maxDiscardRatio = *gen::inRange(0, 100);
             return params;
         });
     }
@@ -38,16 +38,16 @@ public:
 
 TEST_CASE("TestParams") {
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<TestParams>();
-        NEWPROP_REPLACE_MEMBER_INEQUAL(TestParams, seed);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSuccess);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSize);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(TestParams, maxDiscardRatio);
+        propConformsToEquals<TestParams>();
+        PROP_REPLACE_MEMBER_INEQUAL(TestParams, seed);
+        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSuccess);
+        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSize);
+        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxDiscardRatio);
     }
 }
 
 TEST_CASE("defaultTestParams") {
-    newprop(
+    prop(
         "takes default params from ImplicitParam<CurrentConfiguration>",
         [] (const Configuration &config) {
             TestParams expected;
@@ -63,12 +63,12 @@ TEST_CASE("defaultTestParams") {
 
 // TODO good candidate for profiling
 
-TEST_CASE("newCheckTestable") {
-    newprop(
+TEST_CASE("checkTestable") {
+    prop(
         "runs all test cases if no cases fail",
         [] (const TestParams &params) {
             int numCases = 0;
-            auto result = newCheckTestable([&] {
+            auto result = checkTestable([&] {
                 numCases++;
             }, params);
             RC_ASSERT(numCases == params.maxSuccess);
@@ -78,14 +78,14 @@ TEST_CASE("newCheckTestable") {
             RC_ASSERT(success.numSuccess == params.maxSuccess);
         });
 
-    newprop(
+    prop(
         "returns correct information about failing case",
         [] (const TestParams &params) {
             RC_PRE(params.maxSuccess > 0);
             int caseIndex = 0;
             int lastSize = -1;
-            int targetSuccess = *newgen::inRange<int>(0, params.maxSuccess);
-            auto result = newCheckTestable([&] {
+            int targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
+            auto result = checkTestable([&] {
                 lastSize = (*genPassedParams()).size;
                 RC_ASSERT(caseIndex < targetSuccess);
                 caseIndex++;
@@ -96,16 +96,16 @@ TEST_CASE("newCheckTestable") {
             RC_ASSERT(failure.failingCase.size == lastSize);
         });
 
-    newprop(
+    prop(
         "returns the correct number of shrinks on a failing case",
         [] {
-            auto evenInteger = newgen::scale(
+            auto evenInteger = gen::scale(
                 0.25,
-                newgen::suchThat(
-                    newgen::positive<int>(),
+                gen::suchThat(
+                    gen::positive<int>(),
                     [](int x) { return (x % 2) == 0; }));
-            auto values = *newgen::pair(evenInteger, evenInteger);
-            auto results = newCheckTestable([&] {
+            auto values = *gen::pair(evenInteger, evenInteger);
+            auto results = checkTestable([&] {
                 auto v1 = *genFixedCountdown(values.first);
                 auto v2 = *genFixedCountdown(values.second);
                 return ((v1 % 2) != 0) || ((v2 % 2) != 0);
@@ -117,13 +117,13 @@ TEST_CASE("newCheckTestable") {
                                              (values.second / 2)));
         });
 
-    newprop(
+    prop(
         "returns a correct counter-example",
         [] (std::vector<int> values) {
-            auto results = newCheckTestable(
+            auto results = checkTestable(
                 [&](FixedCountdown<0>, FixedCountdown<0>) {
                     for (auto value : values)
-                        *newgen::just(value);
+                        *gen::just(value);
                     return false;
                 });
 
@@ -147,14 +147,14 @@ TEST_CASE("newCheckTestable") {
             RC_ASSERT(failure.counterExample == expected);
         });
 
-    newprop(
+    prop(
         "counter-example is not affected by nested tests",
         [] {
-            auto results = newCheckTestable([] {
-                *newgen::just<std::string>("foo");
-                auto innerResults = newCheckTestable([&] {
-                    *newgen::just<std::string>("bar");
-                    *newgen::just<std::string>("baz");
+            auto results = checkTestable([] {
+                *gen::just<std::string>("foo");
+                auto innerResults = checkTestable([&] {
+                    *gen::just<std::string>("bar");
+                    *gen::just<std::string>("baz");
                 });
 
                 return false;
@@ -168,10 +168,10 @@ TEST_CASE("newCheckTestable") {
             RC_ASSERT(failure.counterExample == expected);
         });
 
-    newprop(
+    prop(
         "on failure, description contains message",
         [] (const std::string &description) {
-            auto results = newCheckTestable([&] {
+            auto results = checkTestable([&] {
                 RC_FAIL(description);
             });
 
@@ -181,14 +181,14 @@ TEST_CASE("newCheckTestable") {
                       std::string::npos);
         });
 
-    newprop(
+    prop(
         "gives up if too many test cases are discarded",
         [] (const TestParams &params) {
             RC_PRE(params.maxSuccess > 0);
             const int maxDiscards = params.maxSuccess * params.maxDiscardRatio;
-            const int targetSuccess = *newgen::inRange<int>(0, params.maxSuccess);
+            const int targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
             int numTests = 0;
-            auto results = newCheckTestable([&] {
+            auto results = checkTestable([&] {
                 numTests++;
                 RC_PRE(numTests <= targetSuccess);
             }, params);
@@ -199,13 +199,13 @@ TEST_CASE("newCheckTestable") {
             RC_ASSERT(gaveUp.numSuccess == targetSuccess);
         });
 
-    newprop(
+    prop(
         "does not give up if not enough tests are discarded",
         [] (const TestParams &params) {
             const int maxDiscards = params.maxSuccess * params.maxDiscardRatio;
-            const int targetDiscard = *newgen::inRange<int>(0, maxDiscards + 1);
+            const int targetDiscard = *gen::inRange<int>(0, maxDiscards + 1);
             int numTests = 0;
-            auto results = newCheckTestable([&] {
+            auto results = checkTestable([&] {
                 numTests++;
                 RC_PRE(numTests > targetDiscard);
             }, params);
@@ -215,10 +215,10 @@ TEST_CASE("newCheckTestable") {
             RC_ASSERT(success.numSuccess == params.maxSuccess);
         });
 
-    newprop(
+    prop(
         "on giving up, description contains message",
         [] (const std::string &description) {
-            auto results = newCheckTestable([&] {
+            auto results = checkTestable([&] {
                 RC_DISCARD(description);
             });
 
@@ -228,24 +228,24 @@ TEST_CASE("newCheckTestable") {
                       std::string::npos);
         });
 
-    newprop(
+    prop(
         "running the same test with the same TestParams yields identical runs",
         [] (const TestParams &params) {
             std::vector<std::vector<int>> values;
-            auto newproperty
+            auto property
                 = [&] {
-                auto x = *newgen::arbitrary<std::vector<int>>();
+                auto x = *gen::arbitrary<std::vector<int>>();
                 values.push_back(x);
                 auto result = std::find(begin(x), end(x), 50);
                 return result == end(x);
             };
 
-            auto results1 = newCheckTestable(newproperty,
+            auto results1 = checkTestable(property,
                                              params);
             auto values1 = std::move(values);
 
             values = std::vector<std::vector<int>>();
-            auto results2 = newCheckTestable(newproperty,
+            auto results2 = checkTestable(property,
                                              params);
             auto values2 = std::move(values);
 

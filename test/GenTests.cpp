@@ -8,7 +8,7 @@
 
 using namespace rc;
 using namespace rc::detail;
-using namespace rc::newgen::detail;
+using namespace rc::gen::detail;
 
 struct MockGenerationHandler : public GenerationHandler
 {
@@ -27,7 +27,7 @@ struct MockGenerationHandler : public GenerationHandler
 
 TEST_CASE("Gen") {
     SECTION("operator()") {
-        newprop(
+        prop(
             "passes the arguments to the functor",
             [](const Random &random, int size) {
                 bool called = false;
@@ -46,7 +46,7 @@ TEST_CASE("Gen") {
                 RC_ASSERT(passedSize == size);
             });
 
-        newprop(
+        prop(
             "returns the value returned by the functor",
             [](const Random &random, int size, int x) {
                 Gen<int> gen([=](const Random &random, int size) {
@@ -56,7 +56,7 @@ TEST_CASE("Gen") {
                 RC_ASSERT(gen(random, size) == shrinkable::just(x));
             });
 
-        newprop(
+        prop(
             "if exception is thrown in generation function, shrinkable is"
             " returned that rethrows the exception on call to value()",
             [](const std::string &message) {
@@ -85,7 +85,7 @@ TEST_CASE("Gen") {
 
         MockGenerationHandler handler;
         handler.returnValue = Any::of(456);
-        ImplicitParam<rc::newgen::detail::param::CurrentHandler> letHandler(
+        ImplicitParam<rc::gen::detail::param::CurrentHandler> letHandler(
             &handler);
         Gen<int> gen(fn::constant(shrinkable::just(1337)));
         int x = *gen;

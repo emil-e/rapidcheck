@@ -124,20 +124,20 @@ TEST_CASE("Shrinkable") {
     }
 
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<Shrinkable<int>>();
+        propConformsToEquals<Shrinkable<int>>();
 
-        newprop(
+        prop(
             "different values yield inequal shrinkables",
             [](Seq<Shrinkable<int>> shrinks, int v1) {
-                int v2 = *newgen::distinctFrom(v1);
+                int v2 = *gen::distinctFrom(v1);
                 RC_ASSERT(shrinkable::just(v1, shrinks) !=
                           shrinkable::just(v2, shrinks));
             });
 
-        newprop(
+        prop(
             "different shrinks yield inequal shrinkables",
             [](int value, Seq<Shrinkable<int>> shrinks1) {
-                Seq<Shrinkable<int>> shrinks2 = *newgen::distinctFrom(shrinks1);
+                Seq<Shrinkable<int>> shrinks2 = *gen::distinctFrom(shrinks1);
                 RC_ASSERT(shrinkable::just(value, shrinks1) !=
                           shrinkable::just(value, shrinks2));
             });

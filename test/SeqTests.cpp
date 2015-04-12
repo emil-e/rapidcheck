@@ -129,7 +129,7 @@ TEST_CASE("Seq") {
     }
 
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<Seq<std::string>>();
+        propConformsToEquals<Seq<std::string>>();
 
         SECTION("empty sequences are equal") {
             REQUIRE(Seq<int>() == Seq<int>());
@@ -143,7 +143,7 @@ TEST_CASE("Seq") {
             REQUIRE(seq == Seq<int>());
         }
 
-        newprop(
+        prop(
             "sequences with different implementation classes can be equal",
             [] (const std::string &a,
                 const std::string &b,
@@ -155,18 +155,18 @@ TEST_CASE("Seq") {
                 RC_ASSERT(seqJust == seqContainer);
             });
 
-        newprop(
+        prop(
             "changing a single element leads to inequal sequences",
             [] {
                 // TODO non-empty generator
                 const auto elements1 =
-                    *newgen::suchThat<std::vector<std::string>>(
+                    *gen::suchThat<std::vector<std::string>>(
                         [](const std::vector<std::string> &x) {
                             return !x.empty();
                         });
                 auto elements2 = elements1;
-                const auto i = *newgen::inRange<std::size_t>(0, elements2.size());
-                elements2[i] = *newgen::distinctFrom(elements2[i]);
+                const auto i = *gen::inRange<std::size_t>(0, elements2.size());
+                elements2[i] = *gen::distinctFrom(elements2[i]);
                 RC_ASSERT(seq::fromContainer(elements1) !=
                           seq::fromContainer(elements2));
             });

@@ -7,7 +7,7 @@
 using namespace rc;
 
 TEST_CASE("seq::length") {
-    newprop(
+    prop(
         "returns the number of elements in the sequence",
         [](const std::vector<int> &elements) {
             auto seq = seq::fromContainer(elements);
@@ -16,7 +16,7 @@ TEST_CASE("seq::length") {
 }
 
 TEST_CASE("seq::forEach") {
-    newprop(
+    prop(
         "calls the callable once for each element",
         [](const std::vector<std::string> &elements) {
             auto seq = seq::fromContainer(elements);
@@ -33,10 +33,10 @@ TEST_CASE("seq::last") {
         REQUIRE(!seq::last(Seq<int>()));
     }
 
-    newprop(
+    prop(
         "returns the last element of the Seq",
         []{
-            auto elements = *newgen::suchThat<std::vector<int>>(
+            auto elements = *gen::suchThat<std::vector<int>>(
                 [](const std::vector<int> &x) { return !x.empty(); });
             RC_ASSERT(*seq::last(seq::fromContainer(elements)) ==
                       elements.back());
@@ -44,10 +44,10 @@ TEST_CASE("seq::last") {
 }
 
 TEST_CASE("seq::contains") {
-    newprop(
+    prop(
         "returns false for elements not in Seq",
         [](const std::vector<int> &elements) {
-            int value = *newgen::suchThat<int>(
+            int value = *gen::suchThat<int>(
                 [&](int x) {
                     return std::find(begin(elements),
                                      end(elements),
@@ -56,31 +56,31 @@ TEST_CASE("seq::contains") {
             RC_ASSERT(!seq::contains(seq::fromContainer(elements), value));
         });
 
-    newprop(
+    prop(
         "returns true for elements in Seq",
         []{
-            auto elements = *newgen::suchThat<std::vector<int>>(
+            auto elements = *gen::suchThat<std::vector<int>>(
                 [](const std::vector<int> &x) { return !x.empty(); });
-            int value = *newgen::elementOf(elements);
+            int value = *gen::elementOf(elements);
             RC_ASSERT(seq::contains(seq::fromContainer(elements), value));
         });
 }
 
 TEST_CASE("seq::all") {
-    newprop(
+    prop(
         "returns true if all elements match predicate",
         [] (int value) {
-            int n = *newgen::inRange<std::size_t>(0, 200);
+            int n = *gen::inRange<std::size_t>(0, 200);
             auto seq = seq::take(n, seq::repeat(value));
             RC_ASSERT(seq::all(seq, [=](int x) { return x == value; }));
         });
 
-    newprop(
+    prop(
         "returns false if one element does not match predicate",
         [] (int value) {
-            int other = *newgen::distinctFrom(value);
-            int n1 = *newgen::inRange<std::size_t>(0, 100);
-            int n2 = *newgen::inRange<std::size_t>(0, 100);
+            int other = *gen::distinctFrom(value);
+            int n1 = *gen::inRange<std::size_t>(0, 100);
+            int n2 = *gen::inRange<std::size_t>(0, 100);
             auto seq = seq::concat(seq::take(n1, seq::repeat(value)),
                                    seq::just(other),
                                    seq::take(n2, seq::repeat(value)));
@@ -89,12 +89,12 @@ TEST_CASE("seq::all") {
 }
 
 TEST_CASE("seq::any") {
-    newprop(
+    prop(
         "seq::any(..., pred) != seq::all(..., !pred)",
         [] {
-            auto someNumber = newgen::inRange<std::size_t>(0, 200);
+            auto someNumber = gen::inRange<std::size_t>(0, 200);
             int x = *someNumber;
-            auto elements = *newgen::container<std::vector<int>>(someNumber);
+            auto elements = *gen::container<std::vector<int>>(someNumber);
             auto seq = seq::fromContainer(elements);
             const auto pred = [=](int y) { return x == y; };
             const auto npred = [=](int y) { return x != y; };
@@ -103,22 +103,22 @@ TEST_CASE("seq::any") {
 }
 
 TEST_CASE("seq::at") {
-    newprop(
+    prop(
         "returns the element at the given position if index < size",
         [] {
-            const auto elements = *newgen::suchThat<std::vector<int>>(
+            const auto elements = *gen::suchThat<std::vector<int>>(
                 [](const std::vector<int> &x) { return !x.empty(); });
-            std::size_t i = *newgen::inRange<std::size_t>(0, elements.size());
+            std::size_t i = *gen::inRange<std::size_t>(0, elements.size());
             auto x = seq::at(seq::fromContainer(elements), i);
             RC_ASSERT(x);
             RC_ASSERT(*x == elements[i]);
         });
 
-    newprop(
+    prop(
         "returns Nothing for indexes past end",
         [](int x) {
-            std::size_t n = *newgen::inRange<std::size_t>(0, 100);
-            std::size_t i = *newgen::inRange<std::size_t>(n, 200);
+            std::size_t n = *gen::inRange<std::size_t>(0, 100);
+            std::size_t i = *gen::inRange<std::size_t>(n, 200);
             RC_ASSERT(!seq::at(seq::take(n, seq::repeat(x)), i));
         });
 }

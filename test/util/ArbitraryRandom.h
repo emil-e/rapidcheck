@@ -6,13 +6,13 @@ namespace rc {
 
 // This will only generate Randoms with no next() called.
 template<>
-struct NewArbitrary<Random>
+struct Arbitrary<Random>
 {
     static Gen<Random> arbitrary()
     {
-        return newgen::map(
-            newgen::pair(newgen::arbitrary<Random::Key>(),
-                         newgen::arbitrary<std::vector<bool>>()),
+        return gen::map(
+            gen::pair(gen::arbitrary<Random::Key>(),
+                         gen::arbitrary<std::vector<bool>>()),
             [](const std::pair<Random::Key, std::vector<bool>> &p) {
                 Random random(p.first);
                 for (bool x : p.second) {
@@ -32,9 +32,9 @@ namespace test {
 // This will also generate Randoms where next() has been called
 inline Gen<Random> trulyArbitraryRandom()
 {
-    return newgen::map(
-        newgen::pair(newgen::arbitrary<Random>(),
-                     newgen::inRange<int>(0, 10000)),
+    return gen::map(
+        gen::pair(gen::arbitrary<Random>(),
+                     gen::inRange<int>(0, 10000)),
         [](std::pair<Random, int> &&p){
             auto nexts = p.second;
             while (nexts-- > 0)

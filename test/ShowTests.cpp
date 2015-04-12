@@ -47,7 +47,7 @@ TEST_CASE("toString<T>") {
 }
 
 TEST_CASE("showCollection") {
-    newprop(
+    prop(
         "shows empty collection correctly",
         [] (const std::string &prefix, const std::string &suffix) {
             std::ostringstream os;
@@ -55,7 +55,7 @@ TEST_CASE("showCollection") {
             RC_ASSERT(os.str() == (prefix + suffix));
         });
 
-    newprop(
+    prop(
         "shows single element correctly",
         [&] (const std::string &prefix, const std::string &suffix, Box a) {
             std::ostringstream os;
@@ -63,7 +63,7 @@ TEST_CASE("showCollection") {
             RC_ASSERT(os.str() == (prefix + a.str() + suffix));
         });
 
-    newprop(
+    prop(
         "shows multiple elements correctly",
         [&] (const std::string &prefix, const std::string &suffix,
              Box a, Box b, Box c)

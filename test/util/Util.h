@@ -5,9 +5,9 @@
 namespace rc {
 
 template<typename T, typename Testable>
-void newtemplatedProp(const std::string &description, Testable testable)
+void templatedProp(const std::string &description, Testable testable)
 {
-    newprop(description + " (" + detail::typeToString<T>() + ")",
+    prop(description + " (" + detail::typeToString<T>() + ")",
             testable);
 }
 

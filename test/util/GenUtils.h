@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rapidcheck/Gen.h"
-#include "rapidcheck/newgen/Arbitrary.h"
+#include "rapidcheck/gen/Arbitrary.h"
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/shrinkable/Operations.h"
 
@@ -126,14 +126,14 @@ T searchGen(const Random &random,
 } // namespace test
 
 template<>
-class NewArbitrary<test::GenParams>
+class Arbitrary<test::GenParams>
 {
 public:
     static Gen<test::GenParams> arbitrary()
     {
-        return newgen::map(
-            newgen::pair(newgen::arbitrary<Random>(),
-                         newgen::inRange<int>(0, 200)),
+        return gen::map(
+            gen::pair(gen::arbitrary<Random>(),
+                         gen::inRange<int>(0, 200)),
             [](const std::pair<Random, int> &p) {
                 test::GenParams params;
                 params.random = p.first;
@@ -144,7 +144,7 @@ public:
 };
 
 template<>
-struct NewArbitrary<test::PassedSize>
+struct Arbitrary<test::PassedSize>
 {
     static Gen<test::PassedSize> arbitrary()
     {
@@ -157,7 +157,7 @@ struct NewArbitrary<test::PassedSize>
 };
 
 template<>
-struct NewArbitrary<test::PassedRandom>
+struct Arbitrary<test::PassedRandom>
 {
     static Gen<test::PassedRandom> arbitrary()
     {
@@ -170,11 +170,11 @@ struct NewArbitrary<test::PassedRandom>
 };
 
 template<int N>
-struct NewArbitrary<test::FixedCountdown<N>>
+struct Arbitrary<test::FixedCountdown<N>>
 {
     static Gen<test::FixedCountdown<N>> arbitrary()
     {
-        return newgen::map(test::genFixedCountdown(N), [](int x) {
+        return gen::map(test::genFixedCountdown(N), [](int x) {
             test::FixedCountdown<N> countdown;
             countdown.value = x;
             return countdown;

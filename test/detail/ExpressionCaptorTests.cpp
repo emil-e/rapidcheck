@@ -12,11 +12,11 @@ using namespace rc::detail;
 namespace rc {
 
 template<>
-struct NewArbitrary<ExpressionCaptor>
+struct Arbitrary<ExpressionCaptor>
 {
     static Gen<ExpressionCaptor> arbitrary()
     {
-        return newgen::map<std::string>([](const std::string &str) {
+        return gen::map<std::string>([](const std::string &str) {
             return ExpressionCaptor(str);
         });
     }
@@ -26,7 +26,7 @@ struct NewArbitrary<ExpressionCaptor>
 
 TEST_CASE("ExpressionCaptor") {
     SECTION("str") {
-        newprop(
+        prop(
             "returns the current value",
             [] (const std::string &value) {
                 RC_ASSERT(ExpressionCaptor(value).str() == value);
@@ -34,7 +34,7 @@ TEST_CASE("ExpressionCaptor") {
     }
 
     SECTION("operator->*") {
-        newprop(
+        prop(
             "simply appends RHS",
             [](const ExpressionCaptor &captor, Box value) {
                 RC_ASSERT((std::move(captor) ->* value).str() ==
@@ -44,7 +44,7 @@ TEST_CASE("ExpressionCaptor") {
 
 #define TEST_BINARY_OPERATOR(op)                                        \
     SECTION("operator" #op) {                                           \
-        newprop(                                                        \
+        prop(                                                        \
             "joins LHS and RHS with operator string between",           \
             [](const ExpressionCaptor &captor, Box value) {             \
                 RC_ASSERT((std::move(captor) op value).str() ==         \

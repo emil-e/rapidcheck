@@ -44,7 +44,7 @@ public:
                              int size = kNominalSize) const noexcept;
 
     //! The meaning of this operator depends on the context in which it is used
-    //! but mainly, it is used when creating a generator using `newgen::exec` to
+    //! but mainly, it is used when creating a generator using `gen::exec` to
     //! pick a value in an impure context.
     T operator*() const;
 

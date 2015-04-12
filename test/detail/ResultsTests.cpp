@@ -9,62 +9,62 @@ using namespace rc::detail;
 
 TEST_CASE("TestCase") {
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<TestCase>();
-        NEWPROP_REPLACE_MEMBER_INEQUAL(TestCase, size);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(TestCase, seed);
+        propConformsToEquals<TestCase>();
+        PROP_REPLACE_MEMBER_INEQUAL(TestCase, size);
+        PROP_REPLACE_MEMBER_INEQUAL(TestCase, seed);
     }
 
     SECTION("operator<<") {
-        newpropConformsToOutputOperator<TestCase>();
+        propConformsToOutputOperator<TestCase>();
     }
 }
 
 TEST_CASE("CaseResult") {
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<CaseResult>();
-        NEWPROP_REPLACE_MEMBER_INEQUAL(CaseResult, type);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(CaseResult, description);
+        propConformsToEquals<CaseResult>();
+        PROP_REPLACE_MEMBER_INEQUAL(CaseResult, type);
+        PROP_REPLACE_MEMBER_INEQUAL(CaseResult, description);
     }
 
     SECTION("operator<<") {
-        newpropConformsToOutputOperator<CaseResult>();
+        propConformsToOutputOperator<CaseResult>();
     }
 }
 
 TEST_CASE("SuccessResult") {
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<SuccessResult>();
-        NEWPROP_REPLACE_MEMBER_INEQUAL(SuccessResult, numSuccess);
+        propConformsToEquals<SuccessResult>();
+        PROP_REPLACE_MEMBER_INEQUAL(SuccessResult, numSuccess);
     }
 
     SECTION("operator<<") {
-        newpropConformsToOutputOperator<SuccessResult>();
+        propConformsToOutputOperator<SuccessResult>();
     }
 }
 
 TEST_CASE("FailureResult") {
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<FailureResult>();
-        NEWPROP_REPLACE_MEMBER_INEQUAL(FailureResult, numSuccess);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(FailureResult, failingCase);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(FailureResult, description);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(FailureResult, numShrinks);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(FailureResult, counterExample);
+        propConformsToEquals<FailureResult>();
+        PROP_REPLACE_MEMBER_INEQUAL(FailureResult, numSuccess);
+        PROP_REPLACE_MEMBER_INEQUAL(FailureResult, failingCase);
+        PROP_REPLACE_MEMBER_INEQUAL(FailureResult, description);
+        PROP_REPLACE_MEMBER_INEQUAL(FailureResult, numShrinks);
+        PROP_REPLACE_MEMBER_INEQUAL(FailureResult, counterExample);
     }
 
     SECTION("operator<<") {
-        newpropConformsToOutputOperator<FailureResult>();
+        propConformsToOutputOperator<FailureResult>();
     }
 }
 
 TEST_CASE("GaveUpResult") {
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<GaveUpResult>();
-        NEWPROP_REPLACE_MEMBER_INEQUAL(GaveUpResult, numSuccess);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(GaveUpResult, description);
+        propConformsToEquals<GaveUpResult>();
+        PROP_REPLACE_MEMBER_INEQUAL(GaveUpResult, numSuccess);
+        PROP_REPLACE_MEMBER_INEQUAL(GaveUpResult, description);
     }
 
     SECTION("operator<<") {
-        newpropConformsToOutputOperator<GaveUpResult>();
+        propConformsToOutputOperator<GaveUpResult>();
     }
 }

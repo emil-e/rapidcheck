@@ -7,7 +7,7 @@ namespace rc {
 namespace shrink {
 
 template<typename Container>
-Seq<Container> newRemoveChunks(Container elements)
+Seq<Container> removeChunks(Container elements)
 {
     return seq::map(
         seq::subranges(0, elements.size()),
@@ -23,7 +23,7 @@ Seq<Container> newRemoveChunks(Container elements)
 }
 
 template<typename Container, typename Shrink>
-Seq<Container> newEachElement(Container elements, Shrink shrink)
+Seq<Container> eachElement(Container elements, Shrink shrink)
 {
     using T = typename Container::value_type;
 

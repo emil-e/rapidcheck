@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rapidcheck/newgen/Arbitrary.h"
-#include "rapidcheck/newgen/Text.h"
+#include "rapidcheck/gen/Arbitrary.h"
+#include "rapidcheck/gen/Text.h"
 
 namespace rc {
 
@@ -18,12 +18,12 @@ struct Fruit
 };
 
 template<typename Tag>
-struct NewArbitrary<Fruit<Tag>>
+struct Arbitrary<Fruit<Tag>>
 {
     static Gen<Fruit<Tag>> arbitrary()
     {
-        return newgen::map(
-            newgen::arbitrary<std::string>(),
+        return gen::map(
+            gen::arbitrary<std::string>(),
             [](const std::string &s) {
                 return Fruit<Tag>(s.c_str());
             });

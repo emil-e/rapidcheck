@@ -115,7 +115,7 @@ TEST_CASE("parseMap") {
 }
 
 TEST_CASE("mapToString") {
-    newprop(
+    prop(
         "parseMap(mapToString(x)) == x",
         [](const std::map<std::string, std::string> &map) {
             RC_PRE(map.find("") == map.end());

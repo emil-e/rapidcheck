@@ -24,10 +24,10 @@ Maybe<T> atOrLast(Seq<T> seq, std::size_t index)
 //! arbitrary paths into the shrinkable tree. `RC_ASSERT` in this function to do
 //! something useful.
 template<typename T, typename Assertion>
-void newOnAnyPath(const Shrinkable<T> &shrinkable, Assertion assertion)
+void onAnyPath(const Shrinkable<T> &shrinkable, Assertion assertion)
 {
-    const auto path = *newgen::container<std::vector<int>>(
-        newgen::inRange<std::size_t>(0, 100));
+    const auto path = *gen::container<std::vector<int>>(
+        gen::inRange<std::size_t>(0, 100));
     Shrinkable<T> current = shrinkable;
     for (const auto n : path) {
         Maybe<Shrinkable<T>> shrink = atOrLast(current.shrinks(), n);

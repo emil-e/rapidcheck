@@ -14,13 +14,13 @@ add_library(rapidcheck
   src/detail/ExpressionCaptor.cpp
   src/detail/ImplicitParam.cpp
   src/detail/MapParser.cpp
-  src/detail/NewProperty.cpp
+  src/detail/Property.cpp
   src/detail/Results.cpp
   src/detail/TestParams.cpp
   src/detail/Utility.cpp
-  src/newgen/detail/ExecHandler.cpp
-  src/newgen/detail/GenerationHandler.cpp
-  src/newgen/detail/Recipe.cpp
+  src/gen/detail/ExecHandler.cpp
+  src/gen/detail/GenerationHandler.cpp
+  src/gen/detail/Recipe.cpp
   )
 
 target_include_directories(rapidcheck PUBLIC include)

@@ -35,10 +35,10 @@ static inline bool operator<(const CopyGuard &lhs, const CopyGuard &rhs)
 } // namespace test
 
 template<>
-struct NewArbitrary<test::CopyGuard>
+struct Arbitrary<test::CopyGuard>
 {
     static Gen<test::CopyGuard> arbitrary()
-    { return newgen::cast<test::CopyGuard>(newgen::arbitrary<int>()); }
+    { return gen::cast<test::CopyGuard>(gen::arbitrary<int>()); }
 };
 
 } // namespace rc

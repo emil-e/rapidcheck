@@ -4,18 +4,18 @@
 
 #include "rapidcheck/detail/Any.h"
 #include "rapidcheck/detail/ImplicitParam.h"
-#include "rapidcheck/newgen/detail/GenerationHandler.h"
+#include "rapidcheck/gen/detail/GenerationHandler.h"
 #include "rapidcheck/shrinkable/Create.h"
 
 namespace rc {
-namespace newgen {
+namespace gen {
 
 // Forward declare this so we don't need to include Transform.h
 template<typename T, typename Mapper>
 Gen<Decay<typename std::result_of<Mapper(T)>::type>>
 map(Gen<T> gen, Mapper &&mapper);
 
-} // namespace newgen
+} // namespace gen
 
 template<typename T>
 class Gen<T>::IGenImpl
@@ -66,10 +66,10 @@ template<typename T>
 T Gen<T>::operator*() const
 {
     using namespace detail;
-    using rc::newgen::detail::param::CurrentHandler;
+    using rc::gen::detail::param::CurrentHandler;
     const auto handler = ImplicitParam<CurrentHandler>::value();
     return std::move(
-        handler->onGenerate(newgen::map(*this, &Any::of<T>)).template get<T>());
+        handler->onGenerate(gen::map(*this, &Any::of<T>)).template get<T>());
 }
 
 template<typename T>

@@ -40,7 +40,7 @@ TEST_CASE("shrinkable::lambda") {
 }
 
 TEST_CASE("shrinkable::just") {
-    newprop(
+    prop(
         "creates a shrinkable which returns the given value and shrinks",
         [](int value, const Seq<Shrinkable<int>> &shrinks) {
             const auto shrinkable = shrinkable::just(value, shrinks);
@@ -79,7 +79,7 @@ TEST_CASE("shrinkable::shrink") {
 }
 
 TEST_CASE("shrinkable::shrinkRecur") {
-    newprop(
+    prop(
         "returns a shrinkable with the given value",
         [](int x) {
             const auto shrinkable = shrinkable::shrinkRecur(
@@ -87,13 +87,13 @@ TEST_CASE("shrinkable::shrinkRecur") {
             RC_ASSERT(shrinkable.value() == x);
         });
 
-    newprop(
+    prop(
         "recursively applies the shrinking function",
         [] {
-            int start = *newgen::inRange(0, 100);
+            int start = *gen::inRange(0, 100);
             // TODO vector version that takes no generator
-            const auto actions = *newgen::container<std::vector<bool>>(
-                start, newgen::arbitrary<bool>());
+            const auto actions = *gen::container<std::vector<bool>>(
+                start, gen::arbitrary<bool>());
 
             const auto shrink = [](int x) {
                 return seq::map(seq::range(x, 0), [](int x) {

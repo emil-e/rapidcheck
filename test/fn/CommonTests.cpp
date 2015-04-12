@@ -16,7 +16,7 @@ TEST_CASE("fn::constant") {
         REQUIRE(value.numberOf("copy constructed") == 1);
     }
 
-    newprop(
+    prop(
         "returns same value regardless of arguments",
         [](const std::string &value, int a, int b, int c) {
             const auto f = fn::constant(value);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rapidcheck/newgen/Arbitrary.h"
-#include "rapidcheck/newgen/Numeric.h"
+#include "rapidcheck/gen/Arbitrary.h"
+#include "rapidcheck/gen/Numeric.h"
 
 namespace rc {
 
@@ -84,11 +84,11 @@ static inline void show(const NonCopyable &value, std::ostream &os)
 }
 
 template<>
-struct NewArbitrary<Predictable>
+struct Arbitrary<Predictable>
 {
     static Gen<Predictable> arbitrary()
     {
-        return newgen::map(newgen::arbitrary<int>(), [](int extra) {
+        return gen::map(gen::arbitrary<int>(), [](int extra) {
             Predictable predictable;
             predictable.value = Predictable::predictableValue;
             predictable.extra = extra;
@@ -98,11 +98,11 @@ struct NewArbitrary<Predictable>
 };
 
 template<>
-struct NewArbitrary<NonCopyable>
+struct Arbitrary<NonCopyable>
 {
     static Gen<NonCopyable> arbitrary()
     {
-        return newgen::map(newgen::arbitrary<int>(), [](int extra) {
+        return gen::map(gen::arbitrary<int>(), [](int extra) {
             NonCopyable predictable;
             predictable.value = Predictable::predictableValue;
             predictable.extra = extra;

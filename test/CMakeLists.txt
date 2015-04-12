@@ -14,24 +14,24 @@ add_executable(rapidcheck_tests
   detail/ExpressionCaptorTests.cpp
   detail/ImplicitParamTests.cpp
   detail/MapParserTests.cpp
-  detail/NewPropertyTests.cpp
+  detail/PropertyTests.cpp
   detail/ResultsTests.cpp
   detail/ShowTypeTests.cpp
   detail/VariantTests.cpp
   fn/CommonTests.cpp
   main.cpp
-  newgen/ContainerTests.cpp
-  newgen/CreateTests.cpp
-  newgen/DistinctTests.cpp
-  newgen/ExecTests.cpp
-  newgen/NumericTests.cpp
-  newgen/SelectTests.cpp
-  newgen/TextTests.cpp
-  newgen/TransformTests.cpp
-  newgen/TupleTests.cpp
-  newgen/detail/ExecRawTests.cpp
-  newgen/detail/RecipeTests.cpp
-  newgen/detail/ShrinkValueIteratorTests.cpp
+  gen/ContainerTests.cpp
+  gen/CreateTests.cpp
+  gen/DistinctTests.cpp
+  gen/ExecTests.cpp
+  gen/NumericTests.cpp
+  gen/SelectTests.cpp
+  gen/TextTests.cpp
+  gen/TransformTests.cpp
+  gen/TupleTests.cpp
+  gen/detail/ExecRawTests.cpp
+  gen/detail/RecipeTests.cpp
+  gen/detail/ShrinkValueIteratorTests.cpp
   seq/CreateTests.cpp
   seq/OperationsTests.cpp
   seq/TransformTests.cpp

@@ -348,7 +348,7 @@ TEST_CASE("Maybe") {
     }
 
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<Maybe<std::string>>();
+        propConformsToEquals<Maybe<std::string>>();
 
         SECTION("uninitialized values are equal") {
             REQUIRE(Maybe<Apple>() == Maybe<Orange>());

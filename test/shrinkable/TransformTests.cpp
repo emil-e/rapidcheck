@@ -14,7 +14,7 @@ using namespace rc::test;
 int doubleIt(int x) { return x * 2; }
 
 TEST_CASE("shrinkable::map") {
-    newprop(
+    prop(
         "maps value()",
         [](int x) {
             const auto shrinkable = shrinkable::map(
@@ -23,7 +23,7 @@ TEST_CASE("shrinkable::map") {
             RC_ASSERT(shrinkable.value() == doubleIt(x));
         });
 
-    newprop(
+    prop(
         "maps shrinks()",
         [](Shrinkable<int> from) {
             const auto shrinkable = shrinkable::map(from, doubleIt);
@@ -38,7 +38,7 @@ TEST_CASE("shrinkable::map") {
 }
 
 TEST_CASE("shrinkable::mapShrinks") {
-    newprop(
+    prop(
         "maps shrinks with the given mapping callable",
         [](Shrinkable<int> shrinkable) {
             const auto mapper = [](Seq<Shrinkable<int>> &&shrinkable) {
@@ -53,7 +53,7 @@ TEST_CASE("shrinkable::mapShrinks") {
             RC_ASSERT(mapped.shrinks() == mapper(shrinkable.shrinks()));
         });
 
-    newprop(
+    prop(
         "leaves value unaffected",
         [](int x) {
             const auto shrinkable = shrinkable::mapShrinks(
@@ -64,19 +64,19 @@ TEST_CASE("shrinkable::mapShrinks") {
 }
 
 TEST_CASE("shrinkable::filter") {
-    newprop(
+    prop(
         "returns Nothing if predicate returns false for value",
         [](int x) {
             const auto shrinkable = shrinkable::just(x);
             RC_ASSERT(!shrinkable::filter(shrinkable, fn::constant(false)));
         });
 
-    newprop(
+    prop(
         "returned shrinkable does not contain any value for which predicate"
         " returns false",
         [] {
             const auto pred = [](int x) { return (x % 2) == 0; };
-            const auto shrinkable = *newgen::suchThat<Shrinkable<int>>(
+            const auto shrinkable = *gen::suchThat<Shrinkable<int>>(
                 [&](const Shrinkable<int> &x) {
                     return pred(x.value());
                 });
@@ -86,7 +86,7 @@ TEST_CASE("shrinkable::filter") {
             }));
         });
 
-    newprop(
+    prop(
         "if the filter returns true for every value, the returned shrinkable"
         " is equal to the original",
         [](Shrinkable<int> shrinkable) {
@@ -96,7 +96,7 @@ TEST_CASE("shrinkable::filter") {
 }
 
 TEST_CASE("shrinkable::pair") {
-    newprop(
+    prop(
         "has no shrinks if the two Shrinkables have no shrinks",
         [](int a, int b) {
             REQUIRE(shrinkable::pair(shrinkable::just(a),
@@ -104,11 +104,11 @@ TEST_CASE("shrinkable::pair") {
                     shrinkable::just(std::make_pair(a, b)));
         });
 
-    newprop(
+    prop(
         "shrinks first element and then the second one",
         [] {
-            const auto a = *newgen::inRange<int>(0, 3);
-            const auto b = *newgen::inRange<int>(0, 3);
+            const auto a = *gen::inRange<int>(0, 3);
+            const auto b = *gen::inRange<int>(0, 3);
             const auto makeShrinkable = [](int x) {
                 return shrinkable::shrinkRecur(x, [](int v) {
                     return seq::range(v - 1, -1);

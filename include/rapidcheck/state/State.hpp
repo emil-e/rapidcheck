@@ -8,7 +8,7 @@ namespace detail {
 
 //! Collection of commands.
 template<typename Cmd>
-struct NewCommands : public Command<typename Cmd::State, typename Cmd::Sut>
+struct Commands : public Command<typename Cmd::State, typename Cmd::Sut>
 {
 public:
     typedef std::shared_ptr<const Cmd> CmdSP;
@@ -57,8 +57,8 @@ public:
         : m_initialState(std::forward<StateArg>(initialState))
         , m_genFunc(std::forward<GenFuncArg>(genFunc)) {}
 
-    Shrinkable<NewCommands<Cmd>> operator()(const Random &random,
-                                            int size) const
+    Shrinkable<Commands<Cmd>> operator()(const Random &random,
+                                         int size) const
     {
         return generateCommands(random, size);
     }
@@ -144,13 +144,13 @@ private:
         }
     };
 
-    Shrinkable<NewCommands<Cmd>> generateCommands(const Random &random,
-                                                  int size) const
+    Shrinkable<Commands<Cmd>> generateCommands(const Random &random,
+                                               int size) const
     {
         return shrinkable::map(
             generateSequence(random, size),
             [](const CommandSequence &sequence) {
-                NewCommands<Cmd> cmds;
+                Commands<Cmd> cmds;
                 const auto &entries = sequence.entries;
                 cmds.commands.reserve(entries.size());
                 std::transform(
@@ -267,7 +267,7 @@ private:
 
 template<typename Cmd, typename = typename std::is_constructible<
                            Cmd, typename Cmd::State &&>::type>
-struct CommandMaker;
+    struct CommandMaker;
 
 template<typename Cmd>
 struct CommandMaker<Cmd, std::true_type>
@@ -311,7 +311,7 @@ struct CommandPicker<Cmd, Cmds...>
 };
 
 template<typename Cmd, typename State, typename GenerationFunc>
-Gen<NewCommands<Cmd>> genCommands(State &&initialState, GenerationFunc &&genFunc)
+Gen<Commands<Cmd>> genCommands(State &&initialState, GenerationFunc &&genFunc)
 {
     return detail::CommandsGen<Cmd, Decay<GenerationFunc>>(
         std::forward<State>(initialState),
@@ -332,9 +332,9 @@ void Command<State, Sut>::show(std::ostream &os) const
 { os << ::rc::detail::demangle(typeid(*this).name()); }
 
 template<typename State, typename Sut, typename GenFunc>
-void newcheck(const State &initialState,
-              Sut &sut,
-              GenFunc &&generationFunc)
+void check(const State &initialState,
+           Sut &sut,
+           GenFunc &&generationFunc)
 {
     const auto commands = *detail::genCommands<Command<Decay<State>, Sut>>(
         initialState, std::forward<GenFunc>(generationFunc));
@@ -356,13 +356,13 @@ bool isValidCommand(const Command<State, Sut> &command, const State &s0)
 }
 
 template<typename Cmd, typename ...Cmds>
-Gen<std::shared_ptr<const typename Cmd::CommandType>> newAnyCommand(
+Gen<std::shared_ptr<const typename Cmd::CommandType>> anyCommand(
     const typename Cmd::State &state)
 {
     return [=](const Random &random, int size) {
         auto r = random;
         std::size_t n = r.split().next() % (sizeof...(Cmds) + 1);
-        return newgen::exec([=]{
+        return gen::exec([=]{
             return detail::CommandPicker<Cmd, Cmds...>::pick(state, n);
         })(r, size); // TODO monadic bind
     };
@@ -388,11 +388,11 @@ struct ShowType<rc::state::Command<State, Sut>>
 };
 
 template<typename Cmd>
-struct ShowType<rc::state::detail::NewCommands<Cmd>>
+struct ShowType<rc::state::detail::Commands<Cmd>>
 {
     static void showType(std::ostream &os)
     {
-        os << "NewCommands<";
+        os << "Commands<";
         ::rc::detail::showType<Cmd>(os);
         os << ">";
     }

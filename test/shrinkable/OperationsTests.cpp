@@ -9,11 +9,11 @@
 using namespace rc;
 
 TEST_CASE("shrinkable::all") {
-    newprop(
+    prop(
         "returns true if predicate returns true for all",
         [] {
             // TODO sized ranged
-            int x = *newgen::inRange<int>(1, 5);
+            int x = *gen::inRange<int>(1, 5);
             const auto shrinkable = shrinkable::shrinkRecur(x, [](int x) {
                 return seq::range(x - 1, 0);
             });
@@ -24,11 +24,11 @@ TEST_CASE("shrinkable::all") {
                                       }));
         });
 
-    newprop(
+    prop(
         "returns true if predicate returns false for at least one shrinkable",
         [] {
             // TODO sized ranged
-            int x = *newgen::inRange<int>(0, 5);
+            int x = *gen::inRange<int>(0, 5);
             const auto shrinkable = shrinkable::just(
                 x, seq::map(seq::range(x - 1, -1), &shrinkable::just<int>));
 
@@ -40,7 +40,7 @@ TEST_CASE("shrinkable::all") {
 }
 
 TEST_CASE("shrinkable::findLocalMin") {
-    newprop(
+    prop(
         "returns the original value if no value matched predicate",
         [](int x) {
             auto result = shrinkable::findLocalMin(shrinkable::just(x),
@@ -48,7 +48,7 @@ TEST_CASE("shrinkable::findLocalMin") {
             RC_ASSERT(result.first == x);
         });
 
-    newprop(
+    prop(
         "return zero shrinks if no value matched predicate",
         [] {
             auto result = shrinkable::findLocalMin(shrinkable::just(0),
@@ -56,12 +56,12 @@ TEST_CASE("shrinkable::findLocalMin") {
             RC_ASSERT(result.second == 0);
         });
 
-    newprop(
+    prop(
         "searches by descending into the first value of each shrinks Seq that"
         " matches the predicate",
         [] {
-            const auto expected = *newgen::container<std::vector<int>>(
-                newgen::inRange<int>(1, 101));
+            const auto expected = *gen::container<std::vector<int>>(
+                gen::inRange<int>(1, 101));
 
             const auto pred = [&](const std::vector<int> &x) {
                 int back = x.back();
@@ -89,7 +89,7 @@ const auto shrinkable = shrinkable::shrinkRecur(
 }
 
 TEST_CASE("shrinkable::immediateShrinks") {
-    newprop(
+    prop(
 "returns a Seq of the values of the immediate shrinks of the"
          " Shrinkable",
          [](int x, const Seq<int> &seq) {

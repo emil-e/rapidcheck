@@ -66,11 +66,11 @@ struct Dec : public state::Command<CounterModel, Counter>
 };
 
 TEST_CASE("Counter") {
-    newprop(
+    prop(
         "state test",
         [] {
             CounterModel state;
             Counter sut;
-            state::newcheck(state, sut, state::newAnyCommand<Inc, Dec>);
+            state::check(state, sut, state::anyCommand<Inc, Dec>);
         });
 }

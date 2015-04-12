@@ -11,26 +11,26 @@ using namespace rc::detail;
 
 TEST_CASE("Configuration") {
     SECTION("operator==/operator!=") {
-        newpropConformsToEquals<Configuration>();
-        NEWPROP_REPLACE_MEMBER_INEQUAL(Configuration, seed);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSuccess);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSize);
-        NEWPROP_REPLACE_MEMBER_INEQUAL(Configuration, maxDiscardRatio);
+        propConformsToEquals<Configuration>();
+        PROP_REPLACE_MEMBER_INEQUAL(Configuration, seed);
+        PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSuccess);
+        PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSize);
+        PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxDiscardRatio);
     }
 
     SECTION("operator<<") {
-        newpropConformsToOutputOperator<Configuration>();
+        propConformsToOutputOperator<Configuration>();
     }
 }
 
 TEST_CASE("configFromString") {
-    newprop(
+    prop(
         "emtpy string yields default config",
         [] (const Configuration &config) {
             RC_ASSERT(configFromString("", config) == config);
         });
 
-    newprop(
+    prop(
         "ignores unknown keys",
         [] (const Configuration &config) {
             RC_ASSERT(configFromString("foo=bar stuff=things", config) ==
@@ -72,7 +72,7 @@ TEST_CASE("configFromString") {
                           ConfigurationException);
     }
 
-    newprop(
+    prop(
         "configFromString(configToString(x)) == x",
         [] (const Configuration &config) {
             RC_ASSERT(configFromString(configToString(config)) == config);
@@ -81,14 +81,14 @@ TEST_CASE("configFromString") {
 
 
 TEST_CASE("configToMinimalString") {
-    newprop(
+    prop(
         "is always shorter or same size as configFromString",
         [] (const Configuration &config) {
             RC_ASSERT(configToMinimalString(config).size() <=
                       configToString(config).size());
         });
 
-    newprop(
+    prop(
         "configFromString(configToMinimalString(x)) == x",
         [] (const Configuration &config) {
             RC_ASSERT(configFromString(configToMinimalString(config)) ==

@@ -10,12 +10,12 @@ namespace rc {
 //! @param description  A description of the property.
 //! @param testable     The object that implements the property.
 template<typename Testable>
-void newprop(const std::string &description, Testable &&testable)
+void prop(const std::string &description, Testable &&testable)
 {
     using namespace detail;
 
     SECTION(description) {
-        auto result = newCheckTestable(std::forward<Testable>(testable));
+        auto result = checkTestable(std::forward<Testable>(testable));
         INFO(resultMessage(result) << "\n");
 
         FailureResult failure;

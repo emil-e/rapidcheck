@@ -14,7 +14,7 @@ using namespace rc;
 using namespace rc::test;
 
 TEST_CASE("seq::repeat") {
-    newprop(
+    prop(
         "repeatedly returns the given value",
         [](const std::string &value) {
             auto seq = seq::repeat(value);
@@ -25,13 +25,13 @@ TEST_CASE("seq::repeat") {
             }
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [](const std::string &value) {
             assertEqualCopies(seq::take(200, seq::repeat(value)));
         });
 
-    newprop(
+    prop(
         "does not copy value on construction",
         [](CopyGuard guard) {
             auto seq = seq::repeat(std::move(guard));
@@ -46,7 +46,7 @@ TEST_CASE("seq::just") {
         seq.next();
     }
 
-    newprop(
+    prop(
         "returns the passed in objects",
         [](const std::string &a,
            const std::string &b,
@@ -59,7 +59,7 @@ TEST_CASE("seq::just") {
             RC_ASSERT(!seq.next());
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [](const std::string &a,
            const std::string &b,
@@ -74,7 +74,7 @@ struct FromContainerTests
     template<typename T>
     static void exec()
     {
-        newtemplatedProp<T>(
+        templatedProp<T>(
             "the returned elements are equal to the elements"
             " returned by iterating",
             [](const T &elements) {
@@ -85,7 +85,7 @@ struct FromContainerTests
                 RC_ASSERT(!seq.next());
             });
 
-        newtemplatedProp<T>(
+        templatedProp<T>(
             "copies are equal",
             [](const T &elements) {
                 assertEqualCopies(seq::fromContainer(elements));
@@ -98,7 +98,7 @@ struct FromContainerCopyTests
     template<typename T>
     static void exec()
     {
-        newtemplatedProp<T>(
+        templatedProp<T>(
             "does not copy elements",
             [](T elements) {
                 auto seq = seq::fromContainer(std::move(elements));
@@ -121,11 +121,11 @@ TEST_CASE("seq::fromContainer") {
 }
 
 TEST_CASE("seq::fromIteratorRange") {
-    newprop(
+    prop(
         "creates a sequence that returns the values in the range",
         [] (const std::vector<int> &elements) {
-            const int r1 = *newgen::inRange<int>(0, elements.size() + 1);
-            const int r2 = *newgen::inRange<int>(0, elements.size() + 1);
+            const int r1 = *gen::inRange<int>(0, elements.size() + 1);
+            const int r2 = *gen::inRange<int>(0, elements.size() + 1);
             const int start = std::min(r1, r2);
             const int end = std::max(r1, r2);
             const auto startIt = elements.begin() + start;
@@ -137,7 +137,7 @@ TEST_CASE("seq::fromIteratorRange") {
 }
 
 TEST_CASE("seq::iterate") {
-    newprop(
+    prop(
         "returns an infinite sequence of applying the given function to the"
         " value",
         [](int start, int inc) {
@@ -151,7 +151,7 @@ TEST_CASE("seq::iterate") {
             }
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [](int start, int inc) {
             const auto func = [=](int x) { return x + inc; };
@@ -161,9 +161,9 @@ TEST_CASE("seq::iterate") {
 
 
 TEST_CASE("seq::range") {
-    static const auto smallInt = newgen::scale(0.25, newgen::arbitrary<int>());
+    static const auto smallInt = gen::scale(0.25, gen::arbitrary<int>());
 
-    newprop(
+    prop(
         "returns a sequence from start to end",
         []{
             int start = *smallInt;
@@ -181,7 +181,7 @@ TEST_CASE("seq::range") {
             RC_ASSERT(!seq.next());
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [&]{ assertEqualCopies(seq::range(*smallInt, *smallInt)); });
 }
@@ -196,21 +196,21 @@ TEST_CASE("seq::index") {
         }
     }
 
-    newprop(
+    prop(
         "copies are equal",
         []{ assertEqualCopies(seq::take(2000, seq::index())); });
 }
 
 TEST_CASE("seq::subranges") {
     // TODO some kind of "small int" would be nice
-    static const auto smallInt = newgen::inRange<std::size_t>(0, 100);
+    static const auto smallInt = gen::inRange<std::size_t>(0, 100);
 
-    newprop(
+    prop(
         "ranges successively decrease in size",
         []{
             // TODO range generator
             const auto a = *smallInt;
-            const auto b = *newgen::distinctFrom(smallInt, a);
+            const auto b = *gen::distinctFrom(smallInt, a);
             const auto start = std::min(a, b);
             const auto end = std::max(a, b);
 
@@ -223,18 +223,18 @@ TEST_CASE("seq::subranges") {
             });
         });
 
-    newprop(
+    prop(
         "yields all possible subranges",
         []{
             // TODO range generator
             const auto a = *smallInt;
-            const auto b = *newgen::distinctFrom(smallInt, a);
+            const auto b = *gen::distinctFrom(smallInt, a);
             const auto start = std::min(a, b);
             const auto end = std::max(a, b);
 
-            const auto indexInRange = newgen::inRange<std::size_t>(start, end);
+            const auto indexInRange = gen::inRange<std::size_t>(start, end);
             const auto as = *indexInRange;
-            const auto bs = *newgen::distinctFrom(indexInRange, as);
+            const auto bs = *gen::distinctFrom(indexInRange, as);
             const auto starts = std::min(as, bs);
             const auto ends = std::max(as, bs);
 

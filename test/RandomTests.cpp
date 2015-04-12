@@ -19,7 +19,7 @@ struct AssociativeProperties
     template<typename Map>
     static void exec()
     {
-        newtemplatedProp<Map>(
+        templatedProp<Map>(
             "can be used as key in STL associative containers",
             [](const std::vector<std::pair<Random, int>> &pairs) {
                 Map map(begin(pairs), end(pairs));
@@ -43,30 +43,30 @@ TEST_CASE("Random") {
         REQUIRE(Random() == Random({0, 0, 0, 0}));
     }
 
-    newprop(
+    prop(
         "different keys yield inequal generators",
         [] {
-            auto key1 = *newgen::arbitrary<Random::Key>();
-            auto key2 = *newgen::distinctFrom(key1);
+            auto key1 = *gen::arbitrary<Random::Key>();
+            auto key2 = *gen::distinctFrom(key1);
             RC_ASSERT(Random(key1) != Random(key2));
         });
 
-    newprop(
+    prop(
         "different seeds yield inequal generators",
         [] {
-            auto seed1 = *newgen::arbitrary<uint64_t>();
-            auto seed2 = *newgen::distinctFrom(seed1);
+            auto seed1 = *gen::arbitrary<uint64_t>();
+            auto seed2 = *gen::distinctFrom(seed1);
             RC_ASSERT(Random(seed1) != Random(seed2));
         });
 
-    newprop(
+    prop(
         "different splits are inequal",
         [](Random r1) {
             Random r2(r1.split());
             RC_ASSERT(r1 != r2);
         });
 
-    newprop(
+    prop(
         "next modifies state",
         [] {
             Random r1 = *trulyArbitraryRandom();
@@ -75,11 +75,11 @@ TEST_CASE("Random") {
             RC_ASSERT(r1 != r2);
         });
 
-    newprop(
+    prop(
         "different keys yield different sequences",
         [] {
-            auto key1 = *newgen::arbitrary<Random::Key>();
-            auto key2 = *newgen::distinctFrom(key1);
+            auto key1 = *gen::arbitrary<Random::Key>();
+            auto key2 = *gen::distinctFrom(key1);
             Random r1(key1);
             Random r2(key2);
             for (std::size_t i = 0; i < 4; i++)
@@ -87,11 +87,11 @@ TEST_CASE("Random") {
             RC_FAIL("Equal random numbers");
         });
 
-    newprop(
+    prop(
         "different seeds yield different sequences",
         [] {
-            auto seed1 = *newgen::arbitrary<uint64_t>();
-            auto seed2 = *newgen::distinctFrom(seed1);
+            auto seed1 = *gen::arbitrary<uint64_t>();
+            auto seed2 = *gen::distinctFrom(seed1);
             Random r1(seed1);
             Random r2(seed2);
             for (std::size_t i = 0; i < 4; i++)
@@ -99,7 +99,7 @@ TEST_CASE("Random") {
             RC_FAIL("Equal random numbers");
         });
 
-    newprop(
+    prop(
         "different splits yield different sequences",
         [](Random r1) {
             Random r2(r1.split());
@@ -112,14 +112,14 @@ TEST_CASE("Random") {
             RC_FAIL("Equal random numbers");
         });
 
-    newprop(
+    prop(
         "different number of nexts yield different sequences",
         [] {
             Random r1 = *trulyArbitraryRandom();
             Random r2(r1);
-            auto gen = newgen::inRange<int>(0, 2000);
+            auto gen = gen::inRange<int>(0, 2000);
             int n1 = *gen;
-            int n2 = *newgen::distinctFrom(gen, n1);
+            int n2 = *gen::distinctFrom(gen, n1);
 
             while (n1-- > 0)
                 r1.next();
@@ -131,7 +131,7 @@ TEST_CASE("Random") {
             RC_FAIL("Equal random numbers");
         });
 
-    newprop(
+    prop(
         "copies are equal",
         [] {
             Random r1 = *trulyArbitraryRandom();
@@ -139,7 +139,7 @@ TEST_CASE("Random") {
             RC_ASSERT(r1 == r2);
         });
 
-    newprop(
+    prop(
         "copies yield equal random numbers",
         [] {
             Random r1 = *trulyArbitraryRandom();
@@ -156,7 +156,7 @@ TEST_CASE("Random") {
 
     // Somewhat dubious test, I know. Hopefully, if something totally breaks,
     // it'll let us know at least.
-    newprop(
+    prop(
         "has uniform distribution",
         [] {
             Random random = *trulyArbitraryRandom();
