@@ -19,7 +19,6 @@ add_executable(rapidcheck_tests
   detail/ShowTypeTests.cpp
   detail/VariantTests.cpp
   fn/CommonTests.cpp
-  main.cpp
   gen/ContainerTests.cpp
   gen/CreateTests.cpp
   gen/DistinctTests.cpp
@@ -32,6 +31,7 @@ add_executable(rapidcheck_tests
   gen/detail/ExecRawTests.cpp
   gen/detail/RecipeTests.cpp
   gen/detail/ShrinkValueIteratorTests.cpp
+  main.cpp
   seq/CreateTests.cpp
   seq/OperationsTests.cpp
   seq/TransformTests.cpp
@@ -40,6 +40,8 @@ add_executable(rapidcheck_tests
   shrinkable/OperationsTests.cpp
   shrinkable/TransformTests.cpp
   state/StateTests.cpp
+  util/ArbitraryRandom.cpp
+  util/GenUtils.cpp
   )
 
 target_link_libraries(rapidcheck_tests rapidcheck)

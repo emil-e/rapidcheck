@@ -1,6 +1,9 @@
 #pragma once
 
-// TODO clean up, formalize
+#include "rapidcheck/Random.h"
+#include "rapidcheck/gen/Arbitrary.h"
+#include "rapidcheck/gen/Tuple.h"
+#include "rapidcheck/gen/Container.h"
 
 namespace rc {
 
@@ -26,22 +29,12 @@ struct Arbitrary<Random>
     }
 };
 
+extern template struct Arbitrary<Random>;
 
 namespace test {
 
 // This will also generate Randoms where next() has been called
-inline Gen<Random> trulyArbitraryRandom()
-{
-    return gen::map(
-        gen::pair(gen::arbitrary<Random>(),
-                     gen::inRange<int>(0, 10000)),
-        [](std::pair<Random, int> &&p){
-            auto nexts = p.second;
-            while (nexts-- > 0)
-                p.first.next();
-            return p.first;
-        });
-}
+Gen<Random> trulyArbitraryRandom();
 
 } // namespace test
 } // namespace rc

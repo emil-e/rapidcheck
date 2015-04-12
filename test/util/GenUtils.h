@@ -1,6 +1,8 @@
 #pragma once
 
 #include "rapidcheck/Gen.h"
+#include "rapidcheck/Assertions.h"
+#include "rapidcheck/gen/Numeric.h"
 #include "rapidcheck/gen/Arbitrary.h"
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/shrinkable/Operations.h"
@@ -11,46 +13,21 @@ namespace rc {
 namespace test {
 
 // Generator which returns the passed size
-inline Gen<int> genSize()
-{
-    return [](const Random &random, int size) {
-        return shrinkable::just(size);
-    };
-};
+Gen<int> genSize();
 
 struct PassedSize { int value; };
 
 // Generator which returns the passed random.
-inline Gen<Random> genRandom()
-{
-    return [](const Random &random, int size) {
-        return shrinkable::just(random);
-    };
-};
+Gen<Random> genRandom();
 
 struct PassedRandom { Random value; };
 
 // Generates a number between 0 and the size (inclusive) that shrinks by
 // counting down toward zero.
-inline Gen<int> genCountdown()
-{
-    return [=](const Random &random, int size) {
-        int n = Random(random).next() % (size + 1);
-        return shrinkable::shrinkRecur(n, [](int x) {
-            return seq::range(x - 1, -1);
-        });
-    };
-};
+Gen<int> genCountdown();
 
 // Generates a constant number which shrinks by count down towards zero
-inline Gen<int> genFixedCountdown(int value)
-{
-    return [=](const Random &random, int size) {
-        return shrinkable::shrinkRecur(value, [](int x) {
-            return seq::range(x - 1, -1);
-        });
-    };
-};
+Gen<int> genFixedCountdown(int value);
 
 template<int N>
 struct FixedCountdown {
@@ -61,13 +38,11 @@ struct FixedCountdown {
 };
 
 template<int N>
-inline bool operator==(const FixedCountdown<N> &lhs,
-                       const FixedCountdown<N> &rhs)
+bool operator==(const FixedCountdown<N> &lhs, const FixedCountdown<N> &rhs)
 { return lhs.value == rhs.value; }
 
 template<int N>
-inline std::ostream &operator<<(std::ostream &os,
-                                const FixedCountdown<N> &value)
+std::ostream &operator<<(std::ostream &os, const FixedCountdown<N> &value)
 {
     os << value.value;
     return os;
@@ -79,29 +54,13 @@ struct GenParams
     int size = 0;
 };
 
-inline bool operator==(const GenParams &lhs, const GenParams &rhs)
-{ return (lhs.random == rhs.random) && (lhs.size == rhs.size); }
-
-inline bool operator<(const GenParams &lhs, const GenParams &rhs)
-{ return std::tie(lhs.random, lhs.size) < std::tie(rhs.random, rhs.size); }
+bool operator==(const GenParams &lhs, const GenParams &rhs);
+bool operator<(const GenParams &lhs, const GenParams &rhs);
 
 // Generator which returns the passed generation params.
-inline Gen<GenParams> genPassedParams()
-{
-    return [](const Random &random, int size) {
-        GenParams params;
-        params.random = random;
-        params.size = size;
-        return shrinkable::just(params);
-    };
-}
+Gen<GenParams> genPassedParams();
 
-inline std::ostream &operator<<(std::ostream &os, const GenParams &params)
-{
-    os << "Random: " << params.random << std::endl;
-    os << "Size: " << params.size << std::endl;
-    return os;
-}
+std::ostream &operator<<(std::ostream &os, const GenParams &params);
 
 // Tries to find a value which matches the predicate and then shrink that to the
 // minimum value. Simplified version of what RapidCheck is all about.
@@ -126,9 +85,8 @@ T searchGen(const Random &random,
 } // namespace test
 
 template<>
-class Arbitrary<test::GenParams>
+struct Arbitrary<test::GenParams>
 {
-public:
     static Gen<test::GenParams> arbitrary()
     {
         return gen::map(
@@ -181,6 +139,10 @@ struct Arbitrary<test::FixedCountdown<N>>
         });
     }
 };
+
+extern template struct Arbitrary<test::GenParams>;
+extern template struct Arbitrary<test::PassedSize>;
+extern template struct Arbitrary<test::PassedRandom>;
 
 } // namespace rc
 
