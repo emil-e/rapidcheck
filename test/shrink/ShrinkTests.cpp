@@ -417,7 +417,6 @@ struct RealProperties
             "shrinks to nearest integer",
             [] {
                 T value = *newgen::scale(0.25, newgen::nonZero<T>());
-                std::cout << value << std::endl;
                 RC_PRE(value != std::trunc(value));
                 RC_ASSERT(seq::contains(shrink::real(value), std::trunc(value)));
             });
