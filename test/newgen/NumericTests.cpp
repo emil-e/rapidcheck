@@ -271,7 +271,7 @@ struct NonZeroProperties
             [=](const GenParams &params) {
                 const auto shrinkable = newgen::nonZero<T>()(
                     params.random, params.size);
-                onAnyPath(
+                newOnAnyPath(
                     shrinkable,
                     [](const Shrinkable<T> &value,
                        const Shrinkable<T> &shrink) {
@@ -300,7 +300,7 @@ struct PositiveProperties
             [=](const GenParams &params) {
                 const auto shrinkable = newgen::positive<T>()(
                     params.random, params.size);
-                onAnyPath(
+                newOnAnyPath(
                     shrinkable,
                     [](const Shrinkable<T> &value,
                        const Shrinkable<T> &shrink) {
@@ -329,7 +329,7 @@ struct NegativeProperties
             [=](const GenParams &params) {
                 const auto shrinkable = newgen::negative<T>()(
                     params.random, params.size);
-                onAnyPath(
+                newOnAnyPath(
                     shrinkable,
                     [](const Shrinkable<T> &value,
                        const Shrinkable<T> &shrink) {
@@ -358,7 +358,7 @@ struct NonNegativeProperties
             [=](const GenParams &params) {
                 const auto shrinkable = newgen::nonNegative<T>()(
                     params.random, params.size);
-                onAnyPath(
+                newOnAnyPath(
                     shrinkable,
                     [](const Shrinkable<T> &value,
                        const Shrinkable<T> &shrink) {

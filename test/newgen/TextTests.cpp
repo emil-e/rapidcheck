@@ -14,7 +14,7 @@ TEST_CASE("newgen::character") {
         "never generates null characters",
         [](const GenParams &params) {
             const auto gen = newgen::character<char>();
-            onAnyPath(
+            newOnAnyPath(
                 gen(params.random, params.size),
                 [](const Shrinkable<char> &value,
                    const Shrinkable<char> &shrink) {

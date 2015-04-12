@@ -59,7 +59,7 @@ struct NewPushBack : public StringVecCmd
     { sut.push_back(value); }
 
     void show(std::ostream &os) const
-    { rc::show(value, os); }
+    { os << value; }
 };
 
 struct PopBack : public StringVecCmd
@@ -112,7 +112,7 @@ Gen<std::vector<StringVecCmdSP>> pushBackCommands()
 {
     return newgen::container<std::vector<StringVecCmdSP>>(
         newgen::exec([]() -> StringVecCmdSP {
-            return std::make_shared<PushBack>();
+            return std::make_shared<NewPushBack>();
         }));
 }
 
@@ -143,20 +143,22 @@ CommandsGenerator<CommandT, GenerationFunc> commandsGenerator(
 
 TEST_CASE("Command") {
     SECTION("nextState") {
-        prop("default implementation returns unmodified state",
-             [] (const StringVec &state) {
-                 RC_ASSERT(StringVecCmd().nextState(state) == state);
-             });
+        newprop(
+            "default implementation returns unmodified state",
+            [] (const StringVec &state) {
+                RC_ASSERT(StringVecCmd().nextState(state) == state);
+            });
     }
 
     SECTION("run") {
-        prop("default implementation does not modify SUT",
-             [] (const StringVec &state, const StringVec &sut) {
-                 const auto pre = sut;
-                 auto post = sut;
-                 StringVecCmd().run(state, post);
-                 RC_ASSERT(pre == post);
-             });
+        newprop(
+            "default implementation does not modify SUT",
+            [] (const StringVec &state, const StringVec &sut) {
+                const auto pre = sut;
+                auto post = sut;
+                StringVecCmd().run(state, post);
+                RC_ASSERT(pre == post);
+            });
     }
 
     SECTION("show") {
@@ -310,7 +312,7 @@ TEST_CASE("isValidCommand") {
     newprop(
         "returns true for valid commands",
         [] {
-            RC_ASSERT(isValidCommand(PushBack(), StringVec()));
+            RC_ASSERT(isValidCommand(NewPushBack(), StringVec()));
         });
 
     newprop(
@@ -391,7 +393,7 @@ TEST_CASE("genCommands") {
         [](const GenParams &params, const StringVec &s0) {
             const auto gen = genCommands<StringVecCmd>(
                 s0, &newAnyCommand<NewPushBack, PopBack>);
-            onAnyPath(
+            newOnAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<StringVecCmdsN> &value,
                    const Shrinkable<StringVecCmdsN> &shrink)
@@ -405,34 +407,13 @@ TEST_CASE("genCommands") {
         [](const GenParams &params, const StringVec &s0) {
             const auto gen = genCommands<StringVecCmd>(
                 s0, &newAnyCommand<NewPushBack, PopBack>);
-            onAnyPath(
+            newOnAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<StringVecCmdsN> &value,
                     const Shrinkable<StringVecCmdsN> &shrink)
                 {
                     RC_ASSERT(value.value().commands.size() <=
                               value.value().commands.size());
-                });
-        });
-
-    // NOTE: This property is not strictly true for all commands since a shrink
-    // of a command may be equivalent to the original but in our case, this
-    // won't happen
-    newprop(
-        "shrinks are not equivalent to original",
-        [](const GenParams &params, const StringVec &s0) {
-            const auto gen = genCommands<StringVecCmd>(
-                s0, &newAnyCommand<NewPushBack, PopBack>);
-            onAnyPath(
-                gen(params.random, params.size),
-                [&](const Shrinkable<StringVecCmdsN> &value,
-                    const Shrinkable<StringVecCmdsN> &shrink)
-                {
-                    const auto valueCmd = value.value();
-                    const auto shrinkCmd = shrink.value();
-                    const auto valueResult = valueCmd.nextState(s0);
-                    const auto shrinkResult = shrinkCmd.nextState(s0);
-                    RC_ASSERT(valueResult != shrinkResult);
                 });
         });
 
@@ -452,7 +433,7 @@ TEST_CASE("genCommands") {
         [](const GenParams &params) {
             const auto gen = genCommands<StringVecCmd>(
                 StringVec(), &captureParams);
-            onAnyPath(
+            newOnAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<StringVecCmdsN> &value,
                     const Shrinkable<StringVecCmdsN> &shrink)
@@ -472,7 +453,7 @@ TEST_CASE("genCommands") {
         [](const GenParams &params) {
             const auto gen = genCommands<StringVecCmd>(
                 StringVec(), &captureParams);
-            onAnyPath(
+            newOnAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<StringVecCmdsN> &value,
                     const Shrinkable<StringVecCmdsN> &shrink)
@@ -497,7 +478,7 @@ TEST_CASE("genCommands") {
                         std::move(std::static_pointer_cast<const IntVecCmd>(cmd)));
                 });
 
-            onAnyPath(
+            newOnAnyPath(
                 gen(params.random, params.size),
                 [&](const Shrinkable<IntVecCmds> &value,
                    const Shrinkable<IntVecCmds> &shrink) {
@@ -690,7 +671,7 @@ TEST_CASE("show(Command)") {
     newprop(
         "passing a generic command to show yields the same as Command::show",
         [] {
-            PushBack cmd;
+            NewPushBack cmd;
             std::ostringstream expected;
             cmd.show(expected);
             std::ostringstream actual;
@@ -701,23 +682,25 @@ TEST_CASE("show(Command)") {
     newprop(
         "passing Commands to show yields the same result as Commands::show",
         [] {
-            StringVecCmds commands(*pushBackCommands());
+            StringVecCmdsN cmds;
+            cmds.commands = *pushBackCommands();
             std::ostringstream expected;
-            commands.show(expected);
+            cmds.show(expected);
             std::ostringstream actual;
-            show(commands, actual);
+            show(cmds, actual);
             RC_ASSERT(actual.str() == expected.str());
         });
 }
+
 
 TEST_CASE("typeToString<Command<...>>") {
     typedef Command<Foo, Bar> CommandT;
     REQUIRE(typeToString<CommandT>() == "Command<FFoo, BBar>");
 }
 
-TEST_CASE("typeToString<Commands<...>>") {
-    typedef Commands<Foo> CommandsT;
-    REQUIRE(typeToString<CommandsT>() == "Commands<FFoo>");
+TEST_CASE("typeToString<NewCommands<...>>") {
+    typedef NewCommands<Foo> CommandsT;
+    REQUIRE(typeToString<CommandsT>() == "NewCommands<FFoo>");
 }
 
 TEST_CASE("state::check") {
@@ -735,13 +718,12 @@ TEST_CASE("state::check") {
                  RC_ASSERT(result.type == CaseResult::Type::Failure);
              }
          });
-}
 
 TEST_CASE("state::newcheck") {
     newprop(
         "if no command fails, check succeeds",
         [](const StringVec &s0, StringVec sut) {
-            state::newcheck(s0, sut, &newAnyCommand<PushBack>);
+            state::newcheck(s0, sut, &newAnyCommand<NewPushBack>);
         });
 
     newprop(

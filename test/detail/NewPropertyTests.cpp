@@ -166,7 +166,7 @@ TEST_CASE("toNewProperty") {
                             std::make_pair(typeToString<Fixed<1337>>(),
                                            toString(Fixed<1337>())));
 
-            onAnyPath(
+            newOnAnyPath(
                 shrinkable,
                 [&](const ShrinkableResult &value,
                     const ShrinkableResult &shrink)
@@ -206,9 +206,9 @@ TEST_CASE("toNewProperty") {
                             std::make_pair(typeToString<Fixed<1337>>(),
                                            toString(Fixed<1337>())));
             // TODO better test
-            expected[throwIndex + 1] = {"Generation failure", msg};
+            expected[throwIndex + 1] = {"Generation failed", msg};
 
-            onAnyPath(
+            newOnAnyPath(
                 shrinkable,
                 [&](const ShrinkableResult &value,
                     const ShrinkableResult &shrink)
@@ -226,7 +226,7 @@ TEST_CASE("toNewProperty") {
                 });
             const auto shrinkable = gen(params.random, params.size);
 
-            onAnyPath(
+            newOnAnyPath(
                 shrinkable,
                 [](const ShrinkableResult &value,
                    const ShrinkableResult &shrink) {

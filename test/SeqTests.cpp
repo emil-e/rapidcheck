@@ -129,7 +129,7 @@ TEST_CASE("Seq") {
     }
 
     SECTION("operator==/operator!=") {
-        propConformsToEquals<Seq<std::string>>();
+        newpropConformsToEquals<Seq<std::string>>();
 
         SECTION("empty sequences are equal") {
             REQUIRE(Seq<int>() == Seq<int>());

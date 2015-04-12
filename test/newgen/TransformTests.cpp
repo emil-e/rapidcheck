@@ -84,7 +84,7 @@ TEST_CASE("newgen::suchThat") {
                 newgen::arbitrary<int>(),
                 [](int x) { return (x % 2) == 0; });
             const auto shrinkable = gen(params.random, params.size);
-            onAnyPath(
+            newOnAnyPath(
                 shrinkable,
                 [](const Shrinkable<int> &value,
                    const Shrinkable<int> &shrink) {

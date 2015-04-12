@@ -16,7 +16,7 @@ TEST_CASE("newgen::distinctFrom") {
         "value is never equal to the given one",
         [](const GenParams &params, int x) {
             const auto gen = newgen::distinctFrom(x);
-            onAnyPath(
+            newOnAnyPath(
                 gen(params.random, params.size),
                 [=](const Shrinkable<int> &value,
                     const Shrinkable<int> &shrink) {

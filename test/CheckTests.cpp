@@ -79,11 +79,11 @@ private:
 
 TEST_CASE("TestParams") {
     SECTION("operator==/operator!=") {
-        propConformsToEquals<TestParams>();
-        PROP_REPLACE_MEMBER_INEQUAL(TestParams, seed);
-        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSuccess);
-        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSize);
-        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxDiscardRatio);
+        newpropConformsToEquals<TestParams>();
+        NEWPROP_REPLACE_MEMBER_INEQUAL(TestParams, seed);
+        NEWPROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSuccess);
+        NEWPROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSize);
+        NEWPROP_REPLACE_MEMBER_INEQUAL(TestParams, maxDiscardRatio);
     }
 }
 
