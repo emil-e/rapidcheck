@@ -126,19 +126,6 @@ T searchGen(const Random &random,
 } // namespace test
 
 template<>
-class Arbitrary<test::GenParams> : public gen::Generator<test::GenParams>
-{
-public:
-    test::GenParams generate() const override
-    {
-        test::GenParams params;
-        params.random = *gen::arbitrary<Random>();
-        params.size = *gen::ranged<int>(0, 200);
-        return params;
-    }
-};
-
-template<>
 class NewArbitrary<test::GenParams>
 {
 public:

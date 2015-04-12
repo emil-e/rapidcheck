@@ -1,6 +1,5 @@
 #pragma once
 
-#include "rapidcheck/gen/Generator.h"
 #include "rapidcheck/detail/Utility.h"
 
 namespace rc {
@@ -63,7 +62,7 @@ template<typename Source>
 template<typename T>
 T BitStream<Source>::nextWithSize(int size)
 {
-    return next<T>((size * numBits<T>()) / gen::kNominalSize);
+    return next<T>((size * numBits<T>()) / kNominalSize);
 }
 
 template<typename Source>

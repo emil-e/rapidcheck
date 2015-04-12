@@ -92,7 +92,7 @@ struct IntegralProperties
             [](const Random &random) {
                 using AbsT = decltype(absolute(std::declval<T>()));
                 AbsT prev = 0;
-                for (int i = 0; i <= gen::kNominalSize; i++) {
+                for (int i = 0; i <= kNominalSize; i++) {
                     AbsT value = absolute(
                         newgen::arbitrary<T>()(random, i).value());
                     RC_ASSERT(value >= prev);

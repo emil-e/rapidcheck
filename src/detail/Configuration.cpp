@@ -81,7 +81,7 @@ Configuration configFromMap(const std::map<std::string, std::string> &map,
 
     loadParam(map, "seed", config.seed,
               "'seed' must be a valid integer",
-              anything<RandomEngine::Seed>);
+              anything<uint64_t>);
 
     loadParam(map, "max_success", config.maxSuccess,
               "'max_success' must be a valid non-negative integer",

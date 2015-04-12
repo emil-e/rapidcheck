@@ -1,16 +1,8 @@
 #pragma once
 
 #include "rapidcheck/detail/ShowType.h"
-#include "rapidcheck/gen/Common.h"
 
 namespace rc {
-
-template<typename T, typename Testable>
-void templatedProp(const std::string &description, Testable testable)
-{
-    prop(description + " (" + detail::typeToString<T>() + ")",
-         testable);
-}
 
 template<typename T, typename Testable>
 void newtemplatedProp(const std::string &description, Testable testable)
@@ -54,32 +46,6 @@ std::vector<T> setDifference(const C1 &c1, const C2 &c2)
                         std::back_inserter(result));
     return result;
 }
-
-//! Generates a value that is not the same as the given value and replaces it.
-template<typename T>
-void replaceWithDifferent(T &value)
-{
-    value = *gen::suchThat(
-        gen::arbitrary<T>(),
-        [&] (const T &x) { return x != value; });
-}
-
-template<typename T> struct DeepDecayType;
-
-template<typename T>
-using DeepDecay = typename DeepDecayType<T>::Type;
-
-template<typename T>
-struct DeepDecayType
-{
-    typedef Decay<T> Type;
-};
-
-template<typename T1, typename T2>
-struct DeepDecayType<std::pair<T1, T2>>
-{
-    typedef std::pair<DeepDecay<T1>, DeepDecay<T2>> Type;
-};
 
 struct NonComparable
 {

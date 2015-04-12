@@ -35,6 +35,8 @@ Seq<Decay<T>> iterate(T &&x, Callable &&f);
 template<typename T>
 Seq<T> range(T start, T end);
 
+// TODO move to .cpp files below
+
 //! Returns a sequence of indexes starting from `0` and increasing.
 inline Seq<std::size_t> index();
 

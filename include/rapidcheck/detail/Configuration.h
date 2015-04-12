@@ -1,6 +1,8 @@
 #pragma once
 
-#include "rapidcheck/gen/Generator.h"
+#include <cstdint>
+
+#include "rapidcheck/Gen.h"
 
 namespace rc {
 namespace detail {
@@ -10,13 +12,13 @@ struct Configuration
 {
     //! The global seed. The actual seed for a particular test case will be a
     //! hash of this and some specific data which identifies that case.
-    RandomEngine::Seed seed = 0;
+    uint64_t seed = 0;
 
     //! The number of test cases for each property.
     int maxSuccess = 100;
 
     //! The maximum size for each property.
-    int maxSize = gen::kNominalSize;
+    int maxSize = kNominalSize;
 
     //! The maximum discard ratio.
     int maxDiscardRatio = 10;

@@ -6,6 +6,16 @@
 namespace rc {
 namespace detail {
 
+std::ostream &operator<<(std::ostream &os, const CaseDescription &desc)
+{
+    os << desc.result << std::endl;
+    os << std::endl;
+    for (const auto &p : desc.example)
+        os << p.first << ": " << p.second << std::endl;
+    os << std::endl;
+    return os;
+}
+
 static inline CaseResult newToCaseResult(bool value)
 {
     return value
@@ -61,9 +71,10 @@ public:
                 m_callable, static_cast<Args &&>(args)...);
         } catch (const CaseResult &result) {
             return result;
-        } catch (const gen::GenerationFailure &e) {
+        } catch (const GenerationFailure &e) {
             return CaseResult(CaseResult::Type::Discard, e.what());
         } catch (const std::exception &e) {
+            // TODO say that it was an exception
             return CaseResult(CaseResult::Type::Failure, e.what());
         } catch (const std::string &str) {
             return CaseResult(CaseResult::Type::Failure, str);

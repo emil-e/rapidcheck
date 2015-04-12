@@ -60,7 +60,7 @@ TEST_CASE("newgen::map") {
             std::string expected(n, '0');
             expected[0] = '1';
             const auto result = searchGen(
-                random, gen::kNominalSize, gen,
+                random, kNominalSize, gen,
                 [=](const std::string &x) { return x.size() >= n; });
             RC_ASSERT(result == expected);
         });

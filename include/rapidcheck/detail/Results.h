@@ -1,6 +1,5 @@
 #pragma once
 
-#include "RandomEngine.h"
 #include "Variant.h"
 
 namespace rc {
@@ -14,7 +13,7 @@ struct TestCase
     //! The used size.
     int size = 0;
     //! The used seed.
-    RandomEngine::Seed seed = 0;
+    uint64_t seed = 0;
 };
 
 std::ostream &operator<<(std::ostream &os, const detail::TestCase &testCase);

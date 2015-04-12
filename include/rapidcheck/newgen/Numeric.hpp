@@ -23,8 +23,8 @@ Shrinkable<T> real(const Random &random, int size)
     // TODO this implementation sucks
     auto stream = rc::detail::bitStreamOf(random);
     double scale =
-        std::min(size, gen::kNominalSize) /
-        static_cast<double>(gen::kNominalSize);
+        std::min(size, kNominalSize) /
+        static_cast<double>(kNominalSize);
     double a = stream.nextWithSize<int64_t>(size);
     double b =
         (stream.next<uint64_t>() * scale) /

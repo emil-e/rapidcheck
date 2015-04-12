@@ -22,20 +22,6 @@ inline void showValue(const Box &value, std::ostream &os)
 } // namespace test
 
 template<>
-class Arbitrary<test::Box> : public gen::Generator<test::Box>
-{
-public:
-    test::Box generate() const override
-    { return test::Box(*gen::arbitrary<int>()); }
-
-    Seq<test::Box> shrink(const test::Box &box)
-    {
-        return seq::map(gen::arbitrary<int>().shrink(box.value),
-                        [](int x) { return test::Box(x); });
-    }
-};
-
-template<>
 struct NewArbitrary<test::Box>
 {
     static Gen<test::Box> arbitrary()

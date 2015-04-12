@@ -12,6 +12,8 @@ struct CaseDescription
     Example example;
 };
 
+inline std::ostream &operator<<(std::ostream &os, const CaseDescription &desc);
+
 typedef Gen<CaseDescription> NewProperty;
 
 //! Takes a callable and converts it into a generator of a `CaseResult` and a

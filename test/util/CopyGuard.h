@@ -35,14 +35,6 @@ static inline bool operator<(const CopyGuard &lhs, const CopyGuard &rhs)
 } // namespace test
 
 template<>
-class Arbitrary<test::CopyGuard> : public gen::Generator<test::CopyGuard>
-{
-public:
-    test::CopyGuard generate() const override
-    { return test::CopyGuard(*gen::arbitrary<int>()); }
-};
-
-template<>
 struct NewArbitrary<test::CopyGuard>
 {
     static Gen<test::CopyGuard> arbitrary()

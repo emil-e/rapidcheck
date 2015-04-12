@@ -1,7 +1,5 @@
 #pragma once
 
-#include "detail/Property.h"
-
 namespace rc {
 namespace detail {
 
@@ -12,10 +10,6 @@ TestResult newCheckTestable(Testable &&testable, const Args &...args)
         toNewProperty(std::forward<Testable>(testable)),
         args...);
 }
-
-template<typename Testable, typename ...Args>
-TestResult checkTestable(const Testable &testable, const Args &...args)
-{ return checkProperty(toProperty(testable), args...); }
 
 } // namespace detail
 } // namespace rc

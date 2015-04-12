@@ -150,7 +150,7 @@ TEST_CASE("BitStream") {
 
                  int n = *newgen::inRange(0, 100);
                  for (int i = 0; i < n; i++)
-                     stream.nextWithSize<char>(gen::kNominalSize);
+                     stream.nextWithSize<char>(kNominalSize);
 
                  RC_ASSERT(source.requested() == n);
              });
@@ -166,7 +166,7 @@ TEST_CASE("BitStream") {
                      [](int x) { return (x % 2) == 0; });
 
                  for (int i = 0; i < n; i++)
-                     stream.nextWithSize<char>(gen::kNominalSize / 2);
+                     stream.nextWithSize<char>(kNominalSize / 2);
 
                  RC_ASSERT(source.requested() == (n / 2));
              });

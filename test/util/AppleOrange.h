@@ -1,6 +1,5 @@
 #pragma once
 
-#include "rapidcheck/arbitrary/Collection.h"
 #include "rapidcheck/newgen/Arbitrary.h"
 #include "rapidcheck/newgen/Text.h"
 
@@ -16,14 +15,6 @@ struct Fruit
         : value(x) {}
 
     std::string value;
-};
-
-template<typename Tag>
-class Arbitrary<Fruit<Tag>> : public gen::Generator<Fruit<Tag>>
-{
-public:
-    Fruit<Tag> generate() const override
-    { return Fruit<Tag>((*gen::arbitrary<std::string>()).c_str()); }
 };
 
 template<typename Tag>

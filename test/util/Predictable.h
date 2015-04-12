@@ -1,7 +1,5 @@
 #pragma once
 
-#include "rapidcheck/gen/Generator.h"
-#include "rapidcheck/arbitrary/Numeric.h"
 #include "rapidcheck/newgen/Arbitrary.h"
 #include "rapidcheck/newgen/Numeric.h"
 
@@ -84,31 +82,6 @@ static inline void show(const NonCopyable &value, std::ostream &os)
     show(value.value, os);
     os << " (" << value.extra << ")";
 }
-
-template<>
-class Arbitrary<Predictable> : public gen::Generator<Predictable>
-{
-public:
-    Predictable generate() const override
-    {
-        return Predictable {
-            .value = Predictable::predictableValue,
-            .extra = gen::arbitrary<int>().generate() };
-    }
-};
-
-template<>
-class Arbitrary<NonCopyable> : public gen::Generator<NonCopyable>
-{
-public:
-    NonCopyable generate() const override
-    {
-        NonCopyable value;
-        value.value = Predictable::predictableValue;
-        value.extra = gen::arbitrary<int>().generate();
-        return value;
-    }
-};
 
 template<>
 struct NewArbitrary<Predictable>

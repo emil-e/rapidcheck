@@ -7,8 +7,6 @@ add_executable(rapidcheck_tests
   SeqTests.cpp
   ShowTests.cpp
   ShrinkableTests.cpp
-  arbitrary/CollectionTests.cpp
-  arbitrary/NumericTests.cpp
   detail/AnyTests.cpp
   detail/ApplyTupleTests.cpp
   detail/BitStreamTests.cpp
@@ -17,22 +15,10 @@ add_executable(rapidcheck_tests
   detail/ImplicitParamTests.cpp
   detail/MapParserTests.cpp
   detail/NewPropertyTests.cpp
-  detail/RandomEngineTests.cpp
   detail/ResultsTests.cpp
-  detail/RoseTests.cpp
   detail/ShowTypeTests.cpp
   detail/VariantTests.cpp
   fn/CommonTests.cpp
-  gen/CollectionTests.cpp
-  gen/CommonTests.cpp
-  gen/DistinctTests.cpp
-  gen/ElementTests.cpp
-  gen/InvokeTests.cpp
-  gen/NumericTests.cpp
-  gen/OneOfTests.cpp
-  gen/ParametersTests.cpp
-  gen/TextTests.cpp
-  gen/TupleTests.cpp
   main.cpp
   newgen/ContainerTests.cpp
   newgen/CreateTests.cpp
@@ -46,7 +32,6 @@ add_executable(rapidcheck_tests
   newgen/detail/ExecRawTests.cpp
   newgen/detail/RecipeTests.cpp
   newgen/detail/ShrinkValueIteratorTests.cpp
-  predicate/PredicatesTests.cpp
   seq/CreateTests.cpp
   seq/OperationsTests.cpp
   seq/TransformTests.cpp

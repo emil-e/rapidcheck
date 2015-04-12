@@ -2,6 +2,8 @@
 
 #include "rapidcheck/shrinkable/Transform.h"
 #include "rapidcheck/newgen/Arbitrary.h"
+#include "rapidcheck/GenerationFailure.h"
+#include "rapidcheck/Random.h"
 
 namespace rc {
 namespace newgen {

@@ -2,13 +2,18 @@
 
 #include "rapidcheck/Traits.h"
 #include "rapidcheck/Shrinkable.h"
-#include "rapidcheck/gen/Generator.h"
 
 namespace rc {
 
-using GenerationFailure = gen::GenerationFailure;
-
 class Random;
+
+//! The reference size. This is not a max limit on the generator size parameter
+//! but serves as a guideline. In general, genenerators for which there is a
+//! natural limit which is not too expensive to generate should max out at this.
+//! This applies to, for example, generation of numbers but not to the
+//! generation of collection where there is an associated cost to generating
+//! large collections.
+constexpr int kNominalSize = 100;
 
 //! This class is the type of RapidCheck generators. A generator is essentially
 //! a function which takes a `Random` and some generation parameters and returns
@@ -36,7 +41,7 @@ public:
     //!
     //! @return a random generated `Shrinkable`
     Shrinkable<T> operator()(const Random &random,
-                             int size = gen::kNominalSize) const noexcept;
+                             int size = kNominalSize) const noexcept;
 
     //! The meaning of this operator depends on the context in which it is used
     //! but mainly, it is used when creating a generator using `newgen::exec` to

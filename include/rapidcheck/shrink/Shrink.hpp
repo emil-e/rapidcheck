@@ -2,7 +2,6 @@
 
 #include "rapidcheck/seq/Transform.h"
 #include "rapidcheck/seq/Create.h"
-#include "rapidcheck/detail/CollectionBuilder.h"
 
 namespace rc {
 namespace shrink {
@@ -23,26 +22,6 @@ Seq<Container> newRemoveChunks(Container elements)
         });
 }
 
-template<typename T>
-Seq<T> removeChunks(T collection)
-{
-    std::vector<typename T::value_type> elements;
-    for (auto &&item : collection)
-        elements.push_back(std::move(item));
-
-    std::size_t size = elements.size();
-    return seq::map(
-        seq::subranges(0, elements.size()),
-        [=](const std::pair<std::size_t, std::size_t> &range) {
-            detail::CollectionBuilder<T> builder;
-            for (std::size_t i = 0; i < range.first; i++)
-                builder.add(elements[i]);
-            for (std::size_t i = range.second; i < size; i++)
-                builder.add(elements[i]);
-            return std::move(builder.result());
-        });
-}
-
 template<typename Container, typename Shrink>
 Seq<Container> newEachElement(Container elements, Shrink shrink)
 {
@@ -56,37 +35,6 @@ Seq<Container> newEachElement(Container elements, Shrink shrink)
             return newElements;
         });
     });
-}
-
-template<typename T, typename ShrinkElement>
-Seq<T> eachElement(T collection, ShrinkElement shrinkElement)
-{
-    typedef typename std::result_of<
-        ShrinkElement(typename T::value_type)>::type::ValueType
-        ElementT;
-
-    // TODO lazier
-    std::vector<ElementT> elements;
-    for (auto &&item : collection)
-        elements.push_back(std::move(item));
-
-    return seq::join(seq::zipWith(
-        [elements, shrinkElement](std::size_t index, ElementT &&value) {
-            // TODO this capturing... safe to capture by reference?
-            return seq::mapMaybe(
-                shrinkElement(std::move(value)),
-                [&elements, index](ElementT &&shrinkValue) -> Maybe<T> {
-                    detail::CollectionBuilder<T> builder;
-                    for (std::size_t i = 0; i < elements.size(); i++) {
-                        bool success = (i == index) ? builder.add(shrinkValue)
-                            : builder.add(elements[i]);
-                        if (success)
-                            return Nothing;
-                    }
-                    return std::move(builder.result());
-                });
-        },
-        seq::index(), seq::fromContainer(elements)));
 }
 
 template<typename T>
