@@ -7,6 +7,51 @@
 
 namespace rc {
 namespace gen {
+namespace detail {
+
+template<typename String>
+class StringGen;
+
+template<typename T, typename ...Args>
+class StringGen<std::basic_string<T, Args...>>
+{
+public:
+    typedef std::basic_string<T, Args...> String;
+
+    Shrinkable<String> operator()(const Random &random, int size) const
+    {
+        auto stream = rc::detail::bitStreamOf(random);
+        String str;
+        auto length = stream.next<std::size_t>() % (size + 1);
+        str.reserve(length);
+
+        for (std::size_t i = 0; i < length; i++) {
+            bool small = stream.next<bool>();
+            T value;
+            do {
+                value = small ? stream.next<T>(7) : stream.next<T>();
+            } while(value == '\0');
+            str.push_back(value);
+        }
+
+        return shrinkable::shrinkRecur(
+            std::move(str),
+            [](const String &s) {
+                return seq::concat(
+                    shrink::removeChunks(s),
+                    shrink::eachElement(s, &shrink::character<T>));
+            });
+    }
+};
+
+template<typename T, typename ...Args>
+struct DefaultArbitrary<std::basic_string<T, Args...>>
+{
+    static Gen<std::basic_string<T, Args...>> arbitrary()
+    { return gen::string<std::basic_string<T, Args...>>(); }
+};
+
+} // namespace detail
 
 template<typename T>
 Gen<T> character()
@@ -17,33 +62,17 @@ Gen<T> character()
         T value;
         while ((value = small ? stream.next<T>(7) : stream.next<T>()) == '\0');
 
-        return shrinkable::shrinkRecur(value, [](T value) {
-            auto shrinks = seq::cast<T>(
-                seq::concat(
-                    seq::fromContainer(std::string("abc")),
-                    std::islower(value)
-                    ? Seq<char>()
-                    : seq::just(static_cast<char>(std::tolower(value))),
-                    seq::fromContainer(std::string("ABC123 \n"))));
-
-            return seq::takeWhile(std::move(shrinks),
-                                  [=](T x) { return x != value; });
-        });
+        return shrinkable::shrinkRecur(value, &shrink::character<T>);
     };
 }
 
-namespace detail {
+template<typename String>
+Gen<String> string() { return detail::StringGen<String>(); }
 
-template<typename T, typename ...Args>
-struct DefaultArbitrary<std::basic_string<T, Args...>>
-{
-    static Gen<std::basic_string<T, Args...>> arbitrary()
-    {
-        return gen::container<std::basic_string<T, Args...>>(
-            gen::character<T>());
-    }
-};
-
-} // namespace detail
 } // namespace gen
 } // namespace rc
+
+extern template rc::Gen<std::string> rc::gen::string<std::string>();
+extern template rc::Gen<std::wstring> rc::gen::string<std::wstring>();
+extern template struct rc::Arbitrary<std::string>;
+extern template struct rc::Arbitrary<std::wstring>;

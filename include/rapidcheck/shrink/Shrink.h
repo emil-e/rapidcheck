@@ -46,6 +46,10 @@ Seq<T> real(T value);
 //! Shrinks an arbitrary boolean value.
 inline Seq<bool> boolean(bool value);
 
+//! Shrinks a text character.
+template<typename T>
+Seq<T> character(T value);
+
 } // namespace shrink
 } // namespace rc
 

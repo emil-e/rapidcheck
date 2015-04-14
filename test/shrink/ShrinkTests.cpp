@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include <cctype>
+
 #include "rapidcheck/shrink/Shrink.h"
 #include "rapidcheck/seq/Operations.h"
 
@@ -281,4 +283,37 @@ TEST_CASE("shrink::bool") {
     SECTION("does not shrink 'false'") {
         REQUIRE(!shrink::boolean(false).next());
     }
+}
+
+struct CharacterProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "'a' is the first shrink",
+            [](T x) {
+                RC_PRE(x != 'a');
+                RC_ASSERT(*shrink::character(x).next() == 'a');
+            });
+
+        templatedProp<T>(
+            "if uppercase, contains lowercase",
+            []{
+                static const std::string letters("ABCDEFGHIJKLMNOPQRSTUVXYZ");
+                T x = *gen::elementOf(letters);
+                RC_ASSERT(seq::contains<T>(shrink::character(x),
+                                           std::tolower(x)));
+            });
+
+        templatedProp<T>(
+            "never contains self",
+            [](T x) {
+                RC_ASSERT(!seq::contains(shrink::character(x), x));
+            });
+    }
+};
+
+TEST_CASE("shrink::character") {
+    meta::forEachType<CharacterProperties, char, wchar_t>();
 }

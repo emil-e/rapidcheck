@@ -6,6 +6,9 @@
 #include "util/GenUtils.h"
 #include "util/ShrinkableUtils.h"
 
+#include "util/Util.h"
+#include "util/Meta.h"
+
 using namespace rc;
 using namespace rc::test;
 
@@ -32,16 +35,66 @@ TEST_CASE("gen::character") {
         });
 }
 
-TEST_CASE("gen::arbitrary<std::string>") {
-    prop(
-        "finds minimum where string must be longer than a certain length",
-        [](const Random &random) {
-            const auto n = *gen::inRange<std::size_t>(0, 10);
-            const auto size = *gen::inRange<int>(50, 100);
-            const auto result = searchGen(
-                random, size, gen::arbitrary<std::string>(),
-                [=](const std::string &x) { return x.size() >= n; });
-            std::string expected(n, 'a');
-            RC_ASSERT(result == expected);
-        });
+struct StringProperties
+{
+    template<typename T>
+    static void exec()
+    {
+        templatedProp<T>(
+            "length is smaller or equal to size",
+            [](const GenParams &params) {
+                const auto gen = gen::string<T>();
+                const auto shrinkable = gen(params.random, params.size);
+                RC_ASSERT(shrinkable.value().size() <= params.size);
+            });
+
+        templatedProp<T>(
+            "finds minimum where string must be longer than a certain length",
+            [](const Random &random) {
+                const auto n = *gen::inRange<std::size_t>(0, 10);
+                const auto size = *gen::inRange<int>(50, 100);
+                const auto result = searchGen(
+                    random, size, gen::string<T>(),
+                    [=](const T &x) { return x.size() >= n; });
+                T expected(n, 'a');
+                RC_ASSERT(result == expected);
+            });
+
+        templatedProp<T>(
+            "first shrink is empty",
+            [](const GenParams &params) {
+                const auto gen = gen::string<T>();
+                const auto shrinkable = gen(params.random, params.size);
+                RC_PRE(!shrinkable.value().empty());
+                RC_ASSERT(shrinkable.shrinks().next()->value().empty());
+            });
+
+        templatedProp<T>(
+            "the size of each shrink is the same or smaller than the original",
+            [](const GenParams &params) {
+                onAnyPath(
+                    gen::string<T>()(params.random, params.size),
+                    [](const Shrinkable<T> &value,
+                       const Shrinkable<T> &shrink) {
+                        RC_ASSERT(
+                            containerSize(shrink.value()) <=
+                            containerSize(value.value()));
+                    });
+            });
+
+        templatedProp<T>(
+            "none of the shrinks equal the original value",
+            [](const GenParams &params) {
+                onAnyPath(
+                    gen::string<T>()(params.random, params.size),
+                    [](const Shrinkable<T> &value,
+                       const Shrinkable<T> &shrink) {
+                        RC_ASSERT(value.value() != shrink.value());
+                    });
+            });
+    }
+};
+
+TEST_CASE("gen::string") {
+    meta::forEachType<StringProperties, std::string, std::wstring>();
 }
