@@ -5,66 +5,116 @@
 namespace rc {
 
 template<typename T>
-class Seq<T>::ISeqImpl
+class Seq<T>::ISeqImpl : public detail::IPolymorphic
 {
 public:
     virtual Maybe<T> next() = 0;
-    virtual std::unique_ptr<ISeqImpl> copy() const = 0;
     virtual ~ISeqImpl() = default;
 };
 
 template<typename T>
+class Seq<T>::EmptySeqImpl : public Seq<T>::ISeqImpl
+{
+public:
+    Maybe<T> next() override { return Nothing; }
+
+    void copyInto(void *storage) const override
+    { new (storage) EmptySeqImpl(); }
+
+    void moveInto(void *storage) override
+    { new (storage) EmptySeqImpl(); }
+};
+
+template<typename T>
 template<typename Impl>
-class Seq<T>::SeqImpl : public Seq<T>::ISeqImpl
+class Seq<T>::HeapSeqImpl : public Seq<T>::ISeqImpl
 {
 public:
     template<typename ...Args>
-    SeqImpl(Args &&...args) : m_impl(std::forward<Args>(args)...) {}
+    HeapSeqImpl(Args &&...args)
+        : m_impl(new Impl(std::forward<Args>(args)...)) {}
+
+    Maybe<T> next() override
+    { return m_impl ? (*m_impl)() : Maybe<T>(); }
+
+    void copyInto(void *storage) const override
+    {
+        if (m_impl)
+            new (storage) HeapSeqImpl(*m_impl);
+        else
+            new (storage) EmptySeqImpl();
+    }
+
+    void moveInto(void *storage) override
+    {
+        if (m_impl)
+            new (storage) HeapSeqImpl(std::move(*this));
+        else
+            new (storage) EmptySeqImpl();
+    }
+
+private:
+    std::unique_ptr<Impl> m_impl;
+};
+
+template<typename T>
+template<typename Impl>
+class Seq<T>::LocalSeqImpl : public Seq<T>::ISeqImpl
+{
+public:
+    template<typename ...Args>
+    LocalSeqImpl(Args &&...args)
+        : m_impl(std::forward<Args>(args)...) {}
 
     Maybe<T> next() override { return m_impl(); }
 
-    std::unique_ptr<ISeqImpl> copy() const override
-    { return std::unique_ptr<ISeqImpl>(new SeqImpl(*this)); }
+    void copyInto(void *storage) const override
+    { new (storage) LocalSeqImpl(*this); }
+
+    void moveInto(void *storage) override
+    { new (storage) LocalSeqImpl(std::move(*this)); }
 
 private:
     Impl m_impl;
 };
 
 template<typename T>
+Seq<T>::Seq() noexcept { m_storage.template init<EmptySeqImpl>(); }
+
+template<typename T>
 template<typename Impl, typename>
 Seq<T>::Seq(Impl &&impl)
-    : m_impl(new SeqImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}
+{
+    using LocalImpl = LocalSeqImpl<Decay<Impl>>;
+    using HeapImpl = HeapSeqImpl<Decay<Impl>>;
+
+    m_storage.template initWithFallback<LocalImpl, HeapImpl>(
+        std::forward<Impl>(impl));
+}
+
+template<typename T>
+Seq<T>::Seq(std::false_type) {}
 
 template<typename T>
 Maybe<T> Seq<T>::next() noexcept
 {
     try {
-        return m_impl ? m_impl->next() : Nothing;
+        return m_storage.get<ISeqImpl>().next();
     } catch (...) {
-        m_impl.reset();
         return Nothing;
     }
-}
-
-template<typename T>
-Seq<T>::Seq(const Seq &other)
-    : m_impl(other.m_impl ? other.m_impl->copy() : nullptr) {}
-
-template<typename T>
-Seq<T> &Seq<T>::operator=(const Seq &rhs)
-{
-    m_impl = rhs.m_impl->copy();
-    return *this;
 }
 
 template<typename Impl, typename ...Args>
 Seq<typename std::result_of<Impl()>::type::ValueType> makeSeq(Args &&...args)
 {
     typedef Seq<typename std::result_of<Impl()>::type::ValueType> SeqT;
-    typedef typename SeqT::template SeqImpl<Impl> ImplT;
+    using LocalImpl = typename SeqT::template LocalSeqImpl<Impl>;
+    using HeapImpl = typename SeqT::template HeapSeqImpl<Impl>;
 
-    SeqT seq;
-    seq.m_impl.reset(new ImplT(std::forward<Args>(args)...));
+    SeqT seq{std::false_type()};
+    seq.m_storage.template initWithFallback<LocalImpl, HeapImpl>(
+        std::forward<Args>(args)...);
     return seq;
 }
 

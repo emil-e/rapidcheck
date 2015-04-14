@@ -10,7 +10,9 @@ template<typename T>
 class RepeatSeq
 {
 public:
-    template<typename Arg>
+    template<typename Arg,
+             typename = typename std::enable_if<
+                 !std::is_same<Decay<Arg>, RepeatSeq>::value>::type>
     RepeatSeq(Arg &&arg) : m_value(std::forward<Arg>(arg)) {}
 
     Maybe<T> operator()()
@@ -24,9 +26,11 @@ template<typename T, int N>
 class JustSeq
 {
 public:
-    template<typename ...Args>
-    JustSeq(Args &&...args)
-        : m_values{std::forward<Args>(args)...}
+    template<typename Arg, typename ...Args,
+             typename = typename std::enable_if<
+                 !std::is_same<Decay<Arg>, JustSeq>::value>::type>
+    JustSeq(Arg &&arg, Args &&...args)
+        : m_values{std::forward<Arg>(arg), std::forward<Args>(args)...}
         , m_next(0) {}
 
     Maybe<T> operator()()
@@ -41,6 +45,12 @@ private:
     std::size_t m_next;
 };
 
+template<typename T>
+class JustSeq<T, 0>
+{
+public:
+    Maybe<T> operator()() { return Nothing; }
+};
 
 template<typename Container>
 class ContainerSeq

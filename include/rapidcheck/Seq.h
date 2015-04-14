@@ -6,13 +6,15 @@
 
 #include "rapidcheck/Maybe.h"
 #include "rapidcheck/Traits.h"
+#include "rapidcheck/detail/PolymorphicStorage.h"
 
 namespace rc {
 
-//! This class implements lazy sequences, or streams if you will. This is
-//! mainly used by RapidCheck to implement shrinking where it is not feasible to
-//! materialize all of the possible shrinks at once. In particular, a Seq may be
-//! infinite although that's not appropriate for shrinking, of course!
+//! This class implements lazy sequences, or streams, as they are sometimes
+//! know. This is mainly used by RapidCheck to implement shrinking where it is
+//! not feasible to materialize all of the possible shrinks at once. In
+//! particular, a Seq may be infinite, although that's not appropriate for
+//! shrinking, of course!
 //!
 //! A `Seq` object is constructed either as an empty sequence using the default
 //! constructor or with an implementation object that implements the actual
@@ -24,6 +26,9 @@ namespace rc {
 //!     values. If this method throws, it is treated the same as `Nothing`.
 //!   - It must have a copy constructor that produces a semantically identical
 //!     copy. This means that it should provide equal values to the original.
+//!
+//! Neither the copy constructor or a possible move constructor may not throw
+//! since `Seq` itself must be nothrow move- and copy-constructible.
 //!
 //! However, unless you have a reason to create your own implementation class,
 //! you should just use the provided combinators in the `rc::seq` namespace to
@@ -42,7 +47,7 @@ public:
     typedef T ValueType;
 
     //! Constructs an empty `Seq` that has no values.
-    Seq() = default;
+    Seq() noexcept;
 
     //! Constructs a `Seq` from the given implementation object.
     template<typename Impl,
@@ -53,18 +58,21 @@ public:
     //! Returns the next value.
     Maybe<T> next() noexcept;
 
-    Seq(const Seq &other);
-    Seq &operator=(const Seq &rhs);
-    Seq(Seq &&other) noexcept = default;
-    Seq &operator=(Seq &&rhs) noexcept = default;
-
 private:
+    explicit Seq(std::false_type);
+
     class ISeqImpl;
 
     template<typename Impl>
-    class SeqImpl;
+    class HeapSeqImpl;
 
-    std::unique_ptr<ISeqImpl> m_impl;
+    template<typename Impl>
+    class LocalSeqImpl;
+
+    class EmptySeqImpl;
+
+    typedef detail::PolymorphicStorage<sizeof(void *) * 4> Storage;
+    Storage m_storage;
 };
 
 //! Two `Seq`s are considered equal if they return equal values. Note that this
