@@ -1,11 +1,13 @@
 #pragma once
 
 #include "rapidcheck/Seq.h"
+#include "rapidcheck/detail/PolymorphicStorage.h"
 
 namespace rc {
 
-//! A `Shrinkable` describes a value in addition to all the possible ways of
-//! shrinking that value.
+//! A `Shrinkable` is an abstraction of a value that may be shrunk. A
+//! `Shrinkable` provides the current value and a `Seq` of the possible shrinks
+//! that value.
 //!
 //! `Shrinkable` is backed by a type erased implementation object which must
 //! have the following:
@@ -13,10 +15,14 @@ namespace rc {
 //!   - A method `Seq<Shrinkable<T>> shrinks() const` which returns a `Seq` of
 //!     the possible shrinks. If this method throws, it is treated as if it had
 //!     returned an empty `Seq`.
+//!   - A copy constructor which produces a functionally identical object. This
+//!     constructor may not throw.
 //!
-//! A Shrinkable is immutable and the implementation object is shared when the
-//! shrinkable is copied which is why the implementation object needs no copy
-//! constructor.
+//! Neither the copy constructor or a possible move constructor may not throw
+//! since `Shrinkable` itself must be nothrow move- and copy-constructible.
+//!
+//! Unless you have a specific reason not to, you should just use the provided
+//! combinators in `rc::shrinkable` to create instances.
 template<typename T>
 class Shrinkable
 {
@@ -28,12 +34,6 @@ public:
     //! The type of the value in this `Shrinkable`.
     typedef T ValueType;
 
-    template<
-        typename Impl,
-        typename = typename std::enable_if<
-            !std::is_same<Decay<Impl>, Shrinkable>::value>::type>
-    Shrinkable(Impl &&impl);
-
     //! Returns the value.
     T value() const;
 
@@ -41,15 +41,18 @@ public:
     Seq<Shrinkable<T>> shrinks() const noexcept;
 
 private:
-    class IShrinkableImpl;
+    explicit Shrinkable() = default;
 
-    explicit Shrinkable(std::shared_ptr
-                        <IShrinkableImpl> impl);
+    class IShrinkableImpl;
 
     template<typename Impl>
     class ShrinkableImpl;
 
-    std::shared_ptr<const IShrinkableImpl> m_impl;
+    template<typename Impl>
+    class SharedShrinkableImpl;
+
+    typedef detail::PolymorphicStorage<sizeof(void *) * 4> Storage;
+    Storage m_storage;
 };
 
 //! Two `Shrinkable`s are equal if the have the same value and the same shrinks.
