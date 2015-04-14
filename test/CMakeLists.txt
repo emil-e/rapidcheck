@@ -14,6 +14,7 @@ add_executable(rapidcheck_tests
   detail/ExpressionCaptorTests.cpp
   detail/ImplicitParamTests.cpp
   detail/MapParserTests.cpp
+  detail/PolymorphicStorageTests.cpp
   detail/PropertyTests.cpp
   detail/ResultsTests.cpp
   detail/ShowTypeTests.cpp
