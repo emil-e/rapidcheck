@@ -168,6 +168,12 @@ struct ShrinkTowardsProperties
             [] (T target) {
                 RC_ASSERT(!shrink::towards(target, target).next());
             });
+
+        templatedProp<T>(
+            "never contains original value",
+            [](T x, T y) {
+                RC_ASSERT(!seq::contains(shrink::towards(x, y), x));
+            });
     }
 };
 
