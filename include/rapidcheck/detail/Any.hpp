@@ -5,7 +5,6 @@
 #include "rapidcheck/Traits.h"
 #include "rapidcheck/Show.h"
 #include "Utility.h"
-#include "IsCopyConstructible.h"
 #include "ShowType.h"
 
 namespace rc {
