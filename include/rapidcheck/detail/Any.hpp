@@ -15,8 +15,6 @@ class Any::IAnyImpl
 {
 public:
     virtual void *get() = 0;
-    virtual bool isCopyable() const = 0;
-    virtual std::unique_ptr<IAnyImpl> copy() const = 0;
     virtual std::pair<std::string, std::string> describe() const = 0;
     virtual const std::type_info &typeInfo() const = 0;
     virtual ~IAnyImpl() = default;
@@ -32,11 +30,6 @@ public:
 
     void *get() override { return &m_value; }
 
-    bool isCopyable() const override { return IsCopyConstructible<T>::value; }
-
-    std::unique_ptr<IAnyImpl> copy() const override
-    { return copy(IsCopyConstructible<T>()); }
-
     std::pair<std::string, std::string> describe() const override
     {
         return { typeToString<T>(), toString(m_value) };
@@ -46,15 +39,6 @@ public:
     { return typeid(T); }
 
 private:
-    RC_DISABLE_COPY(AnyImpl)
-
-    std::unique_ptr<IAnyImpl> copy(std::true_type) const
-    { return std::unique_ptr<IAnyImpl>(new AnyImpl<T>(m_value)); }
-
-    // TODO better error message
-    std::unique_ptr<IAnyImpl> copy(std::false_type) const
-    { throw std::runtime_error("Not copyable"); }
-
     T m_value;
 };
 

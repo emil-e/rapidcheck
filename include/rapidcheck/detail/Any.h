@@ -38,22 +38,6 @@ public:
     //! Returns `true` if this `Any` is non-null.
     explicit operator bool() const;
 
-    //! Returns `true` if this `Any` is copyable. Non-copyable `Any` will throw
-    //! an exception if a copy is attempted.
-    //!
-    //! Maybe copy should be explicit?
-    bool isCopyable() const;
-
-    //! This constructor is effectively `noexcept` iff the contained value has a
-    //! copy constructor and if that copy constructor does not throw. If the
-    //! value does not have a copy constructor, this constructor throws.
-    Any(const Any &other);
-
-    //! This method is effectively `noexcept` iff the contained value has a
-    //! copy constructor and if that copy constructor does not throw. If the
-    //! value does not have a copy constructor, this method throws.
-    Any &operator=(const Any &rhs);
-
     Any(Any &&other) noexcept = default;
     Any &operator=(Any &&rhs) noexcept = default;
 

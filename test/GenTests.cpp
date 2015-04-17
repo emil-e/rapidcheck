@@ -16,13 +16,14 @@ struct MockGenerationHandler : public GenerationHandler
     {
         wasCalled = true;
         passedGenerator = gen;
-        return returnValue;
+        return Any::of(returnValue);
     }
 
     bool wasCalled = false;
-    Gen<Any> passedGenerator = Gen<Any>(
-        fn::constant(shrinkable::just(Any::of(0))));
-    Any returnValue;
+    Gen<Any> passedGenerator = Gen<Any>([](const Random &, int) {
+        return shrinkable::lambda([]{ return Any::of(0); });
+    });
+    int returnValue;
 };
 
 TEST_CASE("Gen") {
@@ -84,7 +85,7 @@ TEST_CASE("Gen") {
         }
 
         MockGenerationHandler handler;
-        handler.returnValue = Any::of(456);
+        handler.returnValue = 456;
         ImplicitParam<rc::gen::detail::param::CurrentHandler> letHandler(
             &handler);
         Gen<int> gen(fn::constant(shrinkable::just(1337)));
