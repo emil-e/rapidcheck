@@ -9,36 +9,56 @@ namespace test {
 struct Logger
 {
 public:
-    Logger()
-        : log{"default constructed"} {}
-
-    Logger(std::string theId)
-        : id(std::move(theId))
-        , log{"constructed as " + id} {}
-
-    Logger(const Logger &other)
-        : id(other.id)
-        , log(other.log)
-    { log.emplace_back("copy constructed"); }
-
-    Logger(Logger &&other)
-        : id(std::move(other.id))
-        , log(std::move(other.log))
-    { log.emplace_back("move constructed"); }
-
-    Logger &operator=(const Logger &rhs)
+    Logger() noexcept
     {
-        id = rhs.id;
-        log = rhs.log;
-        log.emplace_back("copy assigned");
+        try {
+            log.push_back("default constructed");
+        } catch(...) {}
+    }
+
+    Logger(std::string theId) noexcept
+    {
+        try {
+            id = std::move(theId);
+            log.push_back("constructed as " + id);
+        } catch(...) {}
+    }
+
+    Logger(const Logger &other) noexcept
+    {
+        try {
+            id = other.id;
+            log = other.log;
+            log.emplace_back("copy constructed");
+        } catch(...) {}
+    }
+
+    Logger(Logger &&other) noexcept
+    {
+        try {
+            id = std::move(other.id);
+            log = std::move(other.log);
+            log.emplace_back("move constructed");
+        } catch(...) {}
+    }
+
+    Logger &operator=(const Logger &rhs) noexcept
+    {
+        try {
+            id = rhs.id;
+            log = rhs.log;
+            log.emplace_back("copy assigned");
+        } catch(...) {}
         return *this;
     }
 
-    Logger &operator=(Logger &&rhs)
+    Logger &operator=(Logger &&rhs) noexcept
     {
-        id = std::move(rhs.id);
-        log = std::move(rhs.log);
-        log.emplace_back("move assigned");
+        try {
+            id = std::move(rhs.id);
+            log = std::move(rhs.log);
+            log.emplace_back("move assigned");
+        } catch(...) {}
         return *this;
     }
 
@@ -55,9 +75,18 @@ public:
     { return std::find(begin(log), end(log), item) != end(log); }
 
     int numberOf(const std::string &value) const
-    { return std::count(begin(log), end(log), value); }
+    {
+        return std::count_if(
+            begin(log), end(log),
+            [&](const std::string &s) {
+                return s.find(value) != std::string::npos;
+            });
+    }
 
-    virtual ~Logger() = default;
+    bool operator==(const Logger &rhs) const
+    { return (id == rhs.id) && (log == rhs.log); }
+
+    virtual ~Logger() noexcept = default;
 
     std::string id;
     std::vector<std::string> log;
