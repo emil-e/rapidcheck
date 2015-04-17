@@ -1,6 +1,9 @@
 #pragma once
 
+#include <vector>
+
 #include "Variant.h"
+
 
 namespace rc {
 namespace detail {

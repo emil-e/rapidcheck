@@ -1,55 +1,59 @@
 #include <catch.hpp>
 
 #include "util/Util.h"
+#include "util/Logger.h"
 #include "util/AppleOrange.h"
 
 #include "rapidcheck/detail/Variant.h"
 
 using namespace rc;
+using namespace rc::test;
 using namespace rc::detail;
 
 namespace {
 
-struct A
+template<std::size_t N>
+struct X
 {
-    A() {}
-    A(const std::string &x) : value(x) {}
+    X() {}
+    X(const std::string &x) : value(x) {}
+
+    X(const X &other) noexcept
+    { try { value = other.value; } catch(...) {} }
+
+    X(X &&other) noexcept
+    { try { value = std::move(other.value); } catch(...) {} }
+
+    X &operator=(const X &other) noexcept
+    {
+        try { value = other.value; } catch(...) {}
+        return *this;
+    }
+
+    X &operator=(X &&other) noexcept
+    {
+        try { value = std::move(other.value); } catch(...) {}
+        return *this;
+    }
+
+    // Put some extra junk here so that different types have different layout.
+    char extra[N];
     std::string value;
 };
 
-bool operator==(const A &a1, const A &a2)
-{ return a1.value == a2.value; }
+template<std::size_t N>
+bool operator==(const X<N> &x1, const X<N> &x2)
+{ return x1.value == x2.value; }
 
-bool operator!=(const A &a1, const A &a2)
-{ return a1.value != a2.value; }
+template<std::size_t N>
+bool operator!=(const X<N> &x1, const X<N> &x2)
+{ return x1.value != x2.value; }
 
-struct B
-{
-    B() {}
-    B(const std::string &x) : value(x) {}
-    std::string value;
-};
+typedef X<5> A;
+typedef X<10> B;
+typedef X<15> C;
 
-bool operator==(const B &b1, const B &b2)
-{ return b1.value == b2.value; }
-
-bool operator!=(const B &b1, const B &b2)
-{ return b1.value != b2.value; }
-
-struct C
-{
-    C() {}
-    C(const std::string &x) : value(x) {}
-    std::string value;
-};
-
-bool operator==(const C &c1, const C &c2)
-{ return c1.value == c2.value; }
-
-bool operator!=(const C &c1, const C &c2)
-{ return c1.value != c2.value; }
-
-typedef Variant<A, B, C> ABC;
+typedef Variant<Logger, A, B, C> ABC;
 
 } // namespace
 
@@ -58,21 +62,127 @@ TEST_CASE("Variant") {
     ABC vb(B("B"));
     ABC vc(C("C"));
 
-    SECTION("constructor") {
-        SECTION("works rvalue references") {
-            A a("foobar");
-            A ap;
-            ABC v1(static_cast<A &&>(a));
-            REQUIRE(v1.match(ap));
-            REQUIRE(ap.value == "foobar");
+    SECTION("universal constructor") {
+        SECTION("rvalue") {
+            ABC v(Logger("foobar"));
+            REQUIRE(v.is<Logger>());
+            REQUIRE(v.get<Logger>().id == "foobar");
+            REQUIRE(v.get<Logger>().numberOf("copy") == 0);
         }
 
-        SECTION("works lvalue references") {
-            A a("foobar");
-            A ap;
-            ABC v1(static_cast<A &>(a));
-            REQUIRE(v1.match(ap));
-            REQUIRE(ap.value == "foobar");
+        SECTION("lvalue") {
+            Logger logger("foobar");
+            ABC v(logger);
+            REQUIRE(v.is<Logger>());
+            REQUIRE(v.get<Logger>().id == "foobar");
+            REQUIRE(v.get<Logger>().numberOf("copy") == 1);
+        }
+    }
+
+    SECTION("value assignment") {
+        SECTION("from same type") {
+            SECTION("rvalue") {
+                ABC v(Logger("bar"));
+                v = Logger("foo");
+                REQUIRE(v.is<Logger>());
+                REQUIRE(v.get<Logger>().id == "foo");
+                REQUIRE(v.get<Logger>().numberOf("copy") == 0);
+                REQUIRE(v.get<Logger>().numberOf("move") == 1);
+                REQUIRE(v.get<Logger>().numberOf("move assigned") == 1);
+            }
+
+            SECTION("lvalue") {
+                ABC v(Logger("bar"));
+                Logger foo("foo");
+                v = foo;
+                REQUIRE(v.is<Logger>());
+                REQUIRE(v.get<Logger>().id == "foo");
+                REQUIRE(v.get<Logger>().numberOf("copy") == 1);
+                REQUIRE(v.get<Logger>().numberOf("copy assigned") == 1);
+            }
+        }
+
+        SECTION("from different type") {
+            SECTION("rvalue") {
+                ABC v(va);
+                v = Logger("foo");
+                REQUIRE(v.is<Logger>());
+                REQUIRE(v.get<Logger>().id == "foo");
+                REQUIRE(v.get<Logger>().numberOf("copy") == 0);
+                REQUIRE(v.get<Logger>().numberOf("move") == 1);
+                REQUIRE(v.get<Logger>().numberOf("move constructed") == 1);
+            }
+
+            SECTION("lvalue") {
+                ABC v(va);
+                Logger foo("foo");
+                v = foo;
+                REQUIRE(v.is<Logger>());
+                REQUIRE(v.get<Logger>().id == "foo");
+                REQUIRE(v.get<Logger>().numberOf("copy") == 1);
+                REQUIRE(v.get<Logger>().numberOf("copy constructed") == 1);
+            }
+        }
+    }
+
+    SECTION("copy constructor") {
+        ABC v1(Logger("foobar"));
+        ABC v2(v1);
+        REQUIRE(v2.is<Logger>());
+        REQUIRE(v2.get<Logger>().id == "foobar");
+        REQUIRE(v2.get<Logger>().numberOf("copy") == 1);
+    }
+
+    SECTION("move constructor") {
+        ABC v1(Logger("foobar"));
+        ABC v2(std::move(v1));
+        REQUIRE(v2.is<Logger>());
+        REQUIRE(v2.get<Logger>().id == "foobar");
+        REQUIRE(v2.get<Logger>().numberOf("copy") == 0);
+    }
+
+    SECTION("copy assignment") {
+        SECTION("from same type") {
+            ABC v1(Logger("foo"));
+            ABC v2(Logger("bar"));
+            v2 = v1;
+            REQUIRE(v2.is<Logger>());
+            REQUIRE(v2.get<Logger>().id == "foo");
+            REQUIRE(v2.get<Logger>().numberOf("copy") == 1);
+            REQUIRE(v2.get<Logger>().numberOf("copy assigned") == 1);
+        }
+
+        SECTION("from different type") {
+            ABC v1(Logger("foo"));
+            ABC v2(va);
+            v2 = v1;
+            REQUIRE(v2.is<Logger>());
+            REQUIRE(v2.get<Logger>().id == "foo");
+            REQUIRE(v2.get<Logger>().numberOf("copy") == 1);
+            REQUIRE(v2.get<Logger>().numberOf("copy constructed") == 1);
+        }
+    }
+
+    SECTION("move assignment") {
+        SECTION("from same type") {
+            ABC v1(Logger("foo"));
+            ABC v2(Logger("bar"));
+            v2 = std::move(v1);
+            REQUIRE(v2.is<Logger>());
+            REQUIRE(v2.get<Logger>().id == "foo");
+            REQUIRE(v2.get<Logger>().numberOf("copy") == 0);
+            REQUIRE(v2.get<Logger>().numberOf("move constructed") == 1);
+            REQUIRE(v2.get<Logger>().numberOf("move assigned") == 1);
+        }
+
+        SECTION("from different type") {
+            ABC v1(Logger("foo"));
+            ABC v2(va);
+            v2 = std::move(v1);
+            REQUIRE(v2.is<Logger>());
+            REQUIRE(v2.get<Logger>().id == "foo");
+            REQUIRE(v2.get<Logger>().numberOf("copy") == 0);
+            REQUIRE(v2.get<Logger>().numberOf("move constructed") == 2);
         }
     }
 
