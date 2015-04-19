@@ -90,6 +90,14 @@ TEST_CASE("Shrinkable") {
         REQUIRE(shrinksCalled);
     }
 
+    SECTION("self assignment leaves value unchanged") {
+        const auto shrinkable = shrinkable::just(
+            13, seq::just(shrinkable::just(37)));
+        auto x = shrinkable;
+        x = x;
+        REQUIRE(x == shrinkable);
+    }
+
     SECTION("if shrinks() throws, an empty Seq is returned") {
         Shrinkable<int> shrinkable = makeMockShrinkable(
             [] { return 0; },

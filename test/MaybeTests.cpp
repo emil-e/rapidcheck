@@ -91,6 +91,11 @@ TEST_CASE("Maybe") {
                     "constructed as bar",
                     "copy assigned");
             }
+
+            SECTION("self assign leaves self unchanged") {
+                maybe = *maybe;
+                REQUIRE(maybe->id == "bar");
+            }
         }
     }
 
@@ -176,6 +181,11 @@ TEST_CASE("Maybe") {
                         "copy constructed");
                 }
             }
+
+            SECTION("self assign leaves self unchanged") {
+                lhs = lhs;
+                REQUIRE_FALSE(lhs);
+            }
         }
 
         SECTION("if initialized") {
@@ -201,6 +211,11 @@ TEST_CASE("Maybe") {
                         "copy constructed",
                         "copy assigned");
                 }
+            }
+
+            SECTION("self assign leaves self unchanged") {
+                lhs = lhs;
+                REQUIRE(lhs->id == "bar");
             }
         }
     }

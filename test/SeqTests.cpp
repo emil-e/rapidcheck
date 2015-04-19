@@ -42,6 +42,14 @@ TEST_CASE("Seq") {
         REQUIRE(nextCalled);
     }
 
+    SECTION("self assignment leaves value unchanged") {
+        const auto seq = seq::just(1, 2);
+        auto x = seq;
+        x = x;
+
+        REQUIRE(x == seq);
+    }
+
     SECTION("copies implementation if constructed from lvalue") {
         LoggingSeqImpl impl("foobar");
         LoggingSeq seq(impl);

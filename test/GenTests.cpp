@@ -103,4 +103,13 @@ TEST_CASE("Gen") {
             RC_ASSERT(x == 456);
         }
     }
+
+    SECTION("self assignment leaves value unchanged") {
+        const auto shrinkable = shrinkable::just(1337);
+        Gen<int> gen([=](const Random &random, int size) {
+            return shrinkable;
+        });
+        gen = gen;
+        REQUIRE(gen(Random(), 0) == shrinkable);
+    }
 }

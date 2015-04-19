@@ -161,6 +161,13 @@ TEST_CASE("Variant") {
             REQUIRE(v2.get<Logger>().numberOf("copy") == 1);
             REQUIRE(v2.get<Logger>().numberOf("copy constructed") == 1);
         }
+
+        SECTION("self assignment leaves value unchanged") {
+            ABC v(Logger("foo"));
+            v = v;
+            REQUIRE(v.is<Logger>());
+            REQUIRE(v.get<Logger>().id == "foo");
+        }
     }
 
     SECTION("move assignment") {
