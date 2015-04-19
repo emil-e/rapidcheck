@@ -65,7 +65,8 @@ public:
         noexcept(All<std::is_nothrow_move_constructible, Types...>::value);
 
     Variant &operator=(const Variant &rhs)
-        noexcept(All<std::is_nothrow_copy_assignable, Types...>::value);
+        noexcept(All<std::is_nothrow_copy_constructible, Types...>::value &&
+                 All<std::is_nothrow_copy_assignable, Types...>::value);
 
     Variant &operator=(Variant &&rhs)
         noexcept(All<std::is_nothrow_move_assignable, Types...>::value);

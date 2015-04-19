@@ -155,18 +155,21 @@ Variant<Types...>::Variant(Variant &&other)
 
 template<typename ...Types>
 Variant<Types...> &Variant<Types...>::operator=(const Variant &rhs)
-    noexcept(All<std::is_nothrow_copy_assignable, Types...>::value)
+    noexcept(All<std::is_nothrow_copy_constructible, Types...>::value &&
+             All<std::is_nothrow_copy_assignable, Types...>::value)
 {
+    static_assert(
+        All<std::is_nothrow_move_constructible, Types...>::value,
+        "All types must be nothrow move-constructible to use copy assignment");
+
     if (m_typeIndex == rhs.m_typeIndex) {
         copyAssign(m_typeIndex, &m_storage, &rhs.m_storage);
     } else {
-        static_assert(
-            All<std::is_nothrow_copy_constructible, Types...>::value,
-            "All types must be nothrow copy-constructible to use copy "
-            "assignment");
+        Storage tmp;
+        copy(rhs.m_typeIndex, &tmp, &rhs.m_storage);
         destroy(m_typeIndex, &m_storage);
+        move(rhs.m_typeIndex, &m_storage, &tmp);
         m_typeIndex = rhs.m_typeIndex;
-        copy(m_typeIndex, &m_storage, &rhs.m_storage);
     }
 
     return *this;
@@ -176,13 +179,13 @@ template<typename ...Types>
 Variant<Types...> &Variant<Types...>::operator=(Variant &&rhs)
     noexcept(All<std::is_nothrow_move_assignable, Types...>::value)
 {
+    static_assert(
+        All<std::is_nothrow_move_constructible, Types...>::value,
+        "All types must be nothrow move-constructible to use copy assignment");
+
     if (m_typeIndex == rhs.m_typeIndex) {
         moveAssign(m_typeIndex, &m_storage, &rhs.m_storage);
     } else {
-        static_assert(
-            All<std::is_nothrow_move_constructible, Types...>::value,
-            "All types must be nothrow copy-constructible to use copy "
-            "assignment");
         destroy(m_typeIndex, &m_storage);
         m_typeIndex = rhs.m_typeIndex;
         move(m_typeIndex, &m_storage, &rhs.m_storage);

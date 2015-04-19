@@ -3,6 +3,7 @@
 #include "util/Util.h"
 #include "util/Logger.h"
 #include "util/AppleOrange.h"
+#include "util/ThrowOnCopy.h"
 
 #include "rapidcheck/detail/Variant.h"
 
@@ -17,24 +18,6 @@ struct X
 {
     X() {}
     X(const std::string &x) : value(x) {}
-
-    X(const X &other) noexcept
-    { try { value = other.value; } catch(...) {} }
-
-    X(X &&other) noexcept
-    { try { value = std::move(other.value); } catch(...) {} }
-
-    X &operator=(const X &other) noexcept
-    {
-        try { value = other.value; } catch(...) {}
-        return *this;
-    }
-
-    X &operator=(X &&other) noexcept
-    {
-        try { value = std::move(other.value); } catch(...) {}
-        return *this;
-    }
 
     // Put some extra junk here so that different types have different layout.
     char extra[N];
@@ -53,7 +36,7 @@ typedef X<5> A;
 typedef X<10> B;
 typedef X<15> C;
 
-typedef Variant<Logger, A, B, C> ABC;
+typedef Variant<Logger, ThrowOnCopy, A, B, C> ABC;
 
 } // namespace
 
@@ -143,31 +126,56 @@ TEST_CASE("Variant") {
 
     SECTION("copy assignment") {
         SECTION("from same type") {
-            ABC v1(Logger("foo"));
-            ABC v2(Logger("bar"));
-            v2 = v1;
-            REQUIRE(v2.is<Logger>());
-            REQUIRE(v2.get<Logger>().id == "foo");
-            REQUIRE(v2.get<Logger>().numberOf("copy") == 1);
-            REQUIRE(v2.get<Logger>().numberOf("copy assigned") == 1);
+            SECTION("assigns object") {
+                ABC v1(Logger("foo"));
+                ABC v2(Logger("bar"));
+                v2 = v1;
+                REQUIRE(v2.is<Logger>());
+                REQUIRE(v2.get<Logger>().id == "foo");
+                REQUIRE(v2.get<Logger>().numberOf("copy") == 1);
+                REQUIRE(v2.get<Logger>().numberOf("copy assigned") == 1);
+            }
+
+            SECTION("throwing leaves both values unchanged") {
+                ABC v1(ThrowOnCopy("foo"));
+                ABC v2(ThrowOnCopy("bar"));
+                try { v1 = v2; } catch(...) {}
+                REQUIRE(v1.is<ThrowOnCopy>());
+                REQUIRE(v1.get<ThrowOnCopy>().value == "foo");
+                REQUIRE(v2.is<ThrowOnCopy>());
+                REQUIRE(v2.get<ThrowOnCopy>().value == "bar");
+            }
         }
 
         SECTION("from different type") {
-            ABC v1(Logger("foo"));
-            ABC v2(va);
-            v2 = v1;
-            REQUIRE(v2.is<Logger>());
-            REQUIRE(v2.get<Logger>().id == "foo");
-            REQUIRE(v2.get<Logger>().numberOf("copy") == 1);
-            REQUIRE(v2.get<Logger>().numberOf("copy constructed") == 1);
+            SECTION("constructs object") {
+                ABC v1(Logger("foo"));
+                ABC v2(va);
+                v2 = v1;
+                REQUIRE(v2.is<Logger>());
+                REQUIRE(v2.get<Logger>().id == "foo");
+                REQUIRE(v2.get<Logger>().numberOf("copy") == 1);
+                REQUIRE(v2.get<Logger>().numberOf("copy constructed") == 1);
+            }
+
+            SECTION("self assignment leaves value unchanged") {
+                ABC v(Logger("foo"));
+                v = v;
+                REQUIRE(v.is<Logger>());
+                REQUIRE(v.get<Logger>().id == "foo");
+            }
+
+            SECTION("throwing leaves both values unchanged") {
+                ABC v1(A("foo"));
+                ABC v2(ThrowOnCopy("bar"));
+                try { v1 = v2; } catch(...) {}
+                REQUIRE(v1.is<A>());
+                REQUIRE(v1.get<A>().value == "foo");
+                REQUIRE(v2.is<ThrowOnCopy>());
+                REQUIRE(v2.get<ThrowOnCopy>().value == "bar");
+            }
         }
 
-        SECTION("self assignment leaves value unchanged") {
-            ABC v(Logger("foo"));
-            v = v;
-            REQUIRE(v.is<Logger>());
-            REQUIRE(v.get<Logger>().id == "foo");
-        }
     }
 
     SECTION("move assignment") {

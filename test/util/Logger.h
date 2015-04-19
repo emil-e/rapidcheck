@@ -9,56 +9,38 @@ namespace test {
 struct Logger
 {
 public:
-    Logger() noexcept
-    {
-        try {
-            log.push_back("default constructed");
-        } catch(...) {}
-    }
+    Logger()
+        : log{"default constructed"} {}
 
-    Logger(std::string theId) noexcept
-    {
-        try {
-            id = std::move(theId);
-            log.push_back("constructed as " + id);
-        } catch(...) {}
-    }
+    Logger(std::string theId)
+        : id(std::move(theId))
+        , log{"constructed as " + id} {}
 
-    Logger(const Logger &other) noexcept
-    {
-        try {
-            id = other.id;
-            log = other.log;
-            log.emplace_back("copy constructed");
-        } catch(...) {}
-    }
+    Logger(const Logger &other)
+        : id(other.id)
+        , log(other.log)
+    { log.emplace_back("copy constructed"); }
 
     Logger(Logger &&other) noexcept
+        : id(std::move(other.id))
+        , log(std::move(other.log))
     {
-        try {
-            id = std::move(other.id);
-            log = std::move(other.log);
-            log.emplace_back("move constructed");
-        } catch(...) {}
+        try { log.emplace_back("move constructed"); } catch(...) {}
     }
 
-    Logger &operator=(const Logger &rhs) noexcept
+    Logger &operator=(const Logger &rhs)
     {
-        try {
-            id = rhs.id;
-            log = rhs.log;
-            log.emplace_back("copy assigned");
-        } catch(...) {}
+        id = rhs.id;
+        log = rhs.log;
+        log.emplace_back("copy assigned");
         return *this;
     }
 
     Logger &operator=(Logger &&rhs) noexcept
     {
-        try {
-            id = std::move(rhs.id);
-            log = std::move(rhs.log);
-            log.emplace_back("move assigned");
-        } catch(...) {}
+        id = std::move(rhs.id);
+        log = std::move(rhs.log);
+        try { log.emplace_back("move assigned"); } catch(...) {}
         return *this;
     }
 
