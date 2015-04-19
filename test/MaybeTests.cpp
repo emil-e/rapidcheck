@@ -8,6 +8,7 @@
 #include "util/Generators.h"
 #include "util/AppleOrange.h"
 #include "util/DestructNotifier.h"
+#include "util/ThrowOnCopy.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -76,6 +77,14 @@ TEST_CASE("Maybe") {
                     "constructed as foo",
                     "copy constructed");
             }
+
+            SECTION("throwing leaves both sides unchanged") {
+                Maybe<ThrowOnCopy> m;
+                ThrowOnCopy toc("foobar");
+                try { m = toc; } catch(...) {}
+                REQUIRE_FALSE(m);
+                REQUIRE(toc.value == "foobar");
+            }
         }
 
         SECTION("if initialized") {
@@ -95,6 +104,15 @@ TEST_CASE("Maybe") {
             SECTION("self assign leaves self unchanged") {
                 maybe = *maybe;
                 REQUIRE(maybe->id == "bar");
+            }
+
+            SECTION("throwing leaves both sides unchanged") {
+                Maybe<ThrowOnCopy> m(ThrowOnCopy("foo"));
+                ThrowOnCopy toc("bar");
+                try { m = toc; } catch(...) {}
+                REQUIRE(m);
+                REQUIRE(m->value == "foo");
+                REQUIRE(toc.value == "bar");
             }
         }
     }
@@ -180,6 +198,15 @@ TEST_CASE("Maybe") {
                         "copy constructed",
                         "copy constructed");
                 }
+
+                SECTION("throwing leaves both sides unchanged") {
+                    Maybe<ThrowOnCopy> m1;
+                    Maybe<ThrowOnCopy> m2(ThrowOnCopy("foobar"));
+                    try { m1 = m2; } catch(...) {}
+                    REQUIRE_FALSE(m1);
+                    REQUIRE(m2);
+                    REQUIRE(m2->value == "foobar");
+                }
             }
 
             SECTION("self assign leaves self unchanged") {
@@ -210,6 +237,16 @@ TEST_CASE("Maybe") {
                         "constructed as foo",
                         "copy constructed",
                         "copy assigned");
+                }
+
+                SECTION("throwing leaves both sides unchanged") {
+                    Maybe<ThrowOnCopy> m1(ThrowOnCopy("foo"));
+                    Maybe<ThrowOnCopy> m2(ThrowOnCopy("bar"));
+                    try { m1 = m2; } catch(...) {}
+                    REQUIRE(m1);
+                    REQUIRE(m1->value == "foo");
+                    REQUIRE(m2);
+                    REQUIRE(m2->value == "bar");
                 }
             }
 

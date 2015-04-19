@@ -26,7 +26,7 @@ struct ThrowOnCopy
     std::string value;
 };
 
-bool operator==(const ThrowOnCopy &lhs, const ThrowOnCopy &rhs)
+inline bool operator==(const ThrowOnCopy &lhs, const ThrowOnCopy &rhs)
 {
     return lhs.value == rhs.value;
 }
