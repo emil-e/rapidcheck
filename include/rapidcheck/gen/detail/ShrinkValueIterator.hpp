@@ -19,7 +19,7 @@ public:
     ShrinkValueIterator(Iterator it) : m_it(it) {}
 
     bool operator==(const ShrinkValueIterator &rhs) const
-    { return m_it != rhs.m_it; }
+    { return m_it == rhs.m_it; }
 
     T operator*() const { return m_it->value(); }
 
