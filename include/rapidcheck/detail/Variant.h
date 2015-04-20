@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "rapidcheck/Traits.h"
+#include "rapidcheck/detail/AlignedUnion.h"
 
 namespace rc {
 namespace detail {
@@ -87,7 +88,7 @@ private:
     static constexpr bool isValidType();
 
     std::size_t m_typeIndex;
-    typedef typename std::aligned_union<0, Types...>::type Storage;
+    typedef AlignedUnion<Types...> Storage;
     Storage m_storage;
 };
 
