@@ -162,7 +162,7 @@ struct Arbitrary<Shrinkable<T>>
     {
         // TODO fapply
         return gen::map(
-            gen::tuple(
+            gen::pair(
                 gen::arbitrary<T>(),
                 gen::scale(
                     0.25,

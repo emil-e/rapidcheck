@@ -28,11 +28,6 @@ private:
 };
 
 template<typename T>
-template<typename Impl, typename>
-Shrinkable<T>::Shrinkable(Impl &&impl)
-    : m_impl(std::make_shared<ShrinkableImpl<Decay<Impl>>>(std::forward<Impl>(impl))) {}
-
-template<typename T>
 T Shrinkable<T>::value() const { return m_impl->value(); }
 
 template<typename T>

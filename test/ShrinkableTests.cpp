@@ -109,9 +109,7 @@ TEST_CASE("Shrinkable") {
     }
 
     SECTION("copies implementation if constructed from lvalue") {
-        LoggingShrinkableImpl impl("foobar");
-        LoggingShrinkable shrinkable(impl);
-
+        const auto shrinkable = makeShrinkable<LoggingShrinkableImpl>("foobar");
         const auto value = shrinkable.value();
         std::vector<std::string> expectedLog{
             "constructed as foobar",
@@ -121,7 +119,7 @@ TEST_CASE("Shrinkable") {
     }
 
     SECTION("moves implementation if constructed from rvalue") {
-        LoggingShrinkable shrinkable(LoggingShrinkableImpl("foobar"));
+        const auto shrinkable = makeShrinkable<LoggingShrinkableImpl>("foobar");
         const auto value = shrinkable.value();
 
         std::vector<std::string> expectedLog{

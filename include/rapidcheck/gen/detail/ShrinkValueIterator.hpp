@@ -18,7 +18,7 @@ public:
 
     ShrinkValueIterator(Iterator it) : m_it(it) {}
 
-    bool operator!=(const ShrinkValueIterator &rhs) const
+    bool operator==(const ShrinkValueIterator &rhs) const
     { return m_it != rhs.m_it; }
 
     T operator*() const { return m_it->value(); }
@@ -39,6 +39,11 @@ public:
 private:
     Iterator m_it;
 };
+
+template<typename Iterator>
+bool operator!=(const ShrinkValueIterator<Iterator> &lhs,
+                const ShrinkValueIterator<Iterator> &rhs)
+{ return !(lhs == rhs); }
 
 template<typename Iterator>
 ShrinkValueIterator<Iterator> makeShrinkValueIterator(Iterator it)

@@ -28,12 +28,6 @@ public:
     //! The type of the value in this `Shrinkable`.
     typedef T ValueType;
 
-    template<
-        typename Impl,
-        typename = typename std::enable_if<
-            !std::is_same<Decay<Impl>, Shrinkable>::value>::type>
-    Shrinkable(Impl &&impl);
-
     //! Returns the value.
     T value() const;
 

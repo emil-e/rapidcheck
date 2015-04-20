@@ -1,5 +1,7 @@
 #include "rapidcheck/detail/Property.h"
 
+#include <algorithm>
+
 namespace rc {
 namespace detail {
 namespace {

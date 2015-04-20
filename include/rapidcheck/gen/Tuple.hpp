@@ -90,7 +90,7 @@ struct DefaultArbitrary<std::pair<T1, T2>>
     static Gen<std::pair<Decay<T1>, Decay<T2>>> arbitrary()
     {
         return gen::pair(gen::arbitrary<Decay<T1>>(),
-                            gen::arbitrary<Decay<T2>>());
+                         gen::arbitrary<Decay<T2>>());
     }
 };
 
@@ -106,9 +106,12 @@ Gen<std::tuple<Ts...>> tuple(Gen<Ts> ...gens)
 template<typename T1, typename T2>
 Gen<std::pair<T1, T2>> pair(Gen<T1> gen1, Gen<T2> gen2)
 {
-    return gen::cast<std::pair<T1, T2>>(
-        gen::tuple(std::move(gen1),
-                      std::move(gen2)));
+    return gen::map(
+        gen::tuple(std::move(gen1), std::move(gen2)),
+        [](std::tuple<T1, T2> &&t) {
+            return std::make_pair(std::move(std::get<0>(t)),
+                                  std::move(std::get<1>(t)));
+        });
 }
 
 } // namespace gen

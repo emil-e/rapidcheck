@@ -28,7 +28,7 @@ struct IndexHelper<First, Types...>
 template<typename ...Types>
 template<typename T, typename>
 Variant<Types...>::Variant(T &&value)
-    noexcept(All<std::is_nothrow_move_constructible, Types...>::value)
+    noexcept(std::is_nothrow_constructible<Decay<T>, T &&>::value)
     : m_typeIndex(indexOfType<Decay<T>>())
 {
     static_assert(isValidType<Decay<T>>(),

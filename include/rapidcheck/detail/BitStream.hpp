@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include "rapidcheck/detail/Utility.h"
 
 namespace rc {
