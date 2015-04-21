@@ -108,27 +108,6 @@ TEST_CASE("Shrinkable") {
         REQUIRE(!shrinkable.shrinks().next());
     }
 
-    SECTION("copies implementation if constructed from lvalue") {
-        const auto shrinkable = makeShrinkable<LoggingShrinkableImpl>("foobar");
-        const auto value = shrinkable.value();
-        std::vector<std::string> expectedLog{
-            "constructed as foobar",
-                "copy constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
-    }
-
-    SECTION("moves implementation if constructed from rvalue") {
-        const auto shrinkable = makeShrinkable<LoggingShrinkableImpl>("foobar");
-        const auto value = shrinkable.value();
-
-        std::vector<std::string> expectedLog{
-            "constructed as foobar",
-                "move constructed"};
-        REQUIRE(value.first == "foobar");
-        REQUIRE(value.second == expectedLog);
-    }
-
     SECTION("operator==/operator!=") {
         propConformsToEquals<Shrinkable<int>>();
 
