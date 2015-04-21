@@ -310,4 +310,18 @@ TEST_CASE("Variant") {
             REQUIRE(Orapple(Orange("foo")) != Orapple(Apple("foo")));
         }
     }
+
+    SECTION("operator<<(std::ostream)") {
+        SECTION("uses the contained types implementations") {
+            Variant<std::string, int> v(std::string("foobar"));
+            std::ostringstream ss;
+            ss << v;
+            REQUIRE(ss.str() == "foobar");
+
+            ss = std::ostringstream();
+            v = 1337;
+            ss << v;
+            REQUIRE(ss.str() == "1337");
+        }
+    }
 }

@@ -4,17 +4,18 @@
 #include <iostream>
 
 #include "rapidcheck/Traits.h"
+#include "rapidcheck/detail/Traits.h"
 #include "rapidcheck/detail/AlignedUnion.h"
 
 namespace rc {
 namespace detail {
 
 //! `Variant` can contain any of the parameterized type but only one of them at
-//! the same time. Allows functions to return different types.
+//! the same time. allows functions to return different types.
 //!
 //! This class trades the simplicity of implementation for the requirement that
 //! all types are no-throw move/copy constructible.
-template<typename ...Types>
+template<typename Type, typename ...Types>
 class Variant
 {
 public:
@@ -61,16 +62,20 @@ public:
     void printTo(std::ostream &os) const;
 
     Variant(const Variant &other)
-        noexcept(All<std::is_nothrow_copy_constructible, Types...>::value);
+        noexcept(
+            AllIs<std::is_nothrow_copy_constructible, Type, Types...>::value);
     Variant(Variant &&other)
-        noexcept(All<std::is_nothrow_move_constructible, Types...>::value);
+        noexcept(
+            AllIs<std::is_nothrow_move_constructible, Type, Types...>::value);
 
     Variant &operator=(const Variant &rhs)
-        noexcept(All<std::is_nothrow_copy_constructible, Types...>::value &&
-                 All<std::is_nothrow_copy_assignable, Types...>::value);
+        noexcept(
+            AllIs<std::is_nothrow_copy_constructible, Type, Types...>::value &&
+            AllIs<std::is_nothrow_copy_assignable, Type, Types...>::value);
 
     Variant &operator=(Variant &&rhs)
-        noexcept(All<std::is_nothrow_move_assignable, Types...>::value);
+        noexcept(
+            AllIs<std::is_nothrow_move_assignable, Type, Types...>::value);
 
     ~Variant() noexcept;
 
@@ -88,12 +93,19 @@ private:
     static constexpr bool isValidType();
 
     std::size_t m_typeIndex;
-    typedef AlignedUnion<Types...> Storage;
+    typedef AlignedUnion<Type, Types...> Storage;
     Storage m_storage;
 };
 
-template<typename ...Types>
-bool operator!=(const Variant<Types...> &lhs, const Variant<Types...> &rhs);
+template<typename Type, typename ...Types>
+bool operator!=(const Variant<Type, Types...> &lhs,
+                const Variant<Type, Types...> &rhs);
+
+template<typename Type,
+         typename ...Types,
+         typename = typename std::enable_if<
+             AllTrue<IsStreamInsertible<Types>::value...>::value>::type>
+std::ostream &operator<<(std::ostream &os, const Variant<Type, Types...> &value);
 
 } // namespace detail
 } // namespace rc
