@@ -38,7 +38,7 @@ struct PushBack : public StringVecCmd
     void run(const StringVec &s0, StringVec &sut) const override
     { sut.push_back(value); }
 
-    void show(std::ostream &os) const
+    void show(std::ostream &os) const override
     { os << value; }
 };
 
@@ -411,7 +411,8 @@ TEST_CASE("anyCommand") {
         [] (const GenParams &params, const StringVec &s0) {
             const auto cmd = anyCommand<A, B, C>(s0)(
                 params.random, params.size).value();
-            const auto &id = typeid(*cmd);
+            const auto &cmdRef = *cmd;
+            const auto &id = typeid(cmdRef);
             RC_ASSERT((id == typeid(A)) ||
                       (id == typeid(B)) ||
                       (id == typeid(C)));
@@ -424,8 +425,11 @@ TEST_CASE("anyCommand") {
             const auto gen = anyCommand<A, B, C>(s0);
             std::set<std::type_index> all{ typeid(A), typeid(B), typeid(C) };
             std::set<std::type_index> generated;
-            while (generated != all)
-                generated.emplace(typeid(*gen(r.split(), params.size).value()));
+            while (generated != all) {
+                const auto cmd = gen(r.split(), params.size).value();
+                const auto &cmdRef = *cmd;
+                generated.emplace(typeid(cmdRef));
+            }
             RC_SUCCEED("All generated");
         });
 
