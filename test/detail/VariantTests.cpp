@@ -314,14 +314,14 @@ TEST_CASE("Variant") {
     SECTION("operator<<(std::ostream)") {
         SECTION("uses the contained types implementations") {
             Variant<std::string, int> v(std::string("foobar"));
-            std::ostringstream ss;
-            ss << v;
-            REQUIRE(ss.str() == "foobar");
+            std::ostringstream str;
+            str << v;
+            REQUIRE(str.str() == "foobar");
 
-            ss = std::ostringstream();
+            std::ostringstream num;
             v = 1337;
-            ss << v;
-            REQUIRE(ss.str() == "1337");
+            num << v;
+            REQUIRE(num.str() == "1337");
         }
     }
 }
