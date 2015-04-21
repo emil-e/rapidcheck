@@ -18,6 +18,7 @@ add_library(rapidcheck
   src/detail/Results.cpp
   src/detail/TestParams.cpp
   src/detail/Utility.cpp
+  src/gen/Numeric.cpp
   src/gen/Text.cpp
   src/gen/detail/ExecHandler.cpp
   src/gen/detail/GenerationHandler.cpp

@@ -17,6 +17,27 @@ Shrinkable<T> integral(const Random &random, int size)
         &shrink::integral<T>);
 }
 
+extern template Shrinkable<char> integral<char>(
+    const Random &random, int size);
+extern template Shrinkable<unsigned char> integral<unsigned char>(
+    const Random &random, int size);
+extern template Shrinkable<short> integral<short>(
+    const Random &random, int size);
+extern template Shrinkable<unsigned short> integral<unsigned short>(
+    const Random &random, int size);
+extern template Shrinkable<int> integral<int>(
+    const Random &random, int size);
+extern template Shrinkable<unsigned int> integral<unsigned int>(
+    const Random &random, int size);
+extern template Shrinkable<long> integral<long>(
+    const Random &random, int size);
+extern template Shrinkable<unsigned long> integral<unsigned long>(
+    const Random &random, int size);
+extern template Shrinkable<long long> integral<long long>(
+    const Random &random, int size);
+extern template Shrinkable<unsigned long long> integral<unsigned long long>(
+    const Random &random, int size);
+
 template<typename T>
 Shrinkable<T> real(const Random &random, int size)
 {
@@ -32,6 +53,11 @@ Shrinkable<T> real(const Random &random, int size)
     T value = a + b;
     return shrinkable::shrinkRecur(value, &shrink::real<T>);
 }
+
+extern template Shrinkable<float> real<float>(const Random &random, int size);
+extern template Shrinkable<double> real<double>(const Random &random, int size);
+
+Shrinkable<bool> boolean(const Random &random, int size);
 
 template<typename T>
 struct DefaultArbitrary
@@ -61,14 +87,7 @@ struct DefaultArbitrary<double>
 template<>
 struct DefaultArbitrary<bool>
 {
-    static Gen<bool> arbitrary()
-    {
-        return [](const Random &random, int size) {
-            return shrinkable::shrinkRecur(
-                rc::detail::bitStreamOf(random).next<bool>(),
-                &shrink::boolean);
-        };
-    }
+    static Gen<bool> arbitrary() { return boolean; }
 };
 
 } // namespace detail
