@@ -9,7 +9,85 @@ namespace gen {
 namespace detail {
 
 template<typename Indexes, typename ...Ts>
+class TupleShrinkable;
+
+template<typename Indexes, typename ...Ts>
 class TupleGen;
+
+template<std::size_t I, typename Indexes, typename ...Ts>
+class TupleShrinkSeq;
+
+template<std::size_t I, typename ...Ts, std::size_t ...Indexes>
+class TupleShrinkSeq<I, rc::detail::IndexSequence<Indexes...>, Ts...>
+{
+public:
+    typedef std::tuple<Ts...> Tuple;
+    typedef typename std::tuple_element<I, Tuple>::type T;
+
+    template<typename ...Args>
+    explicit TupleShrinkSeq(Args &&...args)
+        : m_original(std::forward<Args>(args)...)
+        , m_shrinks(std::get<I>(m_original).shrinks()) {}
+
+    Maybe<Shrinkable<Tuple>> operator()()
+    {
+        auto value = m_shrinks.next();
+        if (!value) {
+            m_shrinks = Seq<Shrinkable<T>>();
+            return Nothing;
+        }
+
+        auto shrink = m_original;
+        std::get<I>(shrink) = std::move(*value);
+        using IndexSeq = rc::detail::MakeIndexSequence<sizeof...(Ts)>;
+        using ShrinkableImpl = TupleShrinkable<IndexSeq, Ts...>;
+        auto shrinkable = makeShrinkable<ShrinkableImpl>(
+            std::move(std::get<Indexes>(shrink))...);
+        return shrinkable;
+    }
+
+private:
+    std::tuple<Shrinkable<Ts>...> m_original;
+    Seq<Shrinkable<T>> m_shrinks;
+};
+
+template<typename ...Ts,
+         std::size_t ...Indexes>
+class TupleShrinkable<rc::detail::IndexSequence<Indexes...>, Ts...>
+{
+public:
+    template<typename ...Args>
+    explicit TupleShrinkable(Args &&...args)
+        : m_shrinkables(std::forward<Args>(args)...) {}
+
+    std::tuple<Ts...> value() const
+    { return std::make_tuple(std::get<Indexes>(m_shrinkables).value()...); }
+
+    Seq<Shrinkable<std::tuple<Ts...>>> shrinks() const
+    {
+        using IndexSeq = rc::detail::IndexSequence<Indexes...>;
+        return seq::concat(
+            makeSeq<TupleShrinkSeq<Indexes, IndexSeq, Ts...>>(
+                std::get<Indexes>(m_shrinkables)...)...);
+    }
+
+private:
+    template<std::size_t N>
+    static Seq<std::tuple<Shrinkable<Ts>...>> shrinkComponent(
+        const std::tuple<Shrinkable<Ts>...> &tuple)
+    {
+        typedef typename std::tuple_element<N, std::tuple<Ts...>>::type T;
+        return seq::map(
+            std::get<N>(tuple).shrinks(),
+            [=](Shrinkable<T> &&cshrink) {
+                auto shrink(tuple);
+                std::get<N>(shrink) = cshrink;
+                return shrink;
+            });
+    }
+
+    std::tuple<Shrinkable<Ts>...> m_shrinkables;
+};
 
 template<typename ...Ts,
          std::size_t ...Indexes>
@@ -28,41 +106,13 @@ public:
         for (std::size_t i = 0; i < sizeof...(Ts); i++)
             randoms[i] = r.split();
 
-        return joinTuple(
-            std::make_tuple(std::get<Indexes>(m_gens)(randoms[Indexes], size)...));
+        using ShrinkableImpl =
+            TupleShrinkable<rc::detail::IndexSequence<Indexes...>, Ts...>;
+        return makeShrinkable<ShrinkableImpl>(
+            std::get<Indexes>(m_gens)(randoms[Indexes], size)...);
     }
 
 private:
-    static Shrinkable<std::tuple<Ts...>> joinTuple(
-        std::tuple<Shrinkable<Ts>...> &&tuple)
-    {
-        return shrinkable::map(
-            shrinkable::shrinkRecur(std::move(tuple), &TupleGen::shrinkTuple),
-            [](std::tuple<Shrinkable<Ts>...> &&st) {
-                return std::make_tuple(std::get<Indexes>(st).value()...);
-            });
-    }
-
-    static Seq<std::tuple<Shrinkable<Ts>...>> shrinkTuple(
-        std::tuple<Shrinkable<Ts>...> &&tuple)
-    {
-        return seq::concat(shrinkComponent<Indexes>(tuple)...);
-    }
-
-    template<std::size_t N>
-    static Seq<std::tuple<Shrinkable<Ts>...>> shrinkComponent(
-        const std::tuple<Shrinkable<Ts>...> &tuple)
-    {
-        typedef typename std::tuple_element<N, std::tuple<Ts...>>::type T;
-        return seq::map(
-            std::get<N>(tuple).shrinks(),
-            [=](Shrinkable<T> &&cshrink) {
-                auto shrink(tuple);
-                std::get<N>(shrink) = cshrink;
-                return shrink;
-            });
-    }
-
     std::tuple<Gen<Ts>...> m_gens;
 };
 

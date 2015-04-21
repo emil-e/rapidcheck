@@ -248,6 +248,41 @@ private:
     Seq<Seq<T>> m_seqs;
 };
 
+template<typename Mapper, typename T>
+class MapcatSeq
+{
+public:
+    typedef typename std::result_of<Mapper(T)>::type::ValueType U;
+
+    template<typename MapperArg>
+    MapcatSeq(Seq<T> seq, MapperArg &&mapper)
+        : m_mapper(std::forward<MapperArg>(mapper))
+        , m_seqT(std::move(seq)) {}
+
+    Maybe<U> operator()()
+    {
+        while (true) {
+            auto valueU = m_seqU.next();
+            if (valueU)
+                return valueU;
+
+            auto valueT = m_seqT.next();
+            if (!valueT) {
+                m_seqT = Seq<T>();
+                m_seqU = Seq<U>();
+                return Nothing;
+            }
+
+            m_seqU = m_mapper(std::move(*valueT));
+        }
+    }
+
+private:
+    Mapper m_mapper;
+    Seq<T> m_seqT;
+    Seq<U> m_seqU;
+};
+
 } // namespace detail
 
 template<typename T>
@@ -315,7 +350,8 @@ template<typename T, typename Mapper>
 Seq<typename std::result_of<Mapper(T)>::type::ValueType>
 mapcat(Seq<T> seq, Mapper &&mapper)
 {
-    return seq::join(seq::map(std::move(seq), std::forward<Mapper>(mapper)));
+    return makeSeq<detail::MapcatSeq<Decay<Mapper>, T>>(
+        std::move(seq), std::forward<Mapper>(mapper));
 }
 
 template<typename T, typename Mapper>

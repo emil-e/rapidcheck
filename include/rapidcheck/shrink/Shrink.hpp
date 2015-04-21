@@ -7,50 +7,133 @@
 
 namespace rc {
 namespace shrink {
+namespace detail {
+
+template<typename T>
+class TowardsSeq
+{
+public:
+    typedef typename std::make_unsigned<T>::type UInt;
+
+    TowardsSeq(T value, T target)
+        : m_value(value)
+        , m_diff((target < value) ? (value - target) : (target - value))
+        , m_down(target < value) {}
+
+    Maybe<T> operator()()
+    {
+        if (m_diff == 0)
+            return Nothing;
+
+        T ret = m_down ? (m_value - m_diff) : (m_value + m_diff);
+        m_diff /= 2;
+        return ret;
+    }
+
+private:
+    T m_value;
+    UInt m_diff;
+    bool m_down;
+};
+
+template<typename Container>
+class RemoveChunksSeq
+{
+public:
+    template<typename ContainerArg>
+    explicit RemoveChunksSeq(ContainerArg &&elements)
+        : m_elements(std::forward<Container>(elements))
+        , m_start(0)
+        , m_size(m_elements.size()) {}
+
+    Maybe<Container> operator()()
+    {
+        if (m_size == 0)
+            return Nothing;
+
+        Container elements;
+        elements.reserve(m_elements.size() - m_size);
+        const auto start = begin(m_elements);
+        const auto fin = end(m_elements);
+        elements.insert(end(elements), start, start + m_start);
+        elements.insert(end(elements), start + m_start + m_size, fin);
+
+        if ((m_size + m_start) >= m_elements.size()) {
+            m_size--;
+            m_start = 0;
+        } else {
+            m_start++;
+        }
+        return elements;
+    }
+
+private:
+    Container m_elements;
+    std::size_t m_start;
+    std::size_t m_size;
+};
+
+template<typename Container, typename Shrink>
+class EachElementSeq
+{
+public:
+    typedef typename std::result_of<
+        Shrink(typename Container::value_type)>::type::ValueType T;
+
+    template<typename ContainerArg, typename ShrinkArg>
+    explicit EachElementSeq(ContainerArg &&elements, ShrinkArg &&shrink)
+        : m_elements(std::forward<Container>(elements))
+        , m_shrink(std::forward<ShrinkArg>(shrink))
+        , m_i(0) {}
+
+    Maybe<Container> operator()()
+    {
+        auto value = next();
+        if (!value)
+            return Nothing;
+
+        auto elements = m_elements;
+        elements[m_i - 1] = std::move(*value);
+        return elements;
+    }
+
+private:
+    Maybe<T> next()
+    {
+        while (true) {
+            auto value = m_shrinks.next();
+            if (value)
+                return value;
+
+            if (m_i >= m_elements.size())
+                return Nothing;
+
+            m_shrinks = m_shrink(m_elements[m_i++]);
+        }
+    }
+
+    Container m_elements;
+    Shrink m_shrink;
+    Seq<T> m_shrinks;
+    std::size_t m_i;
+};
+
+} // namespace detail
 
 template<typename Container>
 Seq<Container> removeChunks(Container elements)
-{
-    return seq::map(
-        seq::subranges(0, elements.size()),
-        [=](const std::pair<std::size_t, std::size_t> &range) {
-            Container newElements;
-            newElements.reserve(range.second - range.first);
-            const auto start = begin(elements);
-            const auto fin = end(elements);
-            newElements.insert(end(newElements), start, start + range.first);
-            newElements.insert(end(newElements), start + range.second, fin);
-            return newElements;
-        });
-}
+{ return makeSeq<detail::RemoveChunksSeq<Container>>(std::move(elements)); }
 
 template<typename Container, typename Shrink>
 Seq<Container> eachElement(Container elements, Shrink shrink)
 {
-    using T = typename Container::value_type;
-
-    const auto size = std::distance(begin(elements), end(elements));
-    return seq::mapcat(seq::range<std::size_t>(0, size), [=](std::size_t i) {
-        return seq::map(shrink(*(begin(elements) + i)), [=](T &&shrinkValue) {
-            auto newElements = elements;
-            *(begin(newElements) + i) = std::move(shrinkValue);
-            return newElements;
-        });
-    });
+    return makeSeq<detail::EachElementSeq<Container, Shrink>>(
+        std::move(elements), std::move(shrink));
 }
 
 template<typename T>
 Seq<T> towards(T value, T target)
-{
-    typedef typename std::make_unsigned<T>::type UInt;
-
-    UInt maxDiff = (value < target) ? (target - value) : (value - target);
-    auto diffs = seq::iterate(maxDiff, [](UInt diff) { return diff / 2; });
-    auto shrinks = seq::map(std::move(diffs), [=](UInt x) -> T {
-        return (value < target) ? (value + x) : (value - x);
-    });
-    return seq::takeWhile(std::move(shrinks), [=](T x) { return x != value; });
-}
+{ return makeSeq<detail::TowardsSeq<T>>(value, target); }
 
 template<typename T>
 Seq<T> integral(T value)

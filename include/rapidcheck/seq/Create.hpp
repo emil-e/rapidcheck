@@ -106,6 +106,30 @@ private:
     Callable m_iterate;
 };
 
+template<typename T>
+class RangeSeq
+{
+public:
+    RangeSeq(T start, T end)
+        : m_current(start)
+        , m_end(end) {}
+
+    Maybe<T> operator()()
+    {
+        if (m_current == m_end)
+            return Nothing;
+
+        if (m_current < m_end)
+            return m_current++;
+        else
+            return m_current--;
+    }
+
+private:
+    T m_current;
+    T m_end;
+};
+
 } // namespace detail
 
 template<typename T>
@@ -156,10 +180,7 @@ Seq<T> range(T start, T end)
     if (start == end)
         return Seq<T>();
 
-    return seq::takeWhile(
-        (start < end) ? seq::iterate(start, [](int x) { return ++x; })
-                      : seq::iterate(start, [](int x) { return --x; }),
-        [=](T x) { return x != end; });
+    return makeSeq<detail::RangeSeq<T>>(start, end);
 }
 
 Seq<std::size_t> index()
