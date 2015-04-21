@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 namespace rc {
 
 template<typename T>
@@ -8,6 +10,8 @@ class Shrinkable<T>::IShrinkableImpl
 public:
     virtual T value() const = 0;
     virtual Seq<Shrinkable<T>> shrinks() const = 0;
+    virtual void retain() = 0;
+    virtual void release() = 0;
     virtual ~IShrinkableImpl() = default;
 };
 
@@ -18,13 +22,23 @@ class Shrinkable<T>::ShrinkableImpl : public IShrinkableImpl
 public:
     template<typename ...Args>
     explicit ShrinkableImpl(Args &&...args)
-        : m_impl(std::forward<Args>(args)...) {}
+        : m_impl(std::forward<Args>(args)...)
+        , m_count(1) {}
 
     T value() const override { return m_impl.value(); }
     Seq<Shrinkable<T>> shrinks() const override { return m_impl.shrinks(); }
 
+    void retain() override { m_count.fetch_add(1L); }
+
+    void release() override
+    {
+        if (m_count.fetch_sub(1L) == 1L)
+            delete this;
+    }
+
 private:
-    Impl m_impl;
+    const Impl m_impl;
+    std::atomic<long> m_count;
 };
 
 template<typename T>
@@ -41,8 +55,41 @@ Seq<Shrinkable<T>> Shrinkable<T>::shrinks() const noexcept
 }
 
 template<typename T>
-Shrinkable<T>::Shrinkable(std::shared_ptr<IShrinkableImpl> impl)
-    : m_impl(std::move(impl)) {}
+Shrinkable<T>::Shrinkable(const Shrinkable &other) noexcept
+    : m_impl(other.m_impl)
+{ m_impl->retain(); }
+
+template<typename T>
+Shrinkable<T>::Shrinkable(Shrinkable &&other) noexcept
+    : m_impl(other.m_impl)
+{ other.m_impl = nullptr; }
+
+template<typename T>
+Shrinkable<T> &Shrinkable<T>::operator=(const Shrinkable &other) noexcept
+{
+    other.m_impl->retain();
+    if (m_impl)
+        m_impl->release();
+    m_impl = other.m_impl;
+    return *this;
+}
+
+template<typename T>
+Shrinkable<T> &Shrinkable<T>::operator=(Shrinkable &&other) noexcept
+{
+    if (m_impl)
+        m_impl->release();
+    m_impl = other.m_impl;
+    other.m_impl = nullptr;
+    return *this;
+}
+
+template<typename T>
+Shrinkable<T>::~Shrinkable() noexcept
+{
+    if (m_impl)
+        m_impl->release();
+}
 
 template<typename Impl, typename ...Args>
 Shrinkable<Decay<decltype(std::declval<Impl>().value())>>
@@ -52,9 +99,9 @@ makeShrinkable(Args &&...args)
     typedef typename Shrinkable<T>::IShrinkableImpl IShrinkableImpl;
     typedef typename Shrinkable<T>::template ShrinkableImpl<Impl> ShrinkableImpl;
 
-    return Shrinkable<T>(
-        std::shared_ptr<IShrinkableImpl>(
-            std::make_shared<ShrinkableImpl>(std::forward<Args>(args)...)));
+    Shrinkable<T> shrinkable;
+    shrinkable.m_impl = new ShrinkableImpl(std::forward<Args>(args)...);
+    return shrinkable;
 }
 
 template<typename T>

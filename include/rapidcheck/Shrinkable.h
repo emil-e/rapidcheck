@@ -34,16 +34,21 @@ public:
     //! Returns a `Seq` of all the possible shrinks of this `Shrinkable`.
     Seq<Shrinkable<T>> shrinks() const noexcept;
 
-private:
-    class IShrinkableImpl;
+    Shrinkable(const Shrinkable &other) noexcept;
+    Shrinkable(Shrinkable &&other) noexcept;
+    Shrinkable &operator=(const Shrinkable &other) noexcept;
+    Shrinkable &operator=(Shrinkable &&other) noexcept;
+    ~Shrinkable() noexcept;
 
-    explicit Shrinkable(std::shared_ptr
-                        <IShrinkableImpl> impl);
+private:
+    Shrinkable() = default;
+
+    class IShrinkableImpl;
 
     template<typename Impl>
     class ShrinkableImpl;
 
-    std::shared_ptr<const IShrinkableImpl> m_impl;
+    IShrinkableImpl *m_impl = nullptr;
 };
 
 //! Two `Shrinkable`s are equal if the have the same value and the same shrinks.

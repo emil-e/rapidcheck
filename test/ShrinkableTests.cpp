@@ -7,6 +7,7 @@
 #include "util/TemplateProps.h"
 #include "util/Logger.h"
 #include "util/Generators.h"
+#include "util/DestructNotifier.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -106,6 +107,23 @@ TEST_CASE("Shrinkable") {
             });
 
         REQUIRE(!shrinkable.shrinks().next());
+    }
+
+    SECTION("retains implementation object until no copies remain") {
+        std::vector<std::string> log;
+        Maybe<Shrinkable<DestructNotifier>> s1 = shrinkable::just(
+            DestructNotifier("foobar", &log));
+        REQUIRE(log.empty());
+
+        Maybe<Shrinkable<DestructNotifier>> s2 = s1;
+        REQUIRE(log.empty());
+
+        s1.reset();
+        REQUIRE(log.empty());
+
+        s2.reset();
+        REQUIRE(log.size() == 1);
+        REQUIRE(log[0] == "foobar");
     }
 
     SECTION("operator==/operator!=") {
