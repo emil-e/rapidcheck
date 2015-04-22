@@ -181,9 +181,10 @@ Seq<T> character(T value)
     auto shrinks = seq::cast<T>(
         seq::concat(
             seq::fromContainer(std::string("abc")),
-            std::islower(value)
-            ? Seq<char>()
-            : seq::just(static_cast<char>(std::tolower(value))),
+            // TODO this seems a bit hacky
+            std::islower(static_cast<char>(value))
+                ? Seq<char>()
+                : seq::just(static_cast<char>(std::tolower(value))),
             seq::fromContainer(std::string("ABC123 \n"))));
 
     return seq::takeWhile(std::move(shrinks),
