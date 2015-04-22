@@ -217,7 +217,9 @@ struct SignedIntegralProperties
         templatedProp<T>(
             "shrinks negative values to their positive equivalent",
             [] {
-                T value = *gen::negative<T>();
+                T value = *gen::suchThat(
+                    gen::negative<T>(),
+                    [](T x) { return x > std::numeric_limits<T>::min(); });
                 RC_ASSERT(seq::contains<T>(shrink::integral<T>(value), -value));
             });
 

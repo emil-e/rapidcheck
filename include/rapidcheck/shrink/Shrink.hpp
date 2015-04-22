@@ -138,7 +138,9 @@ Seq<T> towards(T value, T target)
 template<typename T>
 Seq<T> integral(T value)
 {
-    if (value < 0) {
+    // The check for > min() is important since -min() == min() and we never
+    // want to include self
+    if ((value < 0) && (value > std::numeric_limits<T>::min())) {
         // Drop the zero from towards and put that before the negation value
         // so we don't have duplicate zeroes
         return seq::concat(
