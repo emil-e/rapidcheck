@@ -103,9 +103,10 @@ Gen<T> inRange(T min, T max)
             throw GenerationFailure(msg);
         }
 
-        const auto rangeSize = Random::Number(max - min);
+        const auto rangeSize =
+            static_cast<Random::Number>(max) - static_cast<Random::Number>(min);
         const auto x = Random(random).next() % rangeSize;
-        return shrinkable::just<T>(static_cast<T>(x) + min);
+        return shrinkable::just(static_cast<T>(x + min));
     };
 }
 
