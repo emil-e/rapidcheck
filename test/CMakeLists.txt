@@ -17,6 +17,7 @@ add_executable(rapidcheck_tests
   detail/PropertyTests.cpp
   detail/ResultsTests.cpp
   detail/ShowTypeTests.cpp
+  detail/TestParamsTests.cpp
   detail/VariantTests.cpp
   fn/CommonTests.cpp
   gen/ContainerTests.cpp

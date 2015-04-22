@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iosfwd>
+#include <cstdint>
 
 namespace rc {
 namespace detail {
@@ -9,7 +10,7 @@ namespace detail {
 struct TestParams
 {
     //! The seed to use.
-    int seed = 0;
+    uint64_t seed = 0;
     //! The maximum number of successes before deciding a property passes.
     int maxSuccess = 100;
     //! The maximum size to generate.

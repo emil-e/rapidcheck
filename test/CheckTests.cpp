@@ -16,51 +16,6 @@ using namespace rc;
 using namespace rc::test;
 using namespace rc::detail;
 
-namespace rc {
-
-template<>
-class Arbitrary<TestParams>
-{
-public:
-    static Gen<TestParams> arbitrary()
-    {
-        return gen::exec([]{
-            TestParams params;
-            params.maxSuccess = *gen::inRange(0, 100);
-            params.maxSize = *gen::inRange(0, 101);
-            params.maxDiscardRatio = *gen::inRange(0, 100);
-            return params;
-        });
-    }
-};
-
-} // namespace rc
-
-TEST_CASE("TestParams") {
-    SECTION("operator==/operator!=") {
-        propConformsToEquals<TestParams>();
-        PROP_REPLACE_MEMBER_INEQUAL(TestParams, seed);
-        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSuccess);
-        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSize);
-        PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxDiscardRatio);
-    }
-}
-
-TEST_CASE("defaultTestParams") {
-    prop(
-        "takes default params from ImplicitParam<CurrentConfiguration>",
-        [] (const Configuration &config) {
-            TestParams expected;
-            expected.seed = config.seed;
-            expected.maxSuccess = config.maxSuccess;
-            expected.maxSize = config.maxSize;
-            expected.maxDiscardRatio = config.maxDiscardRatio;
-
-            ImplicitParam<param::CurrentConfiguration> currentConfig(config);
-            RC_ASSERT(defaultTestParams() == expected);
-        });
-}
-
 // TODO good candidate for profiling
 
 TEST_CASE("checkTestable") {

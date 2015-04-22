@@ -114,6 +114,21 @@ struct Arbitrary<detail::GaveUpResult>
     }
 };
 
+template<>
+struct Arbitrary<detail::TestParams>
+{
+    static Gen<detail::TestParams> arbitrary()
+    {
+        return gen::exec([]{
+            detail::TestParams params;
+            params.maxSuccess = *gen::inRange(0, 100);
+            params.maxSize = *gen::inRange(0, 101);
+            params.maxDiscardRatio = *gen::inRange(0, 100);
+            return params;
+        });
+    }
+};
+
 template<typename T>
 struct Arbitrary<Seq<T>>
 {
