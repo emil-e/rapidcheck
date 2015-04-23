@@ -22,7 +22,7 @@ A common first example is testing a reversal function. For such a function, doub
           });
 
       return 0;
-}
+    }
 
 The `check` function is used to check properties. The first parameter is an optional string which describes the property. The second parameter is a callable object that implements the property, in this case a lambda. Any parameters to the callable (in our case the `l0` parameter) will be randomly generated. The `RC_ASSERT` macro works just like any other assert macro. If the given condition is false, the property has been falsified.
 
