@@ -94,8 +94,21 @@ bool operator!=(const GaveUpResult &r1, const GaveUpResult &r2);
 //! Describes the circumstances around the result of a test.
 typedef Variant<SuccessResult, FailureResult, GaveUpResult> TestResult;
 
-//! Returns a short message describing the given test results.
-std::string resultMessage(const TestResult &result);
+//! Prints a human readable error message describing the given success result to
+//! the specified stream.
+void printResultMessage(const SuccessResult &result, std::ostream &os);
+
+//! Prints a human readable error message describing the given failure result to
+//! the specified stream.
+void printResultMessage(const FailureResult &result, std::ostream &os);
+
+//! Prints a human readable error message describing the given gave-up result to
+//! the specified stream.
+void printResultMessage(const GaveUpResult &result, std::ostream &os);
+
+//! Prints a short message describing the given test results to the specified
+//! stream.
+void printResultMessage(const TestResult &result, std::ostream &os);
 
 } // namespace detail
 } // namespace rc

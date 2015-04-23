@@ -91,29 +91,52 @@ std::ostream &operator<<(std::ostream &os, const detail::GaveUpResult &result)
     return os;
 }
 
-std::string resultMessage(const TestResult &result)
+
+void printResultMessage(const SuccessResult &result, std::ostream &os)
+{ os << "OK, passed " + std::to_string(result.numSuccess) + " tests"; }
+
+void printResultMessage(const FailureResult &result, std::ostream &os)
+{
+    os << "Falsifiable after " << (result.numSuccess + 1);
+    os << " tests";
+    if (result.numShrinks > 0) {
+        os << " and " << result.numShrinks << " shrink";
+        if (result.numShrinks > 1)
+            os << 's';
+    }
+
+    os << std::endl << std::endl;
+
+    for (const auto &item : result.counterExample) {
+        os << item.first << ":" << std::endl;
+        os << item.second << std::endl;
+        os << std::endl;
+    }
+
+    os << result.description;
+}
+
+void printResultMessage(const GaveUpResult &result, std::ostream &os)
+{
+    os << "Gave up after " << result.numSuccess << " tests" << std::endl;
+    os << std::endl;
+    os << result.description;
+}
+
+void printResultMessage(const TestResult &result, std::ostream &os)
 {
     SuccessResult success;
     FailureResult failure;
     GaveUpResult gaveUp;
 
+    // TODO Make Variant cooler!
     if (result.match(success)) {
-        return "OK, passed " + std::to_string(success.numSuccess) + " tests";
+        printResultMessage(success, os);
     } else if (result.match(failure)) {
-        std::string msg;
-        msg += "Falsifiable after " + std::to_string(failure.numSuccess + 1);
-        msg += " tests";
-        if (failure.numShrinks > 0) {
-            msg += " and " + std::to_string(failure.numShrinks);
-            msg += (failure.numShrinks == 1) ? " shrink" : " shrinks";
-        }
-
-        return msg;
+        printResultMessage(failure, os);
     } else if (result.match(gaveUp)) {
-        return "Gave up after " + std::to_string(gaveUp.numSuccess) + " tests";
+        printResultMessage(gaveUp, os);
     }
-
-    return std::string();
 }
 
 std::ostream &operator<<(std::ostream &os, CaseResult::Type type)

@@ -1,11 +1,25 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include <sstream>
+
 #include "util/Generators.h"
 #include "util/TemplateProps.h"
 
 using namespace rc;
 using namespace rc::detail;
+
+namespace {
+
+template<typename T>
+bool messageContains(const T &msg, const std::string &substr)
+{
+    std::ostringstream ss;
+    printResultMessage(msg, ss);
+    return ss.str().find(substr) != std::string::npos;
+}
+
+} // namespace
 
 TEST_CASE("TestCase") {
     SECTION("operator==/operator!=") {
@@ -40,6 +54,17 @@ TEST_CASE("SuccessResult") {
     SECTION("operator<<") {
         propConformsToOutputOperator<SuccessResult>();
     }
+
+    SECTION("printResultMessage") {
+        prop(
+            "message contains relevant parts of the result",
+            [](const SuccessResult &result) {
+                RC_ASSERT(messageContains(result, "OK"));
+                RC_ASSERT(messageContains(
+                              result,
+                              std::to_string(result.numSuccess)));
+            });
+    }
 }
 
 TEST_CASE("FailureResult") {
@@ -55,6 +80,25 @@ TEST_CASE("FailureResult") {
     SECTION("operator<<") {
         propConformsToOutputOperator<FailureResult>();
     }
+
+    SECTION("printResultMessage") {
+        prop(
+            "message contains relevant parts of result",
+            [](const FailureResult &result) {
+                RC_ASSERT(messageContains(
+                              result,
+                              std::to_string(result.numSuccess + 1)));
+                RC_ASSERT(messageContains(result, result.description));
+                RC_ASSERT((result.numShrinks == 0) ||
+                          messageContains(
+                              result,
+                              std::to_string(result.numShrinks)));
+                for (const auto &item : result.counterExample) {
+                    messageContains(result, item.first);
+                    messageContains(result, item.second);
+                }
+            });
+    }
 }
 
 TEST_CASE("GaveUpResult") {
@@ -66,5 +110,16 @@ TEST_CASE("GaveUpResult") {
 
     SECTION("operator<<") {
         propConformsToOutputOperator<GaveUpResult>();
+    }
+
+    SECTION("printResultMessage") {
+        prop(
+            "message contains relevant parts of result",
+            [](const GaveUpResult &result) {
+                RC_ASSERT(messageContains(
+                              result,
+                              std::to_string(result.numSuccess)));
+                RC_ASSERT(messageContains(result, result.description));
+            });
     }
 }
