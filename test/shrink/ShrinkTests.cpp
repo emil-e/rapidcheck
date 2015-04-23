@@ -253,7 +253,10 @@ struct RealProperties
         templatedProp<T>(
             "shrinks to nearest integer",
             [] {
-                T value = *gen::scale(0.25, gen::nonZero<T>());
+                // TODO I'm not super fond of this way of generating
+                const auto integer = *gen::arbitrary<int16_t>();
+                const auto value = static_cast<T>(
+                    integer + *gen::element(0.1, 0.2, 0.5, 0.7, 0.9));
                 RC_PRE(value != std::trunc(value));
                 RC_ASSERT(seq::contains(shrink::real(value), std::trunc(value)));
             });
