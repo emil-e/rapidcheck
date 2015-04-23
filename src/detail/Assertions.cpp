@@ -8,7 +8,7 @@ std::string makeDescriptionMessage(const std::string file,
                                    const std::string &description)
 {
     return
-        file + ":" + std::to_string(line) + "\n" +
+        file + ":" + std::to_string(line) + ":\n" +
         description;
 }
 
@@ -18,7 +18,7 @@ std::string makeExpressionMessage(const std::string file,
                                   const std::string &expansion)
 {
     return
-        file + ":" + std::to_string(line) + "\n" +
+        file + ":" + std::to_string(line) + ":\n" +
         expression + "\n"
         "\n"
         "Expands to:\n" +
