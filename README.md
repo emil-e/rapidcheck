@@ -4,20 +4,56 @@ RapidCheck is a C++ framework for property based testing inspired by QuickCheck 
 
 A first example
 ===============
-A common first example is testing a list reversal function. For such a function, double reversal should always result in the original list. In this example we will use the standard C++ `std::reverse` function:
+A common first example is testing a reversal function. For such a function, double reversal should always result in the original list. In this example we will use the standard C++ `std::reverse` function:
 
-    rc::prop(
-        "double reversal yields the original value",
-        [] (const std::vector<int> &l0) {
-            auto l1(l0);
-            std::reverse(l1.begin(), l1.end());
-            std::reverse(l1.begin(), l1.end());
-            RC_ASSERT(l0 == l1);
-        });
+    #include <rapidcheck.h>
 
-The `prop` function is used to check properties. The first parameter is a string which describes the property. The second parameter is a callable object that implements the property, in this case a lambda. Any parameters to the callable (in our case the `l0` parameter) will be randomly generated. The `RC_ASSERT` macro works just like any other assert macro. If the given condition is false, the property has been falsified.
+    #include <vector>
+    #include <algorithm>
+
+    int main() {
+      rc::check(
+          "double reversal yields the original value",
+          [](const std::vector<int> &l0) {
+              auto l1 = l0;
+              std::reverse(begin(l1), end(l1));
+              std::reverse(begin(l1), end(l1));
+              RC_ASSERT(l0 == l1);
+          });
+
+      return 0;
+}
+
+The `check` function is used to check properties. The first parameter is an optional string which describes the property. The second parameter is a callable object that implements the property, in this case a lambda. Any parameters to the callable (in our case the `l0` parameter) will be randomly generated. The `RC_ASSERT` macro works just like any other assert macro. If the given condition is false, the property has been falsified.
 
 The property above also forms part of a specification of the reversal function: "For any list of integers A, reversing and then reversing again should result in A".
+
+If we were to run this, RapidCheck would (hopefully) output the following:
+
+    Using configuration: seed=9928307433081493900
+
+    - double reversal yields the original value
+    OK, passed 100 tests
+
+Here, RapidCheck tells us that it ran 100 test cases and all of them passed. It also tells us the configuration that was used, in particular the random seed. If there was a bug in the implementation of `std::reverse` we could get the following output instead:
+
+    Using configuration: seed=14681161640778608808
+
+    - double reversal yields the original value
+    Falsifiable after 12 tests and 10 shrinks
+
+    std::tuple<std::vector<int>>:
+    ([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    main.cpp:17:
+    l0 == l1
+
+    Expands to:
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+Here RapidCheck tells us that it found a case for which the property does not hold after running 12 tests. When it found this case, it shrunk it 10 times to arrive at the counterexample in the output. The counterexample contains each input value that was used for the failing case along with its type. Since RapidCheck views property arguments as tuples, the type is shown here as `std::tuple<std::vector<int>>`.
+
+Can you guess what the bug is? The fact that there are exactly 10 items should give a clue. In this case, the bug is that the implementation sets the first element to `0` when `l0.size() >= 10`. This is also the reason for the initial `0`, the problem doesn't manifest when all elements are zero. How did this bug happen? Who knows!
 
 Generators
 ==========
@@ -37,8 +73,8 @@ Using this style, our very first example could be rewritten like this:
         [] {
             auto l0 = *rc::gen::arbitrary<std::vector<int>>();
             auto l1(l0);
-            std::reverse(l1.begin(), l1.end());
-            std::reverse(l1.begin(), l1.end());
+            std::reverse(begin(l1), end(l1));
+            std::reverse(begin(l1), end(l1));
             RC_ASSERT(l0 == l1);
         });
 
