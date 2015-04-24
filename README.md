@@ -2,8 +2,19 @@ RapidCheck [![Build Status](https://travis-ci.org/emil-e/rapidcheck.svg?branch=m
 ==========
 RapidCheck is a C++ framework for property based testing inspired by QuickCheck and other similar frameworks. In property based testing, you state facts about your code that given certain precondition should always be true. RapidCheck then generates random test data to try and find a case for which the property doesn't hold. If such a case is found, RapidCheck tries to find the smallest case (for some definition of smallest) for which the property is still false and then displays this as a counterexample. For example, if the input is an integer, RapidCheck tries to find the smallest integer for which the property is false.
 
-A first example
-===============
+Prerequisites and installation
+==============================
+RapidCheck makes extensive used of C++11 and thus requires a compliant compiler. RapidCheck continuous integration builds using Clang 3.4 and GCC 4.9 and any later versions should also work. MSVC 2013 lacks too many C++11 features to successfully compile RapidCheck but it is possible that MSVC 2015 will work when it's released.
+
+RapidCheck uses CMake and is built like any other CMake project. If your own project uses CMake you can simply have RapidCheck as a subdirectory and add the following to your `CMakeLists.txt`:
+
+    add_subdirectory("path/to/rapidcheck")
+    target_link_libraries(my_target rapidcheck)
+
+This will give you both linking and include directories.
+
+Quick introduction
+==================
 A common first example is testing a reversal function. For such a function, double reversal should always result in the original list. In this example we will use the standard C++ `std::reverse` function:
 
     #include <rapidcheck.h>
