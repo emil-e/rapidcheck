@@ -5,23 +5,22 @@
 namespace rc {
 
 /// Convenience wrapper over std::decay, shorter to type.
-template<typename T>
+template <typename T>
 using Decay = typename std::decay<T>::type;
 
 /// Checks that all the parameters are true.
-template<bool ...Xs>
+template <bool... Xs>
 struct AllTrue;
 
-template<>
+template <>
 struct AllTrue<> : public std::true_type {};
 
-template<bool X, bool ...Xs>
+template <bool X, bool... Xs>
 struct AllTrue<X, Xs...>
-    : public std::integral_constant<
-        bool, X && AllTrue<Xs...>::value> {};
+    : public std::integral_constant<bool, X && AllTrue<Xs...>::value> {};
 
 /// Checks that all the types in `Ts` conforms to type trait `F`.
-template<template <typename> class F, typename ...Ts>
+template <template <typename> class F, typename... Ts>
 struct AllIs : public AllTrue<F<Ts>::value...> {};
 
 } // namespace rc

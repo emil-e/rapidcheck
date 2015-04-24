@@ -10,17 +10,15 @@ template struct Arbitrary<Random>;
 
 namespace test {
 
-Gen<Random> trulyArbitraryRandom()
-{
-    return gen::map(
-        gen::pair(gen::arbitrary<Random>(),
-                     gen::inRange<int>(0, 10000)),
-        [](std::pair<Random, int> &&p){
-            auto nexts = p.second;
-            while (nexts-- > 0)
-                p.first.next();
-            return p.first;
-        });
+Gen<Random> trulyArbitraryRandom() {
+  return gen::map(
+      gen::pair(gen::arbitrary<Random>(), gen::inRange<int>(0, 10000)),
+      [](std::pair<Random, int> &&p) {
+        auto nexts = p.second;
+        while (nexts-- > 0)
+          p.first.next();
+        return p.first;
+      });
 }
 
 } // namespace test

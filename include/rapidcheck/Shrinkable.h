@@ -17,45 +17,44 @@ namespace rc {
 /// A Shrinkable is immutable and the implementation object is shared when the
 /// shrinkable is copied which is why the implementation object needs no copy
 /// constructor.
-template<typename T>
-class Shrinkable
-{
-    template<typename Impl, typename ...Args>
-    friend Shrinkable<Decay<decltype(std::declval<Impl>().value())>>
-    makeShrinkable(Args &&...args);
+template <typename T>
+class Shrinkable {
+  template <typename Impl, typename... Args>
+  friend Shrinkable<Decay<decltype(std::declval<Impl>().value())>>
+  makeShrinkable(Args &&... args);
 
 public:
-    /// The type of the value in this `Shrinkable`.
-    typedef T ValueType;
+  /// The type of the value in this `Shrinkable`.
+  typedef T ValueType;
 
-    /// Returns the value.
-    T value() const;
+  /// Returns the value.
+  T value() const;
 
-    /// Returns a `Seq` of all the possible shrinks of this `Shrinkable`.
-    Seq<Shrinkable<T>> shrinks() const noexcept;
+  /// Returns a `Seq` of all the possible shrinks of this `Shrinkable`.
+  Seq<Shrinkable<T>> shrinks() const noexcept;
 
-    Shrinkable(const Shrinkable &other) noexcept;
-    Shrinkable(Shrinkable &&other) noexcept;
-    Shrinkable &operator=(const Shrinkable &other) noexcept;
-    Shrinkable &operator=(Shrinkable &&other) noexcept;
-    ~Shrinkable() noexcept;
+  Shrinkable(const Shrinkable &other) noexcept;
+  Shrinkable(Shrinkable &&other) noexcept;
+  Shrinkable &operator=(const Shrinkable &other) noexcept;
+  Shrinkable &operator=(Shrinkable &&other) noexcept;
+  ~Shrinkable() noexcept;
 
 private:
-    Shrinkable() = default;
+  Shrinkable() = default;
 
-    class IShrinkableImpl;
+  class IShrinkableImpl;
 
-    template<typename Impl>
-    class ShrinkableImpl;
+  template <typename Impl>
+  class ShrinkableImpl;
 
-    IShrinkableImpl *m_impl = nullptr;
+  IShrinkableImpl *m_impl = nullptr;
 };
 
 /// Two `Shrinkable`s are equal if the have the same value and the same shrinks.
-template<typename T>
+template <typename T>
 bool operator==(const Shrinkable<T> &lhs, const Shrinkable<T> &rhs);
 
-template<typename T>
+template <typename T>
 bool operator!=(const Shrinkable<T> &lhs, const Shrinkable<T> &rhs);
 
 } // namespace rc

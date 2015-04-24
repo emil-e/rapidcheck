@@ -11,19 +11,18 @@ namespace rc {
 ///
 /// @param description  A description of the property.
 /// @param testable     The object that implements the property.
-template<typename Testable>
-void prop(const std::string &description, Testable &&testable)
-{
-    using namespace detail;
+template <typename Testable>
+void prop(const std::string &description, Testable &&testable) {
+  using namespace detail;
 
-    SECTION(description) {
-        const auto result = checkTestable(std::forward<Testable>(testable));
-        std::ostringstream ss;
-        printResultMessage(result, ss);
-        INFO(ss.str() << "\n");
-        if (!result.template is<SuccessResult>())
-            FAIL();
-    }
+  SECTION(description) {
+    const auto result = checkTestable(std::forward<Testable>(testable));
+    std::ostringstream ss;
+    printResultMessage(result, ss);
+    INFO(ss.str() << "\n");
+    if (!result.template is<SuccessResult>())
+      FAIL();
+  }
 }
 
 } // namespace rc

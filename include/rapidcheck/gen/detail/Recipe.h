@@ -14,14 +14,13 @@ namespace detail {
 /// `Shrinkable<Any>` which are that sequence of value that were picked and a
 /// number which describes the number of value that have already by exhaustively
 /// shrunk. It also includes the `Random` generator to use and the size.
-struct Recipe
-{
-    typedef std::vector<Shrinkable<rc::detail::Any>> Ingredients;
+struct Recipe {
+  typedef std::vector<Shrinkable<rc::detail::Any>> Ingredients;
 
-    Random random;
-    int size = 0;
-    Ingredients ingredients;
-    std::size_t numFixed = 0;
+  Random random;
+  int size = 0;
+  Ingredients ingredients;
+  std::size_t numFixed = 0;
 };
 
 /// Returns the non-recursive shrinks for the given recipe.

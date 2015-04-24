@@ -39,21 +39,21 @@ namespace detail {
 ///
 /// Constructing an instance of this class in any other way than on the stack is
 /// not recommended and should not be done unless you know what you are doing.
-class ImplicitScope
-{
-    template<typename Param> friend class ImplicitParam;
+class ImplicitScope {
+  template <typename Param>
+  friend class ImplicitParam;
 
 public:
-    ImplicitScope();
-    ~ImplicitScope();
+  ImplicitScope();
+  ~ImplicitScope();
 
 private:
-    RC_DISABLE_COPY(ImplicitScope)
+  RC_DISABLE_COPY(ImplicitScope)
 
-    typedef void (*Destructor)();
-    typedef std::vector<Destructor> Destructors;
-    typedef std::stack<Destructors, std::vector<Destructors>> ScopeStack;
-    static ScopeStack m_scopes;
+  typedef void (*Destructor)();
+  typedef std::vector<Destructor> Destructors;
+  typedef std::stack<Destructors, std::vector<Destructors>> ScopeStack;
+  static ScopeStack m_scopes;
 };
 
 /// Constructing an instance of `ImplicitParam<Param>` establishes a binding for
@@ -72,31 +72,30 @@ private:
 ///         typedef std::string ValueType;
 ///         static std::string defaultValue() { return "default!"; }
 ///     };
-template<typename Param>
-class ImplicitParam
-{
+template <typename Param>
+class ImplicitParam {
 public:
-    /// The type of the values of this `ImplicitParam`.
-    typedef typename Param::ValueType ValueType;
+  /// The type of the values of this `ImplicitParam`.
+  typedef typename Param::ValueType ValueType;
 
-    /// Establishes a binding for `Param`.
-    ///
-    /// @param value  The value to bind.
-    ImplicitParam(ValueType value);
+  /// Establishes a binding for `Param`.
+  ///
+  /// @param value  The value to bind.
+  ImplicitParam(ValueType value);
 
-    /// Returns the value of the current binding.
-    static ValueType &value();
+  /// Returns the value of the current binding.
+  static ValueType &value();
 
-    ~ImplicitParam();
+  ~ImplicitParam();
 
 private:
-    RC_DISABLE_COPY(ImplicitParam)
+  RC_DISABLE_COPY(ImplicitParam)
 
-    void init();
+  void init();
 
-    typedef std::pair<ValueType, ImplicitScope::ScopeStack::size_type> Binding;
-    typedef std::stack<Binding, std::vector<Binding>> StackT;
-    static StackT m_stack;
+  typedef std::pair<ValueType, ImplicitScope::ScopeStack::size_type> Binding;
+  typedef std::stack<Binding, std::vector<Binding>> StackT;
+  static StackT m_stack;
 };
 
 } // namespace detail

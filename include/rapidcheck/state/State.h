@@ -8,33 +8,32 @@ namespace state {
 /// Base class for commands used in testing of stateful systems.
 ///
 /// NOTE: Commands are assumed to be immutable so that they can be shared.
-template<typename StateT, typename SutT>
-class Command
-{
+template <typename StateT, typename SutT>
+class Command {
 public:
-    typedef StateT State;
-    typedef SutT Sut;
-    typedef Command<State, Sut> CommandType;
+  typedef StateT State;
+  typedef SutT Sut;
+  typedef Command<State, Sut> CommandType;
 
-    /// Returns the state resulting from applying this command to the given
-    /// state. Default implementation simply returns the given state.
-    ///
-    /// Assert preconditions using `RC_PRE` or `RC_DISCARD`. If preconditions do
-    /// not hold, command will be discarded and a new one will be generated.
-    virtual State nextState(const State &s0) const;
+  /// Returns the state resulting from applying this command to the given
+  /// state. Default implementation simply returns the given state.
+  ///
+  /// Assert preconditions using `RC_PRE` or `RC_DISCARD`. If preconditions do
+  /// not hold, command will be discarded and a new one will be generated.
+  virtual State nextState(const State &s0) const;
 
-    /// Applies this command to the given system under test assuming it has the
-    /// given state. Default implementation does nothing.
-    ///
-    /// Use rapidcheck assertion macros to check that the system behaves
-    /// properly.
-    virtual void run(const State &s0, Sut &sut) const;
+  /// Applies this command to the given system under test assuming it has the
+  /// given state. Default implementation does nothing.
+  ///
+  /// Use rapidcheck assertion macros to check that the system behaves
+  /// properly.
+  virtual void run(const State &s0, Sut &sut) const;
 
-    /// Outputs a human readable representation of the command to the given
-    /// output stream.
-    virtual void show(std::ostream &os) const;
+  /// Outputs a human readable representation of the command to the given
+  /// output stream.
+  virtual void show(std::ostream &os) const;
 
-    virtual ~Command() = default;
+  virtual ~Command() = default;
 };
 
 /// Tests a stateful system. This function has assertion semantics (i.e. a
@@ -46,13 +45,11 @@ public:
 /// @param generationFunc  A callable which takes the current model state as a
 ///                        parameter and returns a generator for a (possibly)
 ///                        suitable command.
-template<typename State, typename Sut, typename GenFunc>
-void check(const State &initialState,
-              Sut &sut,
-              GenFunc &&generationFunc);
+template <typename State, typename Sut, typename GenFunc>
+void check(const State &initialState, Sut &sut, GenFunc &&generationFunc);
 
 /// Checks whether command is valid for the given state.
-template<typename State, typename Sut>
+template <typename State, typename Sut>
 bool isValidCommand(const Command<State, Sut> &command, const State &s0);
 
 /// Given a type list of command types, returns a generator which randomly
@@ -65,7 +62,7 @@ bool isValidCommand(const Command<State, Sut> &command, const State &s0);
 /// can discard itself immediately using `RC_PRE` or `RC_DISCARD` so that
 /// another one may be tried. This is intended to be used as the generator
 /// function parameter of `check`
-template<typename Cmd, typename ...Cmds>
+template <typename Cmd, typename... Cmds>
 Gen<std::shared_ptr<const typename Cmd::CommandType>> anyCommand(
     const typename Cmd::State &state);
 

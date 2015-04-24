@@ -21,15 +21,18 @@ A common first example is testing a reversal function. For such a function, doub
 
     #include <vector>
     #include <algorithm>
+    #include <set>
 
     int main() {
-      rc::check(
-          "double reversal yields the original value",
+      rc::check("double reversal yields the original value",
           [](const std::vector<int> &l0) {
-              auto l1 = l0;
-              std::reverse(begin(l1), end(l1));
-              std::reverse(begin(l1), end(l1));
-              RC_ASSERT(l0 == l1);
+            auto l1 = l0;
+            std::reverse(begin(l1), end(l1));
+            std::reverse(begin(l1), end(l1));
+            if (l1.size() >= 10) {
+              l1[0] = 0;
+            }
+            RC_ASSERT(l0 == l1);
           });
 
       return 0;
@@ -79,14 +82,13 @@ In this example, an arbitrary integer will first be chosen followed by an intege
 
 Using this style, our very first example could be rewritten like this:
 
-    rc::check(
-        "double reversal yields the original value",
+    rc::check("double reversal yields the original value",
         [] {
-            auto l0 = *rc::gen::arbitrary<std::vector<int>>();
-            auto l1(l0);
-            std::reverse(begin(l1), end(l1));
-            std::reverse(begin(l1), end(l1));
-            RC_ASSERT(l0 == l1);
+          auto l0 = *rc::gen::arbitrary<std::vector<int>>();
+          auto l1(l0);
+          std::reverse(begin(l1), end(l1));
+          std::reverse(begin(l1), end(l1));
+          RC_ASSERT(l0 == l1);
         });
 
 The above example is semantically equivalent to our initial example. However, this is only because there is only one generated value. If more than one value is generated using `*`, RapidCheck assumes that every generated value depends on the values that were generated before it. This puts limitations on the ways that RapidCheck can safely shrink the generated values. Because of this, if your values are actually independant, it makes sense to put them in the arguments if possible.

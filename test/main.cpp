@@ -3,8 +3,9 @@
 
 namespace std {
 
-inline bool uncaught_exception() noexcept(true)
-{ return current_exception() != nullptr; }
+inline bool uncaught_exception() noexcept(true) {
+  return current_exception() != nullptr;
+}
 
 } // namespace std
 

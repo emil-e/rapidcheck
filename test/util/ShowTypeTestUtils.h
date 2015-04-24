@@ -8,38 +8,24 @@ struct Bar {};
 struct Baz {};
 struct NonspecializedPlain {};
 
-template<typename T>
+template <typename T>
 struct NonspecializedTemplate {};
 
 } // namespace test
 
-template<>
-struct ShowType<test::Foo>
-{
-    static void showType(std::ostream &os)
-    {
-        os << "FFoo";
-    }
+template <>
+struct ShowType<test::Foo> {
+  static void showType(std::ostream &os) { os << "FFoo"; }
 };
 
-
-template<>
-struct ShowType<test::Bar>
-{
-    static void showType(std::ostream &os)
-    {
-        os << "BBar";
-    }
+template <>
+struct ShowType<test::Bar> {
+  static void showType(std::ostream &os) { os << "BBar"; }
 };
 
-
-template<>
-struct ShowType<test::Baz>
-{
-    static void showType(std::ostream &os)
-    {
-        os << "BBaz";
-    }
+template <>
+struct ShowType<test::Baz> {
+  static void showType(std::ostream &os) { os << "BBaz"; }
 };
 
 } // namespace rc

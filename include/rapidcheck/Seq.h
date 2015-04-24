@@ -28,54 +28,53 @@ namespace rc {
 /// However, unless you have a reason to create your own implementation class,
 /// you should just use the provided combinators in the `rc::seq` namespace to
 /// construct your `Seq`s.
-template<typename T>
-class Seq
-{
-    /// Creates a new `Seq` using the implementation class specificed by the
-    /// type parameter constructed by forwarding the given arguments.
-    template<typename Impl, typename ...Args>
-    friend Seq<typename std::result_of<Impl()>::type::ValueType>
-    makeSeq(Args &&...args);
+template <typename T>
+class Seq {
+  /// Creates a new `Seq` using the implementation class specificed by the
+  /// type parameter constructed by forwarding the given arguments.
+  template <typename Impl, typename... Args>
+  friend Seq<typename std::result_of<Impl()>::type::ValueType> makeSeq(
+      Args &&... args);
 
 public:
-    /// The type of the values of this `Seq`.
-    typedef T ValueType;
+  /// The type of the values of this `Seq`.
+  typedef T ValueType;
 
-    /// Constructs an empty `Seq` that has no values.
-    Seq() = default;
+  /// Constructs an empty `Seq` that has no values.
+  Seq() = default;
 
-    /// Constructs a `Seq` from the given implementation object.
-    template<typename Impl,
-             typename = typename std::enable_if<
-                 !std::is_same<Decay<Impl>, Seq>::value>::type>
-    explicit Seq(Impl &&impl);
+  /// Constructs a `Seq` from the given implementation object.
+  template <typename Impl,
+      typename =
+          typename std::enable_if<!std::is_same<Decay<Impl>, Seq>::value>::type>
+  explicit Seq(Impl &&impl);
 
-    /// Returns the next value.
-    Maybe<T> next() noexcept;
+  /// Returns the next value.
+  Maybe<T> next() noexcept;
 
-    Seq(const Seq &other);
-    Seq &operator=(const Seq &rhs);
-    Seq(Seq &&other) noexcept = default;
-    Seq &operator=(Seq &&rhs) noexcept = default;
+  Seq(const Seq &other);
+  Seq &operator=(const Seq &rhs);
+  Seq(Seq &&other) noexcept = default;
+  Seq &operator=(Seq &&rhs) noexcept = default;
 
 private:
-    class ISeqImpl;
+  class ISeqImpl;
 
-    template<typename Impl>
-    class SeqImpl;
+  template <typename Impl>
+  class SeqImpl;
 
-    std::unique_ptr<ISeqImpl> m_impl;
+  std::unique_ptr<ISeqImpl> m_impl;
 };
 
 /// Two `Seq`s are considered equal if they return equal values. Note that this
 /// requires either copying or moving of the `Seq`s.
-template<typename T>
+template <typename T>
 bool operator==(Seq<T> lhs, Seq<T> rhs);
 
-template<typename T>
+template <typename T>
 bool operator!=(Seq<T> lhs, Seq<T> rhs);
 
-template<typename T>
+template <typename T>
 std::ostream &operator<<(std::ostream &os, Seq<T> seq);
 
 } // namespace rc
