@@ -6,7 +6,7 @@
 namespace rc {
 namespace test {
 
-//! Test utility for detecting that a destructor is called.
+/// Test utility for detecting that a destructor is called.
 class DestructNotifier
 {
 public:
@@ -16,7 +16,7 @@ public:
 
     DestructNotifier(const DestructNotifier &) = default;
 
-    //! Move steals the pointer.
+    /// Move steals the pointer.
     DestructNotifier(DestructNotifier &&other)
         : m_id(std::move(other.m_id))
         , m_logp(other.m_logp)

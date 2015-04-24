@@ -3,9 +3,9 @@
 namespace rc {
 namespace test {
 
-//! Utility for testing showValue(...) implementations to ensure that they are
-//! using rc::show(...) for their sub values. Implicit conversion to its string
-//! value.
+/// Utility for testing showValue(...) implementations to ensure that they are
+/// using rc::show(...) for their sub values. Implicit conversion to its string
+/// value.
 struct Box
 {
     Box(int x) : value(x) {}

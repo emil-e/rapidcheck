@@ -4,7 +4,7 @@
 
 namespace rc {
 
-//! Thrown to indicate that an appropriate value couldn't be generated.
+/// Thrown to indicate that an appropriate value couldn't be generated.
 class GenerationFailure : public std::runtime_error
 {
 public:

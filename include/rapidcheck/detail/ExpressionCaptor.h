@@ -5,8 +5,8 @@
 namespace rc {
 namespace detail {
 
-//! Utility class capturing an expression into a string. Mainly for use in
-//! assertion macros and the likes.
+/// Utility class capturing an expression into a string. Mainly for use in
+/// assertion macros and the likes.
 class ExpressionCaptor
 {
 public:

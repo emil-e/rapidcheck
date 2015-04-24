@@ -17,7 +17,7 @@ struct MaxOf<V1, V2, Vs...>
     (V1 > MaxOf<V2, Vs...>::value ? V1 : MaxOf<V2, Vs...>::value)> {};
 
 
-//! Replacement for std::aligned_union for compiles that do not have it.
+/// Replacement for std::aligned_union for compiles that do not have it.
 template<typename ...Ts>
 using AlignedUnion = typename std::aligned_storage<
     MaxOf<sizeof(Ts)...>::value,

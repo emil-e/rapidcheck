@@ -7,7 +7,7 @@ namespace rc {
 namespace state {
 namespace detail {
 
-//! Collection of commands.
+/// Collection of commands.
 template<typename Cmd>
 struct Commands : public Command<typename Cmd::State, typename Cmd::Sut>
 {

@@ -4,11 +4,11 @@
 
 namespace rc {
 
-//! Convenience wrapper over std::decay, shorter to type.
+/// Convenience wrapper over std::decay, shorter to type.
 template<typename T>
 using Decay = typename std::decay<T>::type;
 
-//! Checks that all the parameters are true.
+/// Checks that all the parameters are true.
 template<bool ...Xs>
 struct AllTrue;
 
@@ -20,7 +20,7 @@ struct AllTrue<X, Xs...>
     : public std::integral_constant<
         bool, X && AllTrue<Xs...>::value> {};
 
-//! Checks that all the types in `Ts` conforms to type trait `F`.
+/// Checks that all the types in `Ts` conforms to type trait `F`.
 template<template <typename> class F, typename ...Ts>
 struct AllIs : public AllTrue<F<Ts>::value...> {};
 

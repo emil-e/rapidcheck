@@ -3,7 +3,7 @@
 namespace rc {
 namespace detail {
 
-//! TMP utility for passing around a list of types.
+/// TMP utility for passing around a list of types.
 template<typename ...Types>
 struct TypeList;
 
@@ -18,7 +18,7 @@ struct ToTupleImpl<TypeList<Types...>>
     typedef std::tuple<Types...> Type;
 };
 
-//! Turns a `TypeList` into am `std::tuple`.
+/// Turns a `TypeList` into am `std::tuple`.
 template<typename T>
 using ToTuple = typename ToTupleImpl<T>::Type;
 
@@ -31,7 +31,7 @@ struct DecayAllImpl<TypeList<Types...>>
     typedef TypeList<typename std::decay<Types>::type...> Type;
 };
 
-//! Decays all the types in a `TypeList`.
+/// Decays all the types in a `TypeList`.
 template<typename T>
 using DecayAll = typename DecayAllImpl<T>::Type;
 

@@ -2,71 +2,71 @@
 
 namespace rc {
 
-//! Tag struct that can be used to construct a `Maybe` to an initialized state.
+/// Tag struct that can be used to construct a `Maybe` to an initialized state.
 struct NothingType {
-    //! Explicit conversion to false.
+    /// Explicit conversion to false.
     explicit operator bool() const { return false; }
 };
 
-//! Singleton NothingType value.
+/// Singleton NothingType value.
 constexpr NothingType Nothing = NothingType();
 
-//! Represents the presence of a value or nothing at all. Like `Maybe` in
-//! Haskell, `Option` in Scala or `optional` in Boost. But we're not Haskell nor
-//! Scala and we don't depend on Boost so we have our own.
+/// Represents the presence of a value or nothing at all. Like `Maybe` in
+/// Haskell, `Option` in Scala or `optional` in Boost. But we're not Haskell nor
+/// Scala and we don't depend on Boost so we have our own.
 template<typename T>
 class Maybe
 {
 public:
-    //! The type of value contained in this `Maybe`.
+    /// The type of value contained in this `Maybe`.
     typedef T ValueType;
 
-    //! Constructs a new empty `Maybe`.
+    /// Constructs a new empty `Maybe`.
     Maybe() noexcept;
 
-    //! Equivalent to default construction.
+    /// Equivalent to default construction.
     Maybe(NothingType) noexcept;
 
-    //! Constructs a new `Maybe` and copy-constructs its value.
+    /// Constructs a new `Maybe` and copy-constructs its value.
     Maybe(const T &value);
 
-    //! Constructs a new `Maybe` and move-constructs its value.
+    /// Constructs a new `Maybe` and move-constructs its value.
     Maybe(T &&value);
 
-    //! Constructs a new `Maybe` and copy-constructs or copy-assigns its value.
+    /// Constructs a new `Maybe` and copy-constructs or copy-assigns its value.
     Maybe &operator=(const T &value);
 
-    //! Constructs a new `Maybe` and move-constructs or move-assigns its value.
+    /// Constructs a new `Maybe` and move-constructs or move-assigns its value.
     Maybe &operator=(T &&value);
 
-    //! Equivalent to `reset()`.
+    /// Equivalent to `reset()`.
     Maybe &operator=(NothingType);
 
-    //! Initializes this `Maybe` with an in-place constructed value that gets
-    //! forwarded the given arguments. If this `Maybe` is already initialized,
-    //! old value gets destroyed. If the constructor of the new value throws an
-    //! exception, this `Maybe` will be uninitialized on return.
+    /// Initializes this `Maybe` with an in-place constructed value that gets
+    /// forwarded the given arguments. If this `Maybe` is already initialized,
+    /// old value gets destroyed. If the constructor of the new value throws an
+    /// exception, this `Maybe` will be uninitialized on return.
     template<typename ...Args>
     void init(Args &&...args);
 
-    //! Resets this `Maybe`, destroying the contained object.
+    /// Resets this `Maybe`, destroying the contained object.
     void reset();
 
-    //! Returns a reference to the contained value. No checking is performed.
+    /// Returns a reference to the contained value. No checking is performed.
     T &operator*();
 
-    //! Returns a const reference to the contained value. No checking is
-    //! performed.
+    /// Returns a const reference to the contained value. No checking is
+    /// performed.
     const T &operator*() const;
 
-    //! Returns a pointer to the contained value. No checking is performed.
+    /// Returns a pointer to the contained value. No checking is performed.
     T *operator->();
 
-    //! Returns a const pointer to the contained value. No checking is
-    //! performed.
+    /// Returns a const pointer to the contained value. No checking is
+    /// performed.
     const T *operator->() const;
 
-    //! Returns true if this `Maybe` is initialized.
+    /// Returns true if this `Maybe` is initialized.
     explicit operator bool() const;
 
     Maybe(const Maybe &other) noexcept(

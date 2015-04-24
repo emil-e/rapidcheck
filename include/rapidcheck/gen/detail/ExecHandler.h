@@ -7,7 +7,7 @@ namespace rc {
 namespace gen {
 namespace detail {
 
-//! `GenerationHandler` used to implement `execRaw`.
+/// `GenerationHandler` used to implement `execRaw`.
 class ExecHandler : public GenerationHandler
 {
 public:

@@ -6,39 +6,39 @@
 namespace rc {
 namespace detail {
 
-//! Disables copying
+/// Disables copying
 #define RC_DISABLE_COPY(Class)                    \
     Class(const Class &) = delete;                \
     Class &operator=(const Class &) = delete;
 
-//! Disables moving
+/// Disables moving
 #define RC_DISABLE_MOVE(Class)            \
     Class(Class &&) = delete;             \
     Class &operator=(Class &&) = delete;
 
 #define RC_GLUE2(a, b) a##b
 
-//! Paste together the given arguments.
+/// Paste together the given arguments.
 #define RC_GLUE(a, b) RC_GLUE2(a, b)
 
-//! Unique identifier helper.
+/// Unique identifier helper.
 #define RC_UNIQUE(prefix) RC_GLUE(prefix, __LINE__)
 
-//! Demangles a mangled C++
+/// Demangles a mangled C++
 std::string demangle(const char *name);
 
-//! Base case for `pushBackAll`
+/// Base case for `pushBackAll`
 template<typename Collection>
 void pushBackAll(Collection &collection)
 {
     // Base case
 }
 
-//! Appends the given items to the end of the given collection.
-//!
-//! @param collection   The collection to append to.
-//! @param item         The first item.
-//! @param items        The rest of the items.
+/// Appends the given items to the end of the given collection.
+///
+/// @param collection   The collection to append to.
+/// @param item         The first item.
+/// @param items        The rest of the items.
 template<typename Collection, typename Item, typename ...Items>
 void pushBackAll(Collection &collection, Item &&item, Items &&...items)
 {
@@ -46,17 +46,17 @@ void pushBackAll(Collection &collection, Item &&item, Items &&...items)
     pushBackAll(collection, std::forward<Items>(items)...);
 }
 
-//! Base case for `join`.
+/// Base case for `join`.
 inline std::string join(const std::string &sep, const std::string str)
 {
     return str;
 }
 
-//! Joins the given strings using the given separator.
-//!
-//! @param sep      The separator.
-//! @param str      The first string.
-//! @param strings  The rest of the strings.
+/// Joins the given strings using the given separator.
+///
+/// @param sep      The separator.
+/// @param str      The first string.
+/// @param strings  The rest of the strings.
 template<typename ...Strings>
 std::string join(const std::string &sep,
                  const std::string &str,
@@ -88,15 +88,15 @@ struct TupleTailHelper<TupleT, Type, Types...>
     }
 };
 
-//! Returns a copy of the given tuple without the first element.
+/// Returns a copy of the given tuple without the first element.
 template<typename Type, typename ...Types>
 std::tuple<Types...> tupleTail(const std::tuple<Type, Types...> &tuple)
 {
     return TupleTailHelper<std::tuple<Type, Types...>, Types...>::tail(tuple);
 }
 
-//! Avalanching function.
-//! Written in 2014 by Sebastiano Vigna (vigna@acm.org)
+/// Avalanching function.
+/// Written in 2014 by Sebastiano Vigna (vigna@acm.org)
 inline uint64_t avalanche(uint64_t x) {
     x ^= x >> 33;
     x *= 0xff51afd7ed558ccdULL;
@@ -105,8 +105,8 @@ inline uint64_t avalanche(uint64_t x) {
     return x ^= x >> 33;
 }
 
-//! Returns a bitmask of the given type with the lowest `nbits` bits set to 1
-//! and the rest set to 0.
+/// Returns a bitmask of the given type with the lowest `nbits` bits set to 1
+/// and the rest set to 0.
 template<typename T>
 constexpr T bitMask(int nbits)
 { return ~((~static_cast<T>(0) - 1) << static_cast<T>(nbits - 1)); }

@@ -44,7 +44,7 @@ struct ApplyTupleImpl<const std::tuple<Ts...> &,
     { return callable(std::get<Indexes>(tuple)...); }
 };
 
-//! Applies the given tuple as arguments to the given callable.
+/// Applies the given tuple as arguments to the given callable.
 template<typename TupleT, typename Callable>
 typename ApplyTupleImpl<TupleT, Callable>::ReturnType
 applyTuple(TupleT &&tuple, Callable &&callable)

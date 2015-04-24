@@ -6,9 +6,9 @@
 
 namespace rc {
 
-//! Implementation of a splittable random generator as described in:
-//!   Claessen, K. och Palka, M. (2013) Splittable Pseudorandom Number
-//!   Generators using Cryptographic Hashing.
+/// Implementation of a splittable random generator as described in:
+///   Claessen, K. och Palka, M. (2013) Splittable Pseudorandom Number
+///   Generators using Cryptographic Hashing.
 class Random
 {
     friend bool operator==(const Random &lhs, const Random &rhs);
@@ -16,27 +16,27 @@ class Random
     friend std::ostream &operator<<(std::ostream &os, const Random &random);
 
 public:
-    //! Key type
+    /// Key type
     typedef std::array<uint64_t, 4> Key;
 
-    //! Type of a generated random number.
+    /// Type of a generated random number.
     typedef uint64_t Number;
 
-    //! Constructs a Random engine with a `{0, 0, 0, 0}` key.
+    /// Constructs a Random engine with a `{0, 0, 0, 0}` key.
     Random();
 
-    //! Constructs a Random engine from a full size 256-bit key.
+    /// Constructs a Random engine from a full size 256-bit key.
     Random(const Key &key);
 
-    //! Constructs a Random engine from a 64-bit seed.
+    /// Constructs a Random engine from a 64-bit seed.
     Random(uint64_t seed);
 
-    //! Splits this generator into to separate independent generators. The first
-    //! generator will be assigned to this one and the second will be returned.
+    /// Splits this generator into to separate independent generators. The first
+    /// generator will be assigned to this one and the second will be returned.
     Random split();
 
-    //! Returns the next random number. Both `split` and `next` should not be
-    //! called on the same state.
+    /// Returns the next random number. Both `split` and `next` should not be
+    /// called on the same state.
     Number next();
 
 private:

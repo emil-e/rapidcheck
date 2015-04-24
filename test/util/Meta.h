@@ -23,9 +23,9 @@ struct ForEachType<MetaFunction, Type, Types...>
     }
 };
 
-//! Instantiates and executes the static member function `exec()` in the type
-//! `MetaFunction` once for each type in `Types`. Useful for writing generic
-//! tests.
+/// Instantiates and executes the static member function `exec()` in the type
+/// `MetaFunction` once for each type in `Types`. Useful for writing generic
+/// tests.
 template<typename MetaFunction,
          typename ...Types>
 void forEachType()

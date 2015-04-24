@@ -30,7 +30,7 @@ static inline CaseResult toCaseResultHelper(std::string value)
         : CaseResult(CaseResult::Type::Failure, std::move(value));
 }
 
-//! Helper class to convert different return types to `CaseResult`.
+/// Helper class to convert different return types to `CaseResult`.
 template<typename ReturnType>
 struct CaseResultHelper
 {

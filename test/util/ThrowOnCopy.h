@@ -5,7 +5,7 @@
 namespace rc {
 namespace test {
 
-//! Test utility which throws on copy for testing exception safety.
+/// Test utility which throws on copy for testing exception safety.
 struct ThrowOnCopy
 {
     ThrowOnCopy(std::string s) : value(std::move(s)) {}

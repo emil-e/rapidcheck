@@ -10,51 +10,51 @@
 namespace rc {
 namespace detail {
 
-//! `Variant` can contain any of the parameterized type but only one of them at
-//! the same time. allows functions to return different types.
-//!
-//! This class trades the simplicity of implementation for the requirement that
-//! all types are no-throw move/copy constructible.
+/// `Variant` can contain any of the parameterized type but only one of them at
+/// the same time. allows functions to return different types.
+///
+/// This class trades the simplicity of implementation for the requirement that
+/// all types are no-throw move/copy constructible.
 template<typename Type, typename ...Types>
 class Variant
 {
 public:
-    //! Constructs a new `Variant` containing the specified value.
+    /// Constructs a new `Variant` containing the specified value.
     template<typename T,
              typename = typename std::enable_if<
                  !std::is_same<Decay<T>, Variant>::value>::type>
     Variant(T &&value)
         noexcept(std::is_nothrow_constructible<Decay<T>, T &&>::value);
 
-    //! Copy-assigns the given value to this `Variant`.
+    /// Copy-assigns the given value to this `Variant`.
     template<typename T,
              typename = typename std::enable_if<
                  std::is_nothrow_move_constructible<T>::value>::type>
     Variant &operator=(const T &value) noexcept;
 
-    //! Move-assigns the given value to this `Variant`.
+    /// Move-assigns the given value to this `Variant`.
     template<typename T,
              typename = typename std::enable_if<
                  !std::is_reference<T>::value &&
                  std::is_nothrow_constructible<Decay<T>, T &&>::value>::type>
     Variant &operator=(T &&value) noexcept;
 
-    //! Returns `true` if this variant has type `T`.
+    /// Returns `true` if this variant has type `T`.
     template<typename T>
     bool is() const;
 
-    //! Returns a reference to the internal value as a reference to `T`.
-    //! nchecked.
+    /// Returns a reference to the internal value as a reference to `T`.
+    /// nchecked.
     template<typename T>
     T &get();
 
-    //! Returns a reference to the internal value as a reference to `const T`.
-    //! nchecked.
+    /// Returns a reference to the internal value as a reference to `const T`.
+    /// nchecked.
     template<typename T>
     const T &get() const;
 
-    //! If this variant is of type `T`, assigns the value of the variant to
-    //! `value` and return `true`.
+    /// If this variant is of type `T`, assigns the value of the variant to
+    /// `value` and return `true`.
     template<typename T>
     bool match(T &value) const;
 

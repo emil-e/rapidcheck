@@ -10,7 +10,7 @@ namespace detail {
 
 using Any = rc::detail::Any;
 
-//! Default handler. Just throws exception.
+/// Default handler. Just throws exception.
 class NullGenerationHandler : public GenerationHandler
 {
     Any onGenerate(const Gen<rc::detail::Any> &gen) override

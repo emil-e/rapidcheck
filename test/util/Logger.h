@@ -5,7 +5,7 @@
 namespace rc {
 namespace test {
 
-//! Utility class to test copying, moving et.c.
+/// Utility class to test copying, moving et.c.
 struct Logger
 {
 public:

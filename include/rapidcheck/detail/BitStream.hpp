@@ -71,7 +71,7 @@ template<typename Source>
 BitStream<Source &> bitStreamOf(Source &source)
 { return BitStream<Source &>(source); }
 
-//! Returns a bitstream with the given source as a copy.
+/// Returns a bitstream with the given source as a copy.
 template<typename Source>
 BitStream<Source> bitStreamOf(const Source &source)
 { return BitStream<Source>(source); }

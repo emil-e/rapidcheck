@@ -5,25 +5,25 @@
 namespace rc {
 namespace detail {
 
-//! This is a helper class to optimize the number of random numbers requested
-//! from a random source. The random source must have a method `next()` that
-//! returns a random number.
+/// This is a helper class to optimize the number of random numbers requested
+/// from a random source. The random source must have a method `next()` that
+/// returns a random number.
 template<typename Source>
 class BitStream
 {
 public:
     explicit BitStream(Source source);
 
-    //! Returns the next value of the given type with maximum size.
+    /// Returns the next value of the given type with maximum size.
     template<typename T>
     T next();
 
-    //! Returns the next random of the given type and number of bits.
+    /// Returns the next random of the given type and number of bits.
     template<typename T>
     T next(int nbits);
 
-    //! Returns the next random of the given type and size. Size maxes out at
-    //! `kNominalSize`.
+    /// Returns the next random of the given type and size. Size maxes out at
+    /// `kNominalSize`.
     template<typename T>
     T nextWithSize(int size);
 
@@ -33,11 +33,11 @@ private:
     int m_numBits;
 };
 
-//! Returns a bitstream with the given source as a reference.
+/// Returns a bitstream with the given source as a reference.
 template<typename Source>
 BitStream<Source &> bitStreamOf(Source &source);
 
-//! Returns a bitstream with the given source as a copy.
+/// Returns a bitstream with the given source as a copy.
 template<typename Source>
 BitStream<Source> bitStreamOf(const Source &source);
 

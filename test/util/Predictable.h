@@ -5,10 +5,10 @@
 
 namespace rc {
 
-//! Useful utility class for testing that `Arbitrary` is actually used. The key
-//! here is that if the default constructor is used, the value will be undefined
-//! but if `Arbitrary` is used, the value will be `X`. An extra member is
-//! included so that multiple unique values of the same type can be generated.
+/// Useful utility class for testing that `Arbitrary` is actually used. The key
+/// here is that if the default constructor is used, the value will be undefined
+/// but if `Arbitrary` is used, the value will be `X`. An extra member is
+/// included so that multiple unique values of the same type can be generated.
 struct Predictable
 {
     static constexpr int predictableValue = 1337;
@@ -16,7 +16,7 @@ struct Predictable
     int extra;
 };
 
-//! Non-copyable version of `Predictable`.
+/// Non-copyable version of `Predictable`.
 struct NonCopyable : public Predictable
 {
     NonCopyable() = default;

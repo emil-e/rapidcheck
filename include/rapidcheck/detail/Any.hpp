@@ -41,7 +41,7 @@ private:
     T m_value;
 };
 
-//! Constructs a new `Any` with the given value.
+/// Constructs a new `Any` with the given value.
 template<typename T>
 Any Any::of(T &&value)
 {

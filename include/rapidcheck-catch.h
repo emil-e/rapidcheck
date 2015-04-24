@@ -6,11 +6,11 @@
 
 namespace rc {
 
-//! For use with `catch.hpp`. Use this function wherever you would use a
-//! `SECTION` for convenient checking of properties.
-//!
-//! @param description  A description of the property.
-//! @param testable     The object that implements the property.
+/// For use with `catch.hpp`. Use this function wherever you would use a
+/// `SECTION` for convenient checking of properties.
+///
+/// @param description  A description of the property.
+/// @param testable     The object that implements the property.
 template<typename Testable>
 void prop(const std::string &description, Testable &&testable)
 {

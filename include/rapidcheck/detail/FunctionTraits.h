@@ -41,19 +41,19 @@ struct FunctionTraitsImpl<Ret (*)(Args...)>
 };
 
 
-//! Traits class for capturing various information about a callable object.
+/// Traits class for capturing various information about a callable object.
 template<typename T>
 using FunctionTraits = FunctionTraitsImpl<Decay<T>>;
 
-//! The return type of a function.
+/// The return type of a function.
 template<typename T>
 using ReturnType = typename FunctionTraits<T>::ReturnType;
 
-//! `TypeList` of argument types for `T`.
+/// `TypeList` of argument types for `T`.
 template<typename T>
 using ArgTypes = typename FunctionTraits<T>::ArgTypes;
 
-//! The signature of T.
+/// The signature of T.
 template<typename T>
 using FunctionType = typename FunctionTraits<T>::FunctionType;
 

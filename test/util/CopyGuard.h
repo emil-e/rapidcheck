@@ -5,7 +5,7 @@
 namespace rc {
 namespace test {
 
-//! Test utility to ensure that no copies take place
+/// Test utility to ensure that no copies take place
 struct CopyGuard
 {
     CopyGuard(int x = 0) : value(x) {}

@@ -5,8 +5,8 @@
 namespace rc {
 namespace test {
 
-//! Forwards Seq a random amount and copies it to see if it is equal to the
-//! original. Must not be infinite, of course.
+/// Forwards Seq a random amount and copies it to see if it is equal to the
+/// original. Must not be infinite, of course.
 template<typename T>
 void assertEqualCopies(Seq<T> seq)
 {

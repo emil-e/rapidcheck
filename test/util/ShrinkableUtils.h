@@ -3,8 +3,8 @@
 namespace rc {
 namespace test {
 
-//! Returns the item at `index` or the last element if the index is out of
-//! bounds. If the `Seq` is empty, returns `Nothing`.
+/// Returns the item at `index` or the last element if the index is out of
+/// bounds. If the `Seq` is empty, returns `Nothing`.
 template<typename T>
 Maybe<T> atOrLast(Seq<T> seq, std::size_t index)
 {
@@ -20,9 +20,9 @@ Maybe<T> atOrLast(Seq<T> seq, std::size_t index)
     return prev;
 }
 
-//! Calls `assertion` with a value and some shrink of the value when going down
-//! arbitrary paths into the shrinkable tree. `RC_ASSERT` in this function to do
-//! something useful.
+/// Calls `assertion` with a value and some shrink of the value when going down
+/// arbitrary paths into the shrinkable tree. `RC_ASSERT` in this function to do
+/// something useful.
 template<typename T, typename Assertion>
 void onAnyPath(const Shrinkable<T> &shrinkable, Assertion assertion)
 {
