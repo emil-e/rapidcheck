@@ -126,6 +126,19 @@ TEST_CASE("Shrinkable") {
         REQUIRE(log[0] == "foobar");
     }
 
+    SECTION("moving steals reference") {
+        std::vector<std::string> log;
+        auto s1 = shrinkable::just(DestructNotifier("foobar", &log));
+
+        {
+            const auto s2 = std::move(s1);
+            REQUIRE(log.empty());
+        }
+
+        REQUIRE(log.size() == 1);
+        REQUIRE(log[0] == "foobar");
+    }
+
     SECTION("operator==/operator!=") {
         propConformsToEquals<Shrinkable<int>>();
 
