@@ -63,8 +63,8 @@ bool isValidCommand(const Command<State, Sut> &command, const State &s0);
 /// another one may be tried. This is intended to be used as the generator
 /// function parameter of `check`
 template <typename Cmd, typename... Cmds>
-Gen<std::shared_ptr<const typename Cmd::CommandType>> anyCommand(
-    const typename Cmd::State &state);
+Gen<std::shared_ptr<const typename Cmd::CommandType>>
+anyCommand(const typename Cmd::State &state);
 
 } // namespace state
 } // namespace rc

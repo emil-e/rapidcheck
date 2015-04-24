@@ -20,21 +20,22 @@ class Variant {
 public:
   /// Constructs a new `Variant` containing the specified value.
   template <typename T,
-      typename = typename std::enable_if<
-          !std::is_same<Decay<T>, Variant>::value>::type>
+            typename = typename std::enable_if<
+                !std::is_same<Decay<T>, Variant>::value>::type>
   Variant(T &&value) noexcept(
       std::is_nothrow_constructible<Decay<T>, T &&>::value);
 
   /// Copy-assigns the given value to this `Variant`.
   template <typename T,
-      typename = typename std::enable_if<
-          std::is_nothrow_move_constructible<T>::value>::type>
+            typename = typename std::enable_if<
+                std::is_nothrow_move_constructible<T>::value>::type>
   Variant &operator=(const T &value) noexcept;
 
   /// Move-assigns the given value to this `Variant`.
   template <typename T,
-      typename = typename std::enable_if<!std::is_reference<T>::value &&
-          std::is_nothrow_constructible<Decay<T>, T &&>::value>::type>
+            typename = typename std::enable_if<
+                !std::is_reference<T>::value &&
+                std::is_nothrow_constructible<Decay<T>, T &&>::value>::type>
   Variant &operator=(T &&value) noexcept;
 
   /// Returns `true` if this variant has type `T`.
@@ -92,14 +93,15 @@ private:
 };
 
 template <typename Type, typename... Types>
-bool operator!=(
-    const Variant<Type, Types...> &lhs, const Variant<Type, Types...> &rhs);
+bool operator!=(const Variant<Type, Types...> &lhs,
+                const Variant<Type, Types...> &rhs);
 
 template <typename Type,
-    typename... Types,
-    typename = typename std::enable_if<
-        AllTrue<IsStreamInsertible<Types>::value...>::value>::type>
-std::ostream &operator<<(std::ostream &os, const Variant<Type, Types...> &value);
+          typename... Types,
+          typename = typename std::enable_if<
+              AllTrue<IsStreamInsertible<Types>::value...>::value>::type>
+std::ostream &operator<<(std::ostream &os,
+                         const Variant<Type, Types...> &value);
 
 } // namespace detail
 } // namespace rc

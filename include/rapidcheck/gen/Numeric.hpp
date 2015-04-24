@@ -17,22 +17,22 @@ Shrinkable<T> integral(const Random &random, int size) {
 }
 
 extern template Shrinkable<char> integral<char>(const Random &random, int size);
-extern template Shrinkable<unsigned char> integral<unsigned char>(
-    const Random &random, int size);
-extern template Shrinkable<short> integral<short>(
-    const Random &random, int size);
-extern template Shrinkable<unsigned short> integral<unsigned short>(
-    const Random &random, int size);
+extern template Shrinkable<unsigned char>
+integral<unsigned char>(const Random &random, int size);
+extern template Shrinkable<short> integral<short>(const Random &random,
+                                                  int size);
+extern template Shrinkable<unsigned short>
+integral<unsigned short>(const Random &random, int size);
 extern template Shrinkable<int> integral<int>(const Random &random, int size);
-extern template Shrinkable<unsigned int> integral<unsigned int>(
-    const Random &random, int size);
+extern template Shrinkable<unsigned int>
+integral<unsigned int>(const Random &random, int size);
 extern template Shrinkable<long> integral<long>(const Random &random, int size);
-extern template Shrinkable<unsigned long> integral<unsigned long>(
-    const Random &random, int size);
-extern template Shrinkable<long long> integral<long long>(
-    const Random &random, int size);
-extern template Shrinkable<unsigned long long> integral<unsigned long long>(
-    const Random &random, int size);
+extern template Shrinkable<unsigned long>
+integral<unsigned long>(const Random &random, int size);
+extern template Shrinkable<long long> integral<long long>(const Random &random,
+                                                          int size);
+extern template Shrinkable<unsigned long long>
+integral<unsigned long long>(const Random &random, int size);
 
 template <typename T>
 Shrinkable<T> real(const Random &random, int size) {
@@ -58,8 +58,8 @@ struct DefaultArbitrary {
   // arbitrary value of some type but you haven't declared a specialization of
   // Arbitrary for your type. Check the template stack trace to see which type
   // it is.
-  static_assert(
-      std::is_integral<T>::value, "No Arbitrary specialization for type T");
+  static_assert(std::is_integral<T>::value,
+                "No Arbitrary specialization for type T");
 
   static Gen<T> arbitrary() { return integral<T>; }
 };

@@ -29,8 +29,8 @@ public:
   using ValueType = T;
 
   template <typename Impl,
-      typename =
-          typename std::enable_if<!std::is_same<Decay<Impl>, Gen>::value>::type>
+            typename = typename std::enable_if<
+                !std::is_same<Decay<Impl>, Gen>::value>::type>
   Gen(Impl &&impl);
 
   /// Returns a `Shrinkable` generated used the given parameters.

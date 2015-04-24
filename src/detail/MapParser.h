@@ -36,8 +36,8 @@ std::map<std::string, std::string> parseMap(const std::string &str);
 ///
 /// @param map          The map to convert.
 /// @param doubleQuote  Whether to use double quotes or single quotes.
-std::string mapToString(
-    const std::map<std::string, std::string> &map, bool doubleQuote = false);
+std::string mapToString(const std::map<std::string, std::string> &map,
+                        bool doubleQuote = false);
 
 } // namespace detail
 } // namespace rc

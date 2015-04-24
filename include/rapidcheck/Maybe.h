@@ -75,9 +75,8 @@ public:
           &&std::is_nothrow_copy_assignable<T>::value);
 
   Maybe(Maybe &&other) noexcept(std::is_nothrow_move_constructible<T>::value);
-  Maybe &operator=(Maybe &&rhs) noexcept(
-      std::is_nothrow_move_constructible<T>::value
-          &&std::is_nothrow_move_assignable<T>::value);
+  Maybe &operator=(Maybe &&rhs) noexcept(std::is_nothrow_move_constructible<
+      T>::value &&std::is_nothrow_move_assignable<T>::value);
 
   ~Maybe();
 

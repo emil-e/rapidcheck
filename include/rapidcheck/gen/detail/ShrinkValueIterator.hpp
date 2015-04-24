@@ -6,7 +6,8 @@ namespace detail {
 
 template <typename Iterator>
 class ShrinkValueIterator
-    : public std::iterator<std::input_iterator_tag,
+    : public std::iterator<
+          std::input_iterator_tag,
           typename std::iterator_traits<Iterator>::value_type::ValueType,
           std::ptrdiff_t,
           typename std::iterator_traits<Iterator>::value_type::ValueType *,
@@ -40,7 +41,7 @@ private:
 
 template <typename Iterator>
 bool operator!=(const ShrinkValueIterator<Iterator> &lhs,
-    const ShrinkValueIterator<Iterator> &rhs) {
+                const ShrinkValueIterator<Iterator> &rhs) {
   return !(lhs == rhs);
 }
 

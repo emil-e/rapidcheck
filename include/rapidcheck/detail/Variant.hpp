@@ -29,16 +29,16 @@ template <typename T, typename>
 Variant<Type, Types...>::Variant(T &&value) noexcept(
     std::is_nothrow_constructible<Decay<T>, T &&>::value)
     : m_typeIndex(indexOfType<Decay<T>>()) {
-  static_assert(
-      isValidType<Decay<T>>(), "T is not a valid type of this variant");
+  static_assert(isValidType<Decay<T>>(),
+                "T is not a valid type of this variant");
 
   new (&m_storage) Decay<T>(std::forward<T>(value));
 }
 
 template <typename Type, typename... Types>
 template <typename T, typename>
-Variant<Type, Types...> &Variant<Type, Types...>::operator=(
-    const T &value) noexcept {
+Variant<Type, Types...> &Variant<Type, Types...>::
+operator=(const T &value) noexcept {
   static_assert(isValidType<T>(), "T is not a valid type of this variant");
 
   const auto newIndex = indexOfType<T>();
@@ -54,8 +54,8 @@ Variant<Type, Types...> &Variant<Type, Types...>::operator=(
 
 template <typename Type, typename... Types>
 template <typename T, typename>
-Variant<Type, Types...> &Variant<Type, Types...>::operator=(
-    T &&value) noexcept {
+Variant<Type, Types...> &Variant<Type, Types...>::
+operator=(T &&value) noexcept {
   static_assert(isValidType<T>(), "T is not a valid type of this variant");
 
   const auto newIndex = indexOfType<T>();
@@ -97,8 +97,8 @@ bool Variant<Type, Types...>::match(T &value) const {
 template <typename Type, typename... Types>
 template <typename T>
 bool Variant<Type, Types...>::is() const {
-  static_assert(
-      isValidType<Decay<T>>(), "T is not a valid type of this variant");
+  static_assert(isValidType<Decay<T>>(),
+                "T is not a valid type of this variant");
   return m_typeIndex == indexOfType<T>();
 }
 
@@ -197,8 +197,9 @@ void variantCopyAssign(void *to, const void *from) {
 }
 
 template <typename Type, typename... Types>
-void Variant<Type, Types...>::copyAssign(
-    std::size_t index, void *to, const void *from) {
+void Variant<Type, Types...>::copyAssign(std::size_t index,
+                                         void *to,
+                                         const void *from) {
   static void (*const copyAssignFuncs[])(void *, const void *) = {
       &variantCopyAssign<Type>, &variantCopyAssign<Types>...};
 
@@ -211,8 +212,9 @@ void variantMoveAssign(void *to, void *from) {
 }
 
 template <typename Type, typename... Types>
-void Variant<Type, Types...>::moveAssign(
-    std::size_t index, void *to, void *from) {
+void Variant<Type, Types...>::moveAssign(std::size_t index,
+                                         void *to,
+                                         void *from) {
   static void (*const moveAssignFuncs[])(void *, void *) = {
       &variantMoveAssign<Type>, &variantMoveAssign<Types>...};
 
@@ -225,8 +227,9 @@ void variantCopy(void *to, const void *from) {
 }
 
 template <typename Type, typename... Types>
-void Variant<Type, Types...>::copy(
-    std::size_t index, void *to, const void *from) {
+void Variant<Type, Types...>::copy(std::size_t index,
+                                   void *to,
+                                   const void *from) {
   static void (*const copyFuncs[])(void *, const void *) = {
       &variantCopy<Type>, &variantCopy<Types>...};
 
@@ -240,8 +243,8 @@ void variantMove(void *to, void *from) {
 
 template <typename Type, typename... Types>
 void Variant<Type, Types...>::move(std::size_t index, void *to, void *from) {
-  static void (*const moveFuncs[])(void *, void *) = {
-      &variantMove<Type>, &variantMove<Types>...};
+  static void (*const moveFuncs[])(void *, void *) = {&variantMove<Type>,
+                                                      &variantMove<Types>...};
 
   moveFuncs[index](to, from);
 }
@@ -252,10 +255,10 @@ void variantDestroy(void *storage) {
 }
 
 template <typename Type, typename... Types>
-void Variant<Type, Types...>::destroy(
-    std::size_t index, void *storage) noexcept {
-  static void (*const destroyFuncs[])(void *) = {
-      &variantDestroy<Type>, &variantDestroy<Types>...};
+void Variant<Type, Types...>::destroy(std::size_t index,
+                                      void *storage) noexcept {
+  static void (*const destroyFuncs[])(void *) = {&variantDestroy<Type>,
+                                                 &variantDestroy<Types>...};
 
   destroyFuncs[index](storage);
 }
@@ -273,14 +276,14 @@ constexpr bool Variant<Type, Types...>::isValidType() {
 }
 
 template <typename Type, typename... Types>
-bool operator!=(
-    const Variant<Type, Types...> &lhs, const Variant<Type, Types...> &rhs) {
+bool operator!=(const Variant<Type, Types...> &lhs,
+                const Variant<Type, Types...> &rhs) {
   return !(lhs == rhs);
 }
 
 template <typename Type, typename... Types, typename>
-std::ostream &operator<<(
-    std::ostream &os, const Variant<Type, Types...> &value) {
+std::ostream &operator<<(std::ostream &os,
+                         const Variant<Type, Types...> &value) {
   value.printTo(os);
   return os;
 }

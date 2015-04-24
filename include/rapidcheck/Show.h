@@ -27,9 +27,9 @@ std::string toString(const T &value);
 /// @param os          The stream to output to.
 template <typename Collection>
 void showCollection(const std::string &prefix,
-    const std::string &suffix,
-    const Collection &collection,
-    std::ostream &os);
+                    const std::string &suffix,
+                    const Collection &collection,
+                    std::ostream &os);
 
 } // namespace rc
 

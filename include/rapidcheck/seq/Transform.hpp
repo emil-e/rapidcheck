@@ -148,7 +148,8 @@ public:
       , m_seqs(std::move(seqs)...) {}
 
   Maybe<U> operator()() {
-    return rc::detail::applyTuple(m_seqs,
+    return rc::detail::applyTuple(
+        m_seqs,
         [this](Seq<Ts> &... seqs) { return mapMaybes(seqs.next()...); });
   }
 
@@ -292,15 +293,15 @@ Seq<T> takeWhile(Seq<T> seq, Predicate &&pred) {
 }
 
 template <typename T, typename Mapper>
-Seq<Decay<typename std::result_of<Mapper(T)>::type>> map(
-    Seq<T> seq, Mapper &&mapper) {
+Seq<Decay<typename std::result_of<Mapper(T)>::type>> map(Seq<T> seq,
+                                                         Mapper &&mapper) {
   return makeSeq<detail::MapSeq<Decay<Mapper>, T>>(
       std::move(seq), std::forward<Mapper>(mapper));
 }
 
 template <typename... Ts, typename Zipper>
-Seq<Decay<typename std::result_of<Zipper(Ts...)>::type>> zipWith(
-    Zipper &&zipper, Seq<Ts>... seqs) {
+Seq<Decay<typename std::result_of<Zipper(Ts...)>::type>>
+zipWith(Zipper &&zipper, Seq<Ts>... seqs) {
   return makeSeq<detail::ZipWithSeq<Decay<Zipper>, Ts...>>(
       std::forward<Zipper>(zipper), std::move(seqs)...);
 }
@@ -322,19 +323,19 @@ Seq<T> concat(Seq<T> seq, Seq<Ts>... seqs) {
 }
 
 template <typename T, typename Mapper>
-Seq<typename std::result_of<Mapper(T)>::type::ValueType> mapcat(
-    Seq<T> seq, Mapper &&mapper) {
+Seq<typename std::result_of<Mapper(T)>::type::ValueType>
+mapcat(Seq<T> seq, Mapper &&mapper) {
   return makeSeq<detail::MapcatSeq<Decay<Mapper>, T>>(
       std::move(seq), std::forward<Mapper>(mapper));
 }
 
 template <typename T, typename Mapper>
-Seq<typename std::result_of<Mapper(T)>::type::ValueType> mapMaybe(
-    Seq<T> seq, Mapper &&mapper) {
+Seq<typename std::result_of<Mapper(T)>::type::ValueType>
+mapMaybe(Seq<T> seq, Mapper &&mapper) {
   using U = typename std::result_of<Mapper(T)>::type::ValueType;
   return seq::map(
       seq::filter(seq::map(std::move(seq), std::forward<Mapper>(mapper)),
-          [](const Maybe<U> &x) { return !!x; }),
+                  [](const Maybe<U> &x) { return !!x; }),
       [](Maybe<U> &&x) { return std::move(*x); });
 }
 
@@ -345,8 +346,8 @@ Seq<T> cycle(Seq<T> seq) {
 
 template <typename T, typename U>
 Seq<T> cast(Seq<U> seq) {
-  return seq::map(
-      std::move(seq), [](U &&x) { return static_cast<T>(std::move(x)); });
+  return seq::map(std::move(seq),
+                  [](U &&x) { return static_cast<T>(std::move(x)); });
 }
 
 } // namespace seq

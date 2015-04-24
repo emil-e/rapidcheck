@@ -55,8 +55,8 @@ inline std::string join(const std::string &sep, const std::string str) {
 /// @param str      The first string.
 /// @param strings  The rest of the strings.
 template <typename... Strings>
-std::string join(
-    const std::string &sep, const std::string &str, Strings... strings) {
+std::string
+join(const std::string &sep, const std::string &str, Strings... strings) {
   return str + sep + join(sep, strings...);
 }
 
@@ -74,7 +74,7 @@ struct TupleTailHelper<TupleT, Type, Types...> {
     constexpr std::size_t tailHead =
         std::tuple_size<TupleT>::value - (sizeof...(Types) + 1);
     return std::tuple_cat(std::make_tuple(std::get<tailHead>(tuple)),
-        TupleTailHelper<TupleT, Types...>::tail(tuple));
+                          TupleTailHelper<TupleT, Types...>::tail(tuple));
   }
 };
 

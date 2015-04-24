@@ -120,8 +120,8 @@ Seq<Container> removeChunks(Container elements) {
 
 template <typename Container, typename Shrink>
 Seq<Container> eachElement(Container elements, Shrink shrink) {
-  return makeSeq<detail::EachElementSeq<Container, Shrink>>(
-      std::move(elements), std::move(shrink));
+  return makeSeq<detail::EachElementSeq<Container, Shrink>>(std::move(elements),
+                                                            std::move(shrink));
 }
 
 template <typename T>
@@ -137,7 +137,7 @@ Seq<T> integral(T value) {
     // Drop the zero from towards and put that before the negation value
     // so we don't have duplicate zeroes
     return seq::concat(seq::just<T>(static_cast<T>(0), static_cast<T>(-value)),
-        seq::drop(1, shrink::towards<T>(value, 0)));
+                       seq::drop(1, shrink::towards<T>(value, 0)));
   }
 
   return shrink::towards<T>(value, 0);
@@ -164,13 +164,13 @@ Seq<bool> boolean(bool value) { return value ? seq::just(false) : Seq<bool>(); }
 
 template <typename T>
 Seq<T> character(T value) {
-  auto shrinks =
-      seq::cast<T>(seq::concat(seq::fromContainer(std::string("abc")),
-          // TODO this seems a bit hacky
-          std::islower(static_cast<char>(value))
-              ? Seq<char>()
-              : seq::just(static_cast<char>(std::tolower(value))),
-          seq::fromContainer(std::string("ABC123 \n"))));
+  auto shrinks = seq::cast<T>(
+      seq::concat(seq::fromContainer(std::string("abc")),
+                  // TODO this seems a bit hacky
+                  std::islower(static_cast<char>(value))
+                      ? Seq<char>()
+                      : seq::just(static_cast<char>(std::tolower(value))),
+                  seq::fromContainer(std::string("ABC123 \n"))));
 
   return seq::takeWhile(std::move(shrinks), [=](T x) { return x != value; });
 }

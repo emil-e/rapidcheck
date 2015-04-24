@@ -49,24 +49,24 @@ private:
 // TODO test _all_ of these?
 
 template <typename Value, typename Shrink>
-Shrinkable<typename std::result_of<Value()>::type> lambda(
-    Value &&value, Shrink &&shrinks) {
+Shrinkable<typename std::result_of<Value()>::type> lambda(Value &&value,
+                                                          Shrink &&shrinks) {
   using Impl = detail::LambdaShrinkable<Decay<Value>, Decay<Shrink>>;
-  return makeShrinkable<Impl>(
-      std::forward<Value>(value), std::forward<Shrink>(shrinks));
+  return makeShrinkable<Impl>(std::forward<Value>(value),
+                              std::forward<Shrink>(shrinks));
 }
 
 template <typename Value>
 Shrinkable<typename std::result_of<Value()>::type> lambda(Value &&value) {
   using T = typename std::result_of<Value()>::type;
-  return shrinkable::lambda(
-      std::forward<Value>(value), fn::constant(Seq<Shrinkable<T>>()));
+  return shrinkable::lambda(std::forward<Value>(value),
+                            fn::constant(Seq<Shrinkable<T>>()));
 }
 
 template <typename T, typename Value, typename>
 Shrinkable<T> just(Value &&value, Seq<Shrinkable<T>> shrinks) {
   return shrinkable::lambda(fn::constant(std::forward<Value>(value)),
-      fn::constant(std::move(shrinks)));
+                            fn::constant(std::move(shrinks)));
 }
 
 template <typename T>
@@ -75,22 +75,24 @@ Shrinkable<Decay<T>> just(T &&value) {
 }
 
 template <typename Value, typename Shrink>
-Shrinkable<typename std::result_of<Value()>::type> shrink(
-    Value &&value, Shrink &&shrinkf) {
+Shrinkable<typename std::result_of<Value()>::type> shrink(Value &&value,
+                                                          Shrink &&shrinkf) {
   using Impl = detail::JustShrinkShrinkable<Decay<Value>, Decay<Shrink>>;
-  return makeShrinkable<Impl>(
-      std::forward<Value>(value), std::forward<Shrink>(shrinkf));
+  return makeShrinkable<Impl>(std::forward<Value>(value),
+                              std::forward<Shrink>(shrinkf));
 }
 
 template <typename T, typename Shrink>
 Shrinkable<Decay<T>> shrinkRecur(T &&value, const Shrink &shrinkf) {
   return shrinkable::shrink(fn::constant(std::forward<T>(value)),
-      [=](Decay<T> &&x) {
-        return seq::map(shrinkf(std::move(x)),
-            [=](Decay<T> &&xshrink) {
-              return shrinkable::shrinkRecur(std::move(xshrink), shrinkf);
-            });
-      });
+                            [=](Decay<T> &&x) {
+                              return seq::map(shrinkf(std::move(x)),
+                                              [=](Decay<T> &&xshrink) {
+                                                return shrinkable::shrinkRecur(
+                                                    std::move(xshrink),
+                                                    shrinkf);
+                                              });
+                            });
 }
 
 } // namespace shrinkable

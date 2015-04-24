@@ -39,8 +39,8 @@ bool operator!=(const SuccessResult &r1, const SuccessResult &r2) {
   return !(r1 == r2);
 }
 
-std::ostream &operator<<(
-    std::ostream &os, const detail::SuccessResult &result) {
+std::ostream &operator<<(std::ostream &os,
+                         const detail::SuccessResult &result) {
   os << "numSuccess=" << result.numSuccess;
   return os;
 }
@@ -56,8 +56,8 @@ bool operator!=(const FailureResult &r1, const FailureResult &r2) {
   return !(r1 == r2);
 }
 
-std::ostream &operator<<(
-    std::ostream &os, const detail::FailureResult &result) {
+std::ostream &operator<<(std::ostream &os,
+                         const detail::FailureResult &result) {
   os << "numSuccess=" << result.numSuccess << ", failingCase=<"
      << result.failingCase << ">"
      << ", description='" << result.description << "'"

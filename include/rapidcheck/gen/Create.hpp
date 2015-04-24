@@ -12,8 +12,8 @@ Gen<Decay<T>> just(T &&value) {
 }
 
 template <typename Callable>
-Gen<typename std::result_of<Callable()>::type::ValueType> lazy(
-    Callable &&callable) {
+Gen<typename std::result_of<Callable()>::type::ValueType>
+lazy(Callable &&callable) {
   return
       [=](const Random &random, int size) { return callable()(random, size); };
 }

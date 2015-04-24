@@ -59,8 +59,9 @@ public:
 
 private:
   struct CommandEntry {
-    CommandEntry(
-        Random &&aRandom, Shrinkable<CmdSP> &&aShrinkable, State &&aState)
+    CommandEntry(Random &&aRandom,
+                 Shrinkable<CmdSP> &&aShrinkable,
+                 State &&aState)
         : random(std::move(aRandom))
         , shrinkable(std::move(aShrinkable))
         , postState(std::move(aState)) {}
@@ -131,33 +132,33 @@ private:
     }
   };
 
-  Shrinkable<Commands<Cmd>> generateCommands(
-      const Random &random, int size) const {
+  Shrinkable<Commands<Cmd>> generateCommands(const Random &random,
+                                             int size) const {
     return shrinkable::map(generateSequence(random, size),
-        [](const CommandSequence &sequence) {
-          Commands<Cmd> cmds;
-          const auto &entries = sequence.entries;
-          cmds.commands.reserve(entries.size());
-          std::transform(begin(entries),
-              end(entries),
-              std::back_inserter(cmds.commands),
-              [](const CommandEntry &entry) {
-                return entry.shrinkable.value();
-              });
-          return cmds;
-        });
+                           [](const CommandSequence &sequence) {
+                             Commands<Cmd> cmds;
+                             const auto &entries = sequence.entries;
+                             cmds.commands.reserve(entries.size());
+                             std::transform(begin(entries),
+                                            end(entries),
+                                            std::back_inserter(cmds.commands),
+                                            [](const CommandEntry &entry) {
+                                              return entry.shrinkable.value();
+                                            });
+                             return cmds;
+                           });
   }
 
-  Shrinkable<CommandSequence> generateSequence(
-      const Random &random, int size) const {
+  Shrinkable<CommandSequence> generateSequence(const Random &random,
+                                               int size) const {
     Random r(random);
     std::size_t count = (r.split().next() % (size + 1)) + 1;
-    return shrinkable::shrinkRecur(
-        generateInitial(random, size, count), &shrinkSequence);
+    return shrinkable::shrinkRecur(generateInitial(random, size, count),
+                                   &shrinkSequence);
   }
 
-  CommandSequence generateInitial(
-      const Random &random, int size, std::size_t count) const {
+  CommandSequence
+  generateInitial(const Random &random, int size, std::size_t count) const {
     CommandSequence sequence(m_initialState, m_genFunc, size);
     sequence.entries.reserve(count);
 
@@ -171,8 +172,8 @@ private:
     return sequence;
   }
 
-  CommandEntry nextEntry(
-      const Random &random, int size, const State &state) const {
+  CommandEntry
+  nextEntry(const Random &random, int size, const State &state) const {
     using namespace ::rc::detail;
     auto r = random;
     // TODO configurability?
@@ -204,33 +205,35 @@ private:
   static Seq<CommandSequence> shrinkRemoving(const CommandSequence &s) {
     auto nonEmptyRanges = seq::subranges(s.numFixed, s.entries.size());
     return seq::map(std::move(nonEmptyRanges),
-        [=](const std::pair<std::size_t, std::size_t> &r) {
-          auto shrunk = s;
-          shrunk.entries.erase(begin(shrunk.entries) + r.first,
-              begin(shrunk.entries) + r.second);
-          shrunk.repairEntriesFrom(r.first);
-          return shrunk;
-        });
+                    [=](const std::pair<std::size_t, std::size_t> &r) {
+                      auto shrunk = s;
+                      shrunk.entries.erase(begin(shrunk.entries) + r.first,
+                                           begin(shrunk.entries) + r.second);
+                      shrunk.repairEntriesFrom(r.first);
+                      return shrunk;
+                    });
   }
 
   static Seq<CommandSequence> shrinkIndividual(const CommandSequence &s) {
     return seq::mapcat(seq::range(s.numFixed, s.entries.size()),
-        [=](std::size_t i) {
-          const auto &preState = s.stateAt(i);
-          auto valid = seq::filter(s.entries[i].shrinkable.shrinks(),
-              [=](const Shrinkable<CmdSP> &s) {
-                return isValidCommand(*s.value(), preState);
-              });
+                       [=](std::size_t i) {
+                         const auto &preState = s.stateAt(i);
+                         auto valid = seq::filter(
+                             s.entries[i].shrinkable.shrinks(),
+                             [=](const Shrinkable<CmdSP> &s) {
+                               return isValidCommand(*s.value(), preState);
+                             });
 
-          return seq::map(std::move(valid),
-              [=](Shrinkable<CmdSP> &&cmd) {
-                auto shrunk = s;
-                shrunk.entries[i].shrinkable = std::move(cmd);
-                shrunk.numFixed = i;
-                shrunk.repairEntriesFrom(i);
-                return shrunk;
-              });
-        });
+                         return seq::map(std::move(valid),
+                                         [=](Shrinkable<CmdSP> &&cmd) {
+                                           auto shrunk = s;
+                                           shrunk.entries[i].shrinkable =
+                                               std::move(cmd);
+                                           shrunk.numFixed = i;
+                                           shrunk.repairEntriesFrom(i);
+                                           return shrunk;
+                                         });
+                       });
   }
 
   State m_initialState;
@@ -238,22 +241,22 @@ private:
 };
 
 template <typename Cmd,
-    typename =
-        typename std::is_constructible<Cmd, typename Cmd::State &&>::type>
+          typename =
+              typename std::is_constructible<Cmd, typename Cmd::State &&>::type>
 struct CommandMaker;
 
 template <typename Cmd>
 struct CommandMaker<Cmd, std::true_type> {
-  static std::shared_ptr<const typename Cmd::CommandType> make(
-      const typename Cmd::State &state) {
+  static std::shared_ptr<const typename Cmd::CommandType>
+  make(const typename Cmd::State &state) {
     return std::make_shared<Cmd>(state);
   }
 };
 
 template <typename Cmd>
 struct CommandMaker<Cmd, std::false_type> {
-  static std::shared_ptr<const typename Cmd::CommandType> make(
-      const typename Cmd::State &state) {
+  static std::shared_ptr<const typename Cmd::CommandType>
+  make(const typename Cmd::State &state) {
     return std::make_shared<Cmd>();
   }
 };
@@ -263,16 +266,16 @@ struct CommandPicker;
 
 template <typename Cmd>
 struct CommandPicker<Cmd> {
-  static std::shared_ptr<const typename Cmd::CommandType> pick(
-      const typename Cmd::State &state, int n) {
+  static std::shared_ptr<const typename Cmd::CommandType>
+  pick(const typename Cmd::State &state, int n) {
     return CommandMaker<Cmd>::make(state);
   }
 };
 
 template <typename Cmd, typename... Cmds>
 struct CommandPicker<Cmd, Cmds...> {
-  static std::shared_ptr<const typename Cmd::CommandType> pick(
-      const typename Cmd::State &state, int n) {
+  static std::shared_ptr<const typename Cmd::CommandType>
+  pick(const typename Cmd::State &state, int n) {
     return (n == 0) ? CommandMaker<Cmd>::make(state)
                     : CommandPicker<Cmds...>::pick(state, n - 1);
   }
@@ -321,8 +324,8 @@ bool isValidCommand(const Command<State, Sut> &command, const State &s0) {
 }
 
 template <typename Cmd, typename... Cmds>
-Gen<std::shared_ptr<const typename Cmd::CommandType>> anyCommand(
-    const typename Cmd::State &state) {
+Gen<std::shared_ptr<const typename Cmd::CommandType>>
+anyCommand(const typename Cmd::State &state) {
   return [=](const Random &random, int size) {
     auto r = random;
     std::size_t n = r.split().next() % (sizeof...(Cmds) + 1);

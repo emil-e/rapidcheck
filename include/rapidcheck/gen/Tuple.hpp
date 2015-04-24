@@ -68,15 +68,15 @@ public:
 
 private:
   template <std::size_t N>
-  static Seq<std::tuple<Shrinkable<Ts>...>> shrinkComponent(
-      const std::tuple<Shrinkable<Ts>...> &tuple) {
+  static Seq<std::tuple<Shrinkable<Ts>...>>
+  shrinkComponent(const std::tuple<Shrinkable<Ts>...> &tuple) {
     using T = typename std::tuple_element<N, std::tuple<Ts...>>::type;
     return seq::map(std::get<N>(tuple).shrinks(),
-        [=](Shrinkable<T> &&cshrink) {
-          auto shrink(tuple);
-          std::get<N>(shrink) = cshrink;
-          return shrink;
-        });
+                    [=](Shrinkable<T> &&cshrink) {
+                      auto shrink(tuple);
+                      std::get<N>(shrink) = cshrink;
+                      return shrink;
+                    });
   }
 
   std::tuple<Shrinkable<Ts>...> m_shrinkables;
@@ -89,8 +89,8 @@ public:
   explicit TupleGen(Args &&... args)
       : m_gens(std::forward<Args>(args)...) {}
 
-  Shrinkable<std::tuple<Ts...>> operator()(
-      const Random &random, int size) const {
+  Shrinkable<std::tuple<Ts...>> operator()(const Random &random,
+                                           int size) const {
     Random r(random);
     Random randoms[sizeof...(Ts)];
     for (std::size_t i = 0; i < sizeof...(Ts); i++)
@@ -140,10 +140,10 @@ Gen<std::tuple<Ts...>> tuple(Gen<Ts>... gens) {
 template <typename T1, typename T2>
 Gen<std::pair<T1, T2>> pair(Gen<T1> gen1, Gen<T2> gen2) {
   return gen::map(gen::tuple(std::move(gen1), std::move(gen2)),
-      [](std::tuple<T1, T2> &&t) {
-        return std::make_pair(
-            std::move(std::get<0>(t)), std::move(std::get<1>(t)));
-      });
+                  [](std::tuple<T1, T2> &&t) {
+                    return std::make_pair(std::move(std::get<0>(t)),
+                                          std::move(std::get<1>(t)));
+                  });
 }
 
 } // namespace gen

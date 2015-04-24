@@ -11,14 +11,14 @@ bool all(const Shrinkable<T> &shrinkable, Predicate predicate) {
     return false;
 
   return seq::all(shrinkable.shrinks(),
-      [=](const Shrinkable<T> &shrink) {
-        return shrinkable::all(shrink, predicate);
-      });
+                  [=](const Shrinkable<T> &shrink) {
+                    return shrinkable::all(shrink, predicate);
+                  });
 }
 
 template <typename Predicate, typename T>
-std::pair<T, int> findLocalMin(
-    const Shrinkable<T> &shrinkable, Predicate pred) {
+std::pair<T, int> findLocalMin(const Shrinkable<T> &shrinkable,
+                               Predicate pred) {
   std::pair<T, int> result(shrinkable.value(), 0);
   Seq<Shrinkable<T>> shrinks = shrinkable.shrinks();
   Maybe<Shrinkable<T>> shrink;
@@ -37,7 +37,7 @@ std::pair<T, int> findLocalMin(
 template <typename T>
 Seq<T> immediateShrinks(const Shrinkable<T> &shrinkable) {
   return seq::map(shrinkable.shrinks(),
-      [](const Shrinkable<T> &shrink) { return shrink.value(); });
+                  [](const Shrinkable<T> &shrink) { return shrink.value(); });
 }
 
 } // namespace shrinkable

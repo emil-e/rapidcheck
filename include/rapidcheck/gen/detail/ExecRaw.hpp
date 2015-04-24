@@ -9,8 +9,8 @@ namespace gen {
 namespace detail {
 
 template <typename Callable>
-std::pair<rc::detail::ReturnType<Callable>, Recipe> execWithRecipe(
-    Callable callable, Recipe recipe) {
+std::pair<rc::detail::ReturnType<Callable>, Recipe>
+execWithRecipe(Callable callable, Recipe recipe) {
   using namespace rc::detail;
   Recipe resultRecipe(recipe);
   ExecHandler handler(resultRecipe);
@@ -18,16 +18,16 @@ std::pair<rc::detail::ReturnType<Callable>, Recipe> execWithRecipe(
 
   using ArgsTuple = tl::ToTuple<tl::DecayAll<ArgTypes<Callable>>>;
   return std::make_pair(applyTuple(*gen::arbitrary<ArgsTuple>(), callable),
-      std::move(resultRecipe));
+                        std::move(resultRecipe));
 }
 
 template <typename Callable>
 Seq<Shrinkable<std::pair<rc::detail::ReturnType<Callable>, Recipe>>>
 shrinksOfRecipe(Callable callable, Recipe recipe) {
   return seq::map(shrinkRecipe(std::move(recipe)),
-      [=](Recipe &&shrunkRecipe) {
-        return shrinkableWithRecipe(callable, shrunkRecipe);
-      });
+                  [=](Recipe &&shrunkRecipe) {
+                    return shrinkableWithRecipe(callable, shrunkRecipe);
+                  });
 }
 
 template <typename Callable>
@@ -35,14 +35,15 @@ Shrinkable<std::pair<rc::detail::ReturnType<Callable>, Recipe>>
 shrinkableWithRecipe(Callable callable, Recipe recipe) {
   using T = rc::detail::ReturnType<Callable>;
   return shrinkable::shrink([=] { return execWithRecipe(callable, recipe); },
-      [=](std::pair<T, Recipe> &&p) {
-        return shrinksOfRecipe(callable, std::move(p.second));
-      });
+                            [=](std::pair<T, Recipe> &&p) {
+                              return shrinksOfRecipe(callable,
+                                                     std::move(p.second));
+                            });
 }
 
 template <typename Callable>
-Gen<std::pair<rc::detail::ReturnType<Callable>, Recipe>> execRaw(
-    Callable callable) {
+Gen<std::pair<rc::detail::ReturnType<Callable>, Recipe>>
+execRaw(Callable callable) {
   return [=](const Random &random, int size) {
     Recipe recipe;
     recipe.random = random;

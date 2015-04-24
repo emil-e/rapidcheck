@@ -10,8 +10,8 @@ namespace detail {
 
 /// Checks the given property using the given parameters and returns the
 /// results.
-TestResult checkProperty(
-    const Property &property, const TestParams &params = defaultTestParams());
+TestResult checkProperty(const Property &property,
+                         const TestParams &params = defaultTestParams());
 
 /// Overload which first converts the testable to a property.
 template <typename Testable, typename... Args>

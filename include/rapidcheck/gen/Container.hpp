@@ -22,15 +22,15 @@ using ShrinkablePairs = std::vector<Shrinkable<std::pair<K, V>>>;
 template <typename Container, typename T>
 Container toContainer(const Shrinkables<T> &shrinkables) {
   return Container(makeShrinkValueIterator(begin(shrinkables)),
-      makeShrinkValueIterator(end(shrinkables)));
+                   makeShrinkValueIterator(end(shrinkables)));
 }
 
 template <typename T, typename Predicate>
 Shrinkables<T> generateShrinkables(const Random &random,
-    int size,
-    std::size_t count,
-    const Gen<T> &gen,
-    Predicate predicate) {
+                                   int size,
+                                   std::size_t count,
+                                   const Gen<T> &gen,
+                                   Predicate predicate) {
   Random r(random);
   Shrinkables<T> shrinkables;
   shrinkables.reserve(count);
@@ -52,8 +52,10 @@ Shrinkables<T> generateShrinkables(const Random &random,
 template <typename Container>
 struct CollectionHelper {
   template <typename T>
-  static Shrinkables<T> generateElements(
-      const Random &random, int size, std::size_t count, const Gen<T> &gen) {
+  static Shrinkables<T> generateElements(const Random &random,
+                                         int size,
+                                         std::size_t count,
+                                         const Gen<T> &gen) {
     return generateShrinkables(random, size, count, gen, fn::constant(true));
   }
 
@@ -65,24 +67,26 @@ struct CollectionHelper {
 };
 
 template <typename Container,
-    bool = IsAssociativeContainer<Container>::value,
-    bool = IsMapContainer<Container>::value>
+          bool = IsAssociativeContainer<Container>::value,
+          bool = IsMapContainer<Container>::value>
 struct ContainerHelper : public CollectionHelper<Container> {};
 
 template <typename Set>
 struct ContainerHelper<Set, true, false> {
   template <typename T>
-  static Shrinkables<T> generateElements(
-      const Random &random, int size, std::size_t count, const Gen<T> &gen) {
+  static Shrinkables<T> generateElements(const Random &random,
+                                         int size,
+                                         std::size_t count,
+                                         const Gen<T> &gen) {
     Set set;
     return generateShrinkables(random,
-        size,
-        count,
-        gen,
-        [&](const Shrinkable<T> &s) {
-          // We want only values that can be inserted
-          return set.insert(s.value()).second;
-        });
+                               size,
+                               count,
+                               gen,
+                               [&](const Shrinkable<T> &s) {
+                                 // We want only values that can be inserted
+                                 return set.insert(s.value()).second;
+                               });
   }
 
   template <typename T>
@@ -91,15 +95,16 @@ struct ContainerHelper<Set, true, false> {
     // because we don't really need to copy it since we don't modify it.
     std::shared_ptr<const Set> set =
         std::make_shared<Set>(toContainer<Set>(shrinkables));
-    return shrink::eachElement(shrinkables,
+    return shrink::eachElement(
+        shrinkables,
         [=](const Shrinkable<T> &s) {
           return seq::filter(s.shrinks(),
-              [=](const Shrinkable<T> &x) {
-                // Here we filter out shrinks that collide with
-                // another value in the set because that would
-                // produce an identical set.
-                return set->find(x.value()) == set->end();
-              });
+                             [=](const Shrinkable<T> &x) {
+                               // Here we filter out shrinks that collide with
+                               // another value in the set because that would
+                               // produce an identical set.
+                               return set->find(x.value()) == set->end();
+                             });
         });
   }
 };
@@ -108,14 +113,15 @@ template <typename Map>
 struct ContainerHelper<Map, true, true> {
   template <typename K, typename V>
   static ShrinkablePairs<K, V> generateElements(const Random &random,
-      int size,
-      std::size_t count,
-      const Gen<K> &keyGen,
-      const Gen<V> &valueGen) {
+                                                int size,
+                                                std::size_t count,
+                                                const Gen<K> &keyGen,
+                                                const Gen<V> &valueGen) {
     Random r(random);
     Map map;
     auto dummyValue = valueGen(Random(), 0);
-    auto keyShrinkables = generateShrinkables(r.split(),
+    auto keyShrinkables = generateShrinkables(
+        r.split(),
         size,
         count,
         keyGen,
@@ -139,15 +145,17 @@ struct ContainerHelper<Map, true, true> {
   }
 
   template <typename K, typename V>
-  static Seq<ShrinkablePairs<K, V>> shrinkElements(
-      const ShrinkablePairs<K, V> &shrinkablePairs) {
+  static Seq<ShrinkablePairs<K, V>>
+  shrinkElements(const ShrinkablePairs<K, V> &shrinkablePairs) {
     // We use a shared_ptr here both because K and V might not be copyable
     // and because we don't really need to copy it since we don't modify it.
     std::shared_ptr<const Map> map =
         std::make_shared<Map>(toContainer<Map>(shrinkablePairs));
-    return shrink::eachElement(shrinkablePairs,
+    return shrink::eachElement(
+        shrinkablePairs,
         [=](const Shrinkable<std::pair<K, V>> &elem) {
-          return seq::filter(elem.shrinks(),
+          return seq::filter(
+              elem.shrinks(),
               [=](const Shrinkable<std::pair<K, V>> &elemShrink) {
                 // Here we filter out values with keys that collide
                 // with other keys of the map. However, if the key
@@ -169,10 +177,10 @@ template <typename MultiMap>
 struct MultiMapHelper : public CollectionHelper<MultiMap> {
   template <typename K, typename V>
   static ShrinkablePairs<K, V> generateElements(const Random &random,
-      int size,
-      std::size_t count,
-      const Gen<K> &keyGen,
-      const Gen<V> &valueGen) {
+                                                int size,
+                                                std::size_t count,
+                                                const Gen<K> &keyGen,
+                                                const Gen<V> &valueGen) {
     // We treat this as a normal collection since we don't need to worry
     // about duplicate keys et.c.
     return CollectionHelper<MultiMap>::generateElements(
@@ -199,8 +207,8 @@ struct ContainerHelper<std::unordered_multimap<Args...>, true, true>
 template <typename Container>
 struct GenerateContainer {
   template <typename... Ts>
-  static Shrinkable<Container> generate(
-      const Random &random, int size, Gen<Ts>... gens) {
+  static Shrinkable<Container>
+  generate(const Random &random, int size, Gen<Ts>... gens) {
     using Helper = ContainerHelper<Container>;
 
     Random r(random);
@@ -208,27 +216,29 @@ struct GenerateContainer {
     auto shrinkables = Helper::generateElements(r, size, count, gens...);
 
     using Elements = decltype(shrinkables);
-    return shrinkable::map(shrinkable::shrinkRecur(std::move(shrinkables),
-                               [](const Elements &elements) {
-                                 return seq::concat(
-                                     shrink::removeChunks(elements),
-                                     Helper::shrinkElements(elements));
-                               }),
+    return shrinkable::map(
+        shrinkable::shrinkRecur(std::move(shrinkables),
+                                [](const Elements &elements) {
+                                  return seq::concat(
+                                      shrink::removeChunks(elements),
+                                      Helper::shrinkElements(elements));
+                                }),
         &toContainer<Container, typename Elements::value_type::ValueType>);
   }
 
   template <typename... Ts>
-  static Shrinkable<Container> generate(
-      std::size_t count, const Random &random, int size, Gen<Ts>... gens) {
+  static Shrinkable<Container>
+  generate(std::size_t count, const Random &random, int size, Gen<Ts>... gens) {
     using Helper = ContainerHelper<Container>;
 
     auto shrinkables = Helper::generateElements(random, size, count, gens...);
 
     using Elements = decltype(shrinkables);
-    return shrinkable::map(shrinkable::shrinkRecur(std::move(shrinkables),
-                               [](const Elements &elements) {
-                                 return Helper::shrinkElements(elements);
-                               }),
+    return shrinkable::map(
+        shrinkable::shrinkRecur(std::move(shrinkables),
+                                [](const Elements &elements) {
+                                  return Helper::shrinkElements(elements);
+                                }),
         &toContainer<Container, typename Elements::value_type::ValueType>);
   }
 };
@@ -238,8 +248,8 @@ struct GenerateContainer<std::array<T, N>> {
   using Array = std::array<T, N>;
 
   template <typename U>
-  static Shrinkable<Array> generate(
-      const Random &random, int size, const Gen<U> &gen) {
+  static Shrinkable<Array>
+  generate(const Random &random, int size, const Gen<U> &gen) {
     return shrinkable::map(
         shrinkable::shrinkRecur(
             generateShrinkables(random, size, N, gen, fn::constant(true)),
@@ -255,8 +265,10 @@ struct GenerateContainer<std::array<T, N>> {
   }
 
   template <typename U>
-  static Shrinkable<Array> generate(
-      std::size_t count, const Random &random, int size, const Gen<U> &gen) {
+  static Shrinkable<Array> generate(std::size_t count,
+                                    const Random &random,
+                                    int size,
+                                    const Gen<U> &gen) {
     if (count != N) {
       throw GenerationFailure(
           "Count must be equal to length of array for std::array");

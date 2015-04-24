@@ -13,8 +13,8 @@ Gen<Decay<T>> just(T &&value);
 /// called lazily on actual generation. This is useful when implementing
 /// recursive generators where a generator must reference itself.
 template <typename Callable>
-Gen<typename std::result_of<Callable()>::type::ValueType> lazy(
-    Callable &&callable);
+Gen<typename std::result_of<Callable()>::type::ValueType>
+lazy(Callable &&callable);
 
 } // namespace gen
 } // namespace rc

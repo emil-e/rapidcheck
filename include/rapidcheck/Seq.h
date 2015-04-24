@@ -33,8 +33,8 @@ class Seq {
   /// Creates a new `Seq` using the implementation class specificed by the
   /// type parameter constructed by forwarding the given arguments.
   template <typename Impl, typename... Args>
-  friend Seq<typename std::result_of<Impl()>::type::ValueType> makeSeq(
-      Args &&... args);
+  friend Seq<typename std::result_of<Impl()>::type::ValueType>
+  makeSeq(Args &&... args);
 
 public:
   /// The type of the values of this `Seq`.
@@ -45,8 +45,8 @@ public:
 
   /// Constructs a `Seq` from the given implementation object.
   template <typename Impl,
-      typename =
-          typename std::enable_if<!std::is_same<Decay<Impl>, Seq>::value>::type>
+            typename = typename std::enable_if<
+                !std::is_same<Decay<Impl>, Seq>::value>::type>
   explicit Seq(Impl &&impl);
 
   /// Returns the next value.

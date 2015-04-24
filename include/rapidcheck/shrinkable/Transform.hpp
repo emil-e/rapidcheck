@@ -22,9 +22,9 @@ public:
   Seq<Shrinkable<U>> shrinks() const {
     auto mapper = m_mapper;
     return seq::map(m_shrinkable.shrinks(),
-        [=](Shrinkable<T> &&shrink) {
-          return shrinkable::map(std::move(shrink), mapper);
-        });
+                    [=](Shrinkable<T> &&shrink) {
+                      return shrinkable::map(std::move(shrink), mapper);
+                    });
   }
 
 private:
@@ -54,18 +54,18 @@ private:
 } // namespace detail
 
 template <typename T, typename Mapper>
-Shrinkable<Decay<typename std::result_of<Mapper(T)>::type>> map(
-    Shrinkable<T> shrinkable, Mapper &&mapper) {
+Shrinkable<Decay<typename std::result_of<Mapper(T)>::type>>
+map(Shrinkable<T> shrinkable, Mapper &&mapper) {
   using Impl = detail::MapShrinkable<T, Decay<Mapper>>;
-  return makeShrinkable<Impl>(
-      std::move(shrinkable), std::forward<Mapper>(mapper));
+  return makeShrinkable<Impl>(std::move(shrinkable),
+                              std::forward<Mapper>(mapper));
 }
 
 template <typename T, typename Mapper>
 Shrinkable<T> mapShrinks(Shrinkable<T> shrinkable, Mapper &&mapper) {
   using Impl = detail::MapShrinksShrinkable<T, Decay<Mapper>>;
-  return makeShrinkable<Impl>(
-      std::move(shrinkable), std::forward<Mapper>(mapper));
+  return makeShrinkable<Impl>(std::move(shrinkable),
+                              std::forward<Mapper>(mapper));
 }
 
 template <typename T, typename Predicate>
@@ -73,29 +73,32 @@ Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate &&pred) {
   if (!pred(shrinkable.value()))
     return Nothing;
 
-  return shrinkable::mapShrinks(std::move(shrinkable),
+  return shrinkable::mapShrinks(
+      std::move(shrinkable),
       [=](Seq<Shrinkable<T>> &&shrinks) {
         return seq::mapMaybe(std::move(shrinks),
-            [=](Shrinkable<T> &&shrink) {
-              return shrinkable::filter(std::move(shrink), pred);
-            });
+                             [=](Shrinkable<T> &&shrink) {
+                               return shrinkable::filter(std::move(shrink),
+                                                         pred);
+                             });
       });
 }
 
 template <typename T1, typename T2>
 Shrinkable<std::pair<T1, T2>> pair(Shrinkable<T1> s1, Shrinkable<T2> s2) {
   return shrinkable::map(
-      shrinkable::shrinkRecur(std::make_pair(s1, s2),
+      shrinkable::shrinkRecur(
+          std::make_pair(s1, s2),
           [](const std::pair<Shrinkable<T1>, Shrinkable<T2>> &p) {
             return seq::concat(
                 seq::map(p.first.shrinks(),
-                    [=](Shrinkable<T1> &&s) {
-                      return std::make_pair(std::move(s), p.second);
-                    }),
+                         [=](Shrinkable<T1> &&s) {
+                           return std::make_pair(std::move(s), p.second);
+                         }),
                 seq::map(p.second.shrinks(),
-                    [=](Shrinkable<T2> &&s) {
-                      return std::make_pair(p.first, std::move(s));
-                    }));
+                         [=](Shrinkable<T2> &&s) {
+                           return std::make_pair(p.first, std::move(s));
+                         }));
           }),
       [](const std::pair<Shrinkable<T1>, Shrinkable<T2>> &p) {
         return std::make_pair(p.first.value(), p.second.value());

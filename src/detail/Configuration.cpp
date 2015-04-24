@@ -34,10 +34,10 @@ namespace {
 // Returns false only on invalid format, not on missing key
 template <typename T, typename Validator>
 void loadParam(const std::map<std::string, std::string> &map,
-    const std::string &key,
-    T &dest,
-    std::string failMsg,
-    const Validator &validate) {
+               const std::string &key,
+               T &dest,
+               std::string failMsg,
+               const Validator &validate) {
   auto it = map.find(key);
   if (it == end(map))
     return;
@@ -52,10 +52,12 @@ void loadParam(const std::map<std::string, std::string> &map,
 
 template <typename Validator>
 bool loadParam(const std::map<std::string, std::string> &map,
-    const std::string &key,
-    std::string &dest,
-    const std::string &failMsg,
-    const Validator &validate = [](const std::string &) { return true; }) {
+               const std::string &key,
+               std::string &dest,
+               const std::string &failMsg,
+               const Validator &validate = [](const std::string &) {
+                 return true;
+               }) {
   auto it = map.find(key);
   if (it != end(map))
     dest = it->second;
@@ -73,46 +75,46 @@ bool anything(const T &) {
 }
 
 Configuration configFromMap(const std::map<std::string, std::string> &map,
-    const Configuration &defaults) {
+                            const Configuration &defaults) {
   Configuration config(defaults);
 
   loadParam(map,
-      "seed",
-      config.seed,
-      "'seed' must be a valid integer",
-      anything<uint64_t>);
+            "seed",
+            config.seed,
+            "'seed' must be a valid integer",
+            anything<uint64_t>);
 
   loadParam(map,
-      "max_success",
-      config.maxSuccess,
-      "'max_success' must be a valid non-negative integer",
-      isNonNegative<int>);
+            "max_success",
+            config.maxSuccess,
+            "'max_success' must be a valid non-negative integer",
+            isNonNegative<int>);
 
   loadParam(map,
-      "max_size",
-      config.maxSize,
-      "'max_size' must be a valid non-negative integer",
-      isNonNegative<int>);
+            "max_size",
+            config.maxSize,
+            "'max_size' must be a valid non-negative integer",
+            isNonNegative<int>);
 
   loadParam(map,
-      "max_discard_ratio",
-      config.maxDiscardRatio,
-      "'max_discard_ratio' must be a valid non-negative integer",
-      isNonNegative<int>);
+            "max_discard_ratio",
+            config.maxDiscardRatio,
+            "'max_discard_ratio' must be a valid non-negative integer",
+            isNonNegative<int>);
 
   return config;
 }
 
 std::map<std::string, std::string> mapFromConfig(const Configuration &config) {
   return {{"seed", std::to_string(config.seed)},
-      {"max_success", std::to_string(config.maxSuccess)},
-      {"max_size", std::to_string(config.maxSize)},
-      {"max_discard_ratio", std::to_string(config.maxDiscardRatio)}};
+          {"max_success", std::to_string(config.maxSuccess)},
+          {"max_size", std::to_string(config.maxSize)},
+          {"max_discard_ratio", std::to_string(config.maxDiscardRatio)}};
 }
 
-std::map<std::string, std::string> mapDifference(
-    const std::map<std::string, std::string> &lhs,
-    const std::map<std::string, std::string> &rhs) {
+std::map<std::string, std::string>
+mapDifference(const std::map<std::string, std::string> &lhs,
+              const std::map<std::string, std::string> &rhs) {
   std::map<std::string, std::string> result;
   for (const auto &pair : lhs) {
     auto it = rhs.find(pair.first);
@@ -125,8 +127,8 @@ std::map<std::string, std::string> mapDifference(
 
 } // namespace
 
-Configuration configFromString(
-    const std::string &str, const Configuration &defaults) {
+Configuration configFromString(const std::string &str,
+                               const Configuration &defaults) {
   try {
     return configFromMap(parseMap(str), defaults);
   } catch (const ParseException &e) {

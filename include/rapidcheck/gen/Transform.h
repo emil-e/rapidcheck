@@ -8,8 +8,8 @@ namespace gen {
 /// Returns a generator based on the given generator but mapped with the given
 /// mapping function.
 template <typename T, typename Mapper>
-Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(
-    Gen<T> gen, Mapper &&mapper);
+Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(Gen<T> gen,
+                                                         Mapper &&mapper);
 
 /// Convenience function which calls `map(Gen<T>, Mapper)` with
 /// `gen::arbitrary<T>`
@@ -51,8 +51,8 @@ Gen<T> noShrink(Gen<T> gen);
 /// Creates a generator by taking a callable which gets passed the current size
 /// and is expected to return a generator.
 template <typename Callable>
-Gen<typename std::result_of<Callable(int)>::type::ValueType> withSize(
-    Callable &&callable);
+Gen<typename std::result_of<Callable(int)>::type::ValueType>
+withSize(Callable &&callable);
 
 } // namespace gen
 } // namespace rc

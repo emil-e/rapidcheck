@@ -40,8 +40,8 @@ private:
 /// Reads a `Configuration` from the given string.
 ///
 /// @param defaults  Defaults for keys that are not specified.
-Configuration configFromString(
-    const std::string &str, const Configuration &defaults = Configuration());
+Configuration configFromString(const std::string &str,
+                               const Configuration &defaults = Configuration());
 
 /// Returns a configuration string from a `Configuration`.
 std::string configToString(const Configuration &config);

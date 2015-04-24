@@ -51,8 +51,8 @@ template <typename Callable, typename ReturnType, typename... Args>
 class PropertyWrapper<Callable, ReturnType(Args...)> {
 public:
   template <typename Arg,
-      typename = typename std::enable_if<
-          !std::is_same<Decay<Arg>, PropertyWrapper>::value>::type>
+            typename = typename std::enable_if<
+                !std::is_same<Decay<Arg>, PropertyWrapper>::value>::type>
   PropertyWrapper(Arg &&callable)
       : m_callable(std::forward<Arg>(callable)) {}
 
@@ -78,8 +78,8 @@ private:
   Callable m_callable;
 };
 
-Gen<CaseDescription> mapToCaseDescription(
-    Gen<std::pair<CaseResult, gen::detail::Recipe>> gen);
+Gen<CaseDescription>
+mapToCaseDescription(Gen<std::pair<CaseResult, gen::detail::Recipe>> gen);
 
 template <typename Callable>
 Property toProperty(Callable &&callable) {

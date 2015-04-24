@@ -44,8 +44,8 @@ public:
   using T = Decay<typename Container::value_type>;
 
   template <typename... Args,
-      typename = typename std::enable_if<
-          std::is_constructible<Container, Args...>::value>::type>
+            typename = typename std::enable_if<
+                std::is_constructible<Container, Args...>::value>::type>
   ContainerSeq(Args &&... args)
       : m_container(std::forward<Args>(args)...)
       , m_iterator(begin(m_container))
@@ -134,8 +134,8 @@ Seq<Decay<T>> just(T &&value, Ts &&... values) {
 }
 
 template <typename Container>
-Seq<Decay<typename Decay<Container>::value_type>> fromContainer(
-    Container &&container) {
+Seq<Decay<typename Decay<Container>::value_type>>
+fromContainer(Container &&container) {
   using ContainerT = Decay<Container>;
   using T = Decay<typename ContainerT::value_type>;
 
@@ -147,8 +147,8 @@ Seq<Decay<typename Decay<Container>::value_type>> fromContainer(
 }
 
 template <typename Iterator>
-Seq<typename std::iterator_traits<Iterator>::value_type> fromIteratorRange(
-    Iterator start, Iterator end) {
+Seq<typename std::iterator_traits<Iterator>::value_type>
+fromIteratorRange(Iterator start, Iterator end) {
   using T = typename std::iterator_traits<Iterator>::value_type;
   return makeSeq<detail::ContainerSeq<std::vector<T>>>(start, end);
 }
@@ -168,22 +168,24 @@ Seq<T> range(T start, T end) {
 }
 
 Seq<std::size_t> index() {
-  return seq::iterate(
-      static_cast<std::size_t>(0), [](std::size_t i) { return i + 1; });
+  return seq::iterate(static_cast<std::size_t>(0),
+                      [](std::size_t i) { return i + 1; });
 }
 
-Seq<std::pair<std::size_t, std::size_t>> subranges(
-    std::size_t start, std::size_t end) {
+Seq<std::pair<std::size_t, std::size_t>> subranges(std::size_t start,
+                                                   std::size_t end) {
   if (start == end)
     return Seq<std::pair<std::size_t, std::size_t>>();
 
   return seq::mapcat(seq::range<std::size_t>(end - start, 0),
-      [=](std::size_t rangeSize) {
-        return seq::map(seq::range<std::size_t>(start, end - rangeSize + 1),
-            [=](std::size_t rangeStart) {
-              return std::make_pair(rangeStart, rangeStart + rangeSize);
-            });
-      });
+                     [=](std::size_t rangeSize) {
+                       return seq::map(
+                           seq::range<std::size_t>(start, end - rangeSize + 1),
+                           [=](std::size_t rangeStart) {
+                             return std::make_pair(rangeStart,
+                                                   rangeStart + rangeSize);
+                           });
+                     });
 }
 
 } // namespace seq

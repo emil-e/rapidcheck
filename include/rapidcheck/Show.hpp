@@ -45,16 +45,16 @@ struct TupleHelper {
 
 template <typename T>
 void showValue(T value,
-    typename std::enable_if<std::is_same<T, bool>::value, std::ostream>::type
-        &os) {
+               typename std::enable_if<std::is_same<T, bool>::value,
+                                       std::ostream>::type &os) {
   os << (value ? "true" : "false");
 }
 
 template <typename T>
 void showValue(T value,
-    typename std::enable_if<(std::is_same<T, char>::value ||
-                                std::is_same<T, unsigned char>::value),
-                   std::ostream>::type &os) {
+               typename std::enable_if<(std::is_same<T, char>::value ||
+                                        std::is_same<T, unsigned char>::value),
+                                       std::ostream>::type &os) {
   os << static_cast<int>(value);
 }
 
@@ -116,40 +116,40 @@ void showValue(const std::list<T, Allocator> &value, std::ostream &os) {
 }
 
 template <typename Key, typename Compare, typename Allocator>
-void showValue(
-    const std::set<Key, Compare, Allocator> &value, std::ostream &os) {
+void showValue(const std::set<Key, Compare, Allocator> &value,
+               std::ostream &os) {
   showCollection("{", "}", value, os);
 }
 
 template <typename Key, typename T, typename Compare, typename Allocator>
-void showValue(
-    const std::map<Key, T, Compare, Allocator> &value, std::ostream &os) {
+void showValue(const std::map<Key, T, Compare, Allocator> &value,
+               std::ostream &os) {
   showCollection("{", "}", value, os);
 }
 
 template <typename Key, typename Compare, typename Allocator>
-void showValue(
-    const std::multiset<Key, Compare, Allocator> &value, std::ostream &os) {
+void showValue(const std::multiset<Key, Compare, Allocator> &value,
+               std::ostream &os) {
   showCollection("{", "}", value, os);
 }
 
 template <typename Key, typename T, typename Compare, typename Allocator>
-void showValue(
-    const std::multimap<Key, T, Compare, Allocator> &value, std::ostream &os) {
+void showValue(const std::multimap<Key, T, Compare, Allocator> &value,
+               std::ostream &os) {
   showCollection("{", "}", value, os);
 }
 
 template <typename Key, typename Hash, typename KeyEqual, typename Allocator>
 void showValue(const std::unordered_set<Key, Hash, KeyEqual, Allocator> &value,
-    std::ostream &os) {
+               std::ostream &os) {
   showCollection("{", "}", value, os);
 }
 
 template <typename Key,
-    typename T,
-    typename Hash,
-    typename KeyEqual,
-    typename Allocator>
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator>
 void showValue(
     const std::unordered_map<Key, T, Hash, KeyEqual, Allocator> &value,
     std::ostream &os) {
@@ -164,10 +164,10 @@ void showValue(
 }
 
 template <typename Key,
-    typename T,
-    typename Hash,
-    typename KeyEqual,
-    typename Allocator>
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator>
 void showValue(
     const std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator> &value,
     std::ostream &os) {
@@ -176,7 +176,7 @@ void showValue(
 
 template <typename CharT, typename Traits, typename Allocator>
 void showValue(const std::basic_string<CharT, Traits, Allocator> &value,
-    std::ostream &os) {
+               std::ostream &os) {
   showCollection("\"", "\"", value, os);
 }
 
@@ -188,12 +188,14 @@ void showValue(const std::array<T, N> &value, std::ostream &os) {
 struct NoShowValue {};
 NoShowValue showValue(...);
 template <typename T>
-using HasShowValue = typename std::integral_constant<bool,
+using HasShowValue = typename std::integral_constant<
+    bool,
     !std::is_same<NoShowValue,
-        decltype(showValue(std::declval<T>(), std::cout))>::value>::type;
+                  decltype(
+                      showValue(std::declval<T>(), std::cout))>::value>::type;
 template <typename T,
-    bool = HasShowValue<T>::value,
-    bool = IsStreamInsertible<T>::value>
+          bool = HasShowValue<T>::value,
+          bool = IsStreamInsertible<T>::value>
 struct ShowDefault {
   static void show(const T &value, std::ostream &os) { os << "<\?\?\?>"; }
 };
@@ -224,9 +226,9 @@ std::string toString(const T &value) {
 
 template <typename Collection>
 void showCollection(const std::string &prefix,
-    const std::string &suffix,
-    const Collection &collection,
-    std::ostream &os) {
+                    const std::string &suffix,
+                    const Collection &collection,
+                    std::ostream &os) {
   os << prefix;
   auto cbegin = begin(collection);
   auto cend = end(collection);

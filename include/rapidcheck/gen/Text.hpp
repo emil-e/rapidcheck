@@ -32,10 +32,11 @@ public:
       str.push_back(value);
     }
 
-    return shrinkable::shrinkRecur(std::move(str),
+    return shrinkable::shrinkRecur(
+        std::move(str),
         [](const String &s) {
           return seq::concat(shrink::removeChunks(s),
-              shrink::eachElement(s, &shrink::character<T>));
+                             shrink::eachElement(s, &shrink::character<T>));
         });
   }
 };

@@ -211,10 +211,10 @@ struct ShowType<std::unordered_set<Key, Hash, KeyEqual, Allocator>> {
 };
 
 template <typename Key,
-    typename T,
-    typename Hash,
-    typename KeyEqual,
-    typename Allocator>
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator>
 struct ShowType<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>> {
   static void showType(std::ostream &os) {
     os << "std::unordered_map<";
@@ -226,10 +226,10 @@ struct ShowType<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>> {
 };
 
 template <typename Key,
-    typename T,
-    typename Hash,
-    typename KeyEqual,
-    typename Allocator>
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator>
 struct ShowType<std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>> {
   static void showType(std::ostream &os) {
     os << "std::unordered_multimap<";

@@ -6,8 +6,8 @@
 namespace rc {
 namespace detail {
 
-ParseException::ParseException(
-    std::string::size_type pos, const std::string &msg)
+ParseException::ParseException(std::string::size_type pos,
+                               const std::string &msg)
     : m_pos(pos)
     , m_msg(msg)
     , m_what("@" + std::to_string(m_pos) + ": " + msg) {}
@@ -140,17 +140,18 @@ std::string maybeQuoteString(const std::string &str, bool doubleQuote) {
     return "\"\"";
 
   bool hasSpecialChar = std::any_of(begin(str),
-      end(str),
-      [](char c) {
-        return std::isspace(c) || isQuote(c) || (c == '=') || (c == '\\');
-      });
+                                    end(str),
+                                    [](char c) {
+                                      return std::isspace(c) || isQuote(c) ||
+                                          (c == '=') || (c == '\\');
+                                    });
 
   char quoteChar = doubleQuote ? '"' : '\'';
   return hasSpecialChar ? quoteString(str, quoteChar) : str;
 }
 
-std::string pairToString(
-    const std::pair<std::string, std::string> &pair, bool doubleQuote) {
+std::string pairToString(const std::pair<std::string, std::string> &pair,
+                         bool doubleQuote) {
   if (pair.second.empty()) {
     return maybeQuoteString(pair.first, doubleQuote);
   } else {
@@ -161,8 +162,8 @@ std::string pairToString(
 
 } // namespace
 
-std::string mapToString(
-    const std::map<std::string, std::string> &map, bool doubleQuote) {
+std::string mapToString(const std::map<std::string, std::string> &map,
+                        bool doubleQuote) {
   std::string str;
   auto it = begin(map);
   if (it == end(map))

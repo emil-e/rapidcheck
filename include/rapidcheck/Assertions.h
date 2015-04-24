@@ -18,7 +18,7 @@
 #define RC__UNCONDITIONAL_RESULT(ResultType, description)                      \
   do {                                                                         \
     throw ::rc::detail::CaseResult(::rc::detail::CaseResult::Type::ResultType, \
-        ::rc::detail::makeDescriptionMessage(                                  \
+                                   ::rc::detail::makeDescriptionMessage(       \
                                        __FILE__, __LINE__, (description)));    \
   } while (false)
 
@@ -47,14 +47,15 @@ namespace rc {
 namespace detail {
 
 /// Creates a message for an assection macro with a description.
-std::string makeDescriptionMessage(
-    const std::string file, int line, const std::string &description);
+std::string makeDescriptionMessage(const std::string file,
+                                   int line,
+                                   const std::string &description);
 
 /// Creates a message for an assertion macro with an expression.
 std::string makeExpressionMessage(const std::string file,
-    int line,
-    const std::string &expression,
-    const std::string &expansion);
+                                  int line,
+                                  const std::string &expression,
+                                  const std::string &expansion);
 
 } // namespace detail
 } // namespace rc

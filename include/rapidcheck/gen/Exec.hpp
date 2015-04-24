@@ -12,7 +12,7 @@ Gen<Decay<rc::detail::ReturnType<Callable>>> exec(Callable &&callable) {
   using T = rc::detail::ReturnType<Callable>;
 
   return gen::map(execRaw(std::forward<Callable>(callable)),
-      [](std::pair<T, Recipe> &&p) { return std::move(p.first); });
+                  [](std::pair<T, Recipe> &&p) { return std::move(p.first); });
 }
 
 } // namespace gen

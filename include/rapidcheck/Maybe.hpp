@@ -116,9 +116,9 @@ Maybe<T>::Maybe(Maybe &&other) noexcept(
 }
 
 template <typename T>
-Maybe<T> &Maybe<T>::operator=(Maybe &&rhs) noexcept(
-    std::is_nothrow_move_constructible<T>::value
-        &&std::is_nothrow_move_assignable<T>::value) {
+Maybe<T> &Maybe<T>::
+operator=(Maybe &&rhs) noexcept(std::is_nothrow_move_constructible<T>::value &&
+                                    std::is_nothrow_move_assignable<T>::value) {
   if (rhs.m_initialized)
     *this = std::move(*rhs);
   else

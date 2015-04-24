@@ -16,13 +16,13 @@ Seq<Decay<T>> just(T &&value, Ts &&... values);
 
 /// Creates a sequence from the given STL-like container.
 template <typename Container>
-Seq<Decay<typename Decay<Container>::value_type>> fromContainer(
-    Container &&container);
+Seq<Decay<typename Decay<Container>::value_type>>
+fromContainer(Container &&container);
 
 /// Creates a sequence from the given iterator range.
 template <typename Iterator>
-Seq<typename std::iterator_traits<Iterator>::value_type> fromIteratorRange(
-    Iterator start, Iterator end);
+Seq<typename std::iterator_traits<Iterator>::value_type>
+fromIteratorRange(Iterator start, Iterator end);
 
 /// Returns an infinite sequence by repeatedly applying the given callable to
 /// the given value, i.e. [x, f(x), f(f(x))...].
@@ -44,8 +44,8 @@ inline Seq<std::size_t> index();
 /// given range from larger to smaller. The largest subrange (the first one)
 /// will be the entire range and the last group of subranges will have length
 /// `1`. If `start == end`, the returned `Seq` will be empty.
-inline Seq<std::pair<std::size_t, std::size_t>> subranges(
-    std::size_t start, std::size_t end);
+inline Seq<std::pair<std::size_t, std::size_t>> subranges(std::size_t start,
+                                                          std::size_t end);
 
 } // namespace seq
 } // namespace rc
