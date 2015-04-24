@@ -11,12 +11,12 @@ namespace {
 // Our test params
 
 struct ParamA {
-  typedef std::string ValueType;
+  using ValueType = std::string;
   static std::string defaultValue() { return "default"; }
 };
 
 struct ParamB {
-  typedef int ValueType;
+  using ValueType = int;
   static int defaultValue() { return 1337; }
 };
 
@@ -30,7 +30,7 @@ struct ImplicitScopeModel {
   std::stack<ParamB::ValueType> bindingsB;
 };
 
-typedef std::stack<ImplicitScopeModel> ImplicitParamModel;
+using ImplicitParamModel = std::stack<ImplicitScopeModel>;
 
 struct ImplicitParamSystem {
   std::stack<ImplicitParam<ParamA>> bindingsA;
@@ -38,8 +38,8 @@ struct ImplicitParamSystem {
   std::stack<ImplicitScope> scopes;
 };
 
-typedef state::Command<ImplicitParamModel, ImplicitParamSystem> ImplicitCommand;
-typedef std::shared_ptr<ImplicitCommand> ImplicitCommandSP;
+using ImplicitCommand = state::Command<ImplicitParamModel, ImplicitParamSystem>;
+using ImplicitCommandSP = std::shared_ptr<ImplicitCommand>;
 
 struct NewScope : public ImplicitCommand {
   ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {

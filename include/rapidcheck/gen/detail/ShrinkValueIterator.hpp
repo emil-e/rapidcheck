@@ -12,7 +12,7 @@ class ShrinkValueIterator
           typename std::iterator_traits<Iterator>::value_type::ValueType *,
           typename std::iterator_traits<Iterator>::value_type::ValueType &&> {
 public:
-  typedef typename std::iterator_traits<Iterator>::value_type::ValueType T;
+  using T = typename std::iterator_traits<Iterator>::value_type::ValueType;
 
   ShrinkValueIterator(Iterator it)
       : m_it(it) {}

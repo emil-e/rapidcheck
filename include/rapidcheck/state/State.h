@@ -11,9 +11,9 @@ namespace state {
 template <typename StateT, typename SutT>
 class Command {
 public:
-  typedef StateT State;
-  typedef SutT Sut;
-  typedef Command<State, Sut> CommandType;
+  using State = StateT;
+  using Sut = SutT;
+  using CommandType = Command<State, Sut>;
 
   /// Returns the state resulting from applying this command to the given
   /// state. Default implementation simply returns the given state.

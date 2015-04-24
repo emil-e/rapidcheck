@@ -41,7 +41,7 @@ private:
 template <typename Container>
 class ContainerSeq {
 public:
-  typedef Decay<typename Container::value_type> T;
+  using T = Decay<typename Container::value_type>;
 
   template <typename... Args,
       typename = typename std::enable_if<
@@ -136,8 +136,8 @@ Seq<Decay<T>> just(T &&value, Ts &&... values) {
 template <typename Container>
 Seq<Decay<typename Decay<Container>::value_type>> fromContainer(
     Container &&container) {
-  typedef Decay<Container> ContainerT;
-  typedef Decay<typename ContainerT::value_type> T;
+  using ContainerT = Decay<Container>;
+  using T = Decay<typename ContainerT::value_type>;
 
   if (container.empty())
     return Seq<T>();
@@ -149,7 +149,7 @@ Seq<Decay<typename Decay<Container>::value_type>> fromContainer(
 template <typename Iterator>
 Seq<typename std::iterator_traits<Iterator>::value_type> fromIteratorRange(
     Iterator start, Iterator end) {
-  typedef typename std::iterator_traits<Iterator>::value_type T;
+  using T = typename std::iterator_traits<Iterator>::value_type;
   return makeSeq<detail::ContainerSeq<std::vector<T>>>(start, end);
 }
 

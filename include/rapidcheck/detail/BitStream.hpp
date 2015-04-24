@@ -27,7 +27,7 @@ T BitStream<Source>::next() {
 template <typename Source>
 template <typename T>
 T BitStream<Source>::next(int nbits) {
-  typedef decltype(m_source.next()) SourceType;
+  using SourceType = decltype(m_source.next());
 
   if (nbits == 0)
     return 0;

@@ -10,7 +10,7 @@ namespace detail {
 template <typename Value, typename Shrink>
 class LambdaShrinkable {
 public:
-  typedef Decay<typename std::result_of<Value()>::type> T;
+  using T = Decay<typename std::result_of<Value()>::type>;
 
   template <typename ValueArg, typename ShrinkArg>
   LambdaShrinkable(ValueArg &&value, ShrinkArg &&shrinks)
@@ -29,7 +29,7 @@ template <typename Value, typename Shrink>
 class JustShrinkShrinkable // Yeah I know, weird name
     {
 public:
-  typedef Decay<typename std::result_of<Value()>::type> T;
+  using T = Decay<typename std::result_of<Value()>::type>;
 
   template <typename ValueArg, typename ShrinkArg>
   JustShrinkShrinkable(ValueArg &&value, ShrinkArg &&shrinks)
@@ -51,14 +51,14 @@ private:
 template <typename Value, typename Shrink>
 Shrinkable<typename std::result_of<Value()>::type> lambda(
     Value &&value, Shrink &&shrinks) {
-  typedef detail::LambdaShrinkable<Decay<Value>, Decay<Shrink>> Impl;
+  using Impl = detail::LambdaShrinkable<Decay<Value>, Decay<Shrink>>;
   return makeShrinkable<Impl>(
       std::forward<Value>(value), std::forward<Shrink>(shrinks));
 }
 
 template <typename Value>
 Shrinkable<typename std::result_of<Value()>::type> lambda(Value &&value) {
-  typedef typename std::result_of<Value()>::type T;
+  using T = typename std::result_of<Value()>::type;
   return shrinkable::lambda(
       std::forward<Value>(value), fn::constant(Seq<Shrinkable<T>>()));
 }
@@ -77,7 +77,7 @@ Shrinkable<Decay<T>> just(T &&value) {
 template <typename Value, typename Shrink>
 Shrinkable<typename std::result_of<Value()>::type> shrink(
     Value &&value, Shrink &&shrinkf) {
-  typedef detail::JustShrinkShrinkable<Decay<Value>, Decay<Shrink>> Impl;
+  using Impl = detail::JustShrinkShrinkable<Decay<Value>, Decay<Shrink>>;
   return makeShrinkable<Impl>(
       std::forward<Value>(value), std::forward<Shrink>(shrinkf));
 }

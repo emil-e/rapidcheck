@@ -144,8 +144,8 @@ namespace std {
 
 template <>
 struct hash<rc::test::GenParams> {
-  typedef rc::test::GenParams argument_type;
-  typedef std::size_t result_type;
+  using argument_type = rc::test::GenParams;
+  using result_type = std::size_t;
 
   std::size_t operator()(const rc::test::GenParams &params) const {
     return std::hash<rc::Random>()(params.random) ^

@@ -115,7 +115,7 @@ private:
 template <typename Mapper, typename T>
 class MapSeq {
 public:
-  typedef Decay<typename std::result_of<Mapper(T)>::type> U;
+  using U = Decay<typename std::result_of<Mapper(T)>::type>;
 
   template <typename MapperArg>
   MapSeq(Seq<T> seq, MapperArg &&mapper)
@@ -140,7 +140,7 @@ private:
 template <typename Zipper, typename... Ts>
 class ZipWithSeq {
 public:
-  typedef Decay<typename std::result_of<Zipper(Ts...)>::type> U;
+  using U = Decay<typename std::result_of<Zipper(Ts...)>::type>;
 
   template <typename ZipperArg>
   ZipWithSeq(ZipperArg &&zipper, Seq<Ts>... seqs)
@@ -233,7 +233,7 @@ private:
 template <typename Mapper, typename T>
 class MapcatSeq {
 public:
-  typedef typename std::result_of<Mapper(T)>::type::ValueType U;
+  using U = typename std::result_of<Mapper(T)>::type::ValueType;
 
   template <typename MapperArg>
   MapcatSeq(Seq<T> seq, MapperArg &&mapper)
@@ -331,7 +331,7 @@ Seq<typename std::result_of<Mapper(T)>::type::ValueType> mapcat(
 template <typename T, typename Mapper>
 Seq<typename std::result_of<Mapper(T)>::type::ValueType> mapMaybe(
     Seq<T> seq, Mapper &&mapper) {
-  typedef typename std::result_of<Mapper(T)>::type::ValueType U;
+  using U = typename std::result_of<Mapper(T)>::type::ValueType;
   return seq::map(
       seq::filter(seq::map(std::move(seq), std::forward<Mapper>(mapper)),
           [](const Maybe<U> &x) { return !!x; }),

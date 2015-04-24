@@ -57,7 +57,7 @@ namespace param {
 
 /// ImplicitParam containing the current configuration.
 struct CurrentConfiguration {
-  typedef Configuration ValueType;
+  using ValueType = Configuration;
   static Configuration defaultValue() { return defaultConfiguration(); }
 };
 

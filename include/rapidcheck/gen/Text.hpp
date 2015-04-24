@@ -15,7 +15,7 @@ class StringGen;
 template <typename T, typename... Args>
 class StringGen<std::basic_string<T, Args...>> {
 public:
-  typedef std::basic_string<T, Args...> String;
+  using String = std::basic_string<T, Args...>;
 
   Shrinkable<String> operator()(const Random &random, int size) const {
     auto stream = rc::detail::bitStreamOf(random);

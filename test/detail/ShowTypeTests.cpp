@@ -90,7 +90,7 @@ TEST_CASE("typeToString") {
     REQUIRE(typeToString<std::set<Foo *>>() == "std::set<FFoo *>");
   }
   SECTION("std::map") {
-    typedef std::map<Foo *, Bar **> MapType;
+    using MapType = std::map<Foo *, Bar **>;
     REQUIRE(typeToString<MapType>() == "std::map<FFoo *, BBar **>");
   }
 
@@ -98,7 +98,7 @@ TEST_CASE("typeToString") {
     REQUIRE(typeToString<std::multiset<Foo *>>() == "std::multiset<FFoo *>");
   }
   SECTION("std::multimap") {
-    typedef std::multimap<Foo *, Bar **> MapType;
+    using MapType = std::multimap<Foo *, Bar **>;
     REQUIRE(typeToString<MapType>() == "std::multimap<FFoo *, BBar **>");
   }
 
@@ -107,7 +107,7 @@ TEST_CASE("typeToString") {
         "std::unordered_set<FFoo *>");
   }
   SECTION("std::unordered_map") {
-    typedef std::unordered_map<Foo *, Bar **> MapType;
+    using MapType = std::unordered_map<Foo *, Bar **>;
     REQUIRE(typeToString<MapType>() == "std::unordered_map<FFoo *, BBar **>");
   }
 
@@ -116,13 +116,13 @@ TEST_CASE("typeToString") {
         "std::unordered_multiset<FFoo *>");
   }
   SECTION("std::unordered_multimap") {
-    typedef std::unordered_multimap<Foo *, Bar **> MapType;
+    using MapType = std::unordered_multimap<Foo *, Bar **>;
     REQUIRE(
         typeToString<MapType>() == "std::unordered_multimap<FFoo *, BBar **>");
   }
 
   SECTION("std::array") {
-    typedef std::array<Bar **, 1337> ArrayType;
+    using ArrayType = std::array<Bar **, 1337>;
     REQUIRE(typeToString<ArrayType>() == "std::array<BBar **, 1337>");
   }
 
@@ -131,15 +131,15 @@ TEST_CASE("typeToString") {
   }
 
   SECTION("std::pair") {
-    typedef std::pair<Foo *, Bar **> PairType;
+    using PairType = std::pair<Foo *, Bar **>;
     REQUIRE(typeToString<PairType>() == "std::pair<FFoo *, BBar **>");
   }
 
   SECTION("std::tuple") {
-    typedef std::tuple<> Tuple0;
-    typedef std::tuple<Foo *> Tuple1;
-    typedef std::tuple<Foo *, Bar **> Tuple2;
-    typedef std::tuple<Foo *, Bar **, const volatile Baz &> Tuple3;
+    using Tuple0 = std::tuple<>;
+    using Tuple1 = std::tuple<Foo *>;
+    using Tuple2 = std::tuple<Foo *, Bar **>;
+    using Tuple3 = std::tuple<Foo *, Bar **, const volatile Baz &>;
     REQUIRE(typeToString<Tuple0>() == "std::tuple<>");
     REQUIRE(typeToString<Tuple1>() == "std::tuple<FFoo *>");
     REQUIRE(typeToString<Tuple2>() == "std::tuple<FFoo *, BBar **>");
@@ -148,7 +148,7 @@ TEST_CASE("typeToString") {
   }
 
   SECTION("std::unique_ptr") {
-    typedef std::unique_ptr<Foo *, Bar> UP2;
+    using UP2 = std::unique_ptr<Foo *, Bar>;
     REQUIRE(
         typeToString<std::unique_ptr<Foo *>>() == "std::unique_ptr<FFoo *>");
     REQUIRE(typeToString<UP2>() == "std::unique_ptr<FFoo *>");

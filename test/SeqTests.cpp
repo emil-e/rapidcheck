@@ -24,7 +24,7 @@ public:
   }
 };
 
-typedef Seq<std::pair<std::string, std::vector<std::string>>> LoggingSeq;
+using LoggingSeq = Seq<std::pair<std::string, std::vector<std::string>>>;
 }
 
 TEST_CASE("Seq") {

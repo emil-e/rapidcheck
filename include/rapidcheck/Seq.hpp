@@ -57,8 +57,8 @@ Seq<T> &Seq<T>::operator=(const Seq &rhs) {
 
 template <typename Impl, typename... Args>
 Seq<typename std::result_of<Impl()>::type::ValueType> makeSeq(Args &&... args) {
-  typedef Seq<typename std::result_of<Impl()>::type::ValueType> SeqT;
-  typedef typename SeqT::template SeqImpl<Impl> ImplT;
+  using SeqT = Seq<typename std::result_of<Impl()>::type::ValueType>;
+  using ImplT = typename SeqT::template SeqImpl<Impl>;
 
   SeqT seq;
   seq.m_impl.reset(new ImplT(std::forward<Args>(args)...));

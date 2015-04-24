@@ -13,7 +13,7 @@ struct CaseDescription {
 
 inline std::ostream &operator<<(std::ostream &os, const CaseDescription &desc);
 
-typedef Gen<CaseDescription> Property;
+using Property = Gen<CaseDescription>;
 
 /// Takes a callable and converts it into a generator of a `CaseResult` and a
 /// counterexample. That is, a `Property`.

@@ -25,7 +25,7 @@ class Shrinkable {
 
 public:
   /// The type of the value in this `Shrinkable`.
-  typedef T ValueType;
+  using ValueType = T;
 
   /// Returns the value.
   T value() const;

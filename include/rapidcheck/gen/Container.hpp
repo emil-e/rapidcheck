@@ -235,7 +235,7 @@ struct GenerateContainer {
 
 template <typename T, std::size_t N>
 struct GenerateContainer<std::array<T, N>> {
-  typedef std::array<T, N> Array;
+  using Array = std::array<T, N>;
 
   template <typename U>
   static Shrinkable<Array> generate(

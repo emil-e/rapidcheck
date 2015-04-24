@@ -15,7 +15,7 @@ namespace detail {
 /// number which describes the number of value that have already by exhaustively
 /// shrunk. It also includes the `Random` generator to use and the size.
 struct Recipe {
-  typedef std::vector<Shrinkable<rc::detail::Any>> Ingredients;
+  using Ingredients = std::vector<Shrinkable<rc::detail::Any>>;
 
   Random random;
   int size = 0;

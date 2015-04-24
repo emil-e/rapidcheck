@@ -18,10 +18,10 @@ using namespace rc::state::detail;
 
 namespace {
 
-typedef std::vector<std::string> StringVec;
-typedef Command<StringVec, StringVec> StringVecCmd;
-typedef std::shared_ptr<const StringVecCmd> StringVecCmdSP;
-typedef Commands<StringVecCmd> StringVecCmdsN;
+using StringVec = std::vector<std::string>;
+using StringVecCmd = Command<StringVec, StringVec>;
+using StringVecCmdSP = std::shared_ptr<const StringVecCmd>;
+using StringVecCmdsN = Commands<StringVecCmd>;
 
 struct PushBack : public StringVecCmd {
   PushBack()
@@ -223,10 +223,10 @@ std::set<Random> collectRandoms(const StringVecCmdsN &cmds) {
   return randoms;
 }
 
-typedef std::vector<int> IntVec;
-typedef Command<IntVec, IntVec> IntVecCmd;
-typedef std::shared_ptr<const IntVecCmd> IntVecCmdSP;
-typedef Commands<IntVecCmd> IntVecCmds;
+using IntVec = std::vector<int>;
+using IntVecCmd = Command<IntVec, IntVec>;
+using IntVecCmdSP = std::shared_ptr<const IntVecCmd>;
+using IntVecCmds = Commands<IntVecCmd>;
 
 struct CountCmd : public IntVecCmd {
   CountCmd(int x)
@@ -416,12 +416,12 @@ TEST_CASE("show(Command)") {
 }
 
 TEST_CASE("typeToString<Command<...>>") {
-  typedef Command<Foo, Bar> CommandT;
+  using CommandT = Command<Foo, Bar>;
   REQUIRE(typeToString<CommandT>() == "Command<FFoo, BBar>");
 }
 
 TEST_CASE("typeToString<Commands<...>>") {
-  typedef Commands<Foo> CommandsT;
+  using CommandsT = Commands<Foo>;
   REQUIRE(typeToString<CommandsT>() == "Commands<FFoo>");
 }
 

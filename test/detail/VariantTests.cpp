@@ -34,11 +34,11 @@ bool operator!=(const X<N> &x1, const X<N> &x2) {
   return x1.value != x2.value;
 }
 
-typedef X<5> A;
-typedef X<10> B;
-typedef X<15> C;
+using A = X<5>;
+using B = X<10>;
+using C = X<15>;
 
-typedef Variant<Logger, ThrowOnCopy, A, B, C> ABC;
+using ABC = Variant<Logger, ThrowOnCopy, A, B, C>;
 
 } // namespace
 
@@ -310,7 +310,7 @@ TEST_CASE("Variant") {
       REQUIRE(ABC(B("a")) != ABC(A("a")));
 
       // Not even if types are normally equatable
-      typedef Variant<Apple, Orange> Orapple;
+      using Orapple = Variant<Apple, Orange>;
       REQUIRE_FALSE(Orapple(Apple("foo")) == Orapple(Orange("foo")));
       REQUIRE_FALSE(Orapple(Orange("foo")) == Orapple(Apple("foo")));
       REQUIRE(Orapple(Apple("foo")) != Orapple(Orange("foo")));

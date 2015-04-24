@@ -50,9 +50,9 @@ public:
 private:
   RC_DISABLE_COPY(ImplicitScope)
 
-  typedef void (*Destructor)();
-  typedef std::vector<Destructor> Destructors;
-  typedef std::stack<Destructors, std::vector<Destructors>> ScopeStack;
+  using Destructor = void (*)();
+  using Destructors = std::vector<Destructor>;
+  using ScopeStack = std::stack<Destructors, std::vector<Destructors>>;
   static ScopeStack m_scopes;
 };
 
@@ -62,21 +62,21 @@ private:
 /// are the whole point of this system.
 ///
 /// To create a new implicit parameter, you need to create a struct which
-/// describes the parameter. The struct should have a typedef for the type of
+/// describes the parameter. The struct should have a type alias for the type of
 /// the values it contains named `ValueType` and also a static function named
 /// `defaultValue` which returns the default binding value of the parameter.
 ///
 /// Example:
 ///     struct MyStringParam
 ///     {
-///         typedef std::string ValueType;
+///         using ValueType = std::string;
 ///         static std::string defaultValue() { return "default!"; }
 ///     };
 template <typename Param>
 class ImplicitParam {
 public:
   /// The type of the values of this `ImplicitParam`.
-  typedef typename Param::ValueType ValueType;
+  using ValueType = typename Param::ValueType;
 
   /// Establishes a binding for `Param`.
   ///
@@ -93,8 +93,8 @@ private:
 
   void init();
 
-  typedef std::pair<ValueType, ImplicitScope::ScopeStack::size_type> Binding;
-  typedef std::stack<Binding, std::vector<Binding>> StackT;
+  using Binding = std::pair<ValueType, ImplicitScope::ScopeStack::size_type>;
+  using StackT = std::stack<Binding, std::vector<Binding>>;
   static StackT m_stack;
 };
 

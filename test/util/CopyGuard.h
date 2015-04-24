@@ -51,8 +51,8 @@ namespace std {
 
 template <>
 struct hash<rc::test::CopyGuard> {
-  typedef rc::test::CopyGuard argument_type;
-  typedef std::size_t value_type;
+  using argument_type = rc::test::CopyGuard;
+  using value_type = std::size_t;
 
   value_type operator()(const rc::test::CopyGuard &value) const {
     return std::hash<int>()(value.value);

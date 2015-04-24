@@ -38,7 +38,7 @@ class Seq {
 
 public:
   /// The type of the values of this `Seq`.
-  typedef T ValueType;
+  using ValueType = T;
 
   /// Constructs an empty `Seq` that has no values.
   Seq() = default;

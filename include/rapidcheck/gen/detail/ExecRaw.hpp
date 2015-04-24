@@ -33,7 +33,7 @@ shrinksOfRecipe(Callable callable, Recipe recipe) {
 template <typename Callable>
 Shrinkable<std::pair<rc::detail::ReturnType<Callable>, Recipe>>
 shrinkableWithRecipe(Callable callable, Recipe recipe) {
-  typedef rc::detail::ReturnType<Callable> T;
+  using T = rc::detail::ReturnType<Callable>;
   return shrinkable::shrink([=] { return execWithRecipe(callable, recipe); },
       [=](std::pair<T, Recipe> &&p) {
         return shrinksOfRecipe(callable, std::move(p.second));

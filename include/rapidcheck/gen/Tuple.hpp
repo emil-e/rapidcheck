@@ -20,8 +20,8 @@ class TupleShrinkSeq;
 template <std::size_t I, typename... Ts, std::size_t... Indexes>
 class TupleShrinkSeq<I, rc::detail::IndexSequence<Indexes...>, Ts...> {
 public:
-  typedef std::tuple<Ts...> Tuple;
-  typedef typename std::tuple_element<I, Tuple>::type T;
+  using Tuple = std::tuple<Ts...>;
+  using T = typename std::tuple_element<I, Tuple>::type;
 
   template <typename... Args>
   explicit TupleShrinkSeq(Args &&... args)
@@ -70,7 +70,7 @@ private:
   template <std::size_t N>
   static Seq<std::tuple<Shrinkable<Ts>...>> shrinkComponent(
       const std::tuple<Shrinkable<Ts>...> &tuple) {
-    typedef typename std::tuple_element<N, std::tuple<Ts...>>::type T;
+    using T = typename std::tuple_element<N, std::tuple<Ts...>>::type;
     return seq::map(std::get<N>(tuple).shrinks(),
         [=](Shrinkable<T> &&cshrink) {
           auto shrink(tuple);

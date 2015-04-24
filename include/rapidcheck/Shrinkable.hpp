@@ -90,9 +90,9 @@ Shrinkable<T>::~Shrinkable() noexcept {
 template <typename Impl, typename... Args>
 Shrinkable<Decay<decltype(std::declval<Impl>().value())>> makeShrinkable(
     Args &&... args) {
-  typedef decltype(std::declval<Impl>().value()) T;
-  typedef typename Shrinkable<T>::IShrinkableImpl IShrinkableImpl;
-  typedef typename Shrinkable<T>::template ShrinkableImpl<Impl> ShrinkableImpl;
+  using T = decltype(std::declval<Impl>().value());
+  using IShrinkableImpl = typename Shrinkable<T>::IShrinkableImpl;
+  using ShrinkableImpl = typename Shrinkable<T>::template ShrinkableImpl<Impl>;
 
   Shrinkable<T> shrinkable;
   shrinkable.m_impl = new ShrinkableImpl(std::forward<Args>(args)...);

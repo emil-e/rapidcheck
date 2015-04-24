@@ -18,7 +18,7 @@ template <typename T>
 class Maybe {
 public:
   /// The type of value contained in this `Maybe`.
-  typedef T ValueType;
+  using ValueType = T;
 
   /// Constructs a new empty `Maybe`.
   Maybe() noexcept;
@@ -82,7 +82,7 @@ public:
   ~Maybe();
 
 private:
-  typedef typename std::aligned_storage<sizeof(T), alignof(T)>::type Storage;
+  using Storage = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
   Storage m_storage;
   bool m_initialized;
 };

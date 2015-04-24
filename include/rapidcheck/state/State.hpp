@@ -11,9 +11,9 @@ namespace detail {
 template <typename Cmd>
 struct Commands : public Command<typename Cmd::State, typename Cmd::Sut> {
 public:
-  typedef std::shared_ptr<const Cmd> CmdSP;
-  typedef typename Cmd::State State;
-  typedef typename Cmd::Sut Sut;
+  using CmdSP = std::shared_ptr<const Cmd>;
+  using State = typename Cmd::State;
+  using Sut = typename Cmd::Sut;
 
   State nextState(const State &state) const override {
     State currentState = state;
@@ -44,9 +44,9 @@ public:
 template <typename Cmd, typename GenFunc>
 class CommandsGen {
 public:
-  typedef std::shared_ptr<const Cmd> CmdSP;
-  typedef typename Cmd::State State;
-  typedef typename Cmd::Sut Sut;
+  using CmdSP = std::shared_ptr<const Cmd>;
+  using State = typename Cmd::State;
+  using Sut = typename Cmd::Sut;
 
   template <typename StateArg, typename GenFuncArg>
   CommandsGen(StateArg &&initialState, GenFuncArg &&genFunc)

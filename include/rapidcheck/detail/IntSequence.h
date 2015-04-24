@@ -16,15 +16,17 @@ struct MakeIntSequenceImpl;
 
 template <typename IntSequenceT>
 struct MakeIntSequenceImpl<IntSequenceT, 0, void> {
-  typedef IntSequenceT Sequence;
+  using Sequence =  IntSequenceT;
 };
 
 template <typename IntT, IntT... Ints, std::size_t N>
 struct MakeIntSequenceImpl<IntSequence<IntT, Ints...>,
     N,
     typename std::enable_if<N != 0>::type> {
-  typedef typename MakeIntSequenceImpl<IntSequence<IntT, N - 1, Ints...>,
-      N - 1>::Sequence Sequence;
+
+  using Sequence =
+      typename MakeIntSequenceImpl<IntSequence<IntT, N - 1, Ints...>,
+          N - 1>::Sequence;
 };
 
 /// Creates an `IntSequence` from 0 to N exclusive.

@@ -9,7 +9,7 @@ namespace gen {
 template <typename Callable>
 Gen<Decay<rc::detail::ReturnType<Callable>>> exec(Callable &&callable) {
   using namespace detail;
-  typedef rc::detail::ReturnType<Callable> T;
+  using T = rc::detail::ReturnType<Callable>;
 
   return gen::map(execRaw(std::forward<Callable>(callable)),
       [](std::pair<T, Recipe> &&p) { return std::move(p.first); });

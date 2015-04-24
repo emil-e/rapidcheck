@@ -7,7 +7,7 @@
 namespace rc {
 namespace detail {
 
-typedef std::vector<std::pair<std::string, std::string>> Example;
+using Example = std::vector<std::pair<std::string, std::string>>;
 
 /// Describes a particular test case.
 struct TestCase {
@@ -86,7 +86,7 @@ bool operator==(const GaveUpResult &r1, const GaveUpResult &r2);
 bool operator!=(const GaveUpResult &r1, const GaveUpResult &r2);
 
 /// Describes the circumstances around the result of a test.
-typedef Variant<SuccessResult, FailureResult, GaveUpResult> TestResult;
+using TestResult = Variant<SuccessResult, FailureResult, GaveUpResult>;
 
 /// Prints a human readable error message describing the given success result to
 /// the specified stream.

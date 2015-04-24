@@ -14,7 +14,7 @@ struct ToTupleImpl;
 
 template <typename... Types>
 struct ToTupleImpl<TypeList<Types...>> {
-  typedef std::tuple<Types...> Type;
+  using Type = std::tuple<Types...>;
 };
 
 /// Turns a `TypeList` into am `std::tuple`.
@@ -26,7 +26,7 @@ struct DecayAllImpl;
 
 template <typename... Types>
 struct DecayAllImpl<TypeList<Types...>> {
-  typedef TypeList<typename std::decay<Types>::type...> Type;
+  using Type = TypeList<typename std::decay<Types>::type...>;
 };
 
 /// Decays all the types in a `TypeList`.

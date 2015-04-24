@@ -12,7 +12,7 @@ namespace detail {
 template <typename T>
 class TowardsSeq {
 public:
-  typedef typename std::make_unsigned<T>::type UInt;
+  using UInt = typename std::make_unsigned<T>::type;
 
   TowardsSeq(T value, T target)
       : m_value(value)
@@ -72,8 +72,8 @@ private:
 template <typename Container, typename Shrink>
 class EachElementSeq {
 public:
-  typedef typename std::result_of<Shrink(
-      typename Container::value_type)>::type::ValueType T;
+  using T = typename std::result_of<Shrink(
+      typename Container::value_type)>::type::ValueType;
 
   template <typename ContainerArg, typename ShrinkArg>
   explicit EachElementSeq(ContainerArg &&elements, ShrinkArg &&shrink)

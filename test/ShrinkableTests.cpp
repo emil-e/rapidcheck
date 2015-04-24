@@ -43,7 +43,7 @@ makeMockShrinkable(ValueCallable value, ShrinksCallable shrinks) {
 
 class LoggingShrinkableImpl : public Logger {
 public:
-  typedef std::pair<std::string, std::vector<std::string>> IdLogPair;
+  using IdLogPair = std::pair<std::string, std::vector<std::string>>;
 
   LoggingShrinkableImpl()
       : Logger() {}
@@ -57,9 +57,10 @@ public:
   }
 };
 
-typedef Shrinkable<std::pair<std::string, std::vector<std::string>>>
-    LoggingShrinkable;
-}
+using LoggingShrinkable =
+    Shrinkable<std::pair<std::string, std::vector<std::string>>>;
+
+} // namespace
 
 TEST_CASE("Shrinkable") {
   SECTION("calls value() of the implementation object") {

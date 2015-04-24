@@ -87,7 +87,7 @@ private:
   static constexpr bool isValidType();
 
   std::size_t m_typeIndex;
-  typedef AlignedUnion<Type, Types...> Storage;
+  using Storage = AlignedUnion<Type, Types...>;
   Storage m_storage;
 };
 
@@ -99,8 +99,7 @@ template <typename Type,
     typename... Types,
     typename = typename std::enable_if<
         AllTrue<IsStreamInsertible<Types>::value...>::value>::type>
-std::ostream &operator<<(
-    std::ostream &os, const Variant<Type, Types...> &value);
+std::ostream &operator<<(std::ostream &os, const Variant<Type, Types...> &value);
 
 } // namespace detail
 } // namespace rc

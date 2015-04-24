@@ -43,8 +43,8 @@ TEST_CASE("execRaw") {
   }
 
   SECTION("shrinks arguments like a tuple") {
-    typedef std::tuple<FixedCountdown<1>, FixedCountdown<2>, FixedCountdown<3>>
-        TupleT;
+    using TupleT =
+        std::tuple<FixedCountdown<1>, FixedCountdown<2>, FixedCountdown<3>>;
 
     const auto execShrinkable = execRaw([](const FixedCountdown<1> &a,
         const FixedCountdown<2> &b,
@@ -182,7 +182,7 @@ TEST_CASE("execRaw") {
   SECTION("the ingredients of the recipe exactly match the generated value") {
     REQUIRE(shrinkable::all(testExecGen<3>()(Random(), 0),
         [](const Shrinkable<std::pair<std::vector<int>, Recipe>> &x) {
-          typedef std::tuple<FixedCountdown<3>> ArgTuple;
+          using ArgTuple = std::tuple<FixedCountdown<3>>;
           const auto pair = x.value();
           const auto recipe = pair.second;
 

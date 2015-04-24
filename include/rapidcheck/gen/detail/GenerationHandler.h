@@ -35,7 +35,7 @@ namespace param {
 
 /// Current GenerationHandler implicit parameter.
 struct CurrentHandler {
-  typedef GenerationHandler *ValueType;
+  using ValueType = GenerationHandler *;
   static GenerationHandler *defaultValue();
 };
 

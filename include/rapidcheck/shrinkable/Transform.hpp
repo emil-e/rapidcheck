@@ -10,7 +10,7 @@ namespace detail {
 template <typename T, typename Mapper>
 class MapShrinkable {
 public:
-  typedef Decay<typename std::result_of<Mapper(T)>::type> U;
+  using U = Decay<typename std::result_of<Mapper(T)>::type>;
 
   template <typename MapperArg>
   MapShrinkable(Shrinkable<T> shrinkable, MapperArg &&mapper)
@@ -56,14 +56,14 @@ private:
 template <typename T, typename Mapper>
 Shrinkable<Decay<typename std::result_of<Mapper(T)>::type>> map(
     Shrinkable<T> shrinkable, Mapper &&mapper) {
-  typedef detail::MapShrinkable<T, Decay<Mapper>> Impl;
+  using Impl = detail::MapShrinkable<T, Decay<Mapper>>;
   return makeShrinkable<Impl>(
       std::move(shrinkable), std::forward<Mapper>(mapper));
 }
 
 template <typename T, typename Mapper>
 Shrinkable<T> mapShrinks(Shrinkable<T> shrinkable, Mapper &&mapper) {
-  typedef detail::MapShrinksShrinkable<T, Decay<Mapper>> Impl;
+  using Impl = detail::MapShrinksShrinkable<T, Decay<Mapper>>;
   return makeShrinkable<Impl>(
       std::move(shrinkable), std::forward<Mapper>(mapper));
 }

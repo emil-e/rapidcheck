@@ -10,18 +10,18 @@ struct MemberFunctionTraitsImpl;
 
 template <typename T, typename Ret, typename... Args>
 struct MemberFunctionTraitsImpl<Ret (T::*)(Args...)> {
-  typedef Ret ReturnType;
-  typedef TypeList<Args...> ArgTypes;
-  typedef Ret FunctionType(Args...);
-  typedef T Target;
+  using ReturnType = Ret;
+  using ArgTypes = TypeList<Args...>;
+  using FunctionType = Ret(Args...);
+  using Target = T;
 };
 
 template <typename T, typename Ret, typename... Args>
 struct MemberFunctionTraitsImpl<Ret (T::*)(Args...) const> {
-  typedef Ret ReturnType;
-  typedef TypeList<Args...> ArgTypes;
-  typedef Ret FunctionType(Args...);
-  typedef T Target;
+  using ReturnType = Ret;
+  using ArgTypes = TypeList<Args...>;
+  using FunctionType = Ret(Args...);
+  using Target = T;
 };
 
 template <typename T>
@@ -32,9 +32,9 @@ struct FunctionTraitsImpl
 
 template <typename Ret, typename... Args>
 struct FunctionTraitsImpl<Ret (*)(Args...)> {
-  typedef Ret ReturnType;
-  typedef TypeList<Args...> ArgTypes;
-  typedef Ret FunctionType(Args...);
+  using ReturnType = Ret;
+  using ArgTypes = TypeList<Args...>;
+  using FunctionType = Ret(Args...);
 };
 
 /// Traits class for capturing various information about a callable object.

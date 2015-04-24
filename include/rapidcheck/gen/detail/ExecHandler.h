@@ -16,7 +16,7 @@ public:
 private:
   Recipe &m_recipe;
   Random m_random;
-  typedef Recipe::Ingredients::iterator Iterator;
+  using Iterator = Recipe::Ingredients::iterator;
   Iterator m_it;
 };
 

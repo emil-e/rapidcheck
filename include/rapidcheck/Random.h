@@ -16,10 +16,10 @@ class Random {
 
 public:
   /// Key type
-  typedef std::array<uint64_t, 4> Key;
+  using Key = std::array<uint64_t, 4>;
 
   /// Type of a generated random number.
-  typedef uint64_t Number;
+  using Number = uint64_t;
 
   /// Constructs a Random engine with a `{0, 0, 0, 0}` key.
   Random();
@@ -39,12 +39,12 @@ public:
   Number next();
 
 private:
-  typedef std::array<uint64_t, 4> Block;
+  using Block = std::array<uint64_t, 4>;
 
-  typedef uint64_t Bits;
+  using Bits = uint64_t;
   static constexpr auto kBits = std::numeric_limits<Bits>::digits;
 
-  typedef uint64_t Counter;
+  using Counter = uint64_t;
   static constexpr auto kCounterMax = std::numeric_limits<Counter>::max();
 
   void append(bool x);
@@ -65,8 +65,8 @@ namespace std {
 
 template <>
 struct hash<rc::Random> {
-  typedef rc::Random argument_type;
-  typedef std::size_t result_type;
+  using argument_type = rc::Random;
+  using result_type = std::size_t;
 
   std::size_t operator()(const rc::Random &r) const {
     return static_cast<std::size_t>(rc::Random(r).next());

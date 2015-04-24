@@ -54,7 +54,7 @@ inline bool operator>=(const Fruit<TagL> &lhs, const Fruit<TagR> &rhs) {
   return lhs.value >= rhs.value;
 }
 
-typedef Fruit<AppleTag> Apple;
-typedef Fruit<OrangeTag> Orange;
+using Apple = Fruit<AppleTag>;
+using Orange = Fruit<OrangeTag>;
 
 } // namespace rc

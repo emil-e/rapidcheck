@@ -69,7 +69,7 @@ void show(const InitTracker<T> &value, std::ostream &os) {
   }
 }
 
-typedef InitTracker<std::string> StringTracker;
+using StringTracker = InitTracker<std::string>;
 
 } // namespace
 

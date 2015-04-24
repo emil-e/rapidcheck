@@ -115,8 +115,8 @@ namespace std {
 
 template <>
 struct hash<rc::Predictable> {
-  typedef rc::Predictable argument_type;
-  typedef std::size_t value_type;
+  using argument_type = rc::Predictable;
+  using value_type = std::size_t;
 
   value_type operator()(const rc::Predictable &value) const {
     return std::hash<int>()(value.value) ^ std::hash<int>()(value.extra);
@@ -125,8 +125,8 @@ struct hash<rc::Predictable> {
 
 template <>
 struct hash<rc::NonCopyable> {
-  typedef rc::NonCopyable argument_type;
-  typedef std::size_t value_type;
+  using argument_type = rc::NonCopyable;
+  using value_type = std::size_t;
 
   value_type operator()(const rc::NonCopyable &value) const {
     return std::hash<rc::Predictable>()(value);

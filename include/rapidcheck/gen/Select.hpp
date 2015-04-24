@@ -7,7 +7,7 @@ namespace detail {
 template <typename Container>
 class ElementOfGen {
 public:
-  typedef typename Container::value_type T;
+  using T = typename Container::value_type;
 
   template <typename Arg>
   ElementOfGen(Arg &&arg)

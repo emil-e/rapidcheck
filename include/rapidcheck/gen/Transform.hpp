@@ -12,7 +12,7 @@ namespace detail {
 template <typename T, typename Mapper>
 class MapGen {
 public:
-  typedef Decay<typename std::result_of<Mapper(T)>::type> U;
+  using U = Decay<typename std::result_of<Mapper(T)>::type>;
 
   template <typename MapperArg>
   MapGen(Gen<T> gen, MapperArg &&mapper)
