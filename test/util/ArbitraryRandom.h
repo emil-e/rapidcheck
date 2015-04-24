@@ -12,17 +12,17 @@ template <>
 struct Arbitrary<Random> {
   static Gen<Random> arbitrary() {
     return gen::map(gen::pair(gen::arbitrary<Random::Key>(),
-                        gen::arbitrary<std::vector<bool>>()),
-        [](const std::pair<Random::Key, std::vector<bool>> &p) {
-          Random random(p.first);
-          for (bool x : p.second) {
-            if (!x)
-              random.split();
-            else
-              random = random.split();
-          }
-          return random;
-        });
+                              gen::arbitrary<std::vector<bool>>()),
+                    [](const std::pair<Random::Key, std::vector<bool>> &p) {
+                      Random random(p.first);
+                      for (bool x : p.second) {
+                        if (!x)
+                          random.split();
+                        else
+                          random = random.split();
+                      }
+                      return random;
+                    });
   }
 };
 

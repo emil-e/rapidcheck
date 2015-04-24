@@ -50,10 +50,11 @@ TEST_CASE("SuccessResult") {
 
   SECTION("printResultMessage") {
     prop("message contains relevant parts of the result",
-        [](const SuccessResult &result) {
-          RC_ASSERT(messageContains(result, "OK"));
-          RC_ASSERT(messageContains(result, std::to_string(result.numSuccess)));
-        });
+         [](const SuccessResult &result) {
+           RC_ASSERT(messageContains(result, "OK"));
+           RC_ASSERT(
+               messageContains(result, std::to_string(result.numSuccess)));
+         });
   }
 }
 
@@ -71,17 +72,18 @@ TEST_CASE("FailureResult") {
 
   SECTION("printResultMessage") {
     prop("message contains relevant parts of result",
-        [](const FailureResult &result) {
-          RC_ASSERT(
-              messageContains(result, std::to_string(result.numSuccess + 1)));
-          RC_ASSERT(messageContains(result, result.description));
-          RC_ASSERT((result.numShrinks == 0) ||
-              messageContains(result, std::to_string(result.numShrinks)));
-          for (const auto &item : result.counterExample) {
-            messageContains(result, item.first);
-            messageContains(result, item.second);
-          }
-        });
+         [](const FailureResult &result) {
+           RC_ASSERT(
+               messageContains(result, std::to_string(result.numSuccess + 1)));
+           RC_ASSERT(messageContains(result, result.description));
+           RC_ASSERT(
+               (result.numShrinks == 0) ||
+               messageContains(result, std::to_string(result.numShrinks)));
+           for (const auto &item : result.counterExample) {
+             messageContains(result, item.first);
+             messageContains(result, item.second);
+           }
+         });
   }
 }
 
@@ -96,9 +98,10 @@ TEST_CASE("GaveUpResult") {
 
   SECTION("printResultMessage") {
     prop("message contains relevant parts of result",
-        [](const GaveUpResult &result) {
-          RC_ASSERT(messageContains(result, std::to_string(result.numSuccess)));
-          RC_ASSERT(messageContains(result, result.description));
-        });
+         [](const GaveUpResult &result) {
+           RC_ASSERT(
+               messageContains(result, std::to_string(result.numSuccess)));
+           RC_ASSERT(messageContains(result, result.description));
+         });
   }
 }

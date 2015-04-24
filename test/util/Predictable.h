@@ -74,12 +74,12 @@ template <>
 struct Arbitrary<Predictable> {
   static Gen<Predictable> arbitrary() {
     return gen::map(gen::arbitrary<int>(),
-        [](int extra) {
-          Predictable predictable;
-          predictable.value = Predictable::predictableValue;
-          predictable.extra = extra;
-          return predictable;
-        });
+                    [](int extra) {
+                      Predictable predictable;
+                      predictable.value = Predictable::predictableValue;
+                      predictable.extra = extra;
+                      return predictable;
+                    });
   }
 };
 
@@ -87,12 +87,12 @@ template <>
 struct Arbitrary<NonCopyable> {
   static Gen<NonCopyable> arbitrary() {
     return gen::map(gen::arbitrary<int>(),
-        [](int extra) {
-          NonCopyable predictable;
-          predictable.value = Predictable::predictableValue;
-          predictable.extra = extra;
-          return predictable;
-        });
+                    [](int extra) {
+                      NonCopyable predictable;
+                      predictable.value = Predictable::predictableValue;
+                      predictable.extra = extra;
+                      return predictable;
+                    });
   }
 };
 
@@ -103,8 +103,8 @@ static inline bool isArbitraryPredictable(const Predictable &value) {
   return value.value == Predictable::predictableValue;
 }
 
-static inline bool isArbitraryPredictable(
-    const std::pair<const Predictable, Predictable> &value) {
+static inline bool
+isArbitraryPredictable(const std::pair<const Predictable, Predictable> &value) {
   return isArbitraryPredictable(value.first) &&
       isArbitraryPredictable(value.second);
 }

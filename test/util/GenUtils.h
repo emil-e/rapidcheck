@@ -70,8 +70,10 @@ std::ostream &operator<<(std::ostream &os, const GenParams &params);
 // Tries to find a value which matches the predicate and then shrink that to the
 // minimum value. Simplified version of what RapidCheck is all about.
 template <typename T, typename Predicate>
-T searchGen(
-    const Random &random, int size, const Gen<T> &gen, Predicate predicate) {
+T searchGen(const Random &random,
+            int size,
+            const Gen<T> &gen,
+            Predicate predicate) {
   Random r(random);
   for (int tries = 0; tries < 100; tries++) {
     const auto shrinkable = gen(r.split(), size);
@@ -126,11 +128,11 @@ template <int N>
 struct Arbitrary<test::FixedCountdown<N>> {
   static Gen<test::FixedCountdown<N>> arbitrary() {
     return gen::map(test::genFixedCountdown(N),
-        [](int x) {
-          test::FixedCountdown<N> countdown;
-          countdown.value = x;
-          return countdown;
-        });
+                    [](int x) {
+                      test::FixedCountdown<N> countdown;
+                      countdown.value = x;
+                      return countdown;
+                    });
   }
 };
 

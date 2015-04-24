@@ -27,30 +27,31 @@ struct MockGenerationHandler : public GenerationHandler {
 TEST_CASE("Gen") {
   SECTION("operator()") {
     prop("passes the arguments to the functor",
-        [](const Random &random, int size) {
-          bool called = false;
-          Random passedRandom;
-          int passedSize;
-          Gen<int> gen([&](const Random &random, int size) {
-            called = true;
-            passedRandom = random;
-            passedSize = size;
-            return shrinkable::just(0);
-          });
+         [](const Random &random, int size) {
+           bool called = false;
+           Random passedRandom;
+           int passedSize;
+           Gen<int> gen([&](const Random &random, int size) {
+             called = true;
+             passedRandom = random;
+             passedSize = size;
+             return shrinkable::just(0);
+           });
 
-          gen(random, size);
-          RC_ASSERT(called);
-          RC_ASSERT(passedRandom == random);
-          RC_ASSERT(passedSize == size);
-        });
+           gen(random, size);
+           RC_ASSERT(called);
+           RC_ASSERT(passedRandom == random);
+           RC_ASSERT(passedSize == size);
+         });
 
     prop("returns the value returned by the functor",
-        [](const Random &random, int size, int x) {
-          Gen<int> gen([=](
-              const Random &random, int size) { return shrinkable::just(x); });
+         [](const Random &random, int size, int x) {
+           Gen<int> gen([=](const Random &random, int size) {
+             return shrinkable::just(x);
+           });
 
-          RC_ASSERT(gen(random, size) == shrinkable::just(x));
-        });
+           RC_ASSERT(gen(random, size) == shrinkable::just(x));
+         });
 
     prop(
         "if exception is thrown in generation function, shrinkable is"
@@ -86,8 +87,9 @@ TEST_CASE("Gen") {
     int x = *gen;
 
     SECTION("passes erased self to onGenerate") {
-      auto result = shrinkable::map(handler.passedGenerator(Random(), 0),
-          [](Any &&any) { return std::move(any.get<int>()); });
+      auto result =
+          shrinkable::map(handler.passedGenerator(Random(), 0),
+                          [](Any &&any) { return std::move(any.get<int>()); });
       REQUIRE(result == shrinkable::just(1337));
       REQUIRE(handler.wasCalled);
     }

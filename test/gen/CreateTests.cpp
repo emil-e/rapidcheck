@@ -11,10 +11,10 @@ using namespace rc::test;
 
 TEST_CASE("gen::just") {
   prop("returns value without shrinks regardless of params",
-      [](const GenParams &params, int value) {
-        RC_ASSERT(gen::just(value)(params.random, params.size) ==
-            shrinkable::just(value));
-      });
+       [](const GenParams &params, int value) {
+         RC_ASSERT(gen::just(value)(params.random, params.size) ==
+                   shrinkable::just(value));
+       });
 }
 
 TEST_CASE("gen::lazy") {
@@ -28,9 +28,9 @@ TEST_CASE("gen::lazy") {
   }
 
   prop("passes parameters unchanged",
-      [](const GenParams &params) {
-        const auto gen = gen::lazy(&genPassedParams);
-        const auto value = gen(params.random, params.size).value();
-        RC_ASSERT(value == params);
-      });
+       [](const GenParams &params) {
+         const auto gen = gen::lazy(&genPassedParams);
+         const auto value = gen(params.random, params.size).value();
+         RC_ASSERT(value == params);
+       });
 }

@@ -20,7 +20,7 @@ template <typename Tag>
 struct Arbitrary<Fruit<Tag>> {
   static Gen<Fruit<Tag>> arbitrary() {
     return gen::map(gen::arbitrary<std::string>(),
-        [](const std::string &s) { return Fruit<Tag>(s.c_str()); });
+                    [](const std::string &s) { return Fruit<Tag>(s.c_str()); });
   }
 };
 

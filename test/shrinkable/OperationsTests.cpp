@@ -10,42 +10,45 @@ using namespace rc;
 
 TEST_CASE("shrinkable::all") {
   prop("returns true if predicate returns true for all",
-      [] {
-        // TODO sized ranged
-        int x = *gen::inRange<int>(1, 5);
-        const auto shrinkable = shrinkable::shrinkRecur(
-            x, [](int x) { return seq::range(x - 1, 0); });
+       [] {
+         // TODO sized ranged
+         int x = *gen::inRange<int>(1, 5);
+         const auto shrinkable = shrinkable::shrinkRecur(
+             x, [](int x) { return seq::range(x - 1, 0); });
 
-        RC_ASSERT(shrinkable::all(shrinkable,
-            [](const Shrinkable<int> &s) { return s.value() != 0; }));
-      });
+         RC_ASSERT(shrinkable::all(
+             shrinkable,
+             [](const Shrinkable<int> &s) { return s.value() != 0; }));
+       });
 
   prop("returns true if predicate returns false for at least one shrinkable",
-      [] {
-        // TODO sized ranged
-        int x = *gen::inRange<int>(0, 5);
-        const auto shrinkable = shrinkable::just(
-            x, seq::map(seq::range(x - 1, -1), &shrinkable::just<int>));
+       [] {
+         // TODO sized ranged
+         int x = *gen::inRange<int>(0, 5);
+         const auto shrinkable = shrinkable::just(
+             x, seq::map(seq::range(x - 1, -1), &shrinkable::just<int>));
 
-        RC_ASSERT(!shrinkable::all(shrinkable,
-                      [](const Shrinkable<int> &s) { return s.value() != 0; }));
-      });
+         RC_ASSERT(!shrinkable::all(shrinkable,
+                                    [](const Shrinkable<int> &s) {
+                                      return s.value() != 0;
+                                    }));
+       });
 }
 
 TEST_CASE("shrinkable::findLocalMin") {
   prop("returns the original value if no value matched predicate",
-      [](int x) {
-        auto result =
-            shrinkable::findLocalMin(shrinkable::just(x), fn::constant(true));
-        RC_ASSERT(result.first == x);
-      });
+       [](int x) {
+         auto result =
+             shrinkable::findLocalMin(shrinkable::just(x), fn::constant(true));
+         RC_ASSERT(result.first == x);
+       });
 
   prop("return zero shrinks if no value matched predicate",
-      [] {
-        auto result =
-            shrinkable::findLocalMin(shrinkable::just(0), fn::constant(true));
-        RC_ASSERT(result.second == 0);
-      });
+       [] {
+         auto result =
+             shrinkable::findLocalMin(shrinkable::just(0), fn::constant(true));
+         RC_ASSERT(result.second == 0);
+       });
 
   prop(
       "searches by descending into the first value of each shrinks Seq that"
@@ -63,15 +66,16 @@ TEST_CASE("shrinkable::findLocalMin") {
               ((back == 0) || (back == expected[x.size() - 1]));
         };
 
-        const auto shrinkable = shrinkable::shrinkRecur(std::vector<int>(),
-            [](const std::vector<int> &vec) {
-              return seq::map(seq::range<int>(100, -1),
-                  [=](int x) {
-                    auto shrink = vec;
-                    shrink.push_back(x);
-                    return shrink;
-                  });
-            });
+        const auto shrinkable =
+            shrinkable::shrinkRecur(std::vector<int>(),
+                                    [](const std::vector<int> &vec) {
+                                      return seq::map(seq::range<int>(100, -1),
+                                                      [=](int x) {
+                                                        auto shrink = vec;
+                                                        shrink.push_back(x);
+                                                        return shrink;
+                                                      });
+                                    });
 
         const auto result = shrinkable::findLocalMin(shrinkable, pred);
         RC_ASSERT(result.first == expected);

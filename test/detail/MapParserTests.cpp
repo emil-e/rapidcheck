@@ -14,16 +14,16 @@ TEST_CASE("parseMap") {
 
   SECTION("parses basic maps") {
     auto map = parseMap("foo=bar baz=1337");
-    std::map<std::string, std::string> expected = {
-        {"foo", "bar"}, {"baz", "1337"}};
+    std::map<std::string, std::string> expected = {{"foo", "bar"},
+                                                   {"baz", "1337"}};
 
     REQUIRE(map == expected);
   }
 
   SECTION("ignores whitespace") {
     auto map = parseMap(" \n  foo =   bar \t  baz =  1337 ");
-    std::map<std::string, std::string> expected = {
-        {"foo", "bar"}, {"baz", "1337"}};
+    std::map<std::string, std::string> expected = {{"foo", "bar"},
+                                                   {"baz", "1337"}};
 
     REQUIRE(map == expected);
   }
@@ -104,10 +104,10 @@ TEST_CASE("parseMap") {
 
 TEST_CASE("mapToString") {
   prop("parseMap(mapToString(x)) == x",
-      [](const std::map<std::string, std::string> &map) {
-        RC_PRE(map.find("") == map.end());
-        RC_ASSERT(parseMap(mapToString(map)) == map);
-      });
+       [](const std::map<std::string, std::string> &map) {
+         RC_PRE(map.find("") == map.end());
+         RC_ASSERT(parseMap(mapToString(map)) == map);
+       });
 
   SECTION("does not quote strings that do not contains special chars") {
     std::map<std::string, std::string> map{{"foobar", "barfoo"}};

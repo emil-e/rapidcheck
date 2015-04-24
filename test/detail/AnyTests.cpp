@@ -123,8 +123,8 @@ TEST_CASE("Any") {
   SECTION("describe") {
     SECTION("returns a pair of the typename and value as strings") {
       std::string str("foobar");
-      std::pair<std::string, std::string> desc(
-          typeToString<decltype(str)>(), toString(str));
+      std::pair<std::string, std::string> desc(typeToString<decltype(str)>(),
+                                               toString(str));
 
       Any any = Any::of(str);
       auto anyDesc(any.describe());

@@ -43,8 +43,8 @@ template <>
 struct Arbitrary<detail::CaseResult::Type> {
   static Gen<detail::CaseResult::Type> arbitrary() {
     return gen::element(detail::CaseResult::Type::Success,
-        detail::CaseResult::Type::Failure,
-        detail::CaseResult::Type::Discard);
+                        detail::CaseResult::Type::Failure,
+                        detail::CaseResult::Type::Discard);
   }
 };
 
@@ -64,11 +64,11 @@ template <>
 struct Arbitrary<detail::SuccessResult> {
   static Gen<detail::SuccessResult> arbitrary() {
     return gen::map(gen::positive<int>(),
-        [](int s) {
-          detail::SuccessResult result;
-          result.numSuccess = s;
-          return result;
-        });
+                    [](int s) {
+                      detail::SuccessResult result;
+                      result.numSuccess = s;
+                      return result;
+                    });
   }
 };
 
@@ -122,10 +122,11 @@ struct Arbitrary<Seq<T>> {
 
 template <typename T>
 inline Shrinkable<Maybe<T>> prependNothing(Shrinkable<Maybe<T>> &&s) {
-  return shrinkable::mapShrinks(std::move(s),
+  return shrinkable::mapShrinks(
+      std::move(s),
       [](Seq<Shrinkable<Maybe<T>>> &&shrinks) {
         return seq::concat(seq::just(shrinkable::just(Maybe<T>())),
-            seq::map(std::move(shrinks), &prependNothing<T>));
+                           seq::map(std::move(shrinks), &prependNothing<T>));
       });
 };
 
@@ -138,8 +139,9 @@ struct Arbitrary<Maybe<T>> {
       if (x == 0)
         return shrinkable::just(Maybe<T>());
 
-      return prependNothing(shrinkable::map(gen::arbitrary<T>()(r, size),
-          [](T &&x) -> Maybe<T> { return std::move(x); }));
+      return prependNothing(
+          shrinkable::map(gen::arbitrary<T>()(r, size),
+                          [](T &&x) -> Maybe<T> { return std::move(x); }));
     };
   }
 };
@@ -149,7 +151,8 @@ struct Arbitrary<Shrinkable<T>> {
   static Gen<Shrinkable<T>> arbitrary() {
     // TODO fapply
     return gen::map(
-        gen::pair(gen::arbitrary<T>(),
+        gen::pair(
+            gen::arbitrary<T>(),
             gen::scale(0.25, gen::lazy(&gen::arbitrary<Seq<Shrinkable<T>>>))),
         [](std::pair<T, Seq<Shrinkable<T>>> &&p) {
           return shrinkable::just(std::move(p.first), std::move(p.second));

@@ -47,15 +47,18 @@ TEST_CASE("execRaw") {
         std::tuple<FixedCountdown<1>, FixedCountdown<2>, FixedCountdown<3>>;
 
     const auto execShrinkable = execRaw([](const FixedCountdown<1> &a,
-        const FixedCountdown<2> &b,
-        const FixedCountdown<3> &c) { return std::make_tuple(a, b, c); })(
-        Random(), 0);
+                                           const FixedCountdown<2> &b,
+                                           const FixedCountdown<3> &c) {
+      return std::make_tuple(a, b, c);
+    })(Random(), 0);
 
-    const auto tupleShrinkable = gen::tuple(gen::arbitrary<FixedCountdown<1>>(),
-        gen::arbitrary<FixedCountdown<2>>(),
-        gen::arbitrary<FixedCountdown<3>>())(Random(), 0);
+    const auto tupleShrinkable =
+        gen::tuple(gen::arbitrary<FixedCountdown<1>>(),
+                   gen::arbitrary<FixedCountdown<2>>(),
+                   gen::arbitrary<FixedCountdown<3>>())(Random(), 0);
 
-    const auto mappedShrinkable = shrinkable::map(execShrinkable,
+    const auto mappedShrinkable = shrinkable::map(
+        execShrinkable,
         [](std::pair<TupleT, Recipe> &&x) { return std::move(x.first); });
 
     REQUIRE(mappedShrinkable == tupleShrinkable);
@@ -115,72 +118,77 @@ TEST_CASE("execRaw") {
       });
 
   prop("passes on the correct size",
-      [] {
-        const auto expectedSize = *gen::nonNegative<int>();
-        const auto n = *gen::inRange<int>(1, 10);
-        const auto shrinkable = execRaw([=](const PassedSize &sz) {
-          *genFixedCountdown(3); // Force some shrinks
-          std::vector<int> sizes;
-          sizes.push_back(sz.value);
-          while (sizes.size() < n)
-            sizes.push_back(*genSize());
-          return sizes;
-        })(Random(), expectedSize);
+       [] {
+         const auto expectedSize = *gen::nonNegative<int>();
+         const auto n = *gen::inRange<int>(1, 10);
+         const auto shrinkable = execRaw([=](const PassedSize &sz) {
+           *genFixedCountdown(3); // Force some shrinks
+           std::vector<int> sizes;
+           sizes.push_back(sz.value);
+           while (sizes.size() < n)
+             sizes.push_back(*genSize());
+           return sizes;
+         })(Random(), expectedSize);
 
-        auto valueShrinkable = shrinkable::map(shrinkable,
-            [](std::pair<std::vector<int>, Recipe> &&x) {
-              return std::move(x.first);
-            });
+         auto valueShrinkable =
+             shrinkable::map(shrinkable,
+                             [](std::pair<std::vector<int>, Recipe> &&x) {
+                               return std::move(x.first);
+                             });
 
-        RC_ASSERT(shrinkable::all(valueShrinkable,
-            [=](const Shrinkable<std::vector<int>> &x) {
-              auto sizes = x.value();
-              return std::all_of(begin(sizes),
-                  end(sizes),
-                  [=](int sz) { return sz == expectedSize; });
-            }));
-      });
+         RC_ASSERT(shrinkable::all(
+             valueShrinkable,
+             [=](const Shrinkable<std::vector<int>> &x) {
+               auto sizes = x.value();
+               return std::all_of(begin(sizes),
+                                  end(sizes),
+                                  [=](int sz) { return sz == expectedSize; });
+             }));
+       });
 
   prop("passed generators are unique",
-      [](const Random &initial) {
-        const auto n = *gen::inRange<int>(1, 10);
-        const auto randoms = execRaw([=](const PassedRandom &rnd) {
-          std::set<Random> randoms;
-          randoms.insert(rnd.value);
-          while (randoms.size() < n)
-            randoms.insert(*genRandom());
-          return randoms;
-        })(initial, 0).value().first;
+       [](const Random &initial) {
+         const auto n = *gen::inRange<int>(1, 10);
+         const auto randoms = execRaw([=](const PassedRandom &rnd) {
+           std::set<Random> randoms;
+           randoms.insert(rnd.value);
+           while (randoms.size() < n)
+             randoms.insert(*genRandom());
+           return randoms;
+         })(initial, 0).value().first;
 
-        RC_ASSERT(randoms.size() == n);
-      });
+         RC_ASSERT(randoms.size() == n);
+       });
 
   prop("passed randoms do not change with shrinking",
-      [](const Random &initial) {
-        const auto n = *gen::inRange<int>(1, 10);
-        const auto shrinkable = execRaw([=](const PassedRandom &rnd) {
-          std::vector<Random> randoms;
-          randoms.push_back(rnd.value);
-          while (randoms.size() < n)
-            randoms.push_back(*genRandom());
-          *genFixedCountdown(3);
-          return randoms;
-        })(initial, 0);
+       [](const Random &initial) {
+         const auto n = *gen::inRange<int>(1, 10);
+         const auto shrinkable = execRaw([=](const PassedRandom &rnd) {
+           std::vector<Random> randoms;
+           randoms.push_back(rnd.value);
+           while (randoms.size() < n)
+             randoms.push_back(*genRandom());
+           *genFixedCountdown(3);
+           return randoms;
+         })(initial, 0);
 
-        const auto valueShrinkable = shrinkable::map(shrinkable,
-            [](std::pair<std::vector<Random>, Recipe> &&x) {
-              return std::move(x.first);
-            });
+         const auto valueShrinkable =
+             shrinkable::map(shrinkable,
+                             [](std::pair<std::vector<Random>, Recipe> &&x) {
+                               return std::move(x.first);
+                             });
 
-        const auto head = valueShrinkable.value();
-        RC_ASSERT(shrinkable::all(valueShrinkable,
-            [=](const Shrinkable<std::vector<Random>> &x) {
-              return x.value() == head;
-            }));
-      });
+         const auto head = valueShrinkable.value();
+         RC_ASSERT(
+             shrinkable::all(valueShrinkable,
+                             [=](const Shrinkable<std::vector<Random>> &x) {
+                               return x.value() == head;
+                             }));
+       });
 
   SECTION("the ingredients of the recipe exactly match the generated value") {
-    REQUIRE(shrinkable::all(testExecGen<3>()(Random(), 0),
+    REQUIRE(shrinkable::all(
+        testExecGen<3>()(Random(), 0),
         [](const Shrinkable<std::pair<std::vector<int>, Recipe>> &x) {
           using ArgTuple = std::tuple<FixedCountdown<3>>;
           const auto pair = x.value();

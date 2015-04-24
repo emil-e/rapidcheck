@@ -56,8 +56,8 @@ TEST_CASE("Seq") {
     LoggingSeq seq(impl);
 
     const auto value = seq.next();
-    std::vector<std::string> expectedLog{
-        "constructed as foobar", "copy constructed"};
+    std::vector<std::string> expectedLog{"constructed as foobar",
+                                         "copy constructed"};
     REQUIRE(value->first == "foobar");
     REQUIRE(value->second == expectedLog);
   }
@@ -66,8 +66,8 @@ TEST_CASE("Seq") {
     LoggingSeq seq(LoggingSeqImpl("foobar"));
     const auto value = seq.next();
 
-    std::vector<std::string> expectedLog{
-        "constructed as foobar", "move constructed"};
+    std::vector<std::string> expectedLog{"constructed as foobar",
+                                         "move constructed"};
     REQUIRE(value->first == "foobar");
     REQUIRE(value->second == expectedLog);
   }
@@ -100,8 +100,8 @@ TEST_CASE("Seq") {
     LoggingSeq moved(std::move(original));
 
     const auto value = moved.next();
-    std::vector<std::string> expectedLog{
-        "constructed as foobar", "move constructed"};
+    std::vector<std::string> expectedLog{"constructed as foobar",
+                                         "move constructed"};
     REQUIRE(value->first == "foobar");
     REQUIRE(value->second == expectedLog);
   }
@@ -112,8 +112,8 @@ TEST_CASE("Seq") {
     moved = std::move(original);
 
     const auto value = moved.next();
-    std::vector<std::string> expectedLog{
-        "constructed as foobar", "move constructed"};
+    std::vector<std::string> expectedLog{"constructed as foobar",
+                                         "move constructed"};
     REQUIRE(value->first == "foobar");
     REQUIRE(value->second == expectedLog);
   }
@@ -143,24 +143,24 @@ TEST_CASE("Seq") {
     }
 
     prop("sequences with different implementation classes can be equal",
-        [](const std::string &a, const std::string &b, const std::string &c) {
-          auto seqJust = seq::just(a, b, c);
-          std::vector<std::string> vec{a, b, c};
-          auto seqContainer = seq::fromContainer(vec);
-          RC_ASSERT(seqJust == seqContainer);
-        });
+         [](const std::string &a, const std::string &b, const std::string &c) {
+           auto seqJust = seq::just(a, b, c);
+           std::vector<std::string> vec{a, b, c};
+           auto seqContainer = seq::fromContainer(vec);
+           RC_ASSERT(seqJust == seqContainer);
+         });
 
     prop("changing a single element leads to inequal sequences",
-        [] {
-          // TODO non-empty generator
-          const auto elements1 = *gen::suchThat<std::vector<std::string>>([](
-              const std::vector<std::string> &x) { return !x.empty(); });
-          auto elements2 = elements1;
-          const auto i = *gen::inRange<std::size_t>(0, elements2.size());
-          elements2[i] = *gen::distinctFrom(elements2[i]);
-          RC_ASSERT(
-              seq::fromContainer(elements1) != seq::fromContainer(elements2));
-        });
+         [] {
+           // TODO non-empty generator
+           const auto elements1 = *gen::suchThat<std::vector<std::string>>([](
+               const std::vector<std::string> &x) { return !x.empty(); });
+           auto elements2 = elements1;
+           const auto i = *gen::inRange<std::size_t>(0, elements2.size());
+           elements2[i] = *gen::distinctFrom(elements2[i]);
+           RC_ASSERT(seq::fromContainer(elements1) !=
+                     seq::fromContainer(elements2));
+         });
   }
 
   SECTION("makeSeq") {

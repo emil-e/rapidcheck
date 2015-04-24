@@ -22,15 +22,15 @@ Gen<Random> genRandom() {
 Gen<int> genCountdown() {
   return [=](const Random &random, int size) {
     int n = Random(random).next() % (size + 1);
-    return shrinkable::shrinkRecur(
-        n, [](int x) { return seq::range(x - 1, -1); });
+    return shrinkable::shrinkRecur(n,
+                                   [](int x) { return seq::range(x - 1, -1); });
   };
 }
 
 Gen<int> genFixedCountdown(int value) {
   return [=](const Random &random, int size) {
-    return shrinkable::shrinkRecur(
-        value, [](int x) { return seq::range(x - 1, -1); });
+    return shrinkable::shrinkRecur(value,
+                                   [](int x) { return seq::range(x - 1, -1); });
   };
 }
 

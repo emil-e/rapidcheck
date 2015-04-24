@@ -28,43 +28,43 @@ TEST_CASE("PropertyWrapper") {
 
   SECTION("if callable returns a bool") {
     SECTION("returns success result for true") {
-      REQUIRE(
-          makeWrapper([] { return true; })().type == CaseResult::Type::Success);
+      REQUIRE(makeWrapper([] { return true; })().type ==
+              CaseResult::Type::Success);
     }
 
     SECTION("returns success result for false") {
       REQUIRE(makeWrapper([] { return false; })().type ==
-          CaseResult::Type::Failure);
+              CaseResult::Type::Failure);
     }
   }
 
   SECTION("returns success for empty strings") {
     REQUIRE(makeWrapper([] { return std::string(); })().type ==
-        CaseResult::Type::Success);
+            CaseResult::Type::Success);
   }
 
   prop("returns failure with the string as message for non-empty strings",
-      [] {
-        // TODO non-empty generator
-        const auto msg = *gen::suchThat<std::string>(
-                             [](const std::string &s) { return !s.empty(); });
-        const auto result = makeWrapper([=] { return msg; })();
-        RC_ASSERT(result.type == CaseResult::Type::Failure);
-        RC_ASSERT(result.description == msg);
-      });
+       [] {
+         // TODO non-empty generator
+         const auto msg = *gen::suchThat<std::string>(
+                              [](const std::string &s) { return !s.empty(); });
+         const auto result = makeWrapper([=] { return msg; })();
+         RC_ASSERT(result.type == CaseResult::Type::Failure);
+         RC_ASSERT(result.description == msg);
+       });
 
   prop("if a CaseResult is thrown, returns that case result",
-      [](const CaseResult &result) {
-        RC_ASSERT(makeWrapper([=] { throw result; })() == result);
-      });
+       [](const CaseResult &result) {
+         RC_ASSERT(makeWrapper([=] { throw result; })() == result);
+       });
 
   prop("returns a discard result if a GenerationFailure is thrown",
-      [](const std::string &msg) {
-        const auto result =
-            makeWrapper([=] { throw GenerationFailure(msg); })();
-        RC_ASSERT(result.type == CaseResult::Type::Discard);
-        RC_ASSERT(result.description == msg);
-      });
+       [](const std::string &msg) {
+         const auto result =
+             makeWrapper([=] { throw GenerationFailure(msg); })();
+         RC_ASSERT(result.type == CaseResult::Type::Discard);
+         RC_ASSERT(result.description == msg);
+       });
 
   prop(
       "returns a failure result with what message if an std::exception is"
@@ -91,15 +91,15 @@ TEST_CASE("PropertyWrapper") {
   }
 
   prop("forwards arguments to callable",
-      [](int a, const std::string &b, NonCopyable c) {
-        const auto expected = std::to_string(a) + b + std::to_string(c.extra);
-        const auto wrapper =
-            makeWrapper([](int a, const std::string &b, NonCopyable c) {
-              return std::to_string(a) + b + std::to_string(c.extra);
-            });
-        const auto result = wrapper(std::move(a), std::move(b), std::move(c));
-        RC_ASSERT(result.description == expected);
-      });
+       [](int a, const std::string &b, NonCopyable c) {
+         const auto expected = std::to_string(a) + b + std::to_string(c.extra);
+         const auto wrapper =
+             makeWrapper([](int a, const std::string &b, NonCopyable c) {
+               return std::to_string(a) + b + std::to_string(c.extra);
+             });
+         const auto result = wrapper(std::move(a), std::move(b), std::move(c));
+         RC_ASSERT(result.description == expected);
+       });
 }
 
 namespace {
@@ -133,29 +133,31 @@ TEST_CASE("toProperty") {
   using ShrinkableResult = Shrinkable<CaseDescription>;
 
   prop("counterexample contains descriptions of picked values",
-      [](const GenParams &params) {
-        const auto n = *gen::inRange<std::size_t>(0, 10);
-        const auto gen = toProperty([=](Fixed<1>, Fixed<2>, Fixed<3>) {
-          for (std::size_t i = 0; i < n; i++)
-            *gen::arbitrary<Fixed<1337>>();
-        });
-        const auto shrinkable = gen(params.random, params.size);
+       [](const GenParams &params) {
+         const auto n = *gen::inRange<std::size_t>(0, 10);
+         const auto gen = toProperty([=](Fixed<1>, Fixed<2>, Fixed<3>) {
+           for (std::size_t i = 0; i < n; i++)
+             *gen::arbitrary<Fixed<1337>>();
+         });
+         const auto shrinkable = gen(params.random, params.size);
 
-        Example expected;
-        expected.reserve(n + 1);
-        using ArgsTuple = std::tuple<Fixed<1>, Fixed<2>, Fixed<3>>;
-        expected.emplace_back(typeToString<ArgsTuple>(),
-            toString(std::make_tuple(Fixed<1>(), Fixed<2>(), Fixed<3>())));
-        expected.insert(end(expected),
-            n,
-            std::make_pair(typeToString<Fixed<1337>>(),
-                            toString(Fixed<1337>())));
+         Example expected;
+         expected.reserve(n + 1);
+         using ArgsTuple = std::tuple<Fixed<1>, Fixed<2>, Fixed<3>>;
+         expected.emplace_back(
+             typeToString<ArgsTuple>(),
+             toString(std::make_tuple(Fixed<1>(), Fixed<2>(), Fixed<3>())));
+         expected.insert(end(expected),
+                         n,
+                         std::make_pair(typeToString<Fixed<1337>>(),
+                                        toString(Fixed<1337>())));
 
-        onAnyPath(shrinkable,
-            [&](const ShrinkableResult &value, const ShrinkableResult &shrink) {
-              RC_ASSERT(value.value().example == expected);
-            });
-      });
+         onAnyPath(shrinkable,
+                   [&](const ShrinkableResult &value,
+                       const ShrinkableResult &shrink) {
+                     RC_ASSERT(value.value().example == expected);
+                   });
+       });
 
   prop(
       "throws in counterexample is replaced with placeholders dscribing the"
@@ -182,32 +184,34 @@ TEST_CASE("toProperty") {
 
         Example expected;
         expected.reserve(n + 1);
-        expected.emplace_back(
-            typeToString<std::tuple<>>(), toString(std::tuple<>{}));
+        expected.emplace_back(typeToString<std::tuple<>>(),
+                              toString(std::tuple<>{}));
         expected.insert(end(expected),
-            n,
-            std::make_pair(typeToString<Fixed<1337>>(),
-                            toString(Fixed<1337>())));
+                        n,
+                        std::make_pair(typeToString<Fixed<1337>>(),
+                                       toString(Fixed<1337>())));
         // TODO better test
         expected[throwIndex + 1] = {"Generation failed", msg};
 
-        onAnyPath(shrinkable,
+        onAnyPath(
+            shrinkable,
             [&](const ShrinkableResult &value, const ShrinkableResult &shrink) {
               RC_ASSERT(value.value().example == expected);
             });
       });
 
   prop("case result corresponds to counter example",
-      [](const GenParams &params) {
-        const auto gen =
-            toProperty([=] { return (*gen::arbitrary<int>() % 2) == 0; });
-        const auto shrinkable = gen(params.random, params.size);
+       [](const GenParams &params) {
+         const auto gen =
+             toProperty([=] { return (*gen::arbitrary<int>() % 2) == 0; });
+         const auto shrinkable = gen(params.random, params.size);
 
-        onAnyPath(shrinkable,
-            [](const ShrinkableResult &value, const ShrinkableResult &shrink) {
-              const auto desc = value.value();
-              RC_ASSERT((desc.result.type == CaseResult::Type::Success) ==
-                  ((std::stoi(desc.example.back().second) % 2) == 0));
-            });
-      });
+         onAnyPath(
+             shrinkable,
+             [](const ShrinkableResult &value, const ShrinkableResult &shrink) {
+               const auto desc = value.value();
+               RC_ASSERT((desc.result.type == CaseResult::Type::Success) ==
+                         ((std::stoi(desc.example.back().second) % 2) == 0));
+             });
+       });
 }

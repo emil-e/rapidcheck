@@ -23,32 +23,34 @@ struct RemoveChunksProperties {
         gen::suchThat(fewValues, [](const T &x) { return !x.empty(); });
 
     templatedProp<T>("first tries empty collection",
-        [] {
-          const auto collection = *fewNonEmptyValues;
-          RC_ASSERT(shrink::removeChunks(collection).next()->empty());
-        });
+                     [] {
+                       const auto collection = *fewNonEmptyValues;
+                       RC_ASSERT(
+                           shrink::removeChunks(collection).next()->empty());
+                     });
 
     templatedProp<T>("successively increases in size for each shrink",
-        [] {
-          const auto seq = shrink::removeChunks(*fewValues);
-          T c;
-          seq::forEach(std::move(seq),
-              [&](T &&next) {
-                RC_ASSERT(next.size() >= c.size());
-                c = std::move(next);
-              });
-        });
+                     [] {
+                       const auto seq = shrink::removeChunks(*fewValues);
+                       T c;
+                       seq::forEach(std::move(seq),
+                                    [&](T &&next) {
+                                      RC_ASSERT(next.size() >= c.size());
+                                      c = std::move(next);
+                                    });
+                     });
 
     templatedProp<T>("shrinks to a subset of the original",
-        [] {
-          const auto elements = *fewValues;
-          const auto seq = shrink::removeChunks(elements);
-          seq::forEach(std::move(seq),
-              [&](T &&c) {
-                auto diff(setDifference<char>(c, elements));
-                RC_ASSERT(diff.size() == 0);
-              });
-        });
+                     [] {
+                       const auto elements = *fewValues;
+                       const auto seq = shrink::removeChunks(elements);
+                       seq::forEach(std::move(seq),
+                                    [&](T &&c) {
+                                      auto diff(
+                                          setDifference<char>(c, elements));
+                                      RC_ASSERT(diff.size() == 0);
+                                    });
+                     });
 
     templatedProp<T>(
         "every removal of consecutive elements is a possible shrink",
@@ -68,7 +70,8 @@ struct RemoveChunksProperties {
           RC_ASSERT(seq::contains(shrink::removeChunks(elements), shrink));
         });
 
-    templatedProp<T>("never yields the original value",
+    templatedProp<T>(
+        "never yields the original value",
         [] {
           auto elements = *fewValues;
           RC_ASSERT(!seq::contains(shrink::removeChunks(elements), elements));
@@ -87,7 +90,8 @@ namespace {
 struct EachElementProperties {
   template <typename T>
   static void exec() {
-    templatedProp<T>("every shrink for every element is tried in order",
+    templatedProp<T>(
+        "every shrink for every element is tried in order",
         [] {
           const auto elements = *gen::container<T>(gen::nonNegative<char>());
           auto seq = shrink::eachElement(
@@ -119,28 +123,31 @@ struct ShrinkTowardsProperties {
   template <typename T>
   static void exec() {
     templatedProp<T>("first tries target immediately",
-        [](T target) {
-          T value = *gen::distinctFrom(target);
-          auto seq = shrink::towards(value, target);
-          auto first = seq.next();
-          RC_ASSERT(first);
-          RC_ASSERT(*first == target);
-        });
+                     [](T target) {
+                       T value = *gen::distinctFrom(target);
+                       auto seq = shrink::towards(value, target);
+                       auto first = seq.next();
+                       RC_ASSERT(first);
+                       RC_ASSERT(*first == target);
+                     });
 
     templatedProp<T>("tries an adjacent value last",
-        [](T target) {
-          T value = *gen::distinctFrom(target);
-          auto seq = shrink::towards(value, target);
-          auto fin = seq::last(seq);
-          RC_ASSERT(fin);
-          T diff = (value > target) ? (value - *fin) : (*fin - value);
-          RC_ASSERT(diff == 1);
-        });
+                     [](T target) {
+                       T value = *gen::distinctFrom(target);
+                       auto seq = shrink::towards(value, target);
+                       auto fin = seq::last(seq);
+                       RC_ASSERT(fin);
+                       T diff =
+                           (value > target) ? (value - *fin) : (*fin - value);
+                       RC_ASSERT(diff == 1);
+                     });
 
-    templatedProp<T>("shrinking towards self yields empty shrink",
+    templatedProp<T>(
+        "shrinking towards self yields empty shrink",
         [](T target) { RC_ASSERT(!shrink::towards(target, target).next()); });
 
-    templatedProp<T>("never contains original value",
+    templatedProp<T>(
+        "never contains original value",
         [](T x, T y) { RC_ASSERT(!seq::contains(shrink::towards(x, y), x)); });
   }
 };
@@ -157,16 +164,17 @@ struct IntegralProperties {
   template <typename T>
   static void exec() {
     templatedProp<T>("always tries zero first",
-        [] {
-          T value = *gen::nonZero<T>();
-          RC_ASSERT(*shrink::integral<T>(value).next() == 0);
-        });
+                     [] {
+                       T value = *gen::nonZero<T>();
+                       RC_ASSERT(*shrink::integral<T>(value).next() == 0);
+                     });
 
     TEMPLATED_SECTION(T, "zero has no shrinks") {
       REQUIRE(!shrink::integral<T>(0).next());
     }
 
-    templatedProp<T>("never contains original value",
+    templatedProp<T>(
+        "never contains original value",
         [](T x) { RC_ASSERT(!seq::contains(shrink::integral<T>(x), x)); });
   }
 };
@@ -174,18 +182,20 @@ struct IntegralProperties {
 struct SignedIntegralProperties {
   template <typename T>
   static void exec() {
-    templatedProp<T>("shrinks negative values to their positive equivalent",
+    templatedProp<T>(
+        "shrinks negative values to their positive equivalent",
         [] {
-          T value = *gen::suchThat(gen::negative<T>(),
+          T value = *gen::suchThat(
+                        gen::negative<T>(),
                         [](T x) { return x > std::numeric_limits<T>::min(); });
           RC_ASSERT(seq::contains<T>(shrink::integral<T>(value), -value));
         });
 
     templatedProp<T>("always tries zero first",
-        [] {
-          T value = *gen::nonZero<T>();
-          RC_ASSERT(*shrink::integral<T>(value).next() == 0);
-        });
+                     [] {
+                       T value = *gen::nonZero<T>();
+                       RC_ASSERT(*shrink::integral<T>(value).next() == 0);
+                     });
 
     TEMPLATED_SECTION(T, "zero has no shrinks") {
       REQUIRE(!shrink::integral<T>(0).next());
@@ -205,7 +215,8 @@ namespace {
 struct RealProperties {
   template <typename T>
   static void exec() {
-    templatedProp<T>("shrinks to nearest integer",
+    templatedProp<T>(
+        "shrinks to nearest integer",
         [] {
           // TODO I'm not super fond of this way of generating
           const auto integer = *gen::arbitrary<int16_t>();
@@ -220,12 +231,13 @@ struct RealProperties {
     }
 
     templatedProp<T>("tries 0.0 first",
-        [] {
-          T value = *gen::nonZero<T>();
-          REQUIRE(*shrink::real<T>(value).next() == 0.0);
-        });
+                     [] {
+                       T value = *gen::nonZero<T>();
+                       REQUIRE(*shrink::real<T>(value).next() == 0.0);
+                     });
 
-    templatedProp<T>("never contains original value",
+    templatedProp<T>(
+        "never contains original value",
         [](T x) { RC_ASSERT(!seq::contains(shrink::real<T>(x), x)); });
   }
 };
@@ -250,19 +262,21 @@ struct CharacterProperties {
   template <typename T>
   static void exec() {
     templatedProp<T>("'a' is the first shrink",
-        [](T x) {
-          RC_PRE(x != 'a');
-          RC_ASSERT(*shrink::character(x).next() == 'a');
-        });
+                     [](T x) {
+                       RC_PRE(x != 'a');
+                       RC_ASSERT(*shrink::character(x).next() == 'a');
+                     });
 
-    templatedProp<T>("if uppercase, contains lowercase",
+    templatedProp<T>(
+        "if uppercase, contains lowercase",
         [] {
           static const std::string letters("ABCDEFGHIJKLMNOPQRSTUVXYZ");
           T x = *gen::elementOf(letters);
           RC_ASSERT(seq::contains<T>(shrink::character(x), std::tolower(x)));
         });
 
-    templatedProp<T>("never contains self",
+    templatedProp<T>(
+        "never contains self",
         [](T x) { RC_ASSERT(!seq::contains(shrink::character(x), x)); });
   }
 };

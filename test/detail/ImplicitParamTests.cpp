@@ -49,7 +49,7 @@ struct NewScope : public ImplicitCommand {
   }
 
   void run(const ImplicitParamModel &s0,
-      ImplicitParamSystem &system) const override {
+           ImplicitParamSystem &system) const override {
     system.scopes.emplace();
     RC_ASSERT(ImplicitParam<ParamA>::value() == ParamA::defaultValue());
     RC_ASSERT(ImplicitParam<ParamB>::value() == ParamB::defaultValue());
@@ -68,7 +68,7 @@ struct BindA : public ImplicitCommand {
   }
 
   void run(const ImplicitParamModel &s0,
-      ImplicitParamSystem &system) const override {
+           ImplicitParamSystem &system) const override {
     system.bindingsA.emplace(value);
     RC_ASSERT(ImplicitParam<ParamA>::value() == value);
   }
@@ -88,7 +88,7 @@ struct BindB : public ImplicitCommand {
   }
 
   void run(const ImplicitParamModel &s0,
-      ImplicitParamSystem &system) const override {
+           ImplicitParamSystem &system) const override {
     system.bindingsB.emplace(value);
     RC_ASSERT(ImplicitParam<ParamB>::value() == value);
   }
@@ -108,7 +108,7 @@ struct ModifyA : public ImplicitCommand {
   }
 
   void run(const ImplicitParamModel &s0,
-      ImplicitParamSystem &system) const override {
+           ImplicitParamSystem &system) const override {
     ImplicitParam<ParamA>::value() = value;
     RC_ASSERT(ImplicitParam<ParamA>::value() == value);
   }
@@ -128,7 +128,7 @@ struct ModifyB : public ImplicitCommand {
   }
 
   void run(const ImplicitParamModel &s0,
-      ImplicitParamSystem &system) const override {
+           ImplicitParamSystem &system) const override {
     ImplicitParam<ParamB>::value() = value;
     RC_ASSERT(ImplicitParam<ParamB>::value() == value);
   }
@@ -147,7 +147,7 @@ struct PopA : public ImplicitCommand {
   }
 
   void run(const ImplicitParamModel &s0,
-      ImplicitParamSystem &system) const override {
+           ImplicitParamSystem &system) const override {
     system.bindingsA.pop();
     auto expected = nextState(s0).top().bindingsA.top();
     RC_ASSERT(ImplicitParam<ParamA>::value() == expected);
@@ -165,7 +165,7 @@ struct PopB : public ImplicitCommand {
   }
 
   void run(const ImplicitParamModel &s0,
-      ImplicitParamSystem &system) const override {
+           ImplicitParamSystem &system) const override {
     system.bindingsB.pop();
     auto expected = nextState(s0).top().bindingsB.top();
     RC_ASSERT(ImplicitParam<ParamB>::value() == expected);
@@ -183,7 +183,7 @@ struct PopScope : public ImplicitCommand {
   }
 
   void run(const ImplicitParamModel &s0,
-      ImplicitParamSystem &system) const override {
+           ImplicitParamSystem &system) const override {
     auto s1(s0);
     while (s1.top().bindingsA.size() > 1) {
       s1.top().bindingsA.pop();
@@ -204,20 +204,20 @@ struct PopScope : public ImplicitCommand {
 
 TEST_CASE("ImplicitParam") {
   prop("stateful test",
-      [] {
-        ImplicitParamModel s0;
-        ImplicitParamSystem sut;
-        state::check(s0,
-            sut,
-            state::anyCommand<NewScope,
-                         BindA,
-                         BindB,
-                         ModifyA,
-                         ModifyB,
-                         PopA,
-                         PopB,
-                         PopScope>);
-      });
+       [] {
+         ImplicitParamModel s0;
+         ImplicitParamSystem sut;
+         state::check(s0,
+                      sut,
+                      state::anyCommand<NewScope,
+                                        BindA,
+                                        BindB,
+                                        ModifyA,
+                                        ModifyB,
+                                        PopA,
+                                        PopB,
+                                        PopScope>);
+       });
 
   SECTION("unit tests") {
     ImplicitScope scope;

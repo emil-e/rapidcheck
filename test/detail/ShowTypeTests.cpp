@@ -49,14 +49,14 @@ TEST_CASE("typeToString") {
   }
 
   SECTION("non-specialized types") {
-    REQUIRE(
-        typeToString<NonspecializedPlain>() == "rc::test::NonspecializedPlain");
+    REQUIRE(typeToString<NonspecializedPlain>() ==
+            "rc::test::NonspecializedPlain");
     REQUIRE(typeToString<NonspecializedTemplate<NonspecializedPlain>>() ==
-        "rc::test::NonspecializedTemplate<rc::test::NonspecializedPlain>");
+            "rc::test::NonspecializedTemplate<rc::test::NonspecializedPlain>");
     REQUIRE(typeToString<NonspecializedPlain *>() ==
-        "rc::test::NonspecializedPlain *");
+            "rc::test::NonspecializedPlain *");
     REQUIRE(typeToString<const NonspecializedPlain *>() ==
-        "const rc::test::NonspecializedPlain *");
+            "const rc::test::NonspecializedPlain *");
   }
 
   SECTION("std::string") {
@@ -80,7 +80,7 @@ TEST_CASE("typeToString") {
   }
   SECTION("std::forward_list") {
     REQUIRE(typeToString<std::forward_list<Foo *>>() ==
-        "std::forward_list<FFoo *>");
+            "std::forward_list<FFoo *>");
   }
   SECTION("std::list") {
     REQUIRE(typeToString<std::list<Foo *>>() == "std::list<FFoo *>");
@@ -104,7 +104,7 @@ TEST_CASE("typeToString") {
 
   SECTION("std::unordered_set") {
     REQUIRE(typeToString<std::unordered_set<Foo *>>() ==
-        "std::unordered_set<FFoo *>");
+            "std::unordered_set<FFoo *>");
   }
   SECTION("std::unordered_map") {
     using MapType = std::unordered_map<Foo *, Bar **>;
@@ -113,12 +113,12 @@ TEST_CASE("typeToString") {
 
   SECTION("std::unordered_multiset") {
     REQUIRE(typeToString<std::unordered_multiset<Foo *>>() ==
-        "std::unordered_multiset<FFoo *>");
+            "std::unordered_multiset<FFoo *>");
   }
   SECTION("std::unordered_multimap") {
     using MapType = std::unordered_multimap<Foo *, Bar **>;
-    REQUIRE(
-        typeToString<MapType>() == "std::unordered_multimap<FFoo *, BBar **>");
+    REQUIRE(typeToString<MapType>() ==
+            "std::unordered_multimap<FFoo *, BBar **>");
   }
 
   SECTION("std::array") {
@@ -144,18 +144,18 @@ TEST_CASE("typeToString") {
     REQUIRE(typeToString<Tuple1>() == "std::tuple<FFoo *>");
     REQUIRE(typeToString<Tuple2>() == "std::tuple<FFoo *, BBar **>");
     REQUIRE(typeToString<Tuple3>() ==
-        "std::tuple<FFoo *, BBar **, const volatile BBaz &>");
+            "std::tuple<FFoo *, BBar **, const volatile BBaz &>");
   }
 
   SECTION("std::unique_ptr") {
     using UP2 = std::unique_ptr<Foo *, Bar>;
-    REQUIRE(
-        typeToString<std::unique_ptr<Foo *>>() == "std::unique_ptr<FFoo *>");
+    REQUIRE(typeToString<std::unique_ptr<Foo *>>() ==
+            "std::unique_ptr<FFoo *>");
     REQUIRE(typeToString<UP2>() == "std::unique_ptr<FFoo *>");
   }
 
   SECTION("std::shared_ptr") {
     REQUIRE(typeToString<std::shared_ptr<const Foo *>>() ==
-        "std::shared_ptr<const FFoo *>");
+            "std::shared_ptr<const FFoo *>");
   }
 }

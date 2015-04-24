@@ -83,10 +83,10 @@ TEST_CASE("Shrinkable") {
 
     bool shrinksCalled = false;
     Shrinkable<int> shrinkable = makeMockShrinkable([] { return 0; },
-        [&] {
-          shrinksCalled = true;
-          return shrinks;
-        });
+                                                    [&] {
+                                                      shrinksCalled = true;
+                                                      return shrinks;
+                                                    });
 
     REQUIRE(shrinkable.shrinks() == shrinks);
     REQUIRE(shrinksCalled);
@@ -101,7 +101,8 @@ TEST_CASE("Shrinkable") {
   }
 
   SECTION("if shrinks() throws, an empty Seq is returned") {
-    Shrinkable<int> shrinkable = makeMockShrinkable([] { return 0; },
+    Shrinkable<int> shrinkable = makeMockShrinkable(
+        [] { return 0; },
         []() -> Seq<Shrinkable<int>> { throw std::string("foobar"); });
 
     REQUIRE(!shrinkable.shrinks().next());
@@ -141,18 +142,18 @@ TEST_CASE("Shrinkable") {
     propConformsToEquals<Shrinkable<int>>();
 
     prop("different values yield inequal shrinkables",
-        [](Seq<Shrinkable<int>> shrinks, int v1) {
-          int v2 = *gen::distinctFrom(v1);
-          RC_ASSERT(
-              shrinkable::just(v1, shrinks) != shrinkable::just(v2, shrinks));
-        });
+         [](Seq<Shrinkable<int>> shrinks, int v1) {
+           int v2 = *gen::distinctFrom(v1);
+           RC_ASSERT(shrinkable::just(v1, shrinks) !=
+                     shrinkable::just(v2, shrinks));
+         });
 
     prop("different shrinks yield inequal shrinkables",
-        [](int value, Seq<Shrinkable<int>> shrinks1) {
-          Seq<Shrinkable<int>> shrinks2 = *gen::distinctFrom(shrinks1);
-          RC_ASSERT(shrinkable::just(value, shrinks1) !=
-              shrinkable::just(value, shrinks2));
-        });
+         [](int value, Seq<Shrinkable<int>> shrinks1) {
+           Seq<Shrinkable<int>> shrinks2 = *gen::distinctFrom(shrinks1);
+           RC_ASSERT(shrinkable::just(value, shrinks1) !=
+                     shrinkable::just(value, shrinks2));
+         });
   }
 
   SECTION("makeShrinkable") {

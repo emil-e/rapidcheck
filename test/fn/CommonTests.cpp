@@ -17,11 +17,11 @@ TEST_CASE("fn::constant") {
   }
 
   prop("returns same value regardless of arguments",
-      [](const std::string &value, int a, int b, int c) {
-        const auto f = fn::constant(value);
-        RC_ASSERT(f() == value);
-        RC_ASSERT(f(a) == value);
-        RC_ASSERT(f(a, b) == value);
-        RC_ASSERT(f(a, b, c) == value);
-      });
+       [](const std::string &value, int a, int b, int c) {
+         const auto f = fn::constant(value);
+         RC_ASSERT(f() == value);
+         RC_ASSERT(f(a) == value);
+         RC_ASSERT(f(a, b) == value);
+         RC_ASSERT(f(a, b, c) == value);
+       });
 }

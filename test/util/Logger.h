@@ -58,10 +58,10 @@ public:
 
   int numberOf(const std::string &value) const {
     return std::count_if(begin(log),
-        end(log),
-        [&](const std::string &s) {
-          return s.find(value) != std::string::npos;
-        });
+                         end(log),
+                         [&](const std::string &s) {
+                           return s.find(value) != std::string::npos;
+                         });
   }
 
   bool operator==(const Logger &rhs) const {
