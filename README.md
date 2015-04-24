@@ -28,9 +28,6 @@ int main() {
               auto l1 = l0;
               std::reverse(begin(l1), end(l1));
               std::reverse(begin(l1), end(l1));
-              if (l1.size() >= 10) {
-                l1[0] = 0;
-              }
               RC_ASSERT(l0 == l1);
             });
 
