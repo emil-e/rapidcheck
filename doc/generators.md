@@ -61,8 +61,7 @@ We can add arbitrary support for this type by making the following visible in th
 
 ```C++
 template<>
-struct Arbitrary<Person>
-{
+struct Arbitrary<Person> {
   static Gen<Person> arbitrary() {
     return gen::exec([] {
       Person person;
