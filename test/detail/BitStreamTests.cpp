@@ -56,8 +56,9 @@ TEST_CASE("BitStream") {
            }
 
            int expected = totalSize / 8;
-           if ((totalSize % 8) != 0)
+           if ((totalSize % 8) != 0) {
              expected++;
+           }
            RC_ASSERT(source.requested() == expected);
          });
 
@@ -75,8 +76,9 @@ TEST_CASE("BitStream") {
            uint64_t value = 0;
            int n = 64;
            for (int size : sizes) {
-             if (n == 0)
+             if (n == 0) {
                break;
+             }
              uint64_t r = std::min(n, size);
              uint64_t bits = stream.next<uint64_t>(r);
              value |= (bits << (64ULL - n));
@@ -115,10 +117,11 @@ TEST_CASE("BitStream") {
            int64_t n = *gen::inRange(0LL, 64LL);
            bool sign = (x & (1LL << (n - 1LL))) != 0;
            int64_t mask = ~bitMask<int64_t>(n);
-           if (sign)
+           if (sign) {
              RC_ASSERT((stream.next<int64_t>(n) & mask) == mask);
-           else
+           } else {
              RC_ASSERT((stream.next<int64_t>(n) & mask) == 0);
+           }
          });
 
     prop("works with booleans",
@@ -127,8 +130,9 @@ TEST_CASE("BitStream") {
            auto stream = bitStreamOf(source);
            uint64_t value = 0;
            for (uint64_t i = 0; i < 64ULL; i++) {
-             if (stream.next<bool>(1))
+             if (stream.next<bool>(1)) {
                value |= 1ULL << i;
+             }
            }
 
            RC_ASSERT(value == x);
@@ -142,8 +146,9 @@ TEST_CASE("BitStream") {
            auto stream = bitStreamOf(source);
 
            int n = *gen::inRange(0, 100);
-           for (int i = 0; i < n; i++)
+           for (int i = 0; i < n; i++) {
              stream.nextWithSize<char>(kNominalSize);
+           }
 
            RC_ASSERT(source.requested() == n);
          });
@@ -156,8 +161,9 @@ TEST_CASE("BitStream") {
            int n = *gen::suchThat(gen::inRange(0, 100),
                                   [](int x) { return (x % 2) == 0; });
 
-           for (int i = 0; i < n; i++)
+           for (int i = 0; i < n; i++) {
              stream.nextWithSize<char>(kNominalSize / 2);
+           }
 
            RC_ASSERT(source.requested() == (n / 2));
          });
@@ -168,8 +174,9 @@ TEST_CASE("BitStream") {
            auto stream = bitStreamOf(source);
 
            int n = *gen::inRange(0, 100);
-           for (int i = 0; i < n; i++)
+           for (int i = 0; i < n; i++) {
              stream.nextWithSize<char>(0);
+           }
 
            RC_ASSERT(source.requested() == 0);
          });

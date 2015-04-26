@@ -33,8 +33,9 @@ bool isQuote(int c) { return (c == '\'') || (c == '\"'); }
 template <typename Pred>
 bool takeWhile(ParseState &state, std::string &result, const Pred &pred) {
   const int start = state.pos;
-  while (!state.end() && pred(state.c()))
+  while (!state.end() && pred(state.c())) {
     state.pos++;
+  }
 
   result = state.str->substr(start, state.pos - start);
   return true;
@@ -47,8 +48,9 @@ bool skipSpace(ParseState &state) {
 
 bool parseQuotedString(ParseState &state, std::string &value) {
   char quote = state.c();
-  if (!isQuote(quote))
+  if (!isQuote(quote)) {
     return false;
+  }
   state.pos++;
 
   value = std::string();
@@ -89,8 +91,9 @@ bool parsePair(ParseState &s0, std::pair<std::string, std::string> &pair) {
   skipSpace(s1);
   parseString(
       s1, pair.first, [](int c) { return (c != '=') && !std::isspace(c); });
-  if (pair.first.empty())
+  if (pair.first.empty()) {
     return false;
+  }
 
   skipSpace(s1);
   if (s1.end() || (s1.c() != '=')) {
@@ -116,8 +119,9 @@ std::map<std::string, std::string> parseMap(const std::string &str) {
   state.pos = 0;
 
   std::pair<std::string, std::string> pair;
-  while (parsePair(state, pair))
+  while (parsePair(state, pair)) {
     config[pair.first] = pair.second;
+  }
 
   return config;
 }
@@ -127,8 +131,9 @@ namespace {
 std::string quoteString(const std::string &str, char quoteChar) {
   std::string escaped;
   for (const char c : str) {
-    if ((c == quoteChar) || (c == '\\'))
+    if ((c == quoteChar) || (c == '\\')) {
       escaped += '\\';
+    }
     escaped += c;
   }
 
@@ -136,8 +141,9 @@ std::string quoteString(const std::string &str, char quoteChar) {
 }
 
 std::string maybeQuoteString(const std::string &str, bool doubleQuote) {
-  if (str.empty())
+  if (str.empty()) {
     return "\"\"";
+  }
 
   bool hasSpecialChar = std::any_of(begin(str),
                                     end(str),
@@ -166,11 +172,13 @@ std::string mapToString(const std::map<std::string, std::string> &map,
                         bool doubleQuote) {
   std::string str;
   auto it = begin(map);
-  if (it == end(map))
+  if (it == end(map)) {
     return str;
+  }
   str += pairToString(*it, doubleQuote);
-  for (it++; it != end(map); it++)
+  for (it++; it != end(map); it++) {
     str += " " + pairToString(*it, doubleQuote);
+  }
 
   return str;
 }

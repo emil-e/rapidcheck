@@ -190,8 +190,9 @@ struct SequenceProperties {
                                           for (const auto &e : x) {
                                             if (e >= target) {
                                               count++;
-                                              if (count >= 2)
+                                              if (count >= 2) {
                                                 return true;
+                                              }
                                             }
                                           }
 
@@ -223,8 +224,9 @@ struct SetProperties {
                                           for (const auto &e : x) {
                                             if (e >= target) {
                                               count++;
-                                              if (count >= 2)
+                                              if (count >= 2) {
                                                 return true;
+                                              }
                                             }
                                           }
 
@@ -256,8 +258,9 @@ struct MultiSetProperties {
                                           for (const auto &e : x) {
                                             if (e >= target) {
                                               count++;
-                                              if (count >= 2)
+                                              if (count >= 2) {
                                                 return true;
+                                              }
                                             }
                                           }
 
@@ -293,8 +296,9 @@ struct MapProperties {
                           for (const auto &p : x) {
                             if ((p.first >= target) && (p.second >= target)) {
                               count++;
-                              if (count >= 2)
+                              if (count >= 2) {
                                 return true;
+                              }
                             }
                           }
 
@@ -330,8 +334,9 @@ struct MultiMapProperties {
                           for (const auto &p : x) {
                             if ((p.first >= target) && (p.second >= target)) {
                               count++;
-                              if (count >= 2)
+                              if (count >= 2) {
                                 return true;
+                              }
                             }
                           }
 

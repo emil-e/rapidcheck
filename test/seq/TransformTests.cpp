@@ -34,8 +34,8 @@ TEST_CASE("seq::drop") {
          std::size_t n =
              *gen::inRange<std::size_t>(0, (elements.size() + 1) * 2);
          auto seq = seq::drop(n, seq::fromContainer(std::move(elements)));
-         while (seq.next())
-           ;
+         while (seq.next()) {
+         }
        });
 
   SECTION("sanity check") {
@@ -68,8 +68,8 @@ TEST_CASE("seq::take") {
              *gen::inRange<std::size_t>(0, (elements.size() + 1) * 2);
          std::size_t start = std::min(elements.size(), n);
          auto seq = seq::take(n, seq::fromContainer(std::move(elements)));
-         while (seq.next())
-           ;
+         while (seq.next()) {
+         }
        });
 
   SECTION("sanity check") {
@@ -98,8 +98,8 @@ TEST_CASE("seq::dropWhile") {
          const auto pred = [=](const CopyGuard &x) { return x < limit; };
          auto seq =
              seq::dropWhile(seq::fromContainer(std::move(elements)), pred);
-         while (seq.next())
-           ;
+         while (seq.next()) {
+         }
        });
 
   SECTION("sanity check") {
@@ -131,8 +131,8 @@ TEST_CASE("seq::takeWhile") {
          const auto pred = [=](const CopyGuard &x) { return x < limit; };
          auto seq =
              seq::takeWhile(seq::fromContainer(std::move(elements)), pred);
-         while (seq.next())
-           ;
+         while (seq.next()) {
+         }
        });
 
   SECTION("sanity check") {
@@ -148,8 +148,9 @@ TEST_CASE("seq::map") {
        [](const std::vector<int> &elements, int x) {
          const auto mapper = [=](int a) { return a * x; };
          std::vector<int> expectedElements;
-         for (const auto e : elements)
+         for (const auto e : elements) {
            expectedElements.push_back(mapper(e));
+         }
          auto mapSeq = seq::map(seq::fromContainer(elements), mapper);
          RC_ASSERT(mapSeq == seq::fromContainer(std::move(expectedElements)));
        });
@@ -166,8 +167,8 @@ TEST_CASE("seq::map") {
          const auto mapper = [](CopyGuard &&x) { return std::move(x); };
          auto mapSeq =
              seq::map(seq::fromContainer(std::move(elements)), mapper);
-         while (mapSeq.next())
-           ;
+         while (mapSeq.next()) {
+         }
        });
 }
 
@@ -177,8 +178,9 @@ TEST_CASE("seq::zipWith") {
          std::size_t n = *gen::inRange<std::size_t>(0, 1000);
          const auto zipper = [=] { return x; };
          auto zipSeq = seq::take(n, seq::zipWith(zipper));
-         for (std::size_t i = 0; i < n; i++)
+         for (std::size_t i = 0; i < n; i++) {
            RC_ASSERT(*zipSeq.next() == x);
+         }
          RC_ASSERT(!zipSeq.next());
        });
 
@@ -186,8 +188,9 @@ TEST_CASE("seq::zipWith") {
        [](const std::vector<int> &elements, int x) {
          const auto zipper = [=](int a) { return a * x; };
          std::vector<int> expectedElements;
-         for (const auto e : elements)
+         for (const auto e : elements) {
            expectedElements.push_back(zipper(e));
+         }
          auto zipSeq = seq::zipWith(zipper, seq::fromContainer(elements));
          RC_ASSERT(zipSeq == seq::fromContainer(std::move(expectedElements)));
        });
@@ -198,8 +201,9 @@ TEST_CASE("seq::zipWith") {
              [](int a, std::string b) { return std::to_string(a) + b; };
          std::size_t size = std::min(e1.size(), e2.size());
          std::vector<std::string> expectedElements;
-         for (std::size_t i = 0; i < size; i++)
+         for (std::size_t i = 0; i < size; i++) {
            expectedElements.push_back(zipper(e1[i], e2[i]));
+         }
          auto zipSeq = seq::zipWith(
              zipper, seq::fromContainer(e1), seq::fromContainer(e2));
          RC_ASSERT(zipSeq == seq::fromContainer(std::move(expectedElements)));
@@ -214,8 +218,9 @@ TEST_CASE("seq::zipWith") {
          };
          std::size_t size = std::min({e1.size(), e2.size(), e3.size()});
          std::vector<std::string> expectedElements;
-         for (std::size_t i = 0; i < size; i++)
+         for (std::size_t i = 0; i < size; i++) {
            expectedElements.push_back(zipper(e1[i], e2[i], e3[i]));
+         }
          auto zipSeq = seq::zipWith(zipper,
                                     seq::fromContainer(e1),
                                     seq::fromContainer(e2),
@@ -245,8 +250,8 @@ TEST_CASE("seq::zipWith") {
          auto zipSeq = seq::zipWith(zipper,
                                     seq::fromContainer(std::move(e1)),
                                     seq::fromContainer(std::move(e2)));
-         while (zipSeq.next())
-           ;
+         while (zipSeq.next()) {
+         }
        });
 }
 
@@ -281,8 +286,8 @@ TEST_CASE("seq::filter") {
        [](std::vector<CopyGuard> elements, int limit) {
          const auto pred = [=](const CopyGuard &x) { return x.value < limit; };
          auto seq = seq::filter(seq::fromContainer(std::move(elements)), pred);
-         while (seq.next())
-           ;
+         while (seq.next()) {
+         }
        });
 }
 
@@ -330,8 +335,8 @@ TEST_CASE("seq::join") {
                                 return seq::fromContainer(std::move(vec));
                               });
          auto seq = seq::join(std::move(seqs));
-         while (seq.next())
-           ;
+         while (seq.next()) {
+         }
        });
 }
 
@@ -367,8 +372,8 @@ TEST_CASE("seq::concat") {
          auto seq = seq::concat(seq::fromContainer(std::move(a)),
                                 seq::fromContainer(std::move(b)),
                                 seq::fromContainer(std::move(c)));
-         while (seq.next())
-           ;
+         while (seq.next()) {
+         }
        });
 }
 
@@ -397,8 +402,8 @@ TEST_CASE("seq::mapcat") {
            return seq::just(std::move(a), CopyGuard(1337));
          };
          auto mapSeq = seq::mapcat(std::move(seq), mapper);
-         while (mapSeq.next())
-           ;
+         while (mapSeq.next()) {
+         }
        });
 }
 
@@ -437,8 +442,8 @@ TEST_CASE("seq::mapMaybe") {
          auto maybeSeq = seq::mapMaybe(
              std::move(seq),
              [=](CopyGuard x) -> Maybe<CopyGuard> { return std::move(x); });
-         while (maybeSeq.next())
-           ;
+         while (maybeSeq.next()) {
+         }
        });
 }
 
@@ -451,8 +456,9 @@ TEST_CASE("seq::cycle") {
          auto it = begin(elements);
          for (int i = 0; i < 2000; i++) {
            RC_ASSERT(*seq.next() == *it++);
-           if (it == end(elements))
+           if (it == end(elements)) {
              it = begin(elements);
+           }
          }
        });
 
@@ -488,7 +494,7 @@ TEST_CASE("seq::cast") {
        [](std::vector<CopyGuard> elements) {
          auto seq =
              seq::cast<CopyGuard>(seq::fromContainer(std::move(elements)));
-         while (seq.next())
-           ;
+         while (seq.next()) {
+         }
        });
 }

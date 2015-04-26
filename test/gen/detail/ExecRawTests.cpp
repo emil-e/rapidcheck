@@ -22,8 +22,9 @@ Gen<std::pair<std::vector<int>, Recipe>> testExecGen() {
   return execRaw([=](const FixedCountdown<N> &n) {
     std::vector<int> values;
     values.push_back(n.value);
-    while (values.size() < (n.value + 1))
+    while (values.size() < (n.value + 1)) {
       values.push_back(*genFixedCountdown(N));
+    }
     return values;
   });
 }
@@ -125,8 +126,9 @@ TEST_CASE("execRaw") {
            *genFixedCountdown(3); // Force some shrinks
            std::vector<int> sizes;
            sizes.push_back(sz.value);
-           while (sizes.size() < n)
+           while (sizes.size() < n) {
              sizes.push_back(*genSize());
+           }
            return sizes;
          })(Random(), expectedSize);
 
@@ -152,8 +154,9 @@ TEST_CASE("execRaw") {
          const auto randoms = execRaw([=](const PassedRandom &rnd) {
            std::set<Random> randoms;
            randoms.insert(rnd.value);
-           while (randoms.size() < n)
+           while (randoms.size() < n) {
              randoms.insert(*genRandom());
+           }
            return randoms;
          })(initial, 0).value().first;
 
@@ -166,8 +169,9 @@ TEST_CASE("execRaw") {
          const auto shrinkable = execRaw([=](const PassedRandom &rnd) {
            std::vector<Random> randoms;
            randoms.push_back(rnd.value);
-           while (randoms.size() < n)
+           while (randoms.size() < n) {
              randoms.push_back(*genRandom());
+           }
            *genFixedCountdown(3);
            return randoms;
          })(initial, 0);
@@ -201,8 +205,9 @@ TEST_CASE("execRaw") {
           actual.push_back(std::get<0>(argTuple).value);
 
           auto it = recipe.ingredients.begin() + 1;
-          for (; it != end(recipe.ingredients); it++)
+          for (; it != end(recipe.ingredients); it++) {
             actual.push_back(it->value().get<int>());
+          }
 
           return actual == pair.first;
         }));

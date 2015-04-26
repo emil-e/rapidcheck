@@ -40,8 +40,9 @@ public:
       , m_seq(std::move(seq)) {}
 
   Maybe<T> operator()() {
-    if (m_take == 0)
+    if (m_take == 0) {
       return Nothing;
+    }
 
     m_take--;
     return m_seq.next();
@@ -96,8 +97,9 @@ public:
 
   Maybe<T> operator()() {
     auto value = m_seq.next();
-    if (!value)
+    if (!value) {
       return Nothing;
+    }
 
     if (!m_pred(*value)) {
       m_seq = Seq<T>();
@@ -191,8 +193,9 @@ public:
         return Nothing;
       }
 
-      if (m_predicate(*value))
+      if (m_predicate(*value)) {
         return value;
+      }
     }
   }
 
@@ -244,8 +247,9 @@ public:
   Maybe<U> operator()() {
     while (true) {
       auto valueU = m_seqU.next();
-      if (valueU)
+      if (valueU) {
         return valueU;
+      }
 
       auto valueT = m_seqT.next();
       if (!valueT) {
@@ -268,15 +272,17 @@ private:
 
 template <typename T>
 Seq<T> drop(std::size_t n, Seq<T> seq) {
-  if (n == 0)
+  if (n == 0) {
     return seq;
+  }
   return makeSeq<detail::DropSeq<T>>(n, std::move(seq));
 }
 
 template <typename T>
 Seq<T> take(std::size_t n, Seq<T> seq) {
-  if (n == 0)
+  if (n == 0) {
     return Seq<T>();
+  }
   return makeSeq<detail::TakeSeq<T>>(n, std::move(seq));
 }
 

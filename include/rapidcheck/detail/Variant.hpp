@@ -87,8 +87,9 @@ const T &Variant<Type, Types...>::get() const {
 template <typename Type, typename... Types>
 template <typename T>
 bool Variant<Type, Types...>::match(T &value) const {
-  if (!is<T>())
+  if (!is<T>()) {
     return false;
+  }
 
   value = *reinterpret_cast<const T *>(&m_storage);
   return true;
@@ -109,8 +110,9 @@ bool variantEqualsImpl(const void *lhs, const void *rhs) {
 
 template <typename Type, typename... Types>
 bool Variant<Type, Types...>::operator==(const Variant &rhs) const {
-  if (m_typeIndex != rhs.m_typeIndex)
+  if (m_typeIndex != rhs.m_typeIndex) {
     return false;
+  }
 
   bool (*const equalsFuncs[])(const void *, const void *) = {
       &variantEqualsImpl<Type>, &variantEqualsImpl<Types>...};

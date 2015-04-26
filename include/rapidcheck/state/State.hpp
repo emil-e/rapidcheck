@@ -17,8 +17,9 @@ public:
 
   State nextState(const State &state) const override {
     State currentState = state;
-    for (const auto &command : commands)
+    for (const auto &command : commands) {
       currentState = command->nextState(currentState);
+    }
     return currentState;
   }
 
@@ -85,15 +86,17 @@ private:
     std::vector<CommandEntry> entries;
 
     const State &stateAt(std::size_t i) const {
-      if (i <= 0)
+      if (i <= 0) {
         return initialState;
+      }
       return entries[i - 1].postState;
     }
 
     void repairEntriesFrom(std::size_t start) {
       for (auto i = start; i < entries.size(); i++) {
-        if (!repairEntryAt(i))
+        if (!repairEntryAt(i)) {
           entries.erase(begin(entries) + i--);
+        }
       }
     }
 
@@ -104,8 +107,9 @@ private:
         const auto cmd = entry.shrinkable.value();
         entry.postState = cmd->nextState(stateAt(i));
       } catch (const CaseResult &result) {
-        if (result.type != CaseResult::Type::Discard)
+        if (result.type != CaseResult::Type::Discard) {
           throw;
+        }
 
         return regenerateEntryAt(i);
       }
@@ -122,8 +126,9 @@ private:
         const auto cmd = entry.shrinkable.value();
         entry.postState = cmd->nextState(preState);
       } catch (const CaseResult &result) {
-        if (result.type != CaseResult::Type::Discard)
+        if (result.type != CaseResult::Type::Discard) {
           throw;
+        }
 
         return false;
       }
@@ -186,8 +191,9 @@ private:
         return CommandEntry(
             std::move(random), std::move(shrinkable), std::move(postState));
       } catch (const CaseResult &result) {
-        if (result.type != CaseResult::Type::Discard)
+        if (result.type != CaseResult::Type::Discard) {
           throw;
+        }
         // What to do?
       } catch (const GenerationFailure &failure) {
         // What to do?
@@ -315,8 +321,9 @@ bool isValidCommand(const Command<State, Sut> &command, const State &s0) {
   try {
     command.nextState(s0);
   } catch (const ::rc::detail::CaseResult &result) {
-    if (result.type == ::rc::detail::CaseResult::Type::Discard)
+    if (result.type == ::rc::detail::CaseResult::Type::Discard) {
       return false;
+    }
     throw;
   }
 

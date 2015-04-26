@@ -56,8 +56,9 @@ Gen<T> character() {
     auto stream = ::rc::detail::bitStreamOf(random);
     bool small = stream.next<bool>();
     T value;
-    while ((value = small ? stream.next<T>(7) : stream.next<T>()) == '\0')
-      ;
+    while ((value = small ? stream.next<T>(7) : stream.next<T>()) == '\0') {
+      // Do nothing
+    }
 
     return shrinkable::shrinkRecur(value, &shrink::character<T>);
   };

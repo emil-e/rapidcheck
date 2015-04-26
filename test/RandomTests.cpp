@@ -75,8 +75,9 @@ TEST_CASE("Random") {
          auto key2 = *gen::distinctFrom(key1);
          Random r1(key1);
          Random r2(key2);
-         for (std::size_t i = 0; i < 4; i++)
+         for (std::size_t i = 0; i < 4; i++) {
            RC_SUCCEED_IF(r1.next() != r2.next());
+         }
          RC_FAIL("Equal random numbers");
        });
 
@@ -86,8 +87,9 @@ TEST_CASE("Random") {
          auto seed2 = *gen::distinctFrom(seed1);
          Random r1(seed1);
          Random r2(seed2);
-         for (std::size_t i = 0; i < 4; i++)
+         for (std::size_t i = 0; i < 4; i++) {
            RC_SUCCEED_IF(r1.next() != r2.next());
+         }
          RC_FAIL("Equal random numbers");
        });
 
@@ -98,8 +100,9 @@ TEST_CASE("Random") {
          // Random numbers are generated in 256-bit blocks so if the first
          // four are equal, it's likely the same block and something is
          // wrong even if subsequent blocks are not equal
-         for (std::size_t i = 0; i < 4; i++)
+         for (std::size_t i = 0; i < 4; i++) {
            RC_SUCCEED_IF(r1.next() != r2.next());
+         }
          RC_FAIL("Equal random numbers");
        });
 
@@ -111,13 +114,16 @@ TEST_CASE("Random") {
          int n1 = *gen;
          int n2 = *gen::distinctFrom(gen, n1);
 
-         while (n1-- > 0)
+         while (n1-- > 0) {
            r1.next();
-         while (n2-- > 0)
+         }
+         while (n2-- > 0) {
            r2.next();
+         }
 
-         for (std::size_t i = 0; i < 4; i++)
+         for (std::size_t i = 0; i < 4; i++) {
            RC_SUCCEED_IF(r1.next() != r2.next());
+         }
          RC_FAIL("Equal random numbers");
        });
 
@@ -152,8 +158,9 @@ TEST_CASE("Random") {
              std::numeric_limits<uint64_t>::max() / 16;
          bins.fill(0);
          static constexpr std::size_t nSamples = 200000;
-         for (std::size_t i = 0; i < nSamples; i++)
+         for (std::size_t i = 0; i < nSamples; i++) {
            bins[random.next() / kBinSize]++;
+         }
 
          double ideal = nSamples / static_cast<double>(bins.size());
          double error = std::accumulate(begin(bins),

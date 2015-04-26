@@ -29,8 +29,9 @@ template <typename T>
 T BitStream<Source>::next(int nbits) {
   using SourceType = decltype(m_source.next());
 
-  if (nbits == 0)
+  if (nbits == 0) {
     return 0;
+  }
 
   T value = 0;
   int wantBits = nbits;

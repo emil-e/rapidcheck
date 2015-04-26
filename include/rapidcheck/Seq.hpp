@@ -70,11 +70,13 @@ bool operator==(Seq<T> lhs, Seq<T> rhs) {
   while (true) {
     Maybe<T> a(lhs.next());
     Maybe<T> b(rhs.next());
-    if (a != b)
+    if (a != b) {
       return false;
+    }
 
-    if (!a && !b)
+    if (!a && !b) {
       return true;
+    }
   }
 }
 
@@ -92,8 +94,9 @@ std::ostream &operator<<(std::ostream &os, Seq<T> seq) {
     show(*first, os);
     while (true) {
       const auto value = seq.next();
-      if (!value)
+      if (!value) {
         break;
+      }
 
       os << ", ";
       // Don't print infinite sequences...

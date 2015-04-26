@@ -43,8 +43,9 @@ public:
       auto shrinkable =
           shrinkable::filter(m_gen(r.split(), currentSize), m_predicate);
 
-      if (shrinkable)
+      if (shrinkable) {
         return std::move(*shrinkable);
+      }
       currentSize++;
     }
 

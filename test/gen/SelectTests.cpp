@@ -39,8 +39,9 @@ struct ElementOfTests {
                                                             end(elements));
                        std::set<typename T::value_type> generated;
                        Random r(params.random);
-                       while (all != generated)
+                       while (all != generated) {
                          generated.insert(gen(r.split(), params.size).value());
+                       }
                        RC_SUCCEED("All values generated");
                      });
 
@@ -76,8 +77,9 @@ TEST_CASE("gen::element") {
          std::set<std::string> all{a, b, c};
          std::set<std::string> generated;
          Random r(params.random);
-         while (all != generated)
+         while (all != generated) {
            generated.insert(gen(r.split(), params.size).value());
+         }
          RC_SUCCEED("All values generated");
        });
 }
@@ -102,8 +104,9 @@ TEST_CASE("gen::oneOf") {
          std::set<std::string> all{a, b, c};
          std::set<std::string> generated;
          Random r(params.random);
-         while (all != generated)
+         while (all != generated) {
            generated.insert(gen(r.split(), params.size).value());
+         }
          RC_SUCCEED("All values generated");
        });
 

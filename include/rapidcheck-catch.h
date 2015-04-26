@@ -20,8 +20,9 @@ void prop(const std::string &description, Testable &&testable) {
     std::ostringstream ss;
     printResultMessage(result, ss);
     INFO(ss.str() << "\n");
-    if (!result.template is<SuccessResult>())
+    if (!result.template is<SuccessResult>()) {
       FAIL();
+    }
   }
 }
 

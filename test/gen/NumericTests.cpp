@@ -142,10 +142,11 @@ struct SignedProperties {
                        for (int i = 0; i < kEnough; i++) {
                          T value =
                              gen::arbitrary<T>()(random.split(), size).value();
-                         if (value < 0)
+                         if (value < 0) {
                            n--;
-                         else if (value > 0)
+                         } else if (value > 0) {
                            n++;
+                         }
                        }
 
                        double avg = static_cast<double>(n) / kEnough;
@@ -229,8 +230,9 @@ struct InRangeProperties {
             counts[x - min]++;
             const auto done =
                 std::find(begin(counts), end(counts), 0) == end(counts);
-            if (done)
+            if (done) {
               RC_SUCCEED("All generated");
+            }
           }
 
           RC_FAIL("Gave up");

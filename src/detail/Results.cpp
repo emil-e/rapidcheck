@@ -89,8 +89,9 @@ void printResultMessage(const FailureResult &result, std::ostream &os) {
   os << " tests";
   if (result.numShrinks > 0) {
     os << " and " << result.numShrinks << " shrink";
-    if (result.numShrinks > 1)
+    if (result.numShrinks > 1) {
       os << 's';
+    }
   }
 
   os << std::endl << std::endl;

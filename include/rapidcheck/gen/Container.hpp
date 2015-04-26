@@ -258,8 +258,9 @@ struct GenerateContainer<std::array<T, N>> {
             }),
         [](const Shrinkables<U> &elements) {
           Array array;
-          for (std::size_t i = 0; i < N; i++)
+          for (std::size_t i = 0; i < N; i++) {
             array[i] = elements[i].value();
+          }
           return array;
         });
   }

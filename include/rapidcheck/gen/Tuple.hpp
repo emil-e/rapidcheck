@@ -93,8 +93,9 @@ public:
                                            int size) const {
     Random r(random);
     Random randoms[sizeof...(Ts)];
-    for (std::size_t i = 0; i < sizeof...(Ts); i++)
+    for (std::size_t i = 0; i < sizeof...(Ts); i++) {
       randoms[i] = r.split();
+    }
 
     using ShrinkableImpl =
         TupleShrinkable<rc::detail::IndexSequence<Indexes...>, Ts...>;

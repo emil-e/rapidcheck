@@ -39,15 +39,17 @@ static inline bool operator==(const Predictable &lhs, const Predictable &rhs) {
 }
 
 static inline bool operator<(const Predictable &lhs, const Predictable &rhs) {
-  if (lhs.value == rhs.value)
+  if (lhs.value == rhs.value) {
     return lhs.extra < rhs.extra;
+  }
 
   return lhs.value < rhs.value;
 }
 
 static inline bool operator>(const Predictable &lhs, const Predictable &rhs) {
-  if (lhs.value == rhs.value)
+  if (lhs.value == rhs.value) {
     return lhs.extra > rhs.extra;
+  }
 
   return lhs.value > rhs.value;
 }

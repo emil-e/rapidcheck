@@ -7,8 +7,9 @@ namespace shrinkable {
 
 template <typename T, typename Predicate>
 bool all(const Shrinkable<T> &shrinkable, Predicate predicate) {
-  if (!predicate(shrinkable))
+  if (!predicate(shrinkable)) {
     return false;
+  }
 
   return seq::all(shrinkable.shrinks(),
                   [=](const Shrinkable<T> &shrink) {

@@ -20,8 +20,9 @@ public:
       , m_down(target < value) {}
 
   Maybe<T> operator()() {
-    if (m_diff == 0)
+    if (m_diff == 0) {
       return Nothing;
+    }
 
     T ret = m_down ? (m_value - m_diff) : (m_value + m_diff);
     m_diff /= 2;
@@ -44,8 +45,9 @@ public:
       , m_size(m_elements.size()) {}
 
   Maybe<Container> operator()() {
-    if (m_size == 0)
+    if (m_size == 0) {
       return Nothing;
+    }
 
     Container elements;
     elements.reserve(m_elements.size() - m_size);
@@ -83,8 +85,9 @@ public:
 
   Maybe<Container> operator()() {
     auto value = next();
-    if (!value)
+    if (!value) {
       return Nothing;
+    }
 
     auto elements = m_elements;
     elements[m_i - 1] = std::move(*value);
@@ -95,11 +98,13 @@ private:
   Maybe<T> next() {
     while (true) {
       auto value = m_shrinks.next();
-      if (value)
+      if (value) {
         return value;
+      }
 
-      if (m_i >= m_elements.size())
+      if (m_i >= m_elements.size()) {
         return Nothing;
+      }
 
       m_shrinks = m_shrink(m_elements[m_i++]);
     }
@@ -147,15 +152,18 @@ template <typename T>
 Seq<T> real(T value) {
   std::vector<T> shrinks;
 
-  if (value != 0)
+  if (value != 0) {
     shrinks.push_back(0.0);
+  }
 
-  if (value < 0)
+  if (value < 0) {
     shrinks.push_back(-value);
+  }
 
   T truncated = std::trunc(value);
-  if (std::abs(truncated) < std::abs(value))
+  if (std::abs(truncated) < std::abs(value)) {
     shrinks.push_back(truncated);
+  }
 
   return seq::fromContainer(shrinks);
 }

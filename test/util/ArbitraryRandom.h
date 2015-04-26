@@ -16,10 +16,11 @@ struct Arbitrary<Random> {
                     [](const std::pair<Random::Key, std::vector<bool>> &p) {
                       Random random(p.first);
                       for (bool x : p.second) {
-                        if (!x)
+                        if (!x) {
                           random.split();
-                        else
+                        } else {
                           random = random.split();
+                        }
                       }
                       return random;
                     });

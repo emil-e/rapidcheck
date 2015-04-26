@@ -11,8 +11,9 @@ public:
   void dec() {
     assert(m_value > 0);
     // Broken!
-    if (m_value != 10)
+    if (m_value != 10) {
       m_value--;
+    }
   }
 
   int get() { return m_value; }

@@ -40,8 +40,9 @@ Random Random::split() {
 
 Random::Number Random::next() {
   std::size_t blki = m_counter % std::tuple_size<Block>::value;
-  if (blki == 0)
+  if (blki == 0) {
     mash(m_block);
+  }
 
   if (m_counter == kCounterMax) {
     append(true);
@@ -60,8 +61,9 @@ void Random::append(bool x) {
     m_bits = 0;
   }
 
-  if (x)
+  if (x) {
     m_bits |= (0x1ULL << m_bitsi);
+  }
   m_bitsi++;
 }
 

@@ -12,8 +12,9 @@ void assertEqualCopies(Seq<T> seq) {
   std::size_t len = seq::length(seq);
   if (len != 0) {
     std::size_t n = *gen::inRange<std::size_t>(0, len * 2);
-    while (n--)
+    while (n--) {
       seq.next();
+    }
   }
   const auto copy = seq;
   RC_ASSERT(copy == seq);

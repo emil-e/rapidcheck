@@ -11,8 +11,9 @@ Maybe<T> atOrLast(Seq<T> seq, std::size_t index) {
   Maybe<T> x;
   std::size_t n = index;
   while ((x = seq.next())) {
-    if (n-- == 0)
+    if (n-- == 0) {
       return x;
+    }
     prev = std::move(x);
   }
 
@@ -29,8 +30,9 @@ void onAnyPath(const Shrinkable<T> &shrinkable, Assertion assertion) {
   Shrinkable<T> current = shrinkable;
   for (const auto n : path) {
     Maybe<Shrinkable<T>> shrink = atOrLast(current.shrinks(), n);
-    if (!shrink)
+    if (!shrink) {
       return;
+    }
     assertion(current, *shrink);
     current = std::move(*shrink);
   }

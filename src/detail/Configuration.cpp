@@ -39,14 +39,16 @@ void loadParam(const std::map<std::string, std::string> &map,
                std::string failMsg,
                const Validator &validate) {
   auto it = map.find(key);
-  if (it == end(map))
+  if (it == end(map)) {
     return;
+  }
 
   std::istringstream in(it->second);
   T value;
   in >> value;
-  if (in.fail() || !validate(value))
+  if (in.fail() || !validate(value)) {
     throw ConfigurationException(std::move(failMsg));
+  }
   dest = value;
 }
 
@@ -59,8 +61,9 @@ bool loadParam(const std::map<std::string, std::string> &map,
                  return true;
                }) {
   auto it = map.find(key);
-  if (it != end(map))
+  if (it != end(map)) {
     dest = it->second;
+  }
   return true;
 }
 
@@ -118,8 +121,9 @@ mapDifference(const std::map<std::string, std::string> &lhs,
   std::map<std::string, std::string> result;
   for (const auto &pair : lhs) {
     auto it = rhs.find(pair.first);
-    if ((it == end(rhs)) || (pair.second != it->second))
+    if ((it == end(rhs)) || (pair.second != it->second)) {
       result.insert(pair);
+    }
   }
 
   return result;
@@ -157,8 +161,9 @@ Configuration loadConfiguration() {
   config.seed = (static_cast<uint64_t>(device()) << 32) | device();
 
   auto params = std::getenv("RC_PARAMS");
-  if (params != nullptr)
+  if (params != nullptr) {
     config = configFromString(params, config);
+  }
 
   // TODO rapidcheck logging framework ftw
   std::cerr << "Using configuration: " << configToMinimalString(config)

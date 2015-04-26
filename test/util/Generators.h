@@ -136,8 +136,9 @@ struct Arbitrary<Maybe<T>> {
     return [](const Random &random, int size) {
       auto r = random;
       const auto x = r.split().next() % (size + 1);
-      if (x == 0)
+      if (x == 0) {
         return shrinkable::just(Maybe<T>());
+      }
 
       return prependNothing(
           shrinkable::map(gen::arbitrary<T>()(r, size),

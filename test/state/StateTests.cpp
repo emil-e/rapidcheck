@@ -334,8 +334,9 @@ TEST_CASE("genCommands") {
                      auto sut = s0;
                      value.value().run(s0, sut);
                      int x = 0;
-                     for (int value : sut)
+                     for (int value : sut) {
                        RC_ASSERT(value == x++);
+                     }
                    });
        });
 

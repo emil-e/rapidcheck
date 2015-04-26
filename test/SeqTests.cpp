@@ -121,8 +121,9 @@ TEST_CASE("Seq") {
   SECTION("if exception is throw on next(), Seq ends immediately") {
     auto x = 0;
     const auto seq = Seq<int>([x]() mutable -> Maybe<int> {
-      if (x == 3)
+      if (x == 3) {
         throw std::string("foobar");
+      }
       return ++x;
     });
 

@@ -29,8 +29,9 @@ public:
   void retain() override { m_count.fetch_add(1L); }
 
   void release() override {
-    if (m_count.fetch_sub(1L) == 1L)
+    if (m_count.fetch_sub(1L) == 1L) {
       delete this;
+    }
   }
 
 private:
@@ -66,16 +67,18 @@ Shrinkable<T>::Shrinkable(Shrinkable &&other) noexcept : m_impl(other.m_impl) {
 template <typename T>
 Shrinkable<T> &Shrinkable<T>::operator=(const Shrinkable &other) noexcept {
   other.m_impl->retain();
-  if (m_impl)
+  if (m_impl) {
     m_impl->release();
+  }
   m_impl = other.m_impl;
   return *this;
 }
 
 template <typename T>
 Shrinkable<T> &Shrinkable<T>::operator=(Shrinkable &&other) noexcept {
-  if (m_impl)
+  if (m_impl) {
     m_impl->release();
+  }
   m_impl = other.m_impl;
   other.m_impl = nullptr;
   return *this;
@@ -83,8 +86,9 @@ Shrinkable<T> &Shrinkable<T>::operator=(Shrinkable &&other) noexcept {
 
 template <typename T>
 Shrinkable<T>::~Shrinkable() noexcept {
-  if (m_impl)
+  if (m_impl) {
     m_impl->release();
+  }
 }
 
 template <typename Impl, typename... Args>

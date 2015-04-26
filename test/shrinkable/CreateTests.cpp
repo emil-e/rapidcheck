@@ -99,8 +99,9 @@ TEST_CASE("shrinkable::shrinkRecur") {
          int expected = start;
          for (bool branch : actions) {
            RC_ASSERT(shrinkable.value() == expected);
-           if (branch)
+           if (branch) {
              shrinks = shrinkable.shrinks();
+           }
            shrinkable = *shrinks.next();
            expected--;
          }

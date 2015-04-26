@@ -28,8 +28,9 @@ public:
   std::string id() const { return m_id; }
 
   ~DestructNotifier() {
-    if (m_logp != nullptr)
+    if (m_logp != nullptr) {
       m_logp->push_back(m_id);
+    }
   }
 
 private:

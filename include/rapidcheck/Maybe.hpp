@@ -24,19 +24,21 @@ Maybe<T>::Maybe(T &&value)
 
 template <typename T>
 Maybe<T> &Maybe<T>::operator=(const T &value) {
-  if (m_initialized)
+  if (m_initialized) {
     **this = value;
-  else
+  } else {
     init(value);
+  }
   return *this;
 }
 
 template <typename T>
 Maybe<T> &Maybe<T>::operator=(T &&value) {
-  if (m_initialized)
+  if (m_initialized) {
     **this = std::move(value);
-  else
+  } else {
     init(std::move(value));
+  }
   return *this;
 }
 
@@ -91,18 +93,20 @@ template <typename T>
 Maybe<T>::Maybe(const Maybe &other) noexcept(
     std::is_nothrow_copy_constructible<T>::value)
     : m_initialized(false) {
-  if (other.m_initialized)
+  if (other.m_initialized) {
     init(*other);
+  }
 }
 
 template <typename T>
 Maybe<T> &Maybe<T>::operator=(const Maybe &rhs) noexcept(
     std::is_nothrow_copy_constructible<T>::value
         &&std::is_nothrow_copy_assignable<T>::value) {
-  if (rhs.m_initialized)
+  if (rhs.m_initialized) {
     *this = *rhs;
-  else
+  } else {
     reset();
+  }
 
   return *this;
 }
@@ -111,34 +115,38 @@ template <typename T>
 Maybe<T>::Maybe(Maybe &&other) noexcept(
     std::is_nothrow_move_constructible<T>::value)
     : m_initialized(false) {
-  if (other.m_initialized)
+  if (other.m_initialized) {
     init(std::move(*other));
+  }
 }
 
 template <typename T>
 Maybe<T> &Maybe<T>::
 operator=(Maybe &&rhs) noexcept(std::is_nothrow_move_constructible<T>::value &&
                                     std::is_nothrow_move_assignable<T>::value) {
-  if (rhs.m_initialized)
+  if (rhs.m_initialized) {
     *this = std::move(*rhs);
-  else
+  } else {
     reset();
+  }
 
   return *this;
 }
 
 template <typename T>
 Maybe<T>::~Maybe() {
-  if (m_initialized)
+  if (m_initialized) {
     (**this).~T();
+  }
 }
 
 template <typename T, typename U>
 bool operator==(const Maybe<T> &lhs, const Maybe<U> &rhs) {
-  if (!lhs && !rhs)
+  if (!lhs && !rhs) {
     return true;
-  else if (lhs && rhs)
+  } else if (lhs && rhs) {
     return *lhs == *rhs;
+  }
 
   return false;
 }
@@ -150,10 +158,11 @@ bool operator!=(const Maybe<T> &lhs, const Maybe<U> &rhs) {
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const Maybe<T> &value) {
-  if (value)
+  if (value) {
     show(*value, os);
-  else
+  } else {
     os << "Nothing";
+  }
   return os;
 }
 

@@ -28,8 +28,9 @@ public:
       , m_next(0) {}
 
   Maybe<T> operator()() {
-    if (m_next >= N)
+    if (m_next >= N) {
       return Nothing;
+    }
     return std::move(m_values[m_next++]);
   }
 
@@ -67,8 +68,9 @@ public:
   }
 
   Maybe<T> operator()() {
-    if (m_iterator == end(m_container))
+    if (m_iterator == end(m_container)) {
       return Nothing;
+    }
     m_position++;
     return Maybe<T>(std::move(*(m_iterator++)));
   }
@@ -106,13 +108,15 @@ public:
       , m_end(end) {}
 
   Maybe<T> operator()() {
-    if (m_current == m_end)
+    if (m_current == m_end) {
       return Nothing;
+    }
 
-    if (m_current < m_end)
+    if (m_current < m_end) {
       return m_current++;
-    else
+    } else {
       return m_current--;
+    }
   }
 
 private:
@@ -139,8 +143,9 @@ fromContainer(Container &&container) {
   using ContainerT = Decay<Container>;
   using T = Decay<typename ContainerT::value_type>;
 
-  if (container.empty())
+  if (container.empty()) {
     return Seq<T>();
+  }
 
   return makeSeq<detail::ContainerSeq<ContainerT>>(
       std::forward<Container>(container));
@@ -161,8 +166,9 @@ Seq<Decay<T>> iterate(T &&x, Callable &&f) {
 
 template <typename T>
 Seq<T> range(T start, T end) {
-  if (start == end)
+  if (start == end) {
     return Seq<T>();
+  }
 
   return makeSeq<detail::RangeSeq<T>>(start, end);
 }
@@ -174,8 +180,9 @@ Seq<std::size_t> index() {
 
 Seq<std::pair<std::size_t, std::size_t>> subranges(std::size_t start,
                                                    std::size_t end) {
-  if (start == end)
+  if (start == end) {
     return Seq<std::pair<std::size_t, std::size_t>>();
+  }
 
   return seq::mapcat(seq::range<std::size_t>(end - start, 0),
                      [=](std::size_t rangeSize) {

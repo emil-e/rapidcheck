@@ -83,8 +83,8 @@ struct FromContainerCopyTests {
     templatedProp<T>("does not copy elements",
                      [](T elements) {
                        auto seq = seq::fromContainer(std::move(elements));
-                       while (seq.next())
-                         ;
+                       while (seq.next()) {
+                       }
                      });
   }
 };

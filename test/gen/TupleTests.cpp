@@ -43,24 +43,27 @@ TEST_CASE("gen::tuple") {
                  const auto shrink = shrinks.next();
                  const auto expected =
                      std::make_tuple(x, std::get<1>(value), std::get<2>(value));
-                 if (!shrink || (shrink->value() != expected))
+                 if (!shrink || (shrink->value() != expected)) {
                    return false;
+                 }
                }
 
                for (int x = std::get<1>(value) - 1; x >= 0; x--) {
                  const auto shrink = shrinks.next();
                  const auto expected =
                      std::make_tuple(std::get<0>(value), x, std::get<2>(value));
-                 if (!shrink || (shrink->value() != expected))
+                 if (!shrink || (shrink->value() != expected)) {
                    return false;
+                 }
                }
 
                for (int x = std::get<2>(value) - 1; x >= 0; x--) {
                  const auto shrink = shrinks.next();
                  const auto expected =
                      std::make_tuple(std::get<0>(value), std::get<1>(value), x);
-                 if (!shrink || (shrink->value() != expected))
+                 if (!shrink || (shrink->value() != expected)) {
                    return false;
+                 }
                }
 
                return !shrinks.next();

@@ -1,1 +1,2 @@
 add_subdirectory(counter)
+add_subdirectory(newgen)

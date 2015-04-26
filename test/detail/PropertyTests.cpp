@@ -136,8 +136,9 @@ TEST_CASE("toProperty") {
        [](const GenParams &params) {
          const auto n = *gen::inRange<std::size_t>(0, 10);
          const auto gen = toProperty([=](Fixed<1>, Fixed<2>, Fixed<3>) {
-           for (std::size_t i = 0; i < n; i++)
+           for (std::size_t i = 0; i < n; i++) {
              *gen::arbitrary<Fixed<1337>>();
+           }
          });
          const auto shrinkable = gen(params.random, params.size);
 

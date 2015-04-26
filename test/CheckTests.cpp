@@ -70,8 +70,9 @@ TEST_CASE("checkTestable") {
        [](std::vector<int> values) {
          const auto results =
              checkTestable([&](FixedCountdown<0>, FixedCountdown<0>) {
-               for (auto value : values)
+               for (auto value : values) {
                  *gen::just(value);
+               }
                return false;
              });
 

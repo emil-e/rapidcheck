@@ -6,8 +6,9 @@ namespace detail {
 ImplicitScope::ImplicitScope() { m_scopes.emplace(); }
 
 ImplicitScope::~ImplicitScope() {
-  for (auto destructor : m_scopes.top())
+  for (auto destructor : m_scopes.top()) {
     destructor();
+  }
   m_scopes.pop();
 }
 

@@ -23,8 +23,9 @@ bool check(const std::string &description, Testable &&testable) {
   // description
   detail::defaultTestParams();
 
-  if (!description.empty())
+  if (!description.empty()) {
     std::cerr << std::endl << "- " << description << std::endl;
+  }
   const auto result = detail::checkTestable(std::forward<Testable>(testable));
   printResultMessage(result, std::cerr);
   std::cerr << std::endl;
