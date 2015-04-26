@@ -13,20 +13,39 @@ bool isFailure(const CaseDescription &desc) {
   return desc.result.type == CaseResult::Type::Failure;
 }
 
+int sizeFor(const TestParams &params, std::size_t i) {
+  // We want sizes to be evenly spread, even when maxSuccess is not an even
+  // multiple of the number of sizes (i.e. maxSize + 1). Another thing is that
+  // we always want to ensure that the maximum size is actually used.
+
+  const auto numSizes = params.maxSize + 1;
+  const auto numRegular = (params.maxSuccess / numSizes) * numSizes;
+  if (i < numRegular) {
+    return i % numSizes;
+  }
+
+  const auto numRest = params.maxSuccess - numRegular;
+  if (numRest == 1) {
+    return 0;
+  } else {
+    return ((i % numSizes) * params.maxSize) / (numRest - 1);
+  }
+}
+
 } // namespace
 
 TestResult checkProperty(const Property &property, const TestParams &params) {
-  TestCase currentCase;
-  currentCase.size = 0;
-
   int maxDiscard = params.maxDiscardRatio * params.maxSuccess;
   int numDiscarded = 0;
   int numSuccess = 0;
-  int caseIndex = 0;
-  while (numSuccess < params.maxSuccess) {
-    // The seed is a hash of all that identifies the case together with the
-    // global seed
-    currentCase.seed = avalanche(params.seed + caseIndex + currentCase.size);
+  int index = 0;
+  std::size_t totalTests = 0;
+
+  TestCase currentCase;
+  currentCase.size = sizeFor(params, index);
+
+  for (; numSuccess < params.maxSuccess; totalTests++) {
+    currentCase.seed = avalanche(params.seed + totalTests);
 
     const auto shrinkable =
         property(Random(currentCase.seed), currentCase.size);
@@ -55,10 +74,8 @@ TestResult checkProperty(const Property &property, const TestParams &params) {
     } else {
       // Success!
       numSuccess++;
-      currentCase.size = (currentCase.size + 1) % (params.maxSize + 1);
-      // TODO better size calculation
+      currentCase.size = sizeFor(params, ++index);
     }
-    caseIndex++;
   }
 
   SuccessResult success;
