@@ -5,7 +5,9 @@ The following document is a work in progress and some parts are still missing. T
 ## Basics ##
 - [Properties](properties.md)
 - [Generators](generators.md)
+- [Displaying values](displaying.md)
 - [Assertions](assertions.md)
+- [Configuration](configuration.md)
 - [Stateful testing](state.md)
 
 ## Advanced topics ##
