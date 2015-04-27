@@ -52,7 +52,7 @@ However, it is simple to add support for your own types. To do this, add a speci
 ```C++
 struct Person {
   std::string firstName;
-  std::stirng lastName;
+  std::string lastName;
   int age;
 };
 ```
@@ -60,6 +60,9 @@ struct Person {
 We can add arbitrary support for this type by making the following visible in the file that requests the arbitrary generator:
 
 ```C++
+// NOTE: Must be in rc namespace!
+namespace rc {
+
 template<>
 struct Arbitrary<Person> {
   static Gen<Person> arbitrary() {
@@ -72,4 +75,18 @@ struct Arbitrary<Person> {
     });
   }
 };
+
+} // namespce rc
 ```
+
+With this added, RapidCheck not only knows how to generate `Person` but also `std::vector<Person>` and `std::pair<std::string, Person>`, among other types.
+
+## Size ##
+Generators in RapidCheck have an implicit size parameter that controls the size of the generated test data. Not all generators honor this parameter but most do where applicable. For example, when generating `std::vector<T>`, the size parameter controls the maximum length of the generated vector as well as the size that is passed to the generator that generates the elements of the vector. When generating primitive integral types, the size controls the maximum values that can be generated.
+
+When RapidCheck runs the test cases for a given property, it starts with a zero size and increases it up to the maximum [configured](configuration.md) limit for the final test. There are several advantages to this approach:
+
+- Smaller data is (usually) cheaper data. If we can find bugs with small sizes, we will be able to find them more quickly. Why bring out the big guns before you've tried something simpler?
+- With smaller data, the selection of values is (usually) smaller. There are fewer values between -1 and 1 than there are between -1000 and 1000 and there are fewer possible `std:vector<int>` of length 2 than there are of length 100. This means that the chance of collisions and duplicates is higher at smaller sizes, something that may shake out particular categories of bugs.
+
+In some cases, you may need to modify the size for performance reasons or to shift the distribution of generated values. For example, in the final test case, the number of elements in a generated `std::vector` might average 50 elements which means that `std::vector<std::vector<T>>` may contain 50 x 50 elements when concatenated. If `T` is also expensive, this may lead to very slow properties. You can modify the size of a generator using the `rc::gen::resize` and `rc::gen::scale` combinators. In addition, you can use the `rc::gen::withSize` combinator to have even more control.
