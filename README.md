@@ -2,6 +2,9 @@ RapidCheck [![Build Status](https://travis-ci.org/emil-e/rapidcheck.svg?branch=m
 ==========
 RapidCheck is a C++ framework for property based testing inspired by QuickCheck and other similar frameworks. In property based testing, you state facts about your code that given certain precondition should always be true. RapidCheck then generates random test data to try and find a case for which the property doesn't hold. If such a case is found, RapidCheck tries to find the smallest case (for some definition of smallest) for which the property is still false and then displays this as a counterexample. For example, if the input is an integer, RapidCheck tries to find the smallest integer for which the property is false.
 
+## Why RapidCheck? ##
+There are existing implementations of property based testing but the ones that I have found are either (in my humble opinion) a bit clunky or are missing essential features such as test case shrinking.
+
 ## Prerequisites and installation ##
 RapidCheck makes extensive use of C++11 and thus requires a compliant compiler. RapidCheck continuous integration builds using Clang 3.4 and GCC 4.9 and any later versions should also work. MSVC 2013 lacks too many C++11 features to successfully compile RapidCheck but it is possible that MSVC 2015 will work when it's released.
 
