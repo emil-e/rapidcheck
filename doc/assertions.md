@@ -32,6 +32,8 @@ Expands to:
 However, in some cases, this capturing might fail to include the information that you want.
 
 ## Reference
+The selection of assertion macros is currently rather slim. Suggestions on how to improve this is welcome.
+
 ### `RC_ASSERT(expression)` ###
 Fails the test case if `expression` evaluates to `false`.
 
