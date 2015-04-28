@@ -5,6 +5,14 @@ RapidCheck is a C++ framework for property based testing inspired by QuickCheck 
 ## Why RapidCheck? ##
 There are existing implementations of property based testing but the ones that I have found are either (in my humble opinion) a bit clunky or are missing essential features such as test case shrinking.
 
+Let's throw together a list of features:
+
+- Write your properties in an imperative way that makes sense for C++
+- Test case shrinking
+- Great support for STL types, including maps and sets
+- Advanced combinators for creating your own generators
+- Stateful based on commands in the vein of Erlang QuickCheck
+
 ## Prerequisites and installation ##
 RapidCheck makes extensive use of C++11 and thus requires a compliant compiler. RapidCheck continuous integration builds using Clang 3.4 and GCC 4.9 and any later versions should also work. MSVC 2013 lacks too many C++11 features to successfully compile RapidCheck but it is possible that MSVC 2015 will work when it's released.
 
