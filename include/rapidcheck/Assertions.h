@@ -26,6 +26,10 @@
 #define RC_ASSERT(expression)                                                  \
   RC__CONDITIONAL_RESULT(Failure, !(expression), expression)
 
+/// Fails the current test case unless the given condition is `false`.
+#define RC_ASSERT_FALSE(expression)                                            \
+  RC__CONDITIONAL_RESULT(Failure, (expression), expression)
+
 /// Unconditionally fails the current test case with the given message.
 #define RC_FAIL(msg) RC__UNCONDITIONAL_RESULT(Failure, (msg))
 
