@@ -24,6 +24,11 @@ Gen<T> construct();
 template <typename T, typename... Args>
 Gen<std::unique_ptr<T>> makeUnique(Gen<Args>... gens);
 
+/// Returns a generator which generates `shared_ptr`s to objects of type `T` by
+/// constructing the pointee with values from the given generators.
+template <typename T, typename... Args>
+Gen<std::shared_ptr<T>> makeShared(Gen<Args>... gens);
+
 /// Creates a binding for use with `gen::build` that binds the given member to
 /// the given generator. `Member` can be one of the following:
 ///

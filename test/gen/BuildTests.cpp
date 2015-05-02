@@ -15,7 +15,7 @@ Gen<typename T::element_type> mapDeref(Gen<T> ptrGen) {
                   typename T::element_type { return std::move(*value); });
 }
 
-TEST_CASE("gen::construct/gen::makeUnique") {
+TEST_CASE("gen::construct/gen::makeUnique/gen::makeShared") {
   prop("has tuple shrinking semantics",
        [] {
          const auto g1 = genFixedCountdown(*gen::inRange(0, 10));
@@ -39,6 +39,13 @@ TEST_CASE("gen::construct/gen::makeUnique") {
                  Random(), 0);
          RC_ASSERT(makeUniqueShrinkable.value() == tupleValue);
          RC_ASSERT(shrinkable::immediateShrinks(makeUniqueShrinkable) ==
+                   tupleShrinks);
+
+         const auto makeSharedShrinkable =
+           mapDeref(gen::makeShared<std::tuple<int, int, int>>(g1, g2, g3))(
+             Random(), 0);
+         RC_ASSERT(makeSharedShrinkable.value() == tupleValue);
+         RC_ASSERT(shrinkable::immediateShrinks(makeSharedShrinkable) ==
                    tupleShrinks);
        });
 }
@@ -109,6 +116,38 @@ TEST_CASE("gen::makeUnique") {
 
   SECTION("works with non-copyable types") {
     const auto gen = gen::makeUnique<std::tuple<NonCopyable, NonCopyable>>(
+        gen::arbitrary<NonCopyable>(), gen::arbitrary<NonCopyable>());
+    const auto value = std::move(*gen(Random(), 0).value());
+
+    RC_ASSERT(isArbitraryPredictable(std::get<0>(value)));
+    RC_ASSERT(isArbitraryPredictable(std::get<1>(value)));
+  }
+}
+
+TEST_CASE("gen::makeShared") {
+  prop("passes correct size",
+       [](const GenParams &params) {
+         const auto gen = gen::makeShared<std::tuple<int, int, int>>(
+             genSize(), genSize(), genSize());
+         const auto value = *gen(params.random, params.size).value();
+
+         RC_ASSERT(value ==
+                   std::make_tuple(params.size, params.size, params.size));
+       });
+
+  prop("passed random generators are unique",
+       [](const GenParams &params) {
+         const auto gen = gen::makeShared<std::tuple<Random, Random, Random>>(
+             genRandom(), genRandom(), genRandom());
+         const auto value = *gen(params.random, params.size).value();
+
+         RC_ASSERT(std::get<0>(value) != std::get<1>(value));
+         RC_ASSERT(std::get<0>(value) != std::get<2>(value));
+         RC_ASSERT(std::get<1>(value) != std::get<2>(value));
+       });
+
+  SECTION("works with non-copyable types") {
+    const auto gen = gen::makeShared<std::tuple<NonCopyable, NonCopyable>>(
         gen::arbitrary<NonCopyable>(), gen::arbitrary<NonCopyable>());
     const auto value = std::move(*gen(Random(), 0).value());
 
