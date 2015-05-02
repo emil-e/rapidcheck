@@ -114,7 +114,7 @@ template <typename T, typename... Members>
 Gen<T> build(Gen<T> gen, const detail::Binding<Members> &... bs) {
   using Tuple = std::tuple<T, typename detail::Binding<Members>::ValueType...>;
   return gen::map(
-      gen::tuple(gen, bs.gen...),
+      gen::tuple(std::move(gen), std::move(bs.gen)...),
       [=](Tuple &&tuple) {
         return rc::detail::applyTuple(
             std::move(tuple),
