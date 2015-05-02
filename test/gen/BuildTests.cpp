@@ -8,23 +8,42 @@
 using namespace rc;
 using namespace rc::test;
 
-TEST_CASE("gen::construct") {
+template <typename T>
+Gen<typename T::element_type> mapDeref(Gen<T> ptrGen) {
+  return gen::map(std::move(ptrGen),
+                  [](T && value) ->
+                  typename T::element_type { return std::move(*value); });
+}
+
+TEST_CASE("gen::construct/gen::makeUnique") {
   prop("has tuple shrinking semantics",
        [] {
          const auto g1 = genFixedCountdown(*gen::inRange(0, 10));
          const auto g2 = genFixedCountdown(*gen::inRange(0, 10));
          const auto g3 = genFixedCountdown(*gen::inRange(0, 10));
 
-         const auto tupleGen = gen::tuple(g1, g2, g3);
-         const auto tupleShrinkable = tupleGen(Random(), 0);
+         const auto tupleShrinkable = gen::tuple(g1, g2, g3)(Random(), 0);
+         const auto tupleValue = tupleShrinkable.value();
+         const auto tupleShrinks =
+             shrinkable::immediateShrinks(tupleShrinkable);
 
-         const auto gen = gen::construct<std::tuple<int, int, int>>(g1, g2, g3);
-         const auto shrinkable = gen(Random(), 0);
+         const auto constructShrinkable =
+             gen::construct<std::tuple<int, int, int>>(g1, g2, g3)(Random(), 0);
 
-         RC_ASSERT(shrinkable::immediateShrinks(shrinkable) ==
-                   shrinkable::immediateShrinks(tupleShrinkable));
+         RC_ASSERT(constructShrinkable.value() == tupleValue);
+         RC_ASSERT(shrinkable::immediateShrinks(constructShrinkable) ==
+                   tupleShrinks);
+
+         const auto makeUniqueShrinkable =
+             mapDeref(gen::makeUnique<std::tuple<int, int, int>>(g1, g2, g3))(
+                 Random(), 0);
+         RC_ASSERT(makeUniqueShrinkable.value() == tupleValue);
+         RC_ASSERT(shrinkable::immediateShrinks(makeUniqueShrinkable) ==
+                   tupleShrinks);
        });
+}
 
+TEST_CASE("gen::construct") {
   prop("passes correct size",
        [](const GenParams &params) {
          const auto gen = gen::construct<std::tuple<int, int, int>>(
@@ -60,6 +79,38 @@ TEST_CASE("gen::construct") {
                                     Predictable,
                                     Predictable>();
     const auto value = gen(Random(), 0).value();
+
+    RC_ASSERT(isArbitraryPredictable(std::get<0>(value)));
+    RC_ASSERT(isArbitraryPredictable(std::get<1>(value)));
+  }
+}
+
+TEST_CASE("gen::makeUnique") {
+  prop("passes correct size",
+       [](const GenParams &params) {
+         const auto gen = gen::makeUnique<std::tuple<int, int, int>>(
+             genSize(), genSize(), genSize());
+         const auto value = *gen(params.random, params.size).value();
+
+         RC_ASSERT(value ==
+                   std::make_tuple(params.size, params.size, params.size));
+       });
+
+  prop("passed random generators are unique",
+       [](const GenParams &params) {
+         const auto gen = gen::makeUnique<std::tuple<Random, Random, Random>>(
+             genRandom(), genRandom(), genRandom());
+         const auto value = *gen(params.random, params.size).value();
+
+         RC_ASSERT(std::get<0>(value) != std::get<1>(value));
+         RC_ASSERT(std::get<0>(value) != std::get<2>(value));
+         RC_ASSERT(std::get<1>(value) != std::get<2>(value));
+       });
+
+  SECTION("works with non-copyable types") {
+    const auto gen = gen::makeUnique<std::tuple<NonCopyable, NonCopyable>>(
+        gen::arbitrary<NonCopyable>(), gen::arbitrary<NonCopyable>());
+    const auto value = std::move(*gen(Random(), 0).value());
 
     RC_ASSERT(isArbitraryPredictable(std::get<0>(value)));
     RC_ASSERT(isArbitraryPredictable(std::get<1>(value)));

@@ -98,6 +98,18 @@ Gen<T> construct() {
   return gen::construct<T>(gen::arbitrary<Arg>(), gen::arbitrary<Args>()...);
 }
 
+template <typename T, typename... Args>
+Gen<std::unique_ptr<T>> makeUnique(Gen<Args>... gens) {
+  return gen::map(gen::tuple(std::move(gens)...),
+                  [](std::tuple<Args...> &&argsTuple) {
+                    return rc::detail::applyTuple(
+                        std::move(argsTuple),
+                        [](Args &&... args) {
+                          return std::unique_ptr<T>(new T(std::move(args)...));
+                        });
+                  });
+}
+
 template <typename Member>
 detail::Binding<Member> set(Member member,
                             typename detail::Binding<Member>::GenT gen) {
