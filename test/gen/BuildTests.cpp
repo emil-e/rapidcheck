@@ -241,6 +241,36 @@ TEST_CASE("gen::build") {
          RC_ASSERT(randoms.size() == 5);
        });
 
+  SECTION("works with std::unique_ptr") {
+    const auto gen = gen::build(
+        gen::makeUnique<Foobar<int>>(gen::just(1)),
+        gen::set(&Foobar<int>::setB, gen::just(2)),
+        gen::set(&Foobar<int>::setCD, gen::tuple(gen::just(3), gen::just(4))),
+        gen::set(&Foobar<int>::e, gen::just(5)));
+    const auto value = gen(Random(), 0).value();
+
+    RC_ASSERT(value->a == 1);
+    RC_ASSERT(value->b == 2);
+    RC_ASSERT(value->c == 3);
+    RC_ASSERT(value->d == 4);
+    RC_ASSERT(value->e == 5);
+  }
+
+  SECTION("works with std::shared_ptr") {
+    const auto gen = gen::build(
+        gen::makeShared<Foobar<int>>(gen::just(1)),
+        gen::set(&Foobar<int>::setB, gen::just(2)),
+        gen::set(&Foobar<int>::setCD, gen::tuple(gen::just(3), gen::just(4))),
+        gen::set(&Foobar<int>::e, gen::just(5)));
+    const auto value = gen(Random(), 0).value();
+
+    RC_ASSERT(value->a == 1);
+    RC_ASSERT(value->b == 2);
+    RC_ASSERT(value->c == 3);
+    RC_ASSERT(value->d == 4);
+    RC_ASSERT(value->e == 5);
+  }
+
   SECTION("default constructs if generator not present") {
     const auto gen = gen::build<Logger>(gen::set(&Logger::id));
     const auto value = gen(Random(), 0).value();

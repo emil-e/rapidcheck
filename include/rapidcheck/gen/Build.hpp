@@ -81,6 +81,15 @@ struct Binding {
   GenT gen;
 };
 
+template<typename T>
+T &deref(T &x) { return x; }
+
+template<typename T>
+T &deref(std::unique_ptr<T> &x) { return *x; }
+
+template<typename T>
+T &deref(std::shared_ptr<T> &x) { return *x; }
+
 template <typename T, typename Indexes, typename... Lenses>
 class BuildMapper;
 
@@ -92,8 +101,8 @@ public:
 
   T operator()(std::tuple<T, typename Lenses::ValueType...> &&tuple) const {
     T &obj = std::get<0>(tuple);
-    auto dummy = {(std::get<Indexes>(m_lenses)
-                       .set(obj, std::move(std::get<Indexes + 1>(tuple))),
+    auto dummy = {(std::get<Indexes>(m_lenses).set(
+                       deref(obj), std::move(std::get<Indexes + 1>(tuple))),
                    0)...};
 
     return std::move(obj);
