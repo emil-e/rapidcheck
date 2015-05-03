@@ -81,6 +81,28 @@ struct Binding {
   GenT gen;
 };
 
+template <typename T, typename Indexes, typename... Lenses>
+class BuildMapper;
+
+template <typename T, typename... Lenses, std::size_t... Indexes>
+class BuildMapper<T, rc::detail::IndexSequence<Indexes...>, Lenses...> {
+public:
+  BuildMapper(const Lenses &... lenses)
+      : m_lenses(std::move(lenses)...) {}
+
+  T operator()(std::tuple<T, typename Lenses::ValueType...> &&tuple) const {
+    T &obj = std::get<0>(tuple);
+    auto dummy = {(std::get<Indexes>(m_lenses)
+                       .set(obj, std::move(std::get<Indexes + 1>(tuple))),
+                   0)...};
+
+    return std::move(obj);
+  }
+
+private:
+  std::tuple<Lenses...> m_lenses;
+};
+
 } // namespace detail
 
 template <typename T, typename... Args>
@@ -136,21 +158,13 @@ detail::Binding<Member> set(Member member) {
 
 template <typename T, typename... Members>
 Gen<T> build(Gen<T> gen, const detail::Binding<Members> &... bs) {
-  using Tuple = std::tuple<T, typename detail::Binding<Members>::ValueType...>;
-  return gen::map(
-      gen::tuple(std::move(gen), std::move(bs.gen)...),
-      [=](Tuple &&tuple) {
-        return rc::detail::applyTuple(
-            std::move(tuple),
-            [&](T &&obj,
-                typename detail::Binding<Members>::ValueType &&... vs) {
-              // We use the comma operator to give the expression a
-              // type other than void so it can be expanded in an initializer
-              // list.
-              auto dummy = {(bs.lens.set(obj, std::move(vs)), 0)...};
-              return std::move(obj);
-            });
-      });
+  using Mapper =
+      detail::BuildMapper<T,
+                          rc::detail::MakeIndexSequence<sizeof...(Members)>,
+                          typename detail::Binding<Members>::LensT...>;
+
+  return gen::map(gen::tuple(std::move(gen), std::move(bs.gen)...),
+                  Mapper(bs.lens...));
 }
 
 template <typename T, typename... Members>
