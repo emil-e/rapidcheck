@@ -264,7 +264,7 @@ TEST_CASE("gen::build") {
     RC_ASSERT(isArbitraryPredictable(value.e));
   }
 
-  SECTION("works with non-copyable types") {
+  SECTION("uses correct arbitrary instances when generator not specified") {
     const auto gen = gen::build(
       gen::construct<Foobar<Predictable>, Predictable>(),
       gen::set(&Foobar<Predictable>::setB),
