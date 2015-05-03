@@ -145,9 +145,9 @@ Gen<T> build(Gen<T> gen, const detail::Binding<Members> &... bs) {
             [&](T &&obj,
                 typename detail::Binding<Members>::ValueType &&... vs) {
               // We use the comma operator to give the expression a
-              // return type other than void so it can be expanded
-              // in an initializer list.
-              auto dummy{(bs.lens.set(obj, std::move(vs)), 0)...};
+              // type other than void so it can be expanded in an initializer
+              // list.
+              auto dummy = {(bs.lens.set(obj, std::move(vs)), 0)...};
               return std::move(obj);
             });
       });
