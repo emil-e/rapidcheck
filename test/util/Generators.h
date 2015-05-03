@@ -12,30 +12,29 @@ namespace rc {
 template <>
 struct Arbitrary<detail::Configuration> {
   static Gen<detail::Configuration> arbitrary() {
-    return gen::exec([] {
-      detail::Configuration config;
-      config.seed = *gen::arbitrary<uint64_t>();
-      config.maxSuccess = *gen::inRange<int>(0, 1000);
-      config.maxSize = *gen::inRange<int>(0, 1000);
-      config.maxDiscardRatio = *gen::inRange<int>(0, 100);
-      return config;
-    });
+    return gen::build<detail::Configuration>(
+        gen::set(&detail::Configuration::seed),
+        gen::set(&detail::Configuration::maxSuccess,
+                 gen::inRange<int>(0, 1000)),
+        gen::set(&detail::Configuration::maxSize, gen::inRange<int>(0, 1000)),
+        gen::set(&detail::Configuration::maxDiscardRatio,
+                 gen::inRange<int>(0, 100)));
   }
 };
 
 template <>
 struct Arbitrary<detail::TestCase> {
   static Gen<detail::TestCase> arbitrary() {
-    return gen::exec([] {
-      detail::TestCase testCase;
-      testCase.size = *gen::withSize([](int size) {
-        // TODO this should be replaced by a sized ranged generator
-        // instead
-        return gen::inRange<int>(0, size + 1);
-      });
-      testCase.seed = *gen::arbitrary<decltype(testCase.seed)>();
-      return testCase;
-    });
+    return gen::build<detail::TestCase>(gen::set(&detail::TestCase::size,
+                                                 gen::withSize([](int size) {
+                                                   // TODO this should be
+                                                   // replaced by a sized ranged
+                                                   // generator
+                                                   // instead
+                                                   return gen::inRange<int>(
+                                                       0, size + 1);
+                                                 })),
+                                        gen::set(&detail::TestCase::seed));
   }
 };
 
@@ -51,12 +50,9 @@ struct Arbitrary<detail::CaseResult::Type> {
 template <>
 struct Arbitrary<detail::CaseResult> {
   static Gen<detail::CaseResult> arbitrary() {
-    return gen::exec([] {
-      detail::CaseResult result;
-      result.type = *gen::arbitrary<detail::CaseResult::Type>();
-      result.description = *gen::arbitrary<std::string>();
-      return result;
-    });
+    return gen::build<detail::CaseResult>(
+        gen::set(&detail::CaseResult::type),
+        gen::set(&detail::CaseResult::description));
   }
 };
 
@@ -75,41 +71,30 @@ struct Arbitrary<detail::SuccessResult> {
 template <>
 struct Arbitrary<detail::FailureResult> {
   static Gen<detail::FailureResult> arbitrary() {
-    return gen::exec([] {
-      detail::FailureResult result;
-      result.numSuccess = *gen::positive<int>();
-      result.failingCase = *gen::arbitrary<detail::TestCase>();
-      result.description = *gen::arbitrary<std::string>();
-      result.numShrinks = *gen::positive<int>();
-      result.counterExample =
-          *gen::arbitrary<decltype(result.counterExample)>();
-      return result;
-    });
+    return gen::build<detail::FailureResult>(
+        gen::set(&detail::FailureResult::numSuccess, gen::positive<int>()),
+        gen::set(&detail::FailureResult::failingCase),
+        gen::set(&detail::FailureResult::description),
+        gen::set(&detail::FailureResult::numShrinks, gen::positive<int>()));
   }
 };
 
 template <>
 struct Arbitrary<detail::GaveUpResult> {
   static Gen<detail::GaveUpResult> arbitrary() {
-    return gen::exec([] {
-      detail::GaveUpResult result;
-      result.numSuccess = *gen::positive<int>();
-      result.description = *gen::arbitrary<std::string>();
-      return result;
-    });
+    return gen::build<detail::GaveUpResult>(
+        gen::set(&detail::GaveUpResult::numSuccess, gen::positive<int>()),
+        gen::set(&detail::GaveUpResult::description));
   }
 };
 
 template <>
 struct Arbitrary<detail::TestParams> {
   static Gen<detail::TestParams> arbitrary() {
-    return gen::exec([] {
-      detail::TestParams params;
-      params.maxSuccess = *gen::inRange(0, 100);
-      params.maxSize = *gen::inRange(0, 101);
-      params.maxDiscardRatio = *gen::inRange(0, 100);
-      return params;
-    });
+    return gen::build<detail::TestParams>(
+        gen::set(&detail::TestParams::maxSuccess, gen::inRange(0, 100)),
+        gen::set(&detail::TestParams::maxSize, gen::inRange(0, 101)),
+        gen::set(&detail::TestParams::maxDiscardRatio, gen::inRange(0, 100)));
   }
 };
 
