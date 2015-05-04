@@ -25,6 +25,7 @@ add_executable(rapidcheck_tests
   gen/CreateTests.cpp
   gen/DistinctTests.cpp
   gen/ExecTests.cpp
+  gen/MaybeTests.cpp
   gen/NumericTests.cpp
   gen/SelectTests.cpp
   gen/TextTests.cpp

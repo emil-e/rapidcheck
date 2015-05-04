@@ -106,33 +106,6 @@ struct Arbitrary<Seq<T>> {
 };
 
 template <typename T>
-inline Shrinkable<Maybe<T>> prependNothing(Shrinkable<Maybe<T>> &&s) {
-  return shrinkable::mapShrinks(
-      std::move(s),
-      [](Seq<Shrinkable<Maybe<T>>> &&shrinks) {
-        return seq::concat(seq::just(shrinkable::just(Maybe<T>())),
-                           seq::map(std::move(shrinks), &prependNothing<T>));
-      });
-};
-
-template <typename T>
-struct Arbitrary<Maybe<T>> {
-  static Gen<Maybe<T>> arbitrary() {
-    return [](const Random &random, int size) {
-      auto r = random;
-      const auto x = r.split().next() % (size + 1);
-      if (x == 0) {
-        return shrinkable::just(Maybe<T>());
-      }
-
-      return prependNothing(
-          shrinkable::map(gen::arbitrary<T>()(r, size),
-                          [](T &&x) -> Maybe<T> { return std::move(x); }));
-    };
-  }
-};
-
-template <typename T>
 struct Arbitrary<Shrinkable<T>> {
   static Gen<Shrinkable<T>> arbitrary() {
     // TODO fapply
