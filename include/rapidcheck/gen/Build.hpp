@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/gen/Tuple.h"
 #include "rapidcheck/detail/ApplyTuple.h"
 
 namespace rc {

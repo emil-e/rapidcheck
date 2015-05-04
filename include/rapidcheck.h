@@ -12,12 +12,12 @@
 
 #include "rapidcheck/Gen.h"
 #include "rapidcheck/gen/Arbitrary.h"
+#include "rapidcheck/gen/Build.h"
 #include "rapidcheck/gen/Container.h"
 #include "rapidcheck/gen/Create.h"
 #include "rapidcheck/gen/Distinct.h"
 #include "rapidcheck/gen/Exec.h"
 #include "rapidcheck/gen/Numeric.h"
-#include "rapidcheck/gen/Build.h"
 #include "rapidcheck/gen/Select.h"
 #include "rapidcheck/gen/Text.h"
 #include "rapidcheck/gen/Transform.h"
