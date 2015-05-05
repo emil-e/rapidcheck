@@ -297,12 +297,12 @@ struct ContainerArbitrary2 {
 
 #define SPECIALIZE_SEQUENCE_ARBITRARY1(Container)                              \
   template <typename... Args>                                                  \
-  class DefaultArbitrary<Container<Args...>>                                   \
+  struct DefaultArbitrary<Container<Args...>>                                  \
       : public gen::detail::ContainerArbitrary1<Container<Args...>> {};
 
 #define SPECIALIZE_SEQUENCE_ARBITRARY2(Container)                              \
   template <typename... Args>                                                  \
-  class DefaultArbitrary<Container<Args...>>                                   \
+  struct DefaultArbitrary<Container<Args...>>                                  \
       : public gen::detail::ContainerArbitrary2<Container<Args...>> {};
 
 SPECIALIZE_SEQUENCE_ARBITRARY1(std::vector)

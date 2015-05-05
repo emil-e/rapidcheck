@@ -24,7 +24,7 @@ class JustSeq {
 public:
   template <typename... Args>
   JustSeq(Args &&... args)
-      : m_values{std::forward<Args>(args)...}
+      : m_values{{std::forward<Args>(args)...}}
       , m_next(0) {}
 
   Maybe<T> operator()() {

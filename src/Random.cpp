@@ -17,7 +17,7 @@ constexpr uint64_t kTweak[2] = {13, 37};
 }
 
 Random::Random()
-    : Random({0, 0, 0, 0}) {}
+    : Random(Key{{0, 0, 0, 0}}) {}
 
 Random::Random(const Key &key)
     : m_key(key)
@@ -28,7 +28,7 @@ Random::Random(const Key &key)
 
 // We just repeat the seed in the key
 Random::Random(uint64_t seed)
-    : Random({seed, seed, seed, seed}) {}
+    : Random(Key{{seed, seed, seed, seed}}) {}
 
 Random Random::split() {
   assert(m_counter == 0);
