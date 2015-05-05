@@ -239,7 +239,8 @@ class ConcatSeq {
 public:
   template <typename... Ts>
   ConcatSeq(Seq<Ts>... seqs)
-      : m_seqs{std::move(seqs)...} {}
+      : m_seqs{std::move(seqs)...}
+      , m_i(0) {}
 
   Maybe<T> operator()() {
     while (m_i < N) {
