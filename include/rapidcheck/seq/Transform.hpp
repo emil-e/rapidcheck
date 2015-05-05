@@ -234,6 +234,31 @@ private:
   Seq<Seq<T>> m_seqs;
 };
 
+template <typename T, std::size_t N>
+class ConcatSeq {
+public:
+  template <typename... Ts>
+  ConcatSeq(Seq<Ts>... seqs)
+      : m_seqs{std::move(seqs)...} {}
+
+  Maybe<T> operator()() {
+    while (m_i < N) {
+      auto value = m_seqs[m_i].next();
+      if (value) {
+        return value;
+      }
+
+      m_i++;
+    }
+
+    return Nothing;
+  }
+
+private:
+  Seq<T> m_seqs[N];
+  std::size_t m_i;
+};
+
 template <typename Mapper, typename T>
 class MapcatSeq {
 public:
@@ -325,7 +350,8 @@ Seq<T> join(Seq<Seq<T>> seqs) {
 
 template <typename T, typename... Ts>
 Seq<T> concat(Seq<T> seq, Seq<Ts>... seqs) {
-  return seq::join(seq::just(std::move(seq), std::move(seqs)...));
+  return makeSeq<detail::ConcatSeq<T, sizeof...(Ts) + 1>>(std::move(seq),
+                                                          std::move(seqs)...);
 }
 
 template <typename T, typename Mapper>
