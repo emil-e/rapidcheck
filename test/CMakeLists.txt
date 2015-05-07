@@ -12,6 +12,7 @@ add_executable(rapidcheck_tests
   detail/BitStreamTests.cpp
   detail/ConfigurationTests.cpp
   detail/ExpressionCaptorTests.cpp
+  detail/FrequencyMapTests.cpp
   detail/ImplicitParamTests.cpp
   detail/MapParserTests.cpp
   detail/PropertyTests.cpp
