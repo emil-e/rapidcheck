@@ -1,5 +1,7 @@
 #include "rapidcheck/detail/FrequencyMap.h"
 
+#include <algorithm>
+
 namespace rc {
 namespace detail {
 
