@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/detail/FrequencyMap.h"
+
 namespace rc {
 namespace gen {
 namespace detail {
@@ -25,6 +27,27 @@ public:
 
 private:
   Container m_container;
+};
+
+template <typename T>
+class WeightedElementGen {
+public:
+  WeightedElementGen(std::vector<std::size_t> &&frequencies,
+                     std::vector<T> &&elements)
+      : m_map(std::move(frequencies))
+      , m_elements(std::move(elements)) {}
+
+  Shrinkable<T> operator()(const Random &random, int size) const {
+    if (m_map.sum() == 0) {
+      throw GenerationFailure("Sum of weights is 0");
+    }
+    return shrinkable::just(static_cast<T>(
+        m_elements[m_map.lookup(Random(random).next() % m_map.sum())]));
+  }
+
+private:
+  rc::detail::FrequencyMap m_map;
+  std::vector<T> m_elements;
 };
 
 template <typename T>
@@ -57,6 +80,23 @@ Gen<Decay<T>> element(T &&element, Ts &&... elements) {
   using Vector = std::vector<Decay<T>>;
   return detail::ElementOfGen<Vector>(
       Vector{std::forward<T>(element), std::forward<Ts>(elements)...});
+}
+
+template <typename T>
+Gen<T>
+weightedElement(std::initializer_list<std::pair<std::size_t, T>> pairs) {
+  std::vector<std::size_t> frequencies;
+  frequencies.reserve(pairs.size());
+  std::vector<T> elements;
+  elements.reserve(pairs.size());
+
+  for (auto &pair : pairs) {
+    frequencies.push_back(pair.first);
+    elements.push_back(std::move(pair.second));
+  }
+
+  return detail::WeightedElementGen<T>(std::move(frequencies),
+                                       std::move(elements));
 }
 
 template <typename T, typename... Ts>

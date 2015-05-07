@@ -13,6 +13,12 @@ Gen<typename Decay<Container>::value_type> elementOf(Container &&container);
 template <typename T, typename... Ts>
 Gen<Decay<T>> element(T &&element, Ts &&... elements);
 
+/// Takes a list of elements paired with respective weights and returns a
+/// generator which generates one of the elements according to the weights.
+template <typename T>
+Gen<T>
+weightedElement(std::initializer_list<std::pair<std::size_t, T>> pairs);
+
 /// Returns a generator which randomly generates using one of the specified
 /// generators.
 template <typename T, typename... Ts>
