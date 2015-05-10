@@ -38,6 +38,7 @@ add_executable(rapidcheck_tests
   main.cpp
   seq/CreateTests.cpp
   seq/OperationsTests.cpp
+  seq/SeqIteratorTests.cpp
   seq/TransformTests.cpp
   shrink/ShrinkTests.cpp
   shrinkable/CreateTests.cpp

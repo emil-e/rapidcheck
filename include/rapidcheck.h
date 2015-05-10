@@ -3,6 +3,7 @@
 #include "rapidcheck/Seq.h"
 #include "rapidcheck/seq/Create.h"
 #include "rapidcheck/seq/Operations.h"
+#include "rapidcheck/seq/SeqIterator.h"
 #include "rapidcheck/seq/Transform.h"
 
 #include "rapidcheck/Shrinkable.h"
