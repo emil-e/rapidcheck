@@ -6,6 +6,7 @@
 #include "rapidcheck/shrinkable/Operations.h"
 
 #include "util/ArbitraryRandom.h"
+#include "util/ShrinkableUtils.h"
 
 namespace rc {
 namespace test {
@@ -22,15 +23,13 @@ Gen<Random> genRandom() {
 Gen<int> genCountdown() {
   return [=](const Random &random, int size) {
     int n = Random(random).next() % (size + 1);
-    return shrinkable::shrinkRecur(n,
-                                   [](int x) { return seq::range(x - 1, -1); });
+    return countdownShrinkable(n);
   };
 }
 
 Gen<int> genFixedCountdown(int value) {
   return [=](const Random &random, int size) {
-    return shrinkable::shrinkRecur(value,
-                                   [](int x) { return seq::range(x - 1, -1); });
+    return countdownShrinkable(value);
   };
 }
 

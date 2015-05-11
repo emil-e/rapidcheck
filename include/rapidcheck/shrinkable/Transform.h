@@ -22,6 +22,13 @@ Shrinkable<T> mapShrinks(Shrinkable<T> shrinkable, Mapper &&mapper);
 template <typename T, typename Predicate>
 Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate &&pred);
 
+/// Monadic bind. Takes a `Shrinkable<T>` and a function from a `T` to a
+/// `Shrinkable<U>` and returns a `Shrinkable<U>` that shrinks by first
+/// shrinking the first value and then shrinking the second value.
+template <typename T, typename Callable>
+Shrinkable<typename std::result_of<Callable(T)>::type::ValueType>
+mapcat(Shrinkable<T> shrinkable, Callable &&callable);
+
 /// Given two `Shrinkables`, returns a `Shrinkable` pair that first shrinks the
 /// first element and then the second.
 template <typename T1, typename T2>

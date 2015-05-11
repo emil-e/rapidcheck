@@ -51,6 +51,33 @@ private:
   Shrinkable<T> m_shrinkable;
 };
 
+template <typename T, typename Callable>
+class MapcatShrinkable {
+public:
+  using U = typename std::result_of<Callable(T)>::type::ValueType;
+
+  template <typename CallableArg>
+  MapcatShrinkable(Shrinkable<T> shrinkable, CallableArg &&callable)
+      : m_shrinkable(std::move(shrinkable))
+      , m_callable(std::forward<CallableArg>(callable)) {}
+
+  U value() const { return m_callable(m_shrinkable.value()).value(); }
+
+  Seq<Shrinkable<U>> shrinks() const {
+    const auto callable = m_callable;
+    return seq::concat(seq::map(m_shrinkable.shrinks(),
+                                [=](Shrinkable<T> &&s) {
+                                  return shrinkable::mapcat(std::move(s),
+                                                            callable);
+                                }),
+                       m_callable(m_shrinkable.value()).shrinks());
+  }
+
+private:
+  Shrinkable<T> m_shrinkable;
+  Callable m_callable;
+};
+
 } // namespace detail
 
 template <typename T, typename Mapper>
@@ -83,6 +110,14 @@ Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate &&pred) {
                                                          pred);
                              });
       });
+}
+
+template <typename T, typename Callable>
+Shrinkable<typename std::result_of<Callable(T)>::type::ValueType>
+mapcat(Shrinkable<T> shrinkable, Callable &&callable) {
+  using Impl = detail::MapcatShrinkable<T, Decay<Callable>>;
+  return makeShrinkable<Impl>(std::move(shrinkable),
+                              std::forward<Callable>(callable));
 }
 
 template <typename T1, typename T2>

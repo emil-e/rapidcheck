@@ -47,6 +47,7 @@ add_executable(rapidcheck_tests
   state/StateTests.cpp
   util/ArbitraryRandom.cpp
   util/GenUtils.cpp
+  util/ShrinkableUtils.cpp
   )
 
 target_link_libraries(rapidcheck_tests rapidcheck)

@@ -7,6 +7,7 @@
 
 #include "util/Generators.h"
 #include "util/CopyGuard.h"
+#include "util/ShrinkableUtils.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -82,6 +83,90 @@ TEST_CASE("shrinkable::filter") {
         RC_ASSERT(*shrinkable::filter(shrinkable, fn::constant(true)) ==
                   shrinkable);
       });
+}
+
+TEST_CASE("shrinkable::mapcat") {
+  SECTION("monad laws") {
+    prop("left identity",
+         [] {
+           const auto a = *gen::inRange(0, 10);
+           const auto s =
+               shrinkable::mapcat(shrinkable::just(a), &countdownShrinkable);
+           RC_ASSERT(s == countdownShrinkable(a));
+         });
+
+    prop("right identity",
+         [](Shrinkable<int> m) {
+           const auto s = shrinkable::mapcat(
+               m, [](int v) { return shrinkable::just(v); });
+           RC_ASSERT(s == m);
+         });
+
+    prop("associativity",
+         [](Shrinkable<int> m) {
+           const auto f = &countdownShrinkable;
+           const auto g = [](int x) {
+             return shrinkable::map(countdownShrinkable(x),
+                                    [](int v) { return v / 2; });
+           };
+
+           const auto s1 = shrinkable::mapcat(shrinkable::mapcat(m, f), g);
+           const auto s2 = shrinkable::mapcat(
+               m, [=](int x) { return shrinkable::mapcat(f(x), g); });
+           assertEquivalent(s1, s2);
+         });
+  }
+
+  static const auto pairShrinkable = [](int a, int b) {
+    return shrinkable::mapcat(
+        countdownShrinkable(a),
+        [=](int x) {
+          return shrinkable::map(countdownShrinkable(b),
+                                 [=](int y) { return std::make_pair(x, y); });
+        });
+  };
+
+  prop("first tries to shrink first shrinkable",
+       [] {
+         const auto small = gen::inRange(0, 10);
+         const auto xs = *gen::pair(small, small);
+         const auto shrinkable = pairShrinkable(xs.first, xs.second);
+
+         const auto shrinks = seq::map(
+             seq::take(xs.first, shrinkable::immediateShrinks(shrinkable)),
+             [](const std::pair<int, int> &p) { return p.first; });
+
+         RC_ASSERT(shrinks == countdownSeq(xs.first));
+       });
+
+  prop("tries to shrink second shrinkable after first shrinkable",
+       [] {
+         const auto small = gen::inRange(0, 10);
+         const auto xs = *gen::pair(small, small);
+         const auto shrinkable = pairShrinkable(xs.first, xs.second);
+
+         const auto shrinks = seq::map(
+             seq::drop(xs.first, shrinkable::immediateShrinks(shrinkable)),
+             [](const std::pair<int, int> &p) { return p.second; });
+
+         RC_ASSERT(shrinks == countdownSeq(xs.second));
+       });
+
+  prop("when trying to shrink the second shrinkable, the first one is fixed",
+       [] {
+         const auto small = gen::inRange(0, 10);
+         const auto xs = *gen::pair(small, small);
+         const auto shrinkable = pairShrinkable(xs.first, xs.second);
+
+         const auto firstValue = shrinkable.value().first;
+         const auto n = *gen::inRange(xs.first, xs.first + xs.second);
+         const auto shrink = *seq::at(shrinkable.shrinks(), n);
+         onAnyPath(shrink,
+                   [=](const Shrinkable<std::pair<int, int>> &value,
+                       const Shrinkable<std::pair<int, int>> &shrink) {
+                     RC_ASSERT(value.value().first == firstValue);
+                   });
+       });
 }
 
 TEST_CASE("shrinkable::pair") {
