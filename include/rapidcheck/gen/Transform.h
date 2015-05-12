@@ -23,6 +23,10 @@ template <typename T, typename Mapper>
 Gen<typename std::result_of<Mapper(T)>::type::ValueType>
 mapcat(Gen<T> gen, Mapper &&mapper);
 
+/// Flattens a generator of generators of `T` into a generator of `T`. This is
+/// the monadic join operation.
+template <typename T>
+Gen<T> join(Gen<Gen<T>> gen);
 
 /// Returns a generator that uses the given generator to generate only values
 /// that match the given predicate. Throws a `GenerationFailure` if such a value

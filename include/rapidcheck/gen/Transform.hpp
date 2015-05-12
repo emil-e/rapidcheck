@@ -36,7 +36,7 @@ public:
   template <typename MapperArg>
   explicit MapcatGen(Gen<T> gen, MapperArg &&mapper)
       : m_gen(std::move(gen))
-      , m_mapper(std::forward<Mapper>(mapper)) {}
+      , m_mapper(std::forward<MapperArg>(mapper)) {}
 
   Shrinkable<U> operator()(const Random &random, int size) const {
     auto r1 = random;
@@ -49,6 +49,24 @@ public:
 private:
   Gen<T> m_gen;
   Mapper m_mapper;
+};
+
+template <typename T>
+class JoinGen {
+public:
+  explicit JoinGen(Gen<Gen<T>> gen)
+      : m_gen(std::move(gen)) {}
+
+  Shrinkable<T> operator()(const Random &random, int size) const {
+    auto r1 = random;
+    auto r2 = r1.split();
+    return shrinkable::mapcat(
+        m_gen(r1, size),
+        [=](const Gen<T> &innerGen) { return innerGen(r2, size); });
+  }
+
+private:
+  Gen<Gen<T>> m_gen;
 };
 
 template <typename T, typename Predicate>
@@ -102,6 +120,9 @@ mapcat(Gen<T> gen, Mapper &&mapper) {
                                              std::forward<Mapper>(mapper));
 }
 
+template <typename T>
+Gen<T> join(Gen<Gen<T>> gen) {
+  return detail::JoinGen<T>(std::move(gen));
 }
 
 template <typename T, typename Predicate>

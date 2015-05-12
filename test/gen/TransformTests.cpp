@@ -126,6 +126,63 @@ TEST_CASE("gen::mapcat") {
   }
 }
 
+TEST_CASE("gen::join") {
+  prop("gen::join(gen::map(s, f)) == gen::mapcat(s, f)",
+       [](Shrinkable<int> a, Shrinkable<int> b) {
+         const auto f = [=](int x) -> Gen<std::pair<int, int>> {
+           return fn::constant(
+               shrinkable::map(b, [=](int y) { return std::make_pair(x, y); }));
+         };
+         const auto expected =
+             gen::mapcat(Gen<int>(fn::constant(a)), f)(Random(), 0);
+         const auto actual =
+             gen::join(gen::map(Gen<int>(fn::constant(a)), f))(Random(), 0);
+
+         RC_ASSERT(actual == expected);
+       });
+
+  prop("passes correct size",
+       [](const GenParams &params) {
+         const auto gen = gen::join(gen::map(
+             genSize(),
+             [=](int x) {
+               return gen::map(genSize(),
+                               [=](int y) { return std::make_pair(x, y); });
+             }));
+
+         const auto value = gen(params.random, params.size).value();
+         RC_ASSERT(value == std::make_pair(params.size, params.size));
+       });
+
+  prop("passes unique random generators",
+       [](const GenParams &params) {
+         const auto gen =
+             gen::join(gen::map(genRandom(),
+                                [=](const Random &x) {
+                                  return gen::map(genRandom(),
+                                                  [=](const Random &y) {
+                                                    return std::make_pair(x, y);
+                                                  });
+                                }));
+
+         const auto value = gen(params.random, params.size).value();
+         RC_ASSERT(value.first != value.second);
+         RC_ASSERT(value.first != params.random);
+         RC_ASSERT(value.second != params.random);
+       });
+
+  SECTION("works with non-copyable types") {
+    const auto gen = gen::join(gen::map(gen::arbitrary<NonCopyable>(),
+                                        [](const NonCopyable &x) {
+                                          RC_ASSERT(isArbitraryPredictable(x));
+                                          return gen::arbitrary<NonCopyable>();
+                                        }));
+
+    const auto value = gen(Random(), 0).value();
+    RC_ASSERT(isArbitraryPredictable(value));
+  }
+}
+
 TEST_CASE("gen::cast") {
   prop("casting to a larger type and then back yields original",
        [](const Shrinkable<uint8_t> &shrinkable) {
