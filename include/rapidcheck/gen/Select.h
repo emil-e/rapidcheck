@@ -24,6 +24,13 @@ weightedElement(std::initializer_list<std::pair<std::size_t, T>> pairs);
 template <typename T, typename... Ts>
 Gen<T> oneOf(Gen<T> gen, Gen<Ts>... gens);
 
+/// Takes a list of generators paired with respective weights and returns a
+/// generator which randomly uses one of the generators according to the weights
+/// to generate the final value.
+template <typename T>
+Gen<T>
+weightedOneOf(std::initializer_list<std::pair<std::size_t, Gen<T>>> pairs);
+
 } // namespace gen
 } // namespace rc
 

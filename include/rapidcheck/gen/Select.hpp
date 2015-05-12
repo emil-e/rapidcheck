@@ -104,5 +104,11 @@ Gen<T> oneOf(Gen<T> gen, Gen<Ts>... gens) {
   return detail::OneOfGen<T>(std::move(gen), std::move(gens)...);
 }
 
+template <typename T>
+Gen<T>
+weightedOneOf(std::initializer_list<std::pair<std::size_t, Gen<T>>> pairs) {
+  return gen::join(gen::weightedElement(pairs));
+}
+
 } // namespace gen
 } // namespace rc
