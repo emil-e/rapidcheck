@@ -99,7 +99,7 @@ TEST_CASE("gen::mapcat") {
          RC_ASSERT(value == std::make_pair(params.size, params.size));
        });
 
-  prop("passes unique randoms",
+  prop("passes unique random generators",
        [](const GenParams &params) {
          const auto gen = gen::mapcat(
              genRandom(),
