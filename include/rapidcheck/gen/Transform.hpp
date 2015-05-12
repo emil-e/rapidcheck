@@ -28,6 +28,29 @@ private:
   Gen<T> m_gen;
 };
 
+template <typename T, typename Mapper>
+class MapcatGen {
+public:
+  using U = typename std::result_of<Mapper(T)>::type::ValueType;
+
+  template <typename MapperArg>
+  explicit MapcatGen(Gen<T> gen, MapperArg &&mapper)
+      : m_gen(std::move(gen))
+      , m_mapper(std::forward<Mapper>(mapper)) {}
+
+  Shrinkable<U> operator()(const Random &random, int size) const {
+    auto r1 = random;
+    auto r2 = r1.split();
+    const auto mapper = m_mapper;
+    return shrinkable::mapcat(
+        m_gen(r1, size), [=](T &&x) { return mapper(std::move(x))(r2, size); });
+  }
+
+private:
+  Gen<T> m_gen;
+  Mapper m_mapper;
+};
+
 template <typename T, typename Predicate>
 class FilterGen {
 public:
@@ -72,10 +95,13 @@ Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(Mapper &&mapper) {
   return gen::map(gen::arbitrary<T>(), std::forward<Mapper>(mapper));
 }
 
-template <typename T, typename U>
-Gen<T> cast(Gen<U> gen) {
-  return gen::map(std::move(gen),
-                  [](U &&x) { return static_cast<T>(std::move(x)); });
+template <typename T, typename Mapper>
+Gen<typename std::result_of<Mapper(T)>::type::ValueType>
+mapcat(Gen<T> gen, Mapper &&mapper) {
+  return detail::MapcatGen<T, Decay<Mapper>>(std::move(gen),
+                                             std::forward<Mapper>(mapper));
+}
+
 }
 
 template <typename T, typename Predicate>
@@ -87,6 +113,12 @@ Gen<T> suchThat(Gen<T> gen, Predicate &&pred) {
 template <typename T, typename Predicate>
 Gen<T> suchThat(Predicate &&pred) {
   return gen::suchThat(gen::arbitrary<T>(), std::forward<Predicate>(pred));
+}
+
+template <typename T, typename U>
+Gen<T> cast(Gen<U> gen) {
+  return gen::map(std::move(gen),
+                  [](U &&x) { return static_cast<T>(std::move(x)); });
 }
 
 template <typename T>
