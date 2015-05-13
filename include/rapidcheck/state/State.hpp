@@ -125,15 +125,17 @@ private:
         entry.shrinkable = genFunc(preState)(entry.random, size);
         const auto cmd = entry.shrinkable.value();
         entry.postState = cmd->nextState(preState);
+        return true;
       } catch (const CaseResult &result) {
         if (result.type != CaseResult::Type::Discard) {
           throw;
         }
 
-        return false;
+      } catch (const GenerationFailure &failure) {
+        // Just return false below
       }
 
-      return true;
+      return false;
     }
   };
 

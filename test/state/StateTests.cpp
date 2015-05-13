@@ -449,3 +449,152 @@ TEST_CASE("state::check") {
          }
        });
 }
+
+struct Bag {
+  std::vector<int> items;
+  bool open = false;
+};
+
+using BagCommand = Command<Bag, Bag>;
+
+struct Open : public BagCommand {
+  State nextState(const State &s0) const override {
+    RC_PRE(!s0.open);
+    auto s1 = s0;
+    s1.open = true;
+    return s1;
+  }
+
+  void run(const State &s0, Sut &sut) const override {
+    sut.open = true;
+  }
+
+  void show(std::ostream &os) const override {
+    os << "Open";
+  }
+};
+
+struct Close : public BagCommand {
+  State nextState(const State &s0) const override {
+    RC_PRE(s0.open);
+    auto s1 = s0;
+    s1.open = false;
+    return s1;
+  }
+
+  void run(const State &s0, Sut &sut) const override {
+    sut.open = false;
+  }
+
+  void show(std::ostream &os) const override {
+    os << "Close";
+  }
+};
+
+struct Add : public BagCommand {
+  int item = *gen::arbitrary<int>();
+
+  State nextState(const State &s0) const override {
+    RC_PRE(s0.open);
+    auto s1 = s0;
+    s1.items.push_back(item);
+    return s1;
+  }
+
+  void run(const State &s0, Sut &sut) const override {
+    sut.items.push_back(item);
+  }
+
+  void show(std::ostream &os) const override {
+    os << "Add(" << item << ")";
+  }
+};
+
+struct Del : public BagCommand {
+  std::size_t index;
+
+  explicit Del(const Bag &s0) {
+    index = *gen::inRange<std::size_t>(0, s0.items.size());
+  }
+
+  State nextState(const State &s0) const override {
+    RC_PRE(s0.open);
+    RC_PRE(index < s0.items.size());
+    auto s1 = s0;
+    s1.items.erase(begin(s1.items) + index);
+    return s1;
+  }
+
+  void run(const State &s0, Sut &sut) const override {
+    sut.items.erase(begin(sut.items) + index);
+  }
+
+  void show(std::ostream &os) const override {
+    os << "Del(" << index << ")";
+  }
+};
+
+struct Get : public BagCommand {
+  std::size_t index;
+
+  explicit Get(const Bag &s0) {
+    index = *gen::inRange<std::size_t>(0, s0.items.size());
+  }
+
+  State nextState(const State &s0) const override {
+    RC_PRE(s0.open);
+    RC_PRE(index < s0.items.size());
+    return s0;
+  }
+
+  void run(const State &s0, Sut &sut) const override {
+    RC_ASSERT(sut.items.size() < 2);
+    RC_ASSERT(sut.items[index] == s0.items[index]);
+  }
+
+  void show(std::ostream &os) const override {
+    os << "Get(" << index << ")";
+  }
+};
+
+// TODO move this
+
+template <typename Cmd>
+std::vector<std::string> showCommands(const Commands<Cmd> &commands) {
+  std::vector<std::string> cmdStrings;
+  cmdStrings.reserve(commands.commands.size());
+  for (const auto &cmd : commands.commands) {
+    std::ostringstream ss;
+    cmd->show(ss);
+    cmdStrings.push_back(ss.str());
+  }
+
+  return cmdStrings;
+}
+
+TEST_CASE("state integration tests") {
+  prop("db",
+       [](const GenParams &params) {
+         Bag s0;
+         const auto gen = genCommands<BagCommand>(
+             s0, &state::anyCommand<Open, Close, Add, Del, Get>);
+         const auto commands = searchGen(params.random,
+                                         params.size,
+                                         gen,
+                                         [=](const Commands<BagCommand> &cmd) {
+                                           try {
+                                             Bag sut;
+                                             cmd.run(s0, sut);
+                                           } catch (...) {
+                                             return true;
+                                           }
+                                           return false;
+                                         });
+         const auto cmdStrings = showCommands(commands);
+         RC_ASSERT(cmdStrings.size() == 4);
+         RC_ASSERT(cmdStrings[0] == "Open");
+         RC_ASSERT(cmdStrings[1] == "Add(0)");
+         RC_ASSERT(cmdStrings[2] == "Add(0)");
+         RC_ASSERT((cmdStrings[3] == "Get(0)") || (cmdStrings[3] == "Get(1)"));
+       });
+}
