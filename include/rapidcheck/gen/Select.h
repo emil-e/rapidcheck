@@ -46,6 +46,14 @@ template <typename T>
 Gen<T>
 weightedOneOf(std::initializer_list<std::pair<std::size_t, Gen<T>>> pairs);
 
+/// Chooses a generator from an initial segment of the given elements. The
+/// segment starts with length 1 and increases with size. This means that you
+/// should place generators that are considered smaller before generators that
+/// are considered larger. This generator is then used to generate the final
+/// value.
+template <typename T, typename... Ts>
+Gen<T> sizedOneOf(Gen<T> gen, Gen<Ts>... gens);
+
 } // namespace gen
 } // namespace rc
 

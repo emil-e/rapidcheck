@@ -153,5 +153,10 @@ weightedOneOf(std::initializer_list<std::pair<std::size_t, Gen<T>>> pairs) {
   return gen::join(gen::weightedElement(pairs));
 }
 
+template <typename T, typename... Ts>
+Gen<T> sizedOneOf(Gen<T> gen, Gen<Ts>... gens) {
+  return gen::join(gen::sizedElement(std::move(gen), std::move(gens)...));
+}
+
 } // namespace gen
 } // namespace rc

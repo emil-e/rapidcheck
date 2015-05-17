@@ -295,3 +295,102 @@ TEST_CASE("gen::weightedOneOf") {
     REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
   }
 }
+
+namespace {
+
+template <typename T>
+Gen<std::pair<T, int>> genTagged(Gen<T> gen, int tag) {
+  return gen::map(std::move(gen),
+                  [=](T &&x) { return std::make_pair(std::move(x), tag); });
+}
+
+} // namespace
+
+TEST_CASE("gen::sizedOneOf") {
+  SECTION("when size is zero") {
+    prop("uses only the first generator",
+         [](const Random &random, int a, int b, int c) {
+           const auto gen =
+               gen::sizedOneOf(gen::just(a), gen::just(b), gen::just(c));
+           const auto value = gen(random, 0).value();
+           RC_ASSERT(value == a);
+         });
+  }
+
+  SECTION("when size is kNominalSize") {
+    prop("all generator are eventually used",
+         [](const Random &random, int a, int b, int c) {
+           const auto elements = *gen::nonEmpty<std::vector<int>>();
+           tryUntilAll(
+               std::set<int>{a, b, c},
+               gen::sizedOneOf(gen::just(a), gen::just(b), gen::just(c)),
+               GenParams(random, kNominalSize));
+         });
+  }
+
+  prop("only uses provided generators",
+       [](const GenParams &params, int a, int b, int c) {
+         const auto gen =
+             gen::sizedOneOf(gen::just(a), gen::just(b), gen::just(c));
+         const auto x = gen(params.random, params.size).value();
+         RC_ASSERT((x == a) || (x == b) || (x == c));
+       });
+
+  prop("first shrink is using first generator",
+       [](const GenParams &params) {
+         const auto gen = gen::sizedOneOf(genTagged(gen::just(0), 0),
+                                          genTagged(gen::arbitrary<int>(), 1),
+                                          genTagged(gen::arbitrary<int>(), 2));
+         const auto shrinkable = gen(params.random, params.size);
+         const auto value = shrinkable.value();
+         if (value.second != 0) {
+           RC_ASSERT(shrinkable.shrinks().next()->value().second == 0);
+         }
+       });
+
+  prop(
+      "after trying to shrink which generator is used, tries to shrink "
+      "original value",
+      [](const GenParams &params) {
+        const auto gen = gen::sizedOneOf(
+            genTagged(genFixedCountdown(*gen::inRange(0, 5)), 0),
+            genTagged(genFixedCountdown(*gen::inRange(0, 5)), 1),
+            genTagged(genFixedCountdown(*gen::inRange(0, 5)), 2));
+        const auto shrinkable = gen(params.random, params.size);
+        const auto value = shrinkable.value();
+        const auto expected = shrinkable::map(
+            countdownShrinkable(value.first),
+            [=](int x) { return std::make_pair(x, value.second); });
+        const auto actual = shrinkable::mapShrinks(
+            shrinkable,
+            [=](Seq<Shrinkable<std::pair<int, int>>> &&shrinks) {
+              return seq::dropWhile(
+                  std::move(shrinks),
+                  [=](const Shrinkable<std::pair<int, int>> &s) {
+                    return s.value().second != value.second;
+                  });
+            });
+
+        RC_ASSERT(actual == expected);
+      });
+
+  prop(
+      "finds minimum where tag must be greater than a certain value but value "
+      "part does not matter",
+      [](const GenParams &params) {
+        const auto gen = gen::sizedOneOf(genTagged(gen::arbitrary<int>(), 0),
+                                         genTagged(gen::arbitrary<int>(), 1),
+                                         genTagged(gen::arbitrary<int>(), 2),
+                                         genTagged(gen::arbitrary<int>(), 3),
+                                         genTagged(gen::arbitrary<int>(), 4),
+                                         genTagged(gen::arbitrary<int>(), 5));
+        const auto targetTag = *gen::inRange(0, 6);
+        const auto result = searchGen(params.random,
+                                      params.size,
+                                      gen,
+                                      [=](const std::pair<int, int> &p) {
+                                        return p.second >= targetTag;
+                                      });
+        RC_ASSERT(result == std::make_pair(0, targetTag));
+      });
+}
