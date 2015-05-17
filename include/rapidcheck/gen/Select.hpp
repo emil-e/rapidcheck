@@ -64,8 +64,9 @@ public:
       throw GenerationFailure("Cannot pick element from empty container.");
     }
 
+    const auto clampedSize = std::min(size, kNominalSize);
     const std::size_t max =
-        (((m_container.size() - 1) * size) / kNominalSize) + 1;
+        (((m_container.size() - 1) * clampedSize) / kNominalSize) + 1;
     const std::size_t i = Random(random).next() % max;
     const auto container = m_container;
     return shrinkable::map(
