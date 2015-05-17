@@ -135,6 +135,13 @@ sizedElementOf(Container &&container) {
 }
 
 template <typename T, typename... Ts>
+Gen<Decay<T>> sizedElement(T &&element, Ts &&... elements) {
+  using Vector = std::vector<Decay<T>>;
+  return gen::sizedElementOf(
+      Vector{std::forward<T>(element), std::forward<Ts>(elements)...});
+}
+
+template <typename T, typename... Ts>
 Gen<T> oneOf(Gen<T> gen, Gen<Ts>... gens) {
   return detail::OneOfGen<T>(std::move(gen), std::move(gens)...);
 }

@@ -27,6 +27,13 @@ template <typename Container>
 Gen<typename Decay<Container>::value_type>
 sizedElementOf(Container &&container);
 
+/// Chooses an element from an initial segment of the given elements. The
+/// segment starts with length 1 and increases with size. This means that you
+/// should place elements that are considered smaller before elements that are
+/// considered larger.
+template <typename T, typename... Ts>
+Gen<Decay<T>> sizedElement(T &&element, Ts &&... elements);
+
 /// Returns a generator which randomly generates using one of the specified
 /// generators.
 template <typename T, typename... Ts>

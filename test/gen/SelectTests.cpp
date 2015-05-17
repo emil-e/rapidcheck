@@ -184,6 +184,17 @@ TEST_CASE("gen::sizedElementOf") {
        });
 }
 
+TEST_CASE("gen::sizedElement") {
+  prop("equivalent to gen::sizedElementOf",
+       [](const GenParams &params, int a, int b, int c) {
+         const auto expectedShrinkable = gen::sizedElementOf(
+             std::vector<int>{a, b, c})(params.random, params.size);
+         const auto shrinkable =
+             gen::sizedElement(a, b, c)(params.random, params.size);
+         assertEquivalent(expectedShrinkable, shrinkable);
+       });
+}
+
 TEST_CASE("gen::oneOf") {
   prop("all generated elements come from one of the generators",
        [](const GenParams &params,
