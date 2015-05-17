@@ -49,16 +49,14 @@ void Database::executeWrite() {
 
   auto msg = Message("put");
   msg.params.push_back(std::to_string(m_hash));
-  for (const auto &p : m_queue) {
-    msg.params.push_back(p.first);
-    msg.params.push_back(p.second);
+  for (const auto &user : m_queue) {
+    serialize(user, msg.params);
   }
 
   const auto response = m_connection->sendMessage(msg);
   if (response.type == "ok") {
-    for (const auto &p : m_queue) {
-      m_cache[p.first] = p.second;
-      // m_cache.insert(p);
+    for (const auto &user : m_queue) {
+      m_cache.emplace(user.username, user);
     }
     m_hasBlock = false;
   } else {
@@ -66,7 +64,7 @@ void Database::executeWrite() {
   }
 }
 
-void Database::put(const std::string &key, const std::string &value) {
+void Database::put(User user) {
   if (!m_open) {
     throw std::runtime_error("Not open");
   }
@@ -74,13 +72,11 @@ void Database::put(const std::string &key, const std::string &value) {
     throw std::runtime_error("beginWrite wasn't called");
   }
 
-  m_queue.emplace_back(key, value);
-  std::hash<std::string> hasher;
-  m_hash ^= hasher(key);
-  m_hash ^= hasher(value);
+  m_hash ^= std::hash<User>()(user);
+  m_queue.push_back(std::move(user));
 }
 
-bool Database::get(const std::string &key, std::string &value) {
+bool Database::get(const std::string &username, User &user) {
   if (!m_open) {
     throw std::runtime_error("Not open");
   }
@@ -88,15 +84,19 @@ bool Database::get(const std::string &key, std::string &value) {
     throw std::runtime_error("Currently in write");
   }
 
-  const auto it = m_cache.find(key);
+  const auto it = m_cache.find(username);
   if (it != m_cache.end()) {
-    value = it->second;
+    user = it->second;
     return true;
   }
 
-  const auto response = m_connection->sendMessage(Message("get", {key}));
-  if ((response.type == "ok") && (response.params.size() == 1)) {
-    value = response.params[0];
+  const auto response = m_connection->sendMessage(Message("get", {username}));
+  if (response.type == "ok") {
+    const auto it =
+        deserialize(begin(response.params), end(response.params), user);
+    if (it == begin(response.params)) {
+      throw std::runtime_error("Invalid response");
+    }
     return true;
   } else if (response.type == "not_found") {
     return false;
