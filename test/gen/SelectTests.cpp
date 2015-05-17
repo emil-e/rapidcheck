@@ -151,12 +151,12 @@ TEST_CASE("gen::sizedElementOf") {
   }
 
   prop("all generated values are elements",
-       [](const Random &random) {
+       [](const GenParams &params) {
          const auto elements = *gen::nonEmpty<std::vector<int>>();
-         tryUntilAll(
-           std::set<int>(begin(elements), end(elements)),
-           gen::sizedElementOf(elements),
-           GenParams(random, kNominalSize));
+         const auto gen = gen::sizedElementOf(elements);
+         const auto value = gen(params.random, params.size).value();
+         RC_ASSERT(std::find(begin(elements), end(elements), value) !=
+                   end(elements));
        });
 
   prop("first shrink is always the first element",
@@ -182,6 +182,12 @@ TEST_CASE("gen::sizedElementOf") {
                        [=](char c) { return (c - '0') >= target; });
          RC_ASSERT((result - '0') == target);
        });
+
+  SECTION("throws GenerationFailure on empty container") {
+    std::vector<int> container;
+    const auto shrinkable = gen::sizedElementOf(container)(Random(0), 0);
+    REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
+  }
 }
 
 TEST_CASE("gen::sizedElement") {
