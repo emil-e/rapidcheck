@@ -7,6 +7,7 @@
 #include "util/Meta.h"
 #include "util/Util.h"
 #include "util/TypeListMacros.h"
+#include "util/ShrinkableUtils.h"
 #include "util/GenUtils.h"
 #include "util/Predictable.h"
 #include "util/Generators.h"
@@ -142,6 +143,62 @@ TEST_CASE("gen::weightedElement") {
     const auto shrinkable = gen(Random(), 0);
     REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
   }
+}
+
+TEST_CASE("gen::sizedElementOf") {
+  SECTION("when size is zero") {
+    prop("generates only the first element",
+         [](const Random &random) {
+           const auto elements = *gen::nonEmpty<std::vector<int>>();
+           const auto gen = gen::sizedElementOf(elements);
+           const auto value = gen(random, 0).value();
+           RC_ASSERT(value == elements.front());
+         });
+  }
+
+  SECTION("when size is kNominalSize") {
+    prop("all elements are eventually generated",
+         [](const Random &random) {
+           const auto elements = *gen::nonEmpty<std::vector<int>>();
+           tryUntilAll(
+             std::set<int>(begin(elements), end(elements)),
+             gen::sizedElementOf(elements),
+             GenParams(random, kNominalSize));
+         });
+  }
+
+  prop("all generated values are elements",
+       [](const Random &random) {
+         const auto elements = *gen::nonEmpty<std::vector<int>>();
+         tryUntilAll(
+           std::set<int>(begin(elements), end(elements)),
+           gen::sizedElementOf(elements),
+           GenParams(random, kNominalSize));
+       });
+
+  prop("first shrink is always the first element",
+       [](const GenParams &params) {
+         const auto elements = *gen::nonEmpty<std::vector<int>>();
+         const auto gen = gen::sizedElementOf(elements);
+         onAnyPath(
+             gen(params.random, params.size),
+             [&](const Shrinkable<int> &value, const Shrinkable<int> &shrink) {
+               if (value.value() != elements.front()) {
+                 RC_ASSERT(value.shrinks().next()->value() == elements.front());
+               }
+             });
+       });
+
+  prop("finds minimum where must be larger than one of the elements",
+       [](const Random &random) {
+         const auto target = *gen::inRange(0, 10);
+         const auto result =
+             searchGen(random,
+                       kNominalSize,
+                       gen::sizedElementOf(std::string("0123456789")),
+                       [=](char c) { return (c - '0') >= target; });
+         RC_ASSERT((result - '0') == target);
+       });
 }
 
 TEST_CASE("gen::oneOf") {

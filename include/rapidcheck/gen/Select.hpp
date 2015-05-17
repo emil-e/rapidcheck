@@ -50,6 +50,35 @@ private:
   std::vector<T> m_elements;
 };
 
+template <typename Container>
+class SizedElementOfGen {
+public:
+  using T = typename Container::value_type;
+
+  template <typename Arg>
+  explicit SizedElementOfGen(Arg &&arg)
+      : m_container(std::forward<Arg>(arg)) {}
+
+  Shrinkable<T> operator()(const Random &random, int size) const {
+    if (m_container.size() == 0) {
+      throw GenerationFailure("Cannot pick element from empty container.");
+    }
+
+    const std::size_t max =
+        (((m_container.size() - 1) * size) / kNominalSize) + 1;
+    const std::size_t i = Random(random).next() % max;
+    const auto container = m_container;
+    return shrinkable::map(
+        shrinkable::shrinkRecur(
+            i,
+            [](std::size_t x) { return shrink::towards<std::size_t>(x, 0); }),
+        [=](std::size_t x) { return container[x]; });
+  }
+
+private:
+  Container m_container;
+};
+
 template <typename T>
 class OneOfGen {
 public:
@@ -97,6 +126,12 @@ weightedElement(std::initializer_list<std::pair<std::size_t, T>> pairs) {
 
   return detail::WeightedElementGen<T>(std::move(frequencies),
                                        std::move(elements));
+}
+
+template <typename Container>
+Gen<typename Decay<Container>::value_type>
+sizedElementOf(Container &&container) {
+  return detail::SizedElementOfGen<Decay<Container>>(std::move(container));
 }
 
 template <typename T, typename... Ts>

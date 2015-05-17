@@ -19,6 +19,14 @@ template <typename T>
 Gen<T>
 weightedElement(std::initializer_list<std::pair<std::size_t, T>> pairs);
 
+/// Chooses an element from an initial segment of the given container. The
+/// segment starts with length 1 and increases with size. This means that you
+/// should place elements that are considered smaller before elements that are
+/// considered larger.
+template <typename Container>
+Gen<typename Decay<Container>::value_type>
+sizedElementOf(Container &&container);
+
 /// Returns a generator which randomly generates using one of the specified
 /// generators.
 template <typename T, typename... Ts>

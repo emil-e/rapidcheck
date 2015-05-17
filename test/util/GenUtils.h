@@ -1,9 +1,10 @@
 #pragma once
 
-#include "rapidcheck/Gen.h"
 #include "rapidcheck/Assertions.h"
-#include "rapidcheck/gen/Numeric.h"
+#include "rapidcheck/Gen.h"
 #include "rapidcheck/gen/Arbitrary.h"
+#include "rapidcheck/gen/Build.h"
+#include "rapidcheck/gen/Numeric.h"
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/shrinkable/Operations.h"
 
@@ -55,6 +56,11 @@ std::ostream &operator<<(std::ostream &os, const FixedCountdown<N> &value) {
 }
 
 struct GenParams {
+  GenParams() = default;
+  GenParams(const Random &r, int s)
+      : random(std::move(r))
+      , size(s) {}
+
   Random random;
   int size = 0;
 };
@@ -92,14 +98,8 @@ T searchGen(const Random &random,
 template <>
 struct Arbitrary<test::GenParams> {
   static Gen<test::GenParams> arbitrary() {
-    return gen::map(
-        gen::pair(gen::arbitrary<Random>(), gen::inRange<int>(0, 200)),
-        [](const std::pair<Random, int> &p) {
-          test::GenParams params;
-          params.random = p.first;
-          params.size = p.second;
-          return params;
-        });
+    return gen::construct<test::GenParams>(gen::arbitrary<Random>(),
+                                           gen::inRange<int>(0, 200));
   }
 };
 
