@@ -43,59 +43,42 @@ void tryUntilAll(const std::set<T> &values,
   }
 }
 
-struct ElementOfTests {
-  template <typename T>
-  static void exec() {
-    templatedProp<T>(
-        "all generated elements are elements of the container",
-        [](const GenParams &params) {
-          T elements = *gen::nonEmpty<T>();
-          const auto gen = gen::elementOf(elements);
-          const auto value = gen(params.random, params.size).value();
-          RC_ASSERT(std::find(begin(elements), end(elements), value) !=
-                    end(elements));
-        });
-
-    templatedProp<T>("all elements are eventually generated",
-                     [](const GenParams &params) {
-                       T elements = *gen::nonEmpty<T>();
-                       tryUntilAll(std::set<typename T::value_type>(
-                                       begin(elements), end(elements)),
-                                   gen::elementOf(elements),
-                                   params);
-                     });
-
-    TEMPLATED_SECTION(T, "throws GenerationFailure on empty container") {
-      T container;
-      const auto shrinkable = gen::elementOf(container)(Random(0), 0);
-      REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
-    }
-  }
-};
-
 } // namespace
 
 TEST_CASE("gen::elementOf") {
-  meta::forEachType<ElementOfTests, std::vector<char>, std::string>();
-}
-
-TEST_CASE("gen::element") {
-  prop("all generated elements are arguments",
-       [](const GenParams &params,
-          const std::string &a,
-          const std::string &b,
-          const std::string &c) {
-         const auto gen = gen::element(a, b, c);
-         const auto x = gen(params.random, params.size).value();
-         RC_ASSERT((x == a) || (x == b) || (x == c));
+  prop("all generated elements are elements of the container",
+       [](const GenParams &params) {
+         const auto elements = *gen::nonEmpty<std::vector<int>>();
+         const auto gen = gen::elementOf(elements);
+         const auto value = gen(params.random, params.size).value();
+         RC_ASSERT(std::find(begin(elements), end(elements), value) !=
+                   end(elements));
        });
 
   prop("all elements are eventually generated",
-       [](const GenParams &params,
-          const std::string &a,
-          const std::string &b,
-          const std::string &c) {
-         tryUntilAll({a, b, c}, gen::element(a, b, c), params);
+       [](const GenParams &params) {
+         const auto elements = *gen::nonEmpty<std::vector<int>>();
+         tryUntilAll(
+             std::set<int>(begin(elements), end(elements)),
+             gen::elementOf(elements),
+             params);
+       });
+
+  SECTION("throws GenerationFailure on empty container") {
+    std::vector<int> container;
+    const auto shrinkable = gen::elementOf(container)(Random(0), 0);
+    REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
+  }
+}
+
+TEST_CASE("gen::element") {
+  prop("equivalent to gen::elementOf",
+       [](const GenParams &params, int a, int b, int c) {
+         const auto expectedShrinkable = gen::elementOf(
+             std::vector<int>{a, b, c})(params.random, params.size);
+         const auto shrinkable =
+             gen::element(a, b, c)(params.random, params.size);
+         assertEquivalent(expectedShrinkable, shrinkable);
        });
 }
 
