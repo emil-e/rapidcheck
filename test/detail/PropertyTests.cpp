@@ -46,8 +46,7 @@ TEST_CASE("PropertyWrapper") {
   prop("returns failure with the string as message for non-empty strings",
        [] {
          // TODO non-empty generator
-         const auto msg = *gen::suchThat<std::string>(
-                              [](const std::string &s) { return !s.empty(); });
+         const auto msg = *gen::nonEmpty<std::string>();
          const auto result = makeWrapper([=] { return msg; })();
          RC_ASSERT(result.type == CaseResult::Type::Failure);
          RC_ASSERT(result.description == msg);

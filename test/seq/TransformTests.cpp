@@ -450,8 +450,7 @@ TEST_CASE("seq::mapMaybe") {
 TEST_CASE("seq::cycle") {
   prop("returns an infinite cycle of the given Seq",
        [] {
-         auto elements = *gen::suchThat<std::vector<int>>([](
-             const std::vector<int> &x) { return !x.empty(); });
+         auto elements = *gen::nonEmpty<std::vector<int>>();
          auto seq = seq::cycle(seq::fromContainer(elements));
          auto it = begin(elements);
          for (int i = 0; i < 2000; i++) {
@@ -464,15 +463,13 @@ TEST_CASE("seq::cycle") {
 
   prop("does not copy Seq on construction",
        [] {
-         auto elements = *gen::suchThat<std::vector<CopyGuard>>([](
-             const std::vector<CopyGuard> &x) { return !x.empty(); });
+         auto elements = *gen::nonEmpty<std::vector<CopyGuard>>();
          auto seq = seq::cycle(seq::fromContainer(std::move(elements)));
        });
 
   prop("copies are equal",
        [] {
-         auto elements = *gen::suchThat<std::vector<int>>([](
-             const std::vector<int> &x) { return !x.empty(); });
+         auto elements = *gen::nonEmpty<std::vector<int>>();
          auto seq = seq::cycle(seq::fromContainer(elements));
          assertEqualCopies(seq::take(1000, std::move(seq)));
        });

@@ -45,14 +45,10 @@ void tryUntilAll(const std::set<T> &values,
 struct ElementOfTests {
   template <typename T>
   static void exec() {
-    // TODO should be in standard library of generators!
-    static const auto nonEmpty =
-        gen::suchThat<T>([](const T &x) { return !x.empty(); });
-
     templatedProp<T>(
         "all generated elements are elements of the container",
         [](const GenParams &params) {
-          T elements = *nonEmpty;
+          T elements = *gen::nonEmpty<T>();
           const auto gen = gen::elementOf(elements);
           const auto value = gen(params.random, params.size).value();
           RC_ASSERT(std::find(begin(elements), end(elements), value) !=
@@ -61,7 +57,7 @@ struct ElementOfTests {
 
     templatedProp<T>("all elements are eventually generated",
                      [](const GenParams &params) {
-                       T elements = *nonEmpty;
+                       T elements = *gen::nonEmpty<T>();
                        tryUntilAll(std::set<typename T::value_type>(
                                        begin(elements), end(elements)),
                                    gen::elementOf(elements),

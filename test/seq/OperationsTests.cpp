@@ -30,8 +30,7 @@ TEST_CASE("seq::last") {
 
   prop("returns the last element of the Seq",
        [] {
-         auto elements = *gen::suchThat<std::vector<int>>([](
-             const std::vector<int> &x) { return !x.empty(); });
+         auto elements = *gen::nonEmpty<std::vector<int>>();
          RC_ASSERT(*seq::last(seq::fromContainer(elements)) == elements.back());
        });
 }
@@ -47,8 +46,7 @@ TEST_CASE("seq::contains") {
 
   prop("returns true for elements in Seq",
        [] {
-         auto elements = *gen::suchThat<std::vector<int>>([](
-             const std::vector<int> &x) { return !x.empty(); });
+         auto elements = *gen::nonEmpty<std::vector<int>>();
          int value = *gen::elementOf(elements);
          RC_ASSERT(seq::contains(seq::fromContainer(elements), value));
        });
@@ -90,8 +88,7 @@ TEST_CASE("seq::any") {
 TEST_CASE("seq::at") {
   prop("returns the element at the given position if index < size",
        [] {
-         const auto elements = *gen::suchThat<std::vector<int>>([](
-             const std::vector<int> &x) { return !x.empty(); });
+         const auto elements = *gen::nonEmpty<std::vector<int>>();
          std::size_t i = *gen::inRange<std::size_t>(0, elements.size());
          auto x = seq::at(seq::fromContainer(elements), i);
          RC_ASSERT(x);

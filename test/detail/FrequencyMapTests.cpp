@@ -9,9 +9,8 @@ using namespace rc;
 using namespace rc::detail;
 
 TEST_CASE("FrequencyMap") {
-  static const auto genFrequencies = gen::suchThat(
-      gen::container<std::vector<std::size_t>>(gen::inRange(1, 10000)),
-      [](const std::vector<std::size_t> &x) { return !x.empty(); });
+  static const auto genFrequencies = gen::nonEmpty(
+      gen::container<std::vector<std::size_t>>(gen::inRange(1, 10000)));
 
   SECTION("sum") {
     prop("returns sum of frequencies", [] {

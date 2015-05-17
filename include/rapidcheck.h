@@ -20,6 +20,7 @@
 #include "rapidcheck/gen/Exec.h"
 #include "rapidcheck/gen/Maybe.h"
 #include "rapidcheck/gen/Numeric.h"
+#include "rapidcheck/gen/Predicate.h"
 #include "rapidcheck/gen/Select.h"
 #include "rapidcheck/gen/Text.h"
 #include "rapidcheck/gen/Transform.h"

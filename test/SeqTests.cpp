@@ -153,9 +153,7 @@ TEST_CASE("Seq") {
 
     prop("changing a single element leads to inequal sequences",
          [] {
-           // TODO non-empty generator
-           const auto elements1 = *gen::suchThat<std::vector<std::string>>([](
-               const std::vector<std::string> &x) { return !x.empty(); });
+           const auto elements1 = *gen::nonEmpty<std::vector<std::string>>();
            auto elements2 = elements1;
            const auto i = *gen::inRange<std::size_t>(0, elements2.size());
            elements2[i] = *gen::distinctFrom(elements2[i]);
