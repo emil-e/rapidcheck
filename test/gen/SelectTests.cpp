@@ -45,6 +45,21 @@ void tryUntilAll(const std::set<T> &values,
 
 } // namespace
 
+struct ElementOfContainerProperties {
+  template <typename T>
+  static void exec() {
+    templatedProp<T>(
+        "works with all basic container types",
+        [](const GenParams &params) {
+          const auto elements = *gen::nonEmpty<T>();
+          const auto gen = gen::elementOf(elements);
+          const auto value = gen(params.random, params.size).value();
+          RC_ASSERT(std::find(begin(elements), end(elements), value) !=
+                    end(elements));
+        });
+  }
+};
+
 TEST_CASE("gen::elementOf") {
   prop("all generated elements are elements of the container",
        [](const GenParams &params) {
@@ -69,6 +84,11 @@ TEST_CASE("gen::elementOf") {
     const auto shrinkable = gen::elementOf(container)(Random(0), 0);
     REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
   }
+
+  meta::forEachType<ElementOfContainerProperties,
+                    RC_GENERIC_CONTAINERS(int),
+                    std::array<int, 5>,
+                    std::string>();
 }
 
 TEST_CASE("gen::element") {
@@ -127,6 +147,25 @@ TEST_CASE("gen::weightedElement") {
     REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
   }
 }
+
+namespace {
+
+struct SizedElementOfContainerProperties {
+  template <typename T>
+  static void exec() {
+    templatedProp<T>(
+        "works with all basic container types",
+        [](const GenParams &params) {
+          const auto elements = *gen::nonEmpty<T>();
+          const auto gen = gen::sizedElementOf(elements);
+          const auto value = gen(params.random, params.size).value();
+          RC_ASSERT(std::find(begin(elements), end(elements), value) !=
+                    end(elements));
+        });
+  }
+};
+
+} // namespace
 
 TEST_CASE("gen::sizedElementOf") {
   SECTION("when size is zero") {
@@ -188,6 +227,11 @@ TEST_CASE("gen::sizedElementOf") {
     const auto shrinkable = gen::sizedElementOf(container)(Random(0), 0);
     REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
   }
+
+  meta::forEachType<SizedElementOfContainerProperties,
+                    RC_GENERIC_CONTAINERS(int),
+                    std::array<int, 5>,
+                    std::string>();
 }
 
 TEST_CASE("gen::sizedElement") {

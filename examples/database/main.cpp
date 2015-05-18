@@ -72,12 +72,7 @@ struct Get : public DbCommand {
   std::string username;
 
   explicit Get(const DatabaseModel &s0) {
-    std::vector<std::string> usernames;
-    for (const auto &p : s0.data) {
-      usernames.push_back(p.second.username);
-    }
-
-    username = *gen::elementOf(usernames);
+    username = (*gen::elementOf(s0.data)).second.username;
   }
 
   DatabaseModel nextState(const DatabaseModel &s0) const override {

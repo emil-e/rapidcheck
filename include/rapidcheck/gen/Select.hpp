@@ -6,6 +6,37 @@ namespace rc {
 namespace gen {
 namespace detail {
 
+template <typename T>
+struct ToIndexable {
+  using Output = std::vector<typename T::value_type>;
+
+  template <typename Arg>
+  static Output convert(Arg &&container) {
+    return Output(begin(std::forward<Arg>(container)),
+                  end(std::forward<Arg>(container)));
+  }
+};
+
+template <typename T, typename Allocator>
+struct ToIndexable<std::vector<T, Allocator>> {
+  using Output = std::vector<T, Allocator>;
+
+  template <typename Arg>
+  static Arg &&convert(Arg &&container) {
+    return std::forward<Arg>(container);
+  }
+};
+
+template <typename T, typename Traits, typename Allocator>
+struct ToIndexable<std::basic_string<T, Traits, Allocator>> {
+  using Output = std::basic_string<T, Traits, Allocator>;
+
+  template <typename Arg>
+  static Arg &&convert(Arg &&container) {
+    return std::forward<Arg>(container);
+  }
+};
+
 template <typename Container>
 class ElementOfGen {
 public:
@@ -101,8 +132,9 @@ private:
 
 template <typename Container>
 Gen<typename Decay<Container>::value_type> elementOf(Container &&container) {
-  return detail::ElementOfGen<Decay<Container>>(
-      std::forward<Container>(container));
+  using Convert = detail::ToIndexable<Decay<Container>>;
+  using Impl = detail::ElementOfGen<typename Convert::Output>;
+  return Impl(Convert::convert(std::forward<Container>(container)));
 }
 
 template <typename T, typename... Ts>
@@ -132,7 +164,9 @@ weightedElement(std::initializer_list<std::pair<std::size_t, T>> pairs) {
 template <typename Container>
 Gen<typename Decay<Container>::value_type>
 sizedElementOf(Container &&container) {
-  return detail::SizedElementOfGen<Decay<Container>>(std::move(container));
+  using Convert = detail::ToIndexable<Decay<Container>>;
+  using Impl = detail::SizedElementOfGen<typename Convert::Output>;
+  return Impl(Convert::convert(std::forward<Container>(container)));
 }
 
 template <typename T, typename... Ts>

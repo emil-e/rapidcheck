@@ -4,8 +4,7 @@ namespace rc {
 namespace gen {
 
 /// Returns a generator which randomly selects an element from the given
-/// container. The container must support `begin(Container)` and
-/// `end(Container)` and the returned iterator must be a random access iterator.
+/// container.
 template <typename Container>
 Gen<typename Decay<Container>::value_type> elementOf(Container &&container);
 
