@@ -45,3 +45,25 @@ const auto person = *gen::construct<T>(
     gen::arbitrary<std::string>(), // Hometown
     gen::inRange(0, 100));         // Age
 ```
+
+### `makeUnique<T>(Gen<Args>... gens)` ###
+Like `construct` but generates `std::unique_ptr`s to `T` instead.
+
+```C++
+// Example:
+const auto person = *gen::makeUnique<T>(
+    gen::arbitrary<std::string>(), // Name
+    gen::arbitrary<std::string>(), // Hometown
+    gen::inRange(0, 100));         // Age
+```
+
+### `makeShared<T>(Gen<Args>... gens)` ###
+Like `construct` but generates `std::shared_ptr`s to `T` instead.
+
+```C++
+// Example:
+const auto person = *gen::makeShared<T>(
+    gen::arbitrary<std::string>(), // Name
+    gen::arbitrary<std::string>(), // Hometown
+    gen::inRange(0, 100));         // Age
+```
