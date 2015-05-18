@@ -2,7 +2,9 @@ Generators
 ==========
 To generate input data for properties, RapidCheck uses the concept of generators. A generator which generates values of type `T` has the type [`Gen<T>`](Gen.md).
 
-RapidCheck includes functions for creating generators for most common types and use cases but it also provides combinators that allow you to build custom generators by combining existing ones. These are generally located in the `rc::gen` namespace. In for some reason you cannot use the built in generators and combinators, you can also implement a generator from scratch. See [the documentation for `Gen`](Gen.md) for more information about this.
+RapidCheck includes functions for creating generators for most common types and use cases but it also provides combinators that allow you to build custom generators by combining existing ones. These are generally located in the `rc::gen` namespace. See the [generators reference](generators_ref.md) for more information about the different generators including examples.
+
+If for some reason you cannot use the built in generators and combinators, you can also implement a generator from scratch. See [the documentation for `Gen`](Gen.md) for more information about this.
 
 ## Usage ##
 To explicitly use a generator in your property, use the prefix `*` operator (i.e. dereference). This overload returns a value of `T` that was either generated from the given generator or found by shrinking a generated value. For example, to use the `inRange` generator to generate a value in the range `[0, 10)`:
