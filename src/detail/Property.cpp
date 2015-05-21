@@ -23,7 +23,7 @@ describeShrinkable(const Shrinkable<Any> &shrinkable) {
   } catch (const GenerationFailure &e) {
     return {"Generation failed", e.what()};
   } catch (const std::exception &e) {
-    return {"Exception wil generating", e.what()};
+    return {"Exception while generating", e.what()};
   } catch (...) {
     return {"Unknown exception", "<\?\?\?>"};
   }
