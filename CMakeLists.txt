@@ -16,6 +16,7 @@ add_library(rapidcheck
   src/detail/ImplicitParam.cpp
   src/detail/MapParser.cpp
   src/detail/Property.cpp
+  src/detail/PropertyContext.cpp
   src/detail/Results.cpp
   src/detail/TestParams.cpp
   src/detail/Utility.cpp
