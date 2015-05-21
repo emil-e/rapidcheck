@@ -11,6 +11,7 @@
 #include "rapidcheck/gen/Create.h"
 #include "rapidcheck/gen/Container.h"
 #include "rapidcheck/gen/Numeric.h"
+#include "rapidcheck/Classify.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -191,9 +192,7 @@ TEST_CASE("checkTestable") {
          RC_SUCCEED_IF(params.maxSuccess <= 1);
 
          int usedMax = 0;
-         const auto property = [&] {
-           usedMax = std::max(*genSize(), usedMax);
-         };
+         const auto property = [&] { usedMax = std::max(*genSize(), usedMax); };
          checkTestable(property, params);
          RC_ASSERT(usedMax == params.maxSize);
        });
@@ -209,5 +208,43 @@ TEST_CASE("checkTestable") {
          checkTestable(property, params);
 
          RC_ASSERT(std::count(begin(frequencies), end(frequencies), 0) == 0);
+       });
+
+  prop("correctly reports test case distribution",
+       [] {
+         auto allTags =
+             *gen::container<std::vector<std::vector<std::string>>>(
+                 gen::scale(0.1, gen::arbitrary<std::vector<std::string>>()));
+         TestParams params;
+         params.maxSize = *gen::inRange(0, 200);
+         params.maxSuccess = allTags.size();
+
+         auto i = 0;
+         const auto property = [&] {
+           const auto &tags = allTags[i++];
+           for (const auto &tag : tags) {
+             ImplicitParam<param::CurrentPropertyContext>::value()->addTag(tag);
+           }
+         };
+         const auto result = checkTestable(property, params);
+
+         Distribution expected;
+         for (auto &tags : allTags) {
+           if (!tags.empty()) {
+             expected[tags]++;
+           }
+         }
+
+         SuccessResult success;
+         RC_ASSERT(result.match(success));
+         RC_ASSERT(success.distribution == expected);
+       });
+
+  prop("does not include untagged cases in distribution",
+       [](const TestParams &params) {
+         const auto result = checkTestable([] {}, params);
+         SuccessResult success;
+         RC_ASSERT(result.match(success));
+         RC_ASSERT(success.distribution.empty());
        });
 }

@@ -32,6 +32,17 @@ int sizeFor(const TestParams &params, std::size_t i) {
   }
 }
 
+Distribution collectTags(std::vector<Tags> allTags) {
+  Distribution distribution;
+  for (auto &tags : allTags) {
+    if (!tags.empty()) {
+      distribution[std::move(tags)]++;
+    }
+  }
+
+  return distribution;
+}
+
 } // namespace
 
 TestResult checkProperty(const Property &property, const TestParams &params) {
@@ -40,6 +51,7 @@ TestResult checkProperty(const Property &property, const TestParams &params) {
   int numSuccess = 0;
   int index = 0;
   std::size_t totalTests = 0;
+  std::vector<Tags> tags;
 
   TestCase currentCase;
   currentCase.size = sizeFor(params, index);
@@ -49,7 +61,8 @@ TestResult checkProperty(const Property &property, const TestParams &params) {
 
     const auto shrinkable =
         property(Random(currentCase.seed), currentCase.size);
-    const auto result = shrinkable.value().result;
+    const auto caseDescription = shrinkable.value();
+    const auto &result = caseDescription.result;
     if (result.type == CaseResult::Type::Failure) {
       // Test case failed, shrink it
       const auto shrinkResult =
@@ -75,11 +88,13 @@ TestResult checkProperty(const Property &property, const TestParams &params) {
       // Success!
       numSuccess++;
       currentCase.size = sizeFor(params, ++index);
+      tags.push_back(std::move(caseDescription.tags));
     }
   }
 
   SuccessResult success;
   success.numSuccess = numSuccess;
+  success.distribution = collectTags(std::move(tags));
   return success;
 }
 
