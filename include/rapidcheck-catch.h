@@ -17,10 +17,17 @@ void prop(const std::string &description, Testable &&testable) {
 
   SECTION(description) {
     const auto result = checkTestable(std::forward<Testable>(testable));
-    std::ostringstream ss;
-    printResultMessage(result, ss);
-    INFO(ss.str() << "\n");
-    if (!result.template is<SuccessResult>()) {
+    if (result.template is<SuccessResult>()) {
+      const auto success = result.template get<SuccessResult>();
+      if (!success.distribution.empty()) {
+        std::cout << "- " << description << std::endl;
+        printResultMessage(result, std::cout);
+        std::cout << std::endl;
+      }
+    } else {
+      std::ostringstream ss;
+      printResultMessage(result, ss);
+      INFO(ss.str() << "\n");
       FAIL();
     }
   }
