@@ -7,6 +7,7 @@ The following document is a work in progress and some parts are still missing. T
 - [Generators](generators.md)
 - [Displaying values](displaying.md)
 - [Assertions](assertions.md)
+- [Reporting distribution](distribution.md)
 - [Configuration](configuration.md)
 - [Stateful testing](state.md)
 
