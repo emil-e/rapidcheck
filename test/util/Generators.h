@@ -59,12 +59,12 @@ struct Arbitrary<detail::CaseResult> {
 template <>
 struct Arbitrary<detail::SuccessResult> {
   static Gen<detail::SuccessResult> arbitrary() {
-    return gen::map(gen::positive<int>(),
-                    [](int s) {
-                      detail::SuccessResult result;
-                      result.numSuccess = s;
-                      return result;
-                    });
+    return gen::build<detail::SuccessResult>(
+        gen::set(&detail::SuccessResult::numSuccess, gen::positive<int>()),
+        gen::set(&detail::SuccessResult::distribution,
+                 gen::container<detail::Distribution>(
+                     gen::scale(0.1, gen::arbitrary<detail::Tags>()),
+                     gen::arbitrary<int>())));
   }
 };
 

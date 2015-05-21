@@ -44,6 +44,7 @@ TEST_CASE("SuccessResult") {
   SECTION("operator==/operator!=") {
     propConformsToEquals<SuccessResult>();
     PROP_REPLACE_MEMBER_INEQUAL(SuccessResult, numSuccess);
+    PROP_REPLACE_MEMBER_INEQUAL(SuccessResult, distribution);
   }
 
   SECTION("operator<<") { propConformsToOutputOperator<SuccessResult>(); }
@@ -54,6 +55,15 @@ TEST_CASE("SuccessResult") {
            RC_ASSERT(messageContains(result, "OK"));
            RC_ASSERT(
                messageContains(result, std::to_string(result.numSuccess)));
+
+           if (!result.distribution.empty()) {
+             const auto someTag =
+                 gen::mapcat(gen::elementOf(result.distribution),
+                             [](const std::pair<const Tags, int> &entry) {
+                               return gen::elementOf(entry.first);
+                             });
+             RC_ASSERT(messageContains(result, *someTag));
+           }
          });
   }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #include "Variant.h"
 
@@ -8,6 +9,8 @@ namespace rc {
 namespace detail {
 
 using Example = std::vector<std::pair<std::string, std::string>>;
+using Tags = std::vector<std::string>;
+using Distribution = std::map<Tags, int>;
 
 /// Describes a particular test case.
 struct TestCase {
@@ -49,6 +52,8 @@ bool operator!=(const CaseResult &r1, const CaseResult &r2);
 struct SuccessResult {
   /// The number of successful tests run.
   int numSuccess;
+  /// The test case distribution. This is a map from tags to count.
+  Distribution distribution;
 };
 
 std::ostream &operator<<(std::ostream &os, const detail::SuccessResult &result);

@@ -1,5 +1,7 @@
 #include "rapidcheck/detail/Results.h"
 
+#include <iomanip>
+
 #include "rapidcheck/Show.h"
 
 namespace rc {
@@ -32,7 +34,8 @@ bool operator!=(const CaseResult &r1, const CaseResult &r2) {
 }
 
 bool operator==(const SuccessResult &r1, const SuccessResult &r2) {
-  return r1.numSuccess == r2.numSuccess;
+  return (r1.numSuccess == r2.numSuccess) &&
+      (r1.distribution == r2.distribution);
 }
 
 bool operator!=(const SuccessResult &r1, const SuccessResult &r2) {
@@ -41,7 +44,8 @@ bool operator!=(const SuccessResult &r1, const SuccessResult &r2) {
 
 std::ostream &operator<<(std::ostream &os,
                          const detail::SuccessResult &result) {
-  os << "numSuccess=" << result.numSuccess;
+  os << "numSuccess=" << result.numSuccess << ", distribution=";
+  show(result.distribution, os);
   return os;
 }
 
@@ -80,8 +84,38 @@ std::ostream &operator<<(std::ostream &os, const detail::GaveUpResult &result) {
   return os;
 }
 
+void printDistribution(const SuccessResult &result, std::ostream &os) {
+  using Entry = std::pair<Tags, int>;
+  std::vector<Entry> entries(begin(result.distribution),
+                             end(result.distribution));
+
+  std::sort(
+      begin(entries),
+      end(entries),
+      [](const Entry &p1, const Entry &p2) { return p2.second < p1.second; });
+
+  for (const auto &entry : entries) {
+    const auto percent =
+        (static_cast<double>(entry.second) / result.numSuccess) * 100.0;
+    os << std::setw(5) << std::setprecision(2) << std::fixed << percent
+       << "% - ";
+    for (auto it = begin(entry.first); it != end(entry.first); it++) {
+      if (it != begin(entry.first)) {
+        os << ", ";
+      }
+      os << *it;
+    }
+    os << std::endl;
+  }
+  os << std::endl;
+}
+
 void printResultMessage(const SuccessResult &result, std::ostream &os) {
   os << "OK, passed " + std::to_string(result.numSuccess) + " tests";
+  if (!result.distribution.empty()) {
+    os << std::endl;
+    printDistribution(result, os);
+  }
 }
 
 void printResultMessage(const FailureResult &result, std::ostream &os) {
