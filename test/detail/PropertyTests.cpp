@@ -2,6 +2,7 @@
 #include <rapidcheck-catch.h>
 
 #include "rapidcheck/detail/Property.h"
+#include "rapidcheck/Classify.h"
 
 #include "util/Generators.h"
 #include "util/Predictable.h"
@@ -23,23 +24,23 @@ PropertyWrapper<Decay<Callable>> makeWrapper(Callable &&callable) {
 
 TEST_CASE("PropertyWrapper") {
   SECTION("returns success result for void callables") {
-    REQUIRE(makeWrapper([] {})().type == CaseResult::Type::Success);
+    REQUIRE(makeWrapper([] {})().result.type == CaseResult::Type::Success);
   }
 
   SECTION("if callable returns a bool") {
     SECTION("returns success result for true") {
-      REQUIRE(makeWrapper([] { return true; })().type ==
+      REQUIRE(makeWrapper([] { return true; })().result.type ==
               CaseResult::Type::Success);
     }
 
     SECTION("returns success result for false") {
-      REQUIRE(makeWrapper([] { return false; })().type ==
+      REQUIRE(makeWrapper([] { return false; })().result.type ==
               CaseResult::Type::Failure);
     }
   }
 
   SECTION("returns success for empty strings") {
-    REQUIRE(makeWrapper([] { return std::string(); })().type ==
+    REQUIRE(makeWrapper([] { return std::string(); })().result.type ==
             CaseResult::Type::Success);
   }
 
@@ -47,22 +48,22 @@ TEST_CASE("PropertyWrapper") {
        [] {
          // TODO non-empty generator
          const auto msg = *gen::nonEmpty<std::string>();
-         const auto result = makeWrapper([=] { return msg; })();
-         RC_ASSERT(result.type == CaseResult::Type::Failure);
-         RC_ASSERT(result.description == msg);
+         const auto result = makeWrapper([&] { return msg; })();
+         RC_ASSERT(result.result.type == CaseResult::Type::Failure);
+         RC_ASSERT(result.result.description == msg);
        });
 
   prop("if a CaseResult is thrown, returns that case result",
        [](const CaseResult &result) {
-         RC_ASSERT(makeWrapper([=] { throw result; })() == result);
+         RC_ASSERT(makeWrapper([&] { throw result; })().result == result);
        });
 
   prop("returns a discard result if a GenerationFailure is thrown",
        [](const std::string &msg) {
          const auto result =
-             makeWrapper([=] { throw GenerationFailure(msg); })();
-         RC_ASSERT(result.type == CaseResult::Type::Discard);
-         RC_ASSERT(result.description == msg);
+             makeWrapper([&] { throw GenerationFailure(msg); })();
+         RC_ASSERT(result.result.type == CaseResult::Type::Discard);
+         RC_ASSERT(result.result.description == msg);
        });
 
   prop(
@@ -70,23 +71,23 @@ TEST_CASE("PropertyWrapper") {
       " thrown",
       [](const std::string &msg) {
         const auto result =
-            makeWrapper([=] { throw std::runtime_error(msg); })();
-        RC_ASSERT(result.type == CaseResult::Type::Failure);
-        RC_ASSERT(result.description == msg);
+            makeWrapper([&] { throw std::runtime_error(msg); })();
+        RC_ASSERT(result.result.type == CaseResult::Type::Failure);
+        RC_ASSERT(result.result.description == msg);
       });
 
   prop(
       "returns a failure result with the string as the message if a string"
       " is thrown",
       [](const std::string &msg) {
-        const auto result = makeWrapper([=] { throw msg; })();
-        RC_ASSERT(result.type == CaseResult::Type::Failure);
-        RC_ASSERT(result.description == msg);
+        const auto result = makeWrapper([&] { throw msg; })();
+        RC_ASSERT(result.result.type == CaseResult::Type::Failure);
+        RC_ASSERT(result.result.description == msg);
       });
 
   SECTION("returns a failure result if other values are thrown") {
-    const auto result = makeWrapper([=] { throw 1337; })();
-    RC_ASSERT(result.type == CaseResult::Type::Failure);
+    const auto result = makeWrapper([&] { throw 1337; })();
+    RC_ASSERT(result.result.type == CaseResult::Type::Failure);
   }
 
   prop("forwards arguments to callable",
@@ -97,7 +98,18 @@ TEST_CASE("PropertyWrapper") {
                return std::to_string(a) + b + std::to_string(c.extra);
              });
          const auto result = wrapper(std::move(a), std::move(b), std::move(c));
-         RC_ASSERT(result.description == expected);
+         RC_ASSERT(result.result.description == expected);
+       });
+
+  prop("returns any tags that were added",
+       [](const std::vector<std::string> &tags) {
+         const auto result = makeWrapper([&]{
+           for (const auto &tag : tags) {
+             classify("", {tag});
+           }
+         })();
+
+         RC_ASSERT(result.tags == tags);
        });
 }
 
@@ -200,7 +212,7 @@ TEST_CASE("toProperty") {
             });
       });
 
-  prop("case result corresponds to counter example",
+  prop("case result corresponds to counterexample",
        [](const GenParams &params) {
          const auto gen =
              toProperty([=] { return (*gen::arbitrary<int>() % 2) == 0; });
@@ -212,6 +224,25 @@ TEST_CASE("toProperty") {
                const auto desc = value.value();
                RC_ASSERT((desc.result.type == CaseResult::Type::Success) ==
                          ((std::stoi(desc.example.back().second) % 2) == 0));
+             });
+       });
+
+  prop("tags correspond to counterexample",
+       [](const GenParams &params) {
+         const auto gen = toProperty([=] {
+           const auto tags =
+               *gen::scale(0.25, gen::arbitrary<std::vector<std::string>>());
+           for (const auto &tag : tags) {
+             classify("", {tag});
+           }
+         });
+         const auto shrinkable = gen(params.random, params.size);
+
+         onAnyPath(
+             shrinkable,
+             [](const ShrinkableResult &value, const ShrinkableResult &shrink) {
+               const auto desc = value.value();
+               RC_ASSERT(toString(desc.tags) == desc.example.back().second);
              });
        });
 }

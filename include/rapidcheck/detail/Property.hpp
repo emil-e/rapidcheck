@@ -2,9 +2,20 @@
 
 #include "rapidcheck/detail/FunctionTraits.h"
 #include "rapidcheck/gen/detail/ExecRaw.h"
+#include "rapidcheck/detail/PropertyContext.h"
 
 namespace rc {
 namespace detail {
+
+class WrapperContext : public PropertyContext {
+public:
+  explicit WrapperContext(std::vector<std::string> &tags);
+
+  void addTag(std::string str) override;
+
+private:
+  Tags &m_tags;
+};
 
 std::ostream &operator<<(std::ostream &os, const CaseDescription &desc) {
   os << desc.result << std::endl;
@@ -45,6 +56,11 @@ struct CaseResultHelper<void> {
   }
 };
 
+struct WrapperResult {
+  CaseResult result;
+  Tags tags;
+};
+
 template <typename Callable, typename Type = FunctionType<Callable>>
 class PropertyWrapper;
 
@@ -57,22 +73,29 @@ public:
   PropertyWrapper(Arg &&callable)
       : m_callable(std::forward<Arg>(callable)) {}
 
-  CaseResult operator()(Args &&... args) const {
+  WrapperResult operator()(Args &&... args) const {
+    WrapperResult wrapperResult;
+    WrapperContext handler(wrapperResult.tags);
+    ImplicitParam<param::CurrentPropertyContext> letHandler(&handler);
+
     try {
-      return CaseResultHelper<ReturnType>::resultOf(
+      wrapperResult.result = CaseResultHelper<ReturnType>::resultOf(
           m_callable, static_cast<Args &&>(args)...);
     } catch (const CaseResult &result) {
-      return result;
+      wrapperResult.result = result;
     } catch (const GenerationFailure &e) {
-      return CaseResult(CaseResult::Type::Discard, e.what());
+      wrapperResult.result = CaseResult(CaseResult::Type::Discard, e.what());
     } catch (const std::exception &e) {
       // TODO say that it was an exception
-      return CaseResult(CaseResult::Type::Failure, e.what());
+      wrapperResult.result = CaseResult(CaseResult::Type::Failure, e.what());
     } catch (const std::string &str) {
-      return CaseResult(CaseResult::Type::Failure, str);
+      wrapperResult.result = CaseResult(CaseResult::Type::Failure, str);
     } catch (...) {
-      return CaseResult(CaseResult::Type::Failure, "Unknown object thrown");
+      wrapperResult.result =
+          CaseResult(CaseResult::Type::Failure, "Unknown object thrown");
     }
+
+    return wrapperResult;
   }
 
 private:
@@ -80,7 +103,7 @@ private:
 };
 
 Gen<CaseDescription>
-mapToCaseDescription(Gen<std::pair<CaseResult, gen::detail::Recipe>> gen);
+mapToCaseDescription(Gen<std::pair<WrapperResult, gen::detail::Recipe>> gen);
 
 template <typename Callable>
 Property toProperty(Callable &&callable) {

@@ -4,6 +4,14 @@
 
 namespace rc {
 namespace detail {
+
+WrapperContext::WrapperContext(std::vector<std::string> &tags)
+    : m_tags(tags) {}
+
+void WrapperContext::addTag(std::string str) {
+  m_tags.push_back(std::move(str));
+}
+
 namespace {
 
 std::pair<std::string, std::string>
@@ -24,9 +32,9 @@ describeShrinkable(const Shrinkable<Any> &shrinkable) {
 } // namespace
 
 Gen<CaseDescription>
-mapToCaseDescription(Gen<std::pair<CaseResult, gen::detail::Recipe>> gen) {
+mapToCaseDescription(Gen<std::pair<WrapperResult, gen::detail::Recipe>> gen) {
   return gen::map(std::move(gen),
-                  [](std::pair<CaseResult, gen::detail::Recipe> &&p) {
+                  [](std::pair<WrapperResult, gen::detail::Recipe> &&p) {
                     Example example;
                     const auto &ingr = p.second.ingredients;
                     example.reserve(ingr.size());
@@ -36,7 +44,8 @@ mapToCaseDescription(Gen<std::pair<CaseResult, gen::detail::Recipe>> gen) {
                                    &describeShrinkable);
 
                     CaseDescription description;
-                    description.result = std::move(p.first);
+                    description.result = std::move(p.first.result);
+                    description.tags = std::move(p.first.tags);
                     description.example = std::move(example);
                     return description;
                   });

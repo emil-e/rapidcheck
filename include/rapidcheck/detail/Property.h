@@ -8,6 +8,7 @@ namespace detail {
 
 struct CaseDescription {
   CaseResult result;
+  std::vector<std::string> tags;
   Example example;
 };
 
