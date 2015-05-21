@@ -1,6 +1,7 @@
 #include "rapidcheck/detail/Results.h"
 
 #include <iomanip>
+#include <algorithm>
 
 #include "rapidcheck/Show.h"
 
