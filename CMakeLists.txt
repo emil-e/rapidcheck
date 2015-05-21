@@ -5,14 +5,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -std=c++11")
 
 add_library(rapidcheck
   src/Check.cpp
+  src/Classify.cpp
   src/GenerationFailure.cpp
   src/Random.cpp
   src/Show.cpp
   src/detail/Any.cpp
   src/detail/Assertions.cpp
-  src/detail/FrequencyMap.cpp
   src/detail/Configuration.cpp
   src/detail/ExpressionCaptor.cpp
+  src/detail/FrequencyMap.cpp
   src/detail/ImplicitParam.cpp
   src/detail/MapParser.cpp
   src/detail/Property.cpp

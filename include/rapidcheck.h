@@ -26,8 +26,9 @@
 #include "rapidcheck/gen/Transform.h"
 #include "rapidcheck/gen/Tuple.h"
 
-#include "rapidcheck/Check.h"
-#include "rapidcheck/Show.h"
 #include "rapidcheck/Assertions.h"
+#include "rapidcheck/Check.h"
+#include "rapidcheck/Classify.h"
+#include "rapidcheck/Show.h"
 
 #include "rapidcheck/state/State.h"

@@ -1,6 +1,7 @@
 add_executable(rapidcheck_tests
   AssertionsTests.cpp
   CheckTests.cpp
+  ClassifyTests.cpp
   GenTests.cpp
   MaybeTests.cpp
   RandomTests.cpp
