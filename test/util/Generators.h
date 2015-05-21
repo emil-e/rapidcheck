@@ -75,7 +75,8 @@ struct Arbitrary<detail::FailureResult> {
         gen::set(&detail::FailureResult::numSuccess, gen::positive<int>()),
         gen::set(&detail::FailureResult::failingCase),
         gen::set(&detail::FailureResult::description),
-        gen::set(&detail::FailureResult::numShrinks, gen::positive<int>()));
+        gen::set(&detail::FailureResult::numShrinks, gen::positive<int>()),
+        gen::set(&detail::FailureResult::counterExample));
   }
 };
 
