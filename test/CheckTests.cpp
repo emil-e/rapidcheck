@@ -11,7 +11,6 @@
 #include "rapidcheck/gen/Create.h"
 #include "rapidcheck/gen/Container.h"
 #include "rapidcheck/gen/Numeric.h"
-#include "rapidcheck/Classify.h"
 
 using namespace rc;
 using namespace rc::test;

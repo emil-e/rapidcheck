@@ -2,7 +2,6 @@
 #include <rapidcheck-catch.h>
 
 #include "rapidcheck/detail/Property.h"
-#include "rapidcheck/Classify.h"
 
 #include "util/Generators.h"
 #include "util/Predictable.h"
@@ -105,7 +104,7 @@ TEST_CASE("PropertyWrapper") {
        [](const std::vector<std::string> &tags) {
          const auto result = makeWrapper([&]{
            for (const auto &tag : tags) {
-             classify("", {tag});
+             ImplicitParam<param::CurrentPropertyContext>::value()->addTag(tag);
            }
          })();
 
@@ -233,7 +232,7 @@ TEST_CASE("toProperty") {
            const auto tags =
                *gen::scale(0.25, gen::arbitrary<std::vector<std::string>>());
            for (const auto &tag : tags) {
-             classify("", {tag});
+             ImplicitParam<param::CurrentPropertyContext>::value()->addTag(tag);
            }
          });
          const auto shrinkable = gen(params.random, params.size);
