@@ -194,15 +194,13 @@ TEST_CASE("toProperty") {
         const auto shrinkable = gen(params.random, params.size);
 
         Example expected;
-        expected.reserve(n + 1);
-        expected.emplace_back(typeToString<std::tuple<>>(),
-                              toString(std::tuple<>{}));
+        expected.reserve(n);
         expected.insert(end(expected),
                         n,
                         std::make_pair(typeToString<Fixed<1337>>(),
                                        toString(Fixed<1337>())));
         // TODO better test
-        expected[throwIndex + 1] = {"Generation failed", msg};
+        expected[throwIndex] = {"Generation failed", msg};
 
         onAnyPath(
             shrinkable,

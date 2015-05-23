@@ -9,6 +9,19 @@ namespace gen {
 namespace detail {
 
 template <typename Callable>
+rc::detail::ReturnType<Callable> execWithArguments(const Callable &callable,
+                                                   rc::detail::TypeList<>) {
+  return callable();
+}
+
+template <typename Callable, typename... Args>
+rc::detail::ReturnType<Callable>
+execWithArguments(const Callable &callable, rc::detail::TypeList<Args...>) {
+  return rc::detail::applyTuple(*gen::arbitrary<std::tuple<Decay<Args>...>>(),
+                                callable);
+}
+
+template <typename Callable>
 std::pair<rc::detail::ReturnType<Callable>, Recipe>
 execWithRecipe(Callable callable, Recipe recipe) {
   using namespace rc::detail;
@@ -16,8 +29,7 @@ execWithRecipe(Callable callable, Recipe recipe) {
   ExecHandler handler(resultRecipe);
   ImplicitParam<param::CurrentHandler> letHandler(&handler);
 
-  using ArgsTuple = tl::ToTuple<tl::DecayAll<ArgTypes<Callable>>>;
-  return std::make_pair(applyTuple(*gen::arbitrary<ArgsTuple>(), callable),
+  return std::make_pair(execWithArguments(callable, ArgTypes<Callable>()),
                         std::move(resultRecipe));
 }
 

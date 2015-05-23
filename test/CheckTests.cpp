@@ -110,7 +110,6 @@ TEST_CASE("checkTestable") {
          FailureResult failure;
          RC_ASSERT(results.match(failure));
          Example expected{
-             {typeToString<std::tuple<>>(), toString(std::tuple<>{})},
              {typeToString<std::string>(), toString(std::string("foo"))}};
          RC_ASSERT(failure.counterExample == expected);
        });

@@ -219,5 +219,10 @@ TEST_CASE("execRaw") {
     REQUIRE(isArbitraryPredictable(shrinkable.value().first));
   }
 
+  SECTION("empty arguments don't show up in tuple") {
+    const auto value = execRaw([] { return 0; })(Random(), 0).value();
+    REQUIRE(value.second.ingredients.empty());
+  }
+
   // TODO shrink tests?
 }
