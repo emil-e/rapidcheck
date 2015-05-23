@@ -19,6 +19,10 @@ PropertyWrapper<Decay<Callable>> makeWrapper(Callable &&callable) {
   return PropertyWrapper<Decay<Callable>>(std::forward<Callable>(callable));
 }
 
+bool descriptionContains(const WrapperResult &result, const std::string &str) {
+  return result.result.description.find(str) != std::string::npos;
+}
+
 } // namespace
 
 TEST_CASE("PropertyWrapper") {
@@ -49,7 +53,7 @@ TEST_CASE("PropertyWrapper") {
          const auto msg = *gen::nonEmpty<std::string>();
          const auto result = makeWrapper([&] { return msg; })();
          RC_ASSERT(result.result.type == CaseResult::Type::Failure);
-         RC_ASSERT(result.result.description == msg);
+         RC_ASSERT(descriptionContains(result, msg));
        });
 
   prop("if a CaseResult is thrown, returns that case result",
@@ -62,7 +66,7 @@ TEST_CASE("PropertyWrapper") {
          const auto result =
              makeWrapper([&] { throw GenerationFailure(msg); })();
          RC_ASSERT(result.result.type == CaseResult::Type::Discard);
-         RC_ASSERT(result.result.description == msg);
+         RC_ASSERT(descriptionContains(result, msg));
        });
 
   prop(
@@ -72,7 +76,7 @@ TEST_CASE("PropertyWrapper") {
         const auto result =
             makeWrapper([&] { throw std::runtime_error(msg); })();
         RC_ASSERT(result.result.type == CaseResult::Type::Failure);
-        RC_ASSERT(result.result.description == msg);
+        RC_ASSERT(descriptionContains(result, msg));
       });
 
   prop(
@@ -81,7 +85,7 @@ TEST_CASE("PropertyWrapper") {
       [](const std::string &msg) {
         const auto result = makeWrapper([&] { throw msg; })();
         RC_ASSERT(result.result.type == CaseResult::Type::Failure);
-        RC_ASSERT(result.result.description == msg);
+        RC_ASSERT(descriptionContains(result, msg));
       });
 
   SECTION("returns a failure result if other values are thrown") {

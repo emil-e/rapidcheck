@@ -84,10 +84,13 @@ public:
     } catch (const CaseResult &result) {
       wrapperResult.result = result;
     } catch (const GenerationFailure &e) {
-      wrapperResult.result = CaseResult(CaseResult::Type::Discard, e.what());
+      wrapperResult.result = CaseResult(
+          CaseResult::Type::Discard,
+          std::string("Generation failed with message:\n") + e.what());
     } catch (const std::exception &e) {
-      // TODO say that it was an exception
-      wrapperResult.result = CaseResult(CaseResult::Type::Failure, e.what());
+      wrapperResult.result = CaseResult(
+          CaseResult::Type::Failure,
+          std::string("Exception thrown with message:\n") + e.what());
     } catch (const std::string &str) {
       wrapperResult.result = CaseResult(CaseResult::Type::Failure, str);
     } catch (...) {
