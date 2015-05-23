@@ -35,4 +35,25 @@ TEST_CASE("gen::exec") {
         gen::exec([=](NonCopyable nc) { return std::move(nc); })(Random(), 0);
     REQUIRE(isArbitraryPredictable(shrinkable.value()));
   }
+
+  prop("equivalent to monadic bind",
+       [] {
+         const auto a = *gen::inRange(0, 5);
+         const auto b = *gen::inRange(0, 5);
+
+         const auto execGen = gen::exec([=] {
+           int x1 = *genFixedCountdown(a);
+           int x2 = *genFixedCountdown(b);
+           return std::make_pair(x1, x2);
+         });
+
+         const auto bindGen = gen::mapcat(
+             genFixedCountdown(a),
+             [=](int x1) {
+               return gen::map(genFixedCountdown(b),
+                               [=](int x2) { return std::make_pair(x1, x2); });
+             });
+
+         RC_ASSERT(execGen(Random(), 0) == bindGen(Random(), 0));
+       });
 }

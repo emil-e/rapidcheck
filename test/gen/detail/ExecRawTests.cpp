@@ -223,6 +223,4 @@ TEST_CASE("execRaw") {
     const auto value = execRaw([] { return 0; })(Random(), 0).value();
     REQUIRE(value.second.ingredients.empty());
   }
-
-  // TODO shrink tests?
 }
