@@ -3,9 +3,10 @@
 namespace rc {
 namespace detail {
 
-/// TMP utility for passing around a list of types.
+/// TMP utility for passing around a list of types. The type is actually defined
+/// so that it can be used in tag dispatching et.c.
 template <typename... Types>
-struct TypeList;
+struct TypeList {};
 
 namespace tl {
 
