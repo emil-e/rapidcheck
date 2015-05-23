@@ -11,9 +11,9 @@ std::string makeDescriptionMessage(const std::string file,
 
 std::string makeExpressionMessage(const std::string file,
                                   int line,
-                                  const std::string &expression,
+                                  const std::string &assertion,
                                   const std::string &expansion) {
-  return file + ":" + std::to_string(line) + ":\n" + expression +
+  return file + ":" + std::to_string(line) + ":\n" + assertion +
       "\n"
       "\n"
       "Expands to:\n" +
