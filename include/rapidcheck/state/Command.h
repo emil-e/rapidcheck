@@ -13,12 +13,12 @@ public:
   using Sut = SutT;
   using CommandType = Command<State, Sut>;
 
-  /// Returns the state resulting from applying this command to the given
-  /// state. Default implementation simply returns the given state.
+  /// Applies the command to the given model state. Default implementation does
+  /// nothing.
   ///
   /// Assert preconditions using `RC_PRE` or `RC_DISCARD`. If preconditions do
   /// not hold, command will be discarded and a new one will be generated.
-  virtual State nextState(const State &s0) const;
+  virtual void nextState(State &s0) const;
 
   /// Applies this command to the given system under test assuming it has the
   /// given state. Default implementation does nothing.

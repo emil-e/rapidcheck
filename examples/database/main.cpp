@@ -15,11 +15,9 @@ struct DatabaseModel {
 using DbCommand = state::Command<DatabaseModel, Database>;
 
 struct Open : public DbCommand {
-  DatabaseModel nextState(const DatabaseModel &s0) const override {
+  void nextState(DatabaseModel &s0) const override {
     RC_PRE(!s0.open);
-    auto s1 = s0;
-    s1.open = true;
-    return s1;
+    s0.open = true;
   }
 
   void run(const DatabaseModel &s0, Database &db) const override {
@@ -32,12 +30,10 @@ struct Open : public DbCommand {
 };
 
 struct Close : public DbCommand {
-  DatabaseModel nextState(const DatabaseModel &s0) const override {
+  void nextState(DatabaseModel &s0) const override {
     RC_PRE(!s0.inWriteBlock);
     RC_PRE(s0.open);
-    auto s1 = s0;
-    s1.open = false;
-    return s1;
+    s0.open = false;
   }
 
   void run(const DatabaseModel &s0, Database &db) const override {
@@ -52,11 +48,9 @@ struct Close : public DbCommand {
 struct Put : public DbCommand {
   User user = *gen::arbitrary<User>();
 
-  DatabaseModel nextState(const DatabaseModel &s0) const override {
+  void nextState(DatabaseModel &s0) const override {
     RC_PRE(s0.inWriteBlock);
-    auto s1 = s0;
-    s1.data[user.username] = user;
-    return s1;
+    s0.data[user.username] = user;
   }
 
   void run(const DatabaseModel &s0, Database &db) const override {
@@ -75,11 +69,10 @@ struct Get : public DbCommand {
     username = (*gen::elementOf(s0.data)).second.username;
   }
 
-  DatabaseModel nextState(const DatabaseModel &s0) const override {
+  void nextState(DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
     RC_PRE(s0.data.count(username) > 0);
-    return s0;
   }
 
   void run(const DatabaseModel &s0, Database &db) const override {
@@ -94,12 +87,10 @@ struct Get : public DbCommand {
 };
 
 struct BeginWrite : public DbCommand {
-  DatabaseModel nextState(const DatabaseModel &s0) const override {
+  void nextState(DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
-    auto s1 = s0;
-    s1.inWriteBlock = true;
-    return s1;
+    s0.inWriteBlock = true;
   }
 
   void run(const DatabaseModel &s0, Database &db) const override {
@@ -112,11 +103,9 @@ struct BeginWrite : public DbCommand {
 };
 
 struct ExecuteWrite : public DbCommand {
-  DatabaseModel nextState(const DatabaseModel &s0) const override {
+  void nextState(DatabaseModel &s0) const override {
     RC_PRE(s0.inWriteBlock);
-    auto s1 = s0;
-    s1.inWriteBlock = false;
-    return s1;
+    s0.inWriteBlock = false;
   }
 
   void run(const DatabaseModel &s0, Database &db) const override {

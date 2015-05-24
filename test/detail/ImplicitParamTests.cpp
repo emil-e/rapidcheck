@@ -42,11 +42,7 @@ using ImplicitCommand = state::Command<ImplicitParamModel, ImplicitParamSystem>;
 using ImplicitCommandSP = std::shared_ptr<ImplicitCommand>;
 
 struct NewScope : public ImplicitCommand {
-  ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {
-    auto s1(s0);
-    s1.emplace();
-    return s1;
-  }
+  void nextState(ImplicitParamModel &s0) const override { s0.emplace(); }
 
   void run(const ImplicitParamModel &s0,
            ImplicitParamSystem &system) const override {
@@ -59,12 +55,9 @@ struct NewScope : public ImplicitCommand {
 struct BindA : public ImplicitCommand {
   ParamA::ValueType value = *gen::arbitrary<ParamA::ValueType>();
 
-  ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {
+  void nextState(ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
-
-    auto s1(s0);
-    s1.top().bindingsA.emplace(value);
-    return s1;
+    s0.top().bindingsA.emplace(value);
   }
 
   void run(const ImplicitParamModel &s0,
@@ -79,12 +72,9 @@ struct BindA : public ImplicitCommand {
 struct BindB : public ImplicitCommand {
   ParamB::ValueType value = *gen::arbitrary<ParamB::ValueType>();
 
-  ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {
+  void nextState(ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
-
-    auto s1(s0);
-    s1.top().bindingsB.emplace(value);
-    return s1;
+    s0.top().bindingsB.emplace(value);
   }
 
   void run(const ImplicitParamModel &s0,
@@ -99,12 +89,9 @@ struct BindB : public ImplicitCommand {
 struct ModifyA : public ImplicitCommand {
   ParamA::ValueType value = *gen::arbitrary<ParamA::ValueType>();
 
-  ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {
+  void nextState(ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
-
-    auto s1(s0);
-    s1.top().bindingsA.top() = value;
-    return s1;
+    s0.top().bindingsA.top() = value;
   }
 
   void run(const ImplicitParamModel &s0,
@@ -119,12 +106,9 @@ struct ModifyA : public ImplicitCommand {
 struct ModifyB : public ImplicitCommand {
   ParamB::ValueType value = *gen::arbitrary<ParamB::ValueType>();
 
-  ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {
+  void nextState(ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
-
-    auto s1(s0);
-    s1.top().bindingsB.top() = value;
-    return s1;
+    s0.top().bindingsB.top() = value;
   }
 
   void run(const ImplicitParamModel &s0,
@@ -137,54 +121,49 @@ struct ModifyB : public ImplicitCommand {
 };
 
 struct PopA : public ImplicitCommand {
-  ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {
+  void nextState(ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
     RC_PRE(s0.top().bindingsA.size() > 1);
-
-    auto s1(s0);
-    s1.top().bindingsA.pop();
-    return s1;
+    s0.top().bindingsA.pop();
   }
 
   void run(const ImplicitParamModel &s0,
            ImplicitParamSystem &system) const override {
     system.bindingsA.pop();
-    auto expected = nextState(s0).top().bindingsA.top();
+    ImplicitParamModel s1 = s0;
+    nextState(s1);
+    auto expected = s1.top().bindingsA.top();
     RC_ASSERT(ImplicitParam<ParamA>::value() == expected);
   }
 };
 
 struct PopB : public ImplicitCommand {
-  ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {
+  void nextState(ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
     RC_PRE(s0.top().bindingsB.size() > 1);
-
-    auto s1(s0);
-    s1.top().bindingsB.pop();
-    return s1;
+    s0.top().bindingsB.pop();
   }
 
   void run(const ImplicitParamModel &s0,
            ImplicitParamSystem &system) const override {
     system.bindingsB.pop();
-    auto expected = nextState(s0).top().bindingsB.top();
+    ImplicitParamModel s1 = s0;
+    nextState(s1);
+    auto expected = s1.top().bindingsB.top();
     RC_ASSERT(ImplicitParam<ParamB>::value() == expected);
   }
 };
 
 struct PopScope : public ImplicitCommand {
-  ImplicitParamModel nextState(const ImplicitParamModel &s0) const override {
+  void nextState(ImplicitParamModel &s0) const override {
     // Never pop last scope
     RC_PRE(s0.size() > 1);
-
-    auto s1(s0);
-    s1.pop();
-    return s1;
+    s0.pop();
   }
 
   void run(const ImplicitParamModel &s0,
            ImplicitParamSystem &system) const override {
-    auto s1(s0);
+    auto s1 = s0;
     while (s1.top().bindingsA.size() > 1) {
       s1.top().bindingsA.pop();
       system.bindingsA.pop();

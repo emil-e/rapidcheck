@@ -27,10 +27,8 @@ struct CounterModel {
 };
 
 struct Inc : public state::Command<CounterModel, Counter> {
-  CounterModel nextState(const CounterModel &s0) const override {
-    CounterModel s1(s0);
-    s1.value++;
-    return s1;
+  void nextState(CounterModel &s0) const override {
+    s0.value++;
   }
 
   void run(const CounterModel &s0, Counter &counter) const override {
@@ -41,11 +39,9 @@ struct Inc : public state::Command<CounterModel, Counter> {
 };
 
 struct Dec : public state::Command<CounterModel, Counter> {
-  CounterModel nextState(const CounterModel &state) const override {
-    RC_PRE(state.value > 0);
-    CounterModel s1(state);
-    s1.value--;
-    return s1;
+  void nextState(CounterModel &s0) const override {
+    RC_PRE(s0.value > 0);
+    s0.value--;
   }
 
   void run(const CounterModel &state, Counter &counter) const override {

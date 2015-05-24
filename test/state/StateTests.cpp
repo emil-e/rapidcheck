@@ -28,10 +28,8 @@ struct PushBack : public StringVecCmd {
       : value(*gen::arbitrary<std::string>()) {}
   std::string value;
 
-  StringVec nextState(const StringVec &s0) const override {
-    StringVec s1(s0);
-    s1.push_back(value);
-    return s1;
+  void nextState(StringVec &s0) const override {
+    s0.push_back(value);
   }
 
   void run(const StringVec &s0, StringVec &sut) const override {
@@ -42,11 +40,9 @@ struct PushBack : public StringVecCmd {
 };
 
 struct PopBack : public StringVecCmd {
-  StringVec nextState(const StringVec &s0) const override {
+  void nextState(StringVec &s0) const override {
     RC_PRE(!s0.empty());
-    StringVec s1(s0);
-    s1.pop_back();
-    return s1;
+    s0.pop_back();
   }
 
   void run(const StringVec &s0, StringVec &sut) const override {
@@ -61,7 +57,7 @@ struct AlwaysFail : public StringVecCmd {
 };
 
 struct PreNeverHolds : public StringVecCmd {
-  StringVec nextState(const StringVec &s0) const override {
+  void nextState(StringVec &s0) const override {
     RC_DISCARD("Preconditions never hold");
   }
 };
@@ -97,9 +93,11 @@ struct AlwaysDiscard : public StringVecCmd {
 
 TEST_CASE("Command") {
   SECTION("nextState") {
-    prop("default implementation returns unmodified state",
-         [](const StringVec &state) {
-           RC_ASSERT(StringVecCmd().nextState(state) == state);
+    prop("default implementation does not modify state",
+         [](const StringVec &s0) {
+           auto s1 = s0;
+           StringVecCmd().nextState(s1);
+           RC_ASSERT(s1 == s0);
          });
   }
 
@@ -138,7 +136,9 @@ TEST_CASE("Commands") {
              expected.push_back(os.str());
            }
 
-           RC_ASSERT(cmds.nextState(s0) == expected);
+           auto s1 = s0;
+           cmds.nextState(s1);
+           RC_ASSERT(s1 == expected);
          });
   }
 
@@ -234,12 +234,10 @@ struct CountCmd : public IntVecCmd {
       : value(x) {}
   int value;
 
-  IntVec nextState(const IntVec &s0) const override {
+  void nextState(IntVec &s0) const override {
     RC_PRE(!s0.empty());
     RC_PRE(s0.back() == (value - 1));
-    IntVec s1(s0);
-    s1.push_back(value);
-    return s1;
+    s0.push_back(value);
   }
 
   void run(const IntVec &s0, IntVec &sut) const override {
@@ -458,11 +456,9 @@ struct Bag {
 using BagCommand = Command<Bag, Bag>;
 
 struct Open : public BagCommand {
-  State nextState(const State &s0) const override {
+  void nextState(State &s0) const override {
     RC_PRE(!s0.open);
-    auto s1 = s0;
-    s1.open = true;
-    return s1;
+    s0.open = true;
   }
 
   void run(const State &s0, Sut &sut) const override {
@@ -475,11 +471,9 @@ struct Open : public BagCommand {
 };
 
 struct Close : public BagCommand {
-  State nextState(const State &s0) const override {
+  void nextState(State &s0) const override {
     RC_PRE(s0.open);
-    auto s1 = s0;
-    s1.open = false;
-    return s1;
+    s0.open = false;
   }
 
   void run(const State &s0, Sut &sut) const override {
@@ -494,11 +488,9 @@ struct Close : public BagCommand {
 struct Add : public BagCommand {
   int item = *gen::arbitrary<int>();
 
-  State nextState(const State &s0) const override {
+  void nextState(State &s0) const override {
     RC_PRE(s0.open);
-    auto s1 = s0;
-    s1.items.push_back(item);
-    return s1;
+    s0.items.push_back(item);
   }
 
   void run(const State &s0, Sut &sut) const override {
@@ -517,12 +509,11 @@ struct Del : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  State nextState(const State &s0) const override {
+  void nextState(State &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
     auto s1 = s0;
-    s1.items.erase(begin(s1.items) + index);
-    return s1;
+    s0.items.erase(begin(s0.items) + index);
   }
 
   void run(const State &s0, Sut &sut) const override {
@@ -541,10 +532,9 @@ struct Get : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  State nextState(const State &s0) const override {
+  void nextState(State &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
-    return s0;
   }
 
   void run(const State &s0, Sut &sut) const override {

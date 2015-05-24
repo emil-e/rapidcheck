@@ -14,7 +14,7 @@ public:
   using State = typename Cmd::State;
   using Sut = typename Cmd::Sut;
 
-  State nextState(const State &state) const override;
+  void nextState(State &state) const override;
   void run(const State &state, Sut &sut) const override;
   void show(std::ostream &os) const override;
 

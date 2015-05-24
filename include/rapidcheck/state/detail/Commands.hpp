@@ -5,22 +5,21 @@ namespace state {
 namespace detail {
 
 template <typename Cmd>
-typename Commands<Cmd>::State
-Commands<Cmd>::nextState(const State &state) const {
-  State currentState = state;
+void Commands<Cmd>::nextState(State &state) const {
   for (const auto &command : commands) {
-    currentState = command->nextState(currentState);
+    command->nextState(state);
   }
-  return currentState;
 }
 
 template <typename Cmd>
 void Commands<Cmd>::run(const State &state, Sut &sut) const {
   State currentState = state;
   for (const auto &command : commands) {
-    auto nextState = command->nextState(currentState);
-    command->run(currentState, sut);
-    currentState = nextState;
+    auto preState = currentState;
+    // We need to run this first so we trigger any precondition assertions
+    // before running
+    command->nextState(currentState);
+    command->run(preState, sut);
   }
 }
 
