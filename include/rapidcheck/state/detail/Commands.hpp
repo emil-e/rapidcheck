@@ -34,4 +34,14 @@ void Commands<Cmd>::show(std::ostream &os) const {
 
 } // namespace detail
 } // namespace state
+
+template <typename Cmd>
+struct ShowType<rc::state::detail::Commands<Cmd>> {
+  static void showType(std::ostream &os) {
+    os << "Commands<";
+    ::rc::detail::showType<Cmd>(os);
+    os << ">";
+  }
+};
+
 } // namespace rc

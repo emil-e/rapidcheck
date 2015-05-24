@@ -86,31 +86,5 @@ anyCommand(const typename Cmd::State &state) {
   };
 }
 
-template <typename State, typename Sut>
-void showValue(const Command<State, Sut> &command, std::ostream &os) {
-  command.show(os);
-}
-
 } // namespace state
-
-template <typename State, typename Sut>
-struct ShowType<rc::state::Command<State, Sut>> {
-  static void showType(std::ostream &os) {
-    os << "Command<";
-    ::rc::detail::showType<State>(os);
-    os << ", ";
-    ::rc::detail::showType<Sut>(os);
-    os << ">";
-  }
-};
-
-template <typename Cmd>
-struct ShowType<rc::state::detail::Commands<Cmd>> {
-  static void showType(std::ostream &os) {
-    os << "Commands<";
-    ::rc::detail::showType<Cmd>(os);
-    os << ">";
-  }
-};
-
 } // namespace rc
