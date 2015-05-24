@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/detail/FrequencyMap.h"
+#include "rapidcheck/gen/detail/ScaleInteger.h"
 
 namespace rc {
 namespace gen {
@@ -95,9 +96,8 @@ public:
       throw GenerationFailure("Cannot pick element from empty container.");
     }
 
-    const auto clampedSize = std::min(size, kNominalSize);
     const std::size_t max =
-        (((m_container.size() - 1) * clampedSize) / kNominalSize) + 1;
+        detail::scaleInteger(m_container.size() - 1, size) + 1;
     const std::size_t i = Random(random).next() % max;
     const auto container = m_container;
     return shrinkable::map(
