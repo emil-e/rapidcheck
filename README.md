@@ -68,7 +68,7 @@ std::tuple<std::vector<int>>:
 ([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 main.cpp:17:
-l0 == l1
+RC_ASSERT(l0 == l1)
 
 Expands to:
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]

@@ -57,7 +57,7 @@ std::tuple<std::vector<int>>:
 ([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 main.cpp:17:
-l0 == l1
+RC_ASSERT(l0 == l1)
 
 Expands to:
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0] == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -72,7 +72,7 @@ If enough test cases are discarded, RapidCheck will eventually give up. The thre
 Gave up after 84 tests
 
 ../examples/newgen/main.cpp:10:
-l0.size() < 4
+RC_PRE(l0.size() < 4)
 
 Expands to:
 18 < 4
