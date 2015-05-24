@@ -245,4 +245,12 @@ TEST_CASE("checkTestable") {
          RC_ASSERT(result.match(success));
          RC_ASSERT(success.distribution.empty());
        });
+
+  prop("should increase size eventually if enough tests are discarded",
+       [](TestParams params) {
+         params.maxDiscardRatio = 100;
+         const auto result =
+             checkTestable([] { RC_PRE(*genSize() != 0); }, params);
+         RC_ASSERT(result.template is<SuccessResult>());
+       });
 }

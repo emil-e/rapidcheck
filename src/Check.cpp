@@ -46,18 +46,21 @@ Distribution collectTags(std::vector<Tags> allTags) {
 } // namespace
 
 TestResult checkProperty(const Property &property, const TestParams &params) {
-  int maxDiscard = params.maxDiscardRatio * params.maxSuccess;
-  int numDiscarded = 0;
-  int numSuccess = 0;
-  int index = 0;
-  std::size_t totalTests = 0;
+  const auto maxDiscard = params.maxDiscardRatio * params.maxSuccess;
+
+  auto numSuccess = 0;
+  auto numDiscarded = 0;
+  auto recentDiscards = 0;
+  auto random = Random(params.seed);
+
   std::vector<Tags> tags;
+  tags.reserve(params.maxSuccess);
 
   TestCase currentCase;
-  currentCase.size = sizeFor(params, index);
 
-  for (; numSuccess < params.maxSuccess; totalTests++) {
-    currentCase.seed = avalanche(params.seed + totalTests);
+  while (numSuccess < params.maxSuccess) {
+    currentCase.size = sizeFor(params, numSuccess) + (recentDiscards / 10);
+    currentCase.seed = avalanche(params.seed + numSuccess + recentDiscards);
 
     const auto shrinkable =
         property(Random(currentCase.seed), currentCase.size);
@@ -78,6 +81,7 @@ TestResult checkProperty(const Property &property, const TestParams &params) {
     } else if (result.type == CaseResult::Type::Discard) {
       // Test case discarded
       numDiscarded++;
+      recentDiscards++;
       if (numDiscarded > maxDiscard) {
         GaveUpResult gaveUp;
         gaveUp.numSuccess = numSuccess;
@@ -87,7 +91,7 @@ TestResult checkProperty(const Property &property, const TestParams &params) {
     } else {
       // Success!
       numSuccess++;
-      currentCase.size = sizeFor(params, ++index);
+      recentDiscards = 0;
       tags.push_back(std::move(caseDescription.tags));
     }
   }
