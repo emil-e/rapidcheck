@@ -26,9 +26,9 @@ bool operator!=(const TestParams &p1, const TestParams &p2) {
 }
 
 std::ostream &operator<<(std::ostream &os, const TestParams &params) {
-  os << "maxSuccess=" << params.maxSuccess;
-  os << ", maxSize=" << params.maxSize;
-  os << ", maxDiscardRatio=" << params.maxDiscardRatio;
+  os << "seed=" << params.seed << ", maxSuccess=" << params.maxSuccess
+     << ", maxSize=" << params.maxSize
+     << ", maxDiscardRatio=" << params.maxDiscardRatio;
   return os;
 }
 

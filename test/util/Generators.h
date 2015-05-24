@@ -93,6 +93,7 @@ template <>
 struct Arbitrary<detail::TestParams> {
   static Gen<detail::TestParams> arbitrary() {
     return gen::build<detail::TestParams>(
+        gen::set(&detail::TestParams::seed),
         gen::set(&detail::TestParams::maxSuccess, gen::inRange(0, 100)),
         gen::set(&detail::TestParams::maxSize, gen::inRange(0, 101)),
         gen::set(&detail::TestParams::maxDiscardRatio, gen::inRange(0, 100)));
