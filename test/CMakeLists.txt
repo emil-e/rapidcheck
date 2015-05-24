@@ -36,6 +36,7 @@ add_executable(rapidcheck_tests
   gen/TupleTests.cpp
   gen/detail/ExecRawTests.cpp
   gen/detail/RecipeTests.cpp
+  gen/detail/ScaleIntegerTests.cpp
   gen/detail/ShrinkValueIteratorTests.cpp
   main.cpp
   seq/CreateTests.cpp

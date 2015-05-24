@@ -26,6 +26,7 @@ add_library(rapidcheck
   src/gen/detail/ExecHandler.cpp
   src/gen/detail/GenerationHandler.cpp
   src/gen/detail/Recipe.cpp
+  src/gen/detail/ScaleInteger.cpp
   )
 
 # Random is used a LOT so it should preferrably be really fast

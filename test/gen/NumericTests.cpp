@@ -173,22 +173,31 @@ namespace {
 struct InRangeProperties {
   template <typename T>
   static void exec() {
-    templatedProp<T>("never generates values outside of range",
-                     [](const GenParams &params) {
-                       // TODO range generator
-                       const auto a = *gen::arbitrary<T>();
-                       const auto b = *gen::distinctFrom(a);
-                       const auto min = std::min(a, b);
-                       const auto max = std::max(a, b);
-                       const auto value =
-                           gen::inRange<T>(min, max)(params.random, params.size)
-                               .value();
-                       RC_ASSERT(value >= min && value < max);
-                     });
+
+    // TODO proper range generator
+    static const auto genRange = gen::exec([] {
+      const auto a = *gen::arbitrary<T>();
+      const auto b = *gen::distinctFrom(a);
+      return std::make_pair(std::min(a, b), std::max(a, b));
+    });
+
+    templatedProp<T>(
+        "never generates values outside of range",
+        [](const GenParams &params) {
+          // TODO range generator
+          const auto range = *genRange;
+          const auto shrinkable = gen::inRange<T>(range.first, range.second)(
+              params.random, params.size);
+          onAnyPath(
+              shrinkable,
+              [&](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
+                const auto x = value.value();
+                RC_ASSERT(x >= range.first && x < range.second);
+              });
+        });
 
     templatedProp<T>("throws if min <= max",
                      [](const GenParams &params) {
-                       // TODO range generator
                        const auto a = *gen::arbitrary<T>();
                        const auto b = *gen::distinctFrom(a);
                        const auto gen =
@@ -203,30 +212,33 @@ struct InRangeProperties {
                        RC_FAIL("Did not throw GenerationFailure");
                      });
 
-    templatedProp<T>("has no shrinks",
-                     [](const GenParams &params) {
-                       // TODO range generator
-                       const auto a = *gen::arbitrary<T>();
-                       const auto b = *gen::distinctFrom(a);
-                       const auto shrinkable =
-                           gen::inRange<T>(std::min(a, b), std::max(a, b))(
-                               params.random, params.size);
-                       RC_ASSERT(!shrinkable.shrinks().next());
-                     });
+    templatedProp<T>(
+        "first shrink is min",
+        [](const GenParams &params) {
+          // TODO range generator
+          const auto range = *genRange;
+          const auto shrinkable = gen::inRange<T>(range.first, range.second)(
+              params.random, params.size);
+          if (shrinkable.value() != range.first) {
+            const auto firstShrink = shrinkable.shrinks().next();
+            RC_ASSERT(firstShrink);
+            RC_ASSERT(firstShrink->value() == range.first);
+          }
+        });
 
     templatedProp<T>(
-        "generates all values in range",
-        [](const GenParams &params) {
+        "when size == kNominalSize, generates all values in range",
+        [](const Random &random) {
           const auto size = *gen::inRange<T>(1, 20);
           const auto min =
               *gen::inRange<T>(std::numeric_limits<T>::min(),
                                std::numeric_limits<T>::max() - size);
 
           const auto gen = gen::inRange<T>(min, min + size);
-          Random r(params.random);
+          auto r = random;
           std::vector<int> counts(size, 0);
           for (std::size_t i = 0; i < 2000000; i++) {
-            const auto x = gen(r.split(), params.size).value();
+            const auto x = gen(r.split(), kNominalSize).value();
             counts[x - min]++;
             const auto done =
                 std::find(begin(counts), end(counts), 0) == end(counts);
@@ -237,6 +249,28 @@ struct InRangeProperties {
 
           RC_FAIL("Gave up");
         });
+
+    templatedProp<T>("when size == 0, generates only min",
+                     [](const Random &random) {
+                       const auto range = *genRange;
+                       RC_ASSERT(
+                           gen::inRange(range.first, range.second)(random, 0) ==
+                           shrinkable::just(range.first));
+                     });
+
+    templatedProp<T>("finds shrink where value must be larger than some value",
+                     [](const Random &random) {
+                       const auto range = *genRange;
+                       const auto target =
+                           *gen::inRange(range.first, range.second);
+
+                       const auto result =
+                           searchGen(random,
+                                     kNominalSize,
+                                     gen::inRange(range.first, range.second),
+                                     [=](T x) { return x >= target; });
+                       RC_ASSERT(result == target);
+                     });
   }
 };
 

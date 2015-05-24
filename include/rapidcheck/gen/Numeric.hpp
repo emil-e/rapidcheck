@@ -4,6 +4,7 @@
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/shrink/Shrink.h"
 #include "rapidcheck/gen/Transform.h"
+#include "rapidcheck/gen/detail/ScaleInteger.h"
 
 namespace rc {
 namespace gen {
@@ -92,9 +93,15 @@ Gen<T> inRange(T min, T max) {
     }
 
     const auto rangeSize =
-        static_cast<Random::Number>(max) - static_cast<Random::Number>(min);
-    const auto x = Random(random).next() % rangeSize;
-    return shrinkable::just(static_cast<T>(x + min));
+        detail::scaleInteger(static_cast<Random::Number>(max) -
+                                 static_cast<Random::Number>(min) - 1,
+                             size) +
+        1;
+    const auto value =
+        static_cast<T>((Random(random).next() % rangeSize) + min);
+    assert(value >= min && value < max);
+    return shrinkable::shrinkRecur(
+        value, [=](T x) { return shrink::towards<T>(x, min); });
   };
 }
 
