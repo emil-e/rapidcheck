@@ -5,9 +5,9 @@ namespace state {
 namespace detail {
 
 template <typename Cmd>
-void Commands<Cmd>::nextState(State &state) const {
+void Commands<Cmd>::apply(State &state) const {
   for (const auto &command : commands) {
-    command->nextState(state);
+    command->apply(state);
   }
 }
 
@@ -16,9 +16,9 @@ void Commands<Cmd>::run(const State &state, Sut &sut) const {
   State currentState = state;
   for (const auto &command : commands) {
     auto preState = currentState;
-    // We need to run this first so we trigger any precondition assertions
+    // We need to apply first so we trigger any precondition assertions
     // before running
-    command->nextState(currentState);
+    command->apply(currentState);
     command->run(preState, sut);
   }
 }

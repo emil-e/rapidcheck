@@ -68,7 +68,7 @@ private:
         auto &entry = entries[i];
         const auto cmd = entry.shrinkable.value();
         entry.postState = stateAt(i);
-        cmd->nextState(entry.postState);
+        cmd->apply(entry.postState);
       } catch (const CaseResult &result) {
         if (result.type != CaseResult::Type::Discard) {
           throw;
@@ -88,7 +88,7 @@ private:
         entry.shrinkable = genFunc(preState)(entry.random, size);
         const auto cmd = entry.shrinkable.value();
         entry.postState = preState;
-        cmd->nextState(entry.postState);
+        cmd->apply(entry.postState);
         return true;
       } catch (const CaseResult &result) {
         if (result.type != CaseResult::Type::Discard) {
@@ -153,7 +153,7 @@ private:
         auto random = r.split();
         auto shrinkable = m_genFunc(state)(random, size);
         auto postState = state;
-        shrinkable.value()->nextState(postState);
+        shrinkable.value()->apply(postState);
 
         return CommandEntry(
             std::move(random), std::move(shrinkable), std::move(postState));

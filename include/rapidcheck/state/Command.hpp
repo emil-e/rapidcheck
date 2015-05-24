@@ -4,7 +4,7 @@ namespace rc {
 namespace state {
 
 template <typename State, typename Sut>
-void Command<State, Sut>::nextState(State &s0) const {}
+void Command<State, Sut>::apply(State &s0) const {}
 
 template <typename State, typename Sut>
 void Command<State, Sut>::run(const State &s0, Sut &sut) const {}

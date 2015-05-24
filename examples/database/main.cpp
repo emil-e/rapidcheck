@@ -15,7 +15,7 @@ struct DatabaseModel {
 using DbCommand = state::Command<DatabaseModel, Database>;
 
 struct Open : public DbCommand {
-  void nextState(DatabaseModel &s0) const override {
+  void apply(DatabaseModel &s0) const override {
     RC_PRE(!s0.open);
     s0.open = true;
   }
@@ -30,7 +30,7 @@ struct Open : public DbCommand {
 };
 
 struct Close : public DbCommand {
-  void nextState(DatabaseModel &s0) const override {
+  void apply(DatabaseModel &s0) const override {
     RC_PRE(!s0.inWriteBlock);
     RC_PRE(s0.open);
     s0.open = false;
@@ -48,7 +48,7 @@ struct Close : public DbCommand {
 struct Put : public DbCommand {
   User user = *gen::arbitrary<User>();
 
-  void nextState(DatabaseModel &s0) const override {
+  void apply(DatabaseModel &s0) const override {
     RC_PRE(s0.inWriteBlock);
     s0.data[user.username] = user;
   }
@@ -69,7 +69,7 @@ struct Get : public DbCommand {
     username = (*gen::elementOf(s0.data)).second.username;
   }
 
-  void nextState(DatabaseModel &s0) const override {
+  void apply(DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
     RC_PRE(s0.data.count(username) > 0);
@@ -87,7 +87,7 @@ struct Get : public DbCommand {
 };
 
 struct BeginWrite : public DbCommand {
-  void nextState(DatabaseModel &s0) const override {
+  void apply(DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
     s0.inWriteBlock = true;
@@ -103,7 +103,7 @@ struct BeginWrite : public DbCommand {
 };
 
 struct ExecuteWrite : public DbCommand {
-  void nextState(DatabaseModel &s0) const override {
+  void apply(DatabaseModel &s0) const override {
     RC_PRE(s0.inWriteBlock);
     s0.inWriteBlock = false;
   }

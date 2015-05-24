@@ -28,7 +28,7 @@ struct PushBack : public StringVecCmd {
       : value(*gen::arbitrary<std::string>()) {}
   std::string value;
 
-  void nextState(StringVec &s0) const override {
+  void apply(StringVec &s0) const override {
     s0.push_back(value);
   }
 
@@ -40,7 +40,7 @@ struct PushBack : public StringVecCmd {
 };
 
 struct PopBack : public StringVecCmd {
-  void nextState(StringVec &s0) const override {
+  void apply(StringVec &s0) const override {
     RC_PRE(!s0.empty());
     s0.pop_back();
   }
@@ -57,7 +57,7 @@ struct AlwaysFail : public StringVecCmd {
 };
 
 struct PreNeverHolds : public StringVecCmd {
-  void nextState(StringVec &s0) const override {
+  void apply(StringVec &s0) const override {
     RC_DISCARD("Preconditions never hold");
   }
 };
@@ -92,11 +92,11 @@ struct AlwaysDiscard : public StringVecCmd {
 } // namespace
 
 TEST_CASE("Command") {
-  SECTION("nextState") {
+  SECTION("apply") {
     prop("default implementation does not modify state",
          [](const StringVec &s0) {
            auto s1 = s0;
-           StringVecCmd().nextState(s1);
+           StringVecCmd().apply(s1);
            RC_ASSERT(s1 == s0);
          });
   }
@@ -123,7 +123,7 @@ TEST_CASE("Command") {
 }
 
 TEST_CASE("Commands") {
-  SECTION("nextState") {
+  SECTION("apply") {
     prop("returns next state by applying the commands in sequence",
          [](const StringVec &s0) {
            StringVecCmdsN cmds;
@@ -137,7 +137,7 @@ TEST_CASE("Commands") {
            }
 
            auto s1 = s0;
-           cmds.nextState(s1);
+           cmds.apply(s1);
            RC_ASSERT(s1 == expected);
          });
   }
@@ -234,7 +234,7 @@ struct CountCmd : public IntVecCmd {
       : value(x) {}
   int value;
 
-  void nextState(IntVec &s0) const override {
+  void apply(IntVec &s0) const override {
     RC_PRE(!s0.empty());
     RC_PRE(s0.back() == (value - 1));
     s0.push_back(value);
@@ -456,7 +456,7 @@ struct Bag {
 using BagCommand = Command<Bag, Bag>;
 
 struct Open : public BagCommand {
-  void nextState(State &s0) const override {
+  void apply(State &s0) const override {
     RC_PRE(!s0.open);
     s0.open = true;
   }
@@ -471,7 +471,7 @@ struct Open : public BagCommand {
 };
 
 struct Close : public BagCommand {
-  void nextState(State &s0) const override {
+  void apply(State &s0) const override {
     RC_PRE(s0.open);
     s0.open = false;
   }
@@ -488,7 +488,7 @@ struct Close : public BagCommand {
 struct Add : public BagCommand {
   int item = *gen::arbitrary<int>();
 
-  void nextState(State &s0) const override {
+  void apply(State &s0) const override {
     RC_PRE(s0.open);
     s0.items.push_back(item);
   }
@@ -509,7 +509,7 @@ struct Del : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  void nextState(State &s0) const override {
+  void apply(State &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
     auto s1 = s0;
@@ -532,7 +532,7 @@ struct Get : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  void nextState(State &s0) const override {
+  void apply(State &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
   }

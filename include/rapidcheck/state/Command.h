@@ -18,7 +18,7 @@ public:
   ///
   /// Assert preconditions using `RC_PRE` or `RC_DISCARD`. If preconditions do
   /// not hold, command will be discarded and a new one will be generated.
-  virtual void nextState(State &s0) const;
+  virtual void apply(State &s0) const;
 
   /// Applies this command to the given system under test assuming it has the
   /// given state. Default implementation does nothing.
