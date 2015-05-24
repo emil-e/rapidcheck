@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(rapidcheck)
 enable_testing()
+
+option(RC_BUILD_TESTS "Build RapidCheck tests" OFF)
+option(RC_BUILD_EXAMPLES "Build RapidCheck examples" OFF)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -std=c++11")
 
 add_library(rapidcheck
@@ -35,5 +39,10 @@ set_property(SOURCE src/Random.cpp
 
 target_include_directories(rapidcheck PUBLIC include)
 
-add_subdirectory(test)
-add_subdirectory(examples)
+if (RC_BUILD_TESTS)
+  add_subdirectory(test)
+endif()
+
+if (RC_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
