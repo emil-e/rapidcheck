@@ -31,4 +31,5 @@
 #include "rapidcheck/Classify.h"
 #include "rapidcheck/Show.h"
 
+#include "rapidcheck/state/Command.h"
 #include "rapidcheck/state/State.h"

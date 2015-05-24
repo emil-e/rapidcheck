@@ -297,19 +297,6 @@ Gen<Commands<Cmd>> genCommands(State &&initialState, GenerationFunc &&genFunc) {
 
 } // namespace detail
 
-template <typename State, typename Sut>
-State Command<State, Sut>::nextState(const State &s0) const {
-  return s0;
-}
-
-template <typename State, typename Sut>
-void Command<State, Sut>::run(const State &s0, Sut &sut) const {}
-
-template <typename State, typename Sut>
-void Command<State, Sut>::show(std::ostream &os) const {
-  os << ::rc::detail::demangle(typeid(*this).name());
-}
-
 template <typename State, typename Sut, typename GenFunc>
 void check(const State &initialState, Sut &sut, GenFunc &&generationFunc) {
   const auto commands =
