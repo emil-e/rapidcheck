@@ -3,44 +3,11 @@
 #include <algorithm>
 #include <cassert>
 
+#include "rapidcheck/state/detail/Commands.h"
+
 namespace rc {
 namespace state {
 namespace detail {
-
-/// Collection of commands.
-template <typename Cmd>
-struct Commands : public Command<typename Cmd::State, typename Cmd::Sut> {
-public:
-  using CmdSP = std::shared_ptr<const Cmd>;
-  using State = typename Cmd::State;
-  using Sut = typename Cmd::Sut;
-
-  State nextState(const State &state) const override {
-    State currentState = state;
-    for (const auto &command : commands) {
-      currentState = command->nextState(currentState);
-    }
-    return currentState;
-  }
-
-  void run(const State &state, Sut &sut) const override {
-    State currentState = state;
-    for (const auto &command : commands) {
-      auto nextState = command->nextState(currentState);
-      command->run(currentState, sut);
-      currentState = nextState;
-    }
-  }
-
-  void show(std::ostream &os) const override {
-    for (const auto &command : commands) {
-      command->show(os);
-      os << std::endl;
-    }
-  }
-
-  std::vector<CmdSP> commands;
-};
 
 template <typename Cmd, typename GenFunc>
 class CommandsGen {
