@@ -81,10 +81,12 @@ T searchGen(const Random &random,
             const Gen<T> &gen,
             Predicate predicate) {
   Random r(random);
+  auto currentSize = size;
   for (int tries = 0; tries < 100; tries++) {
-    const auto shrinkable = gen(r.split(), size);
+    const auto shrinkable = gen(r.split(), currentSize);
     const auto value = shrinkable.value();
     if (!predicate(value)) {
+      currentSize++;
       continue;
     }
     return shrinkable::findLocalMin(shrinkable, predicate).first;
