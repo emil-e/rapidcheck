@@ -153,19 +153,19 @@ Gen<T> scale(double scale, Gen<T> gen) {
       [=](const Random &random, int size) { return gen(random, size * scale); };
 }
 
-template <typename T>
-Gen<T> noShrink(Gen<T> gen) {
-  return [=](const Random &random, int size) {
-    return shrinkable::mapShrinks(gen(random, size),
-                                  fn::constant(Seq<Shrinkable<T>>()));
-  };
-}
-
 template <typename Callable>
 Gen<typename std::result_of<Callable(int)>::type::ValueType>
 withSize(Callable &&callable) {
   return [=](const Random &random, int size) {
     return callable(size)(random, size);
+  };
+}
+
+template <typename T>
+Gen<T> noShrink(Gen<T> gen) {
+  return [=](const Random &random, int size) {
+    return shrinkable::mapShrinks(gen(random, size),
+                                  fn::constant(Seq<Shrinkable<T>>()));
   };
 }
 

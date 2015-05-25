@@ -11,6 +11,9 @@ The following document is a work in progress and some parts are still missing. T
 - [Configuration](configuration.md)
 - [Stateful testing](state.md)
 
+## Reference ##
+- [Generators](generators_ref.md)
+
 ## Advanced topics ##
 - [Gen<T>](Gen.md)
 - [Shrinkable<T>](Shrinkable.md)
