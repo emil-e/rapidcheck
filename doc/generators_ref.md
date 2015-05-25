@@ -109,7 +109,7 @@ const auto smallInts = *gen::container<std::vector<int>>(gen::inRange(0, 100));
 Like `container(Gen<Ts>... gens)` but generates containers of a fixed size `count.`
 
 ### `Gen<T> just(T value)` ###
-Constantyly generates `value`.
+Constantly generates `value`.
 
 ```C++
 // Example:
@@ -117,7 +117,7 @@ const auto alwaysLeet = gen::just(1337);
 ```
 
 ### `Gen<T> lazy(Callable callable)` ###
-Returns a generator which delegates generation to the generator lazily returned by `callable`. This is useful when creating generators for recursive data types such as trees.
+Returns a generator which delegates generation to the generator lazily returned by `callable`. This is useful when creating generators for recursive data types such as trees. The type of the returned generator is the same as the type of the generator returned by `callable`.
 
 ```C++
 // Example:
@@ -141,3 +141,84 @@ const auto b = *gen::distinctFrom(gen::inRange(0, 100), a);
 
 ### `Gen<T> distinctFrom(T value)` ###
 Like `distinctFrom(Gen<T> gen, T value)` but uses `gen::arbitrary<T>()` as the generator.
+
+### `Gen<T> exec(Callable callable)` ###
+This allows you to use the same semantics that is used for properties when creating a generator. However, instead of `callable` yielding a success or a failure, it should return the generated value.
+
+Inside the specified callable, you can use `operator*` of `Gen<T>` to pick values. In this way, you can have the values of one generator depend on the other. Just like with properties, if `callable` has any arguments, those will be generate with tuple-like semantics using `gen::arbitrary<T>()` for the appropriate types.
+
+*Note:* If there are other combinators you can use instead of `gen::exec`, you are encouraged to do so. Because of its implementation, `gen::exec` is likely to have both worse compile time performance _and_ runtime performance than any options. In addition, if the picked values do not actually depend on each other, RapidCheck will be unnecessarily restricted in the way that it can shrink them on failure.
+
+```C++
+// Example:
+const auto name = *gen::exec([](const Address &address) {
+  const auto gender = *gen::element(kMale, kFemale);
+  const auto name = *genName(gender);
+  return Person(name, gender, address);
+});
+```
+
+### `Gen<Maybe<T>> maybe(Gen<T> gen)` ###
+Generates a `Maybe` of the type of the given generator. At small sizes, the frequency of `Nothing` is greater than at larger sizes.
+
+```
+// Example:
+const auto maybeSmallInt = *gen::maybe(gen::inRange(0, 100));
+```
+
+### `Gen<T> inRange(T min, T max)` ###
+Generates an integer between `min` (inclusive) and `max` (exclusive). The part of the range that is used grows with size and when size is `0`, only `min` is generated. When shrinking, the value will shrink towards `min`.
+
+```C++
+// Example:
+const auto age = *gen::inRange<int>(0, 100);
+```
+
+### `Gen<T> nonZero()` ###
+Generates a value that is not equal to `0`.
+
+```C++
+// Example:
+const auto x = *gen::nonZero<int>();
+```
+
+### `Gen<T> positive()` ###
+Generates a value which is greater than `0`.
+
+```C++
+// Example:
+const auto x = *gen::positive<int>();
+```
+
+### `Gen<T> negative()` ###
+Generates a value which is less than `0`.
+
+
+```C++
+// Example:
+const auto x = *gen::positive<int>();
+```
+
+### `Gen<T> nonNegative()` ###
+Generates a value which is not less than `0`.
+
+```C++
+// Example:
+const auto x = *gen::positive<int>();
+```
+
+### `Gen<T> nonEmpty(Gen<T> gen)` ###
+Generates a value `x` using the given generator for `x.empty()` is false. Useful with strings, STL containers and other similar types.
+
+```C++
+// Example:
+const auto nonEmptyString = *gen::nonEmpty(gen::string());
+```
+
+### `Gen<T> nonEmpty()` ###
+Same as `nonEmpty(Gen<T>)` but uses `gen::arbitrary<T>()`.
+
+```C++
+// Example:
+const auto nonEmptyInts = *gen::nonEmpty<std::vector<int>>();
+```
