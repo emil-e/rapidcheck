@@ -7,18 +7,18 @@
 namespace rc {
 namespace detail {
 
-struct WrapperResult {
+struct TaggedResult {
   CaseResult result;
   Tags tags;
 };
 
-class WrapperContext : public PropertyContext {
+class AdapterContext : public PropertyContext {
 public:
-  WrapperContext();
+  AdapterContext();
 
   void reportResult(const CaseResult &result) override;
   void addTag(std::string str) override;
-  WrapperResult result() const;
+  TaggedResult result() const;
 
 private:
   CaseResult::Type m_resultType;
@@ -51,19 +51,19 @@ struct CaseResultHelper<void> {
 };
 
 template <typename Callable, typename Type = FunctionType<Callable>>
-class PropertyWrapper;
+class PropertyAdapter;
 
 template <typename Callable, typename ReturnType, typename... Args>
-class PropertyWrapper<Callable, ReturnType(Args...)> {
+class PropertyAdapter<Callable, ReturnType(Args...)> {
 public:
   template <typename Arg,
             typename = typename std::enable_if<
-                !std::is_same<Decay<Arg>, PropertyWrapper>::value>::type>
-  PropertyWrapper(Arg &&callable)
+                !std::is_same<Decay<Arg>, PropertyAdapter>::value>::type>
+  PropertyAdapter(Arg &&callable)
       : m_callable(std::forward<Arg>(callable)) {}
 
-  WrapperResult operator()(Args &&... args) const {
-    WrapperContext context;
+  TaggedResult operator()(Args &&... args) const {
+    AdapterContext context;
     ImplicitParam<param::CurrentPropertyContext> letContext(&context);
 
     try {
@@ -94,13 +94,13 @@ private:
 };
 
 Gen<CaseDescription>
-mapToCaseDescription(Gen<std::pair<WrapperResult, gen::detail::Recipe>> gen);
+mapToCaseDescription(Gen<std::pair<TaggedResult, gen::detail::Recipe>> gen);
 
 template <typename Callable>
 Property toProperty(Callable &&callable) {
-  using Wrapper = PropertyWrapper<Decay<Callable>>;
+  using Adapter = PropertyAdapter<Decay<Callable>>;
   return mapToCaseDescription(
-      gen::detail::execRaw(Wrapper(std::forward<Callable>(callable))));
+      gen::detail::execRaw(Adapter(std::forward<Callable>(callable))));
 }
 
 } // namespace detail

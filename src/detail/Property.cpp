@@ -5,10 +5,10 @@
 namespace rc {
 namespace detail {
 
-WrapperContext::WrapperContext()
+AdapterContext::AdapterContext()
     : m_resultType(CaseResult::Type::Success) {}
 
-void WrapperContext::reportResult(const CaseResult &result) {
+void AdapterContext::reportResult(const CaseResult &result) {
   switch (result.type) {
   case CaseResult::Type::Discard:
     // Discard overrides all, no previous result is valid. However, we're only
@@ -44,12 +44,12 @@ void WrapperContext::reportResult(const CaseResult &result) {
   }
 }
 
-void WrapperContext::addTag(std::string str) {
+void AdapterContext::addTag(std::string str) {
   m_tags.push_back(std::move(str));
 }
 
-WrapperResult WrapperContext::result() const {
-  WrapperResult result;
+TaggedResult AdapterContext::result() const {
+  TaggedResult result;
   result.result.type = m_resultType;
   for (auto it = begin(m_messages); it != end(m_messages); it++) {
     if (it != begin(m_messages)) {
@@ -107,9 +107,9 @@ describeShrinkable(const Shrinkable<Any> &shrinkable) {
 } // namespace
 
 Gen<CaseDescription>
-mapToCaseDescription(Gen<std::pair<WrapperResult, gen::detail::Recipe>> gen) {
+mapToCaseDescription(Gen<std::pair<TaggedResult, gen::detail::Recipe>> gen) {
   return gen::map(std::move(gen),
-                  [](std::pair<WrapperResult, gen::detail::Recipe> &&p) {
+                  [](std::pair<TaggedResult, gen::detail::Recipe> &&p) {
                     Example example;
                     const auto &ingr = p.second.ingredients;
                     example.reserve(ingr.size());
