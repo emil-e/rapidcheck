@@ -7,43 +7,37 @@
 namespace rc {
 namespace detail {
 
-class WrapperContext : public PropertyContext {
-public:
-  explicit WrapperContext(std::vector<std::string> &tags);
-
-  void addTag(std::string str) override;
-
-private:
-  Tags &m_tags;
+struct WrapperResult {
+  CaseResult result;
+  Tags tags;
 };
 
-std::ostream &operator<<(std::ostream &os, const CaseDescription &desc) {
-  os << desc.result << std::endl;
-  os << std::endl;
-  for (const auto &p : desc.example) {
-    os << p.first << ": " << p.second << std::endl;
-  }
-  os << std::endl;
-  return os;
-}
+class WrapperContext : public PropertyContext {
+public:
+  WrapperContext();
 
-static inline CaseResult toCaseResultHelper(bool value) {
-  return value ? CaseResult(CaseResult::Type::Success, "returned true")
-               : CaseResult(CaseResult::Type::Failure, "returned false");
-}
+  void reportResult(const CaseResult &result) override;
+  void addTag(std::string str) override;
+  WrapperResult result() const;
 
-static inline CaseResult toCaseResultHelper(std::string value) {
-  return value.empty()
-      ? CaseResult(CaseResult::Type::Success, "empty string")
-      : CaseResult(CaseResult::Type::Failure, std::move(value));
-}
+private:
+  CaseResult::Type m_resultType;
+  std::vector<std::string> m_messages;
+  Tags m_tags;
+};
+
+std::ostream &operator<<(std::ostream &os, const CaseDescription &desc);
+
+CaseResult toCaseResult(bool value);
+CaseResult toCaseResult(std::string value);
+CaseResult toCaseResult(CaseResult caseResult);
 
 /// Helper class to convert different return types to `CaseResult`.
 template <typename ReturnType>
 struct CaseResultHelper {
   template <typename Callable, typename... Args>
   static CaseResult resultOf(const Callable &callable, Args &&... args) {
-    return toCaseResultHelper(callable(std::forward<Args>(args)...));
+    return toCaseResult(callable(std::forward<Args>(args)...));
   }
 };
 
@@ -54,11 +48,6 @@ struct CaseResultHelper<void> {
     callable(std::forward<Args>(args)...);
     return CaseResult(CaseResult::Type::Success, "no exceptions thrown");
   }
-};
-
-struct WrapperResult {
-  CaseResult result;
-  Tags tags;
 };
 
 template <typename Callable, typename Type = FunctionType<Callable>>
@@ -74,31 +63,30 @@ public:
       : m_callable(std::forward<Arg>(callable)) {}
 
   WrapperResult operator()(Args &&... args) const {
-    WrapperResult wrapperResult;
-    WrapperContext handler(wrapperResult.tags);
-    ImplicitParam<param::CurrentPropertyContext> letHandler(&handler);
+    WrapperContext context;
+    ImplicitParam<param::CurrentPropertyContext> letContext(&context);
 
     try {
-      wrapperResult.result = CaseResultHelper<ReturnType>::resultOf(
-          m_callable, static_cast<Args &&>(args)...);
+      context.reportResult(CaseResultHelper<ReturnType>::resultOf(
+          m_callable, static_cast<Args &&>(args)...));
     } catch (const CaseResult &result) {
-      wrapperResult.result = result;
+      context.reportResult(result);
     } catch (const GenerationFailure &e) {
-      wrapperResult.result = CaseResult(
+      context.reportResult(CaseResult(
           CaseResult::Type::Discard,
-          std::string("Generation failed with message:\n") + e.what());
+          std::string("Generation failed with message:\n") + e.what()));
     } catch (const std::exception &e) {
-      wrapperResult.result = CaseResult(
+      context.reportResult(CaseResult(
           CaseResult::Type::Failure,
-          std::string("Exception thrown with message:\n") + e.what());
+          std::string("Exception thrown with message:\n") + e.what()));
     } catch (const std::string &str) {
-      wrapperResult.result = CaseResult(CaseResult::Type::Failure, str);
+      context.reportResult(CaseResult(CaseResult::Type::Failure, str));
     } catch (...) {
-      wrapperResult.result =
-          CaseResult(CaseResult::Type::Failure, "Unknown object thrown");
+      context.reportResult(
+          CaseResult(CaseResult::Type::Failure, "Unknown object thrown"));
     }
 
-    return wrapperResult;
+    return context.result();
   }
 
 private:

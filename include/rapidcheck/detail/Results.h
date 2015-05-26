@@ -28,9 +28,12 @@ bool operator!=(const TestCase &r1, const TestCase &r2);
 struct CaseResult {
   /// Enum for the type of the result.
   enum class Type {
-    Success, ///< The test case succeeded.
-    Failure, ///< The test case failed.
-    Discard ///< The preconditions for the test case were not met.
+    /// The test case succeeded.
+    Success,
+    /// The test case failed.
+    Failure,
+    /// The preconditions for the test case were not met.
+    Discard
   };
 
   CaseResult();
@@ -47,6 +50,7 @@ std::ostream &operator<<(std::ostream &os, CaseResult::Type type);
 std::ostream &operator<<(std::ostream &os, const CaseResult &result);
 bool operator==(const CaseResult &r1, const CaseResult &r2);
 bool operator!=(const CaseResult &r1, const CaseResult &r2);
+bool operator<(const CaseResult &r1, const CaseResult &r2);
 
 /// Indicates a successful property.
 struct SuccessResult {

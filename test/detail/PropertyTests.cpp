@@ -23,9 +23,67 @@ bool descriptionContains(const WrapperResult &result, const std::string &str) {
   return result.result.description.find(str) != std::string::npos;
 }
 
+void reportAll(const std::vector<CaseResult> &results) {
+  for (const auto &result : results) {
+    ImplicitParam<param::CurrentPropertyContext>::value()->reportResult(result);
+  }
+}
+
+Gen<CaseResult>
+genResultOfType(std::initializer_list<CaseResult::Type> types) {
+  return gen::build<CaseResult>(
+      gen::set(&CaseResult::type,
+               gen::elementOf<std::vector<CaseResult::Type>>(types)),
+      gen::set(&CaseResult::description));
+}
+
 } // namespace
 
 TEST_CASE("PropertyWrapper") {
+  prop("Discard overrides any other reported result",
+       [] {
+         auto results =
+             *gen::container<std::vector<CaseResult>>(genResultOfType(
+                 {CaseResult::Type::Success, CaseResult::Type::Failure}));
+         const auto discardResult =
+             *genResultOfType({CaseResult::Type::Discard});
+         const auto position = *gen::inRange<std::size_t>(0, results.size());
+         results.insert(begin(results) + position, discardResult);
+
+         const auto result = makeWrapper([=] { reportAll(results); })().result;
+         RC_ASSERT(result == discardResult);
+       });
+
+  prop("Failure overrides any reported successes",
+       [] {
+         auto results = *gen::container<std::vector<CaseResult>>(
+                            genResultOfType({CaseResult::Type::Success}));
+         const auto failureResult =
+             *genResultOfType({CaseResult::Type::Failure});
+         const auto position = *gen::inRange<std::size_t>(0, results.size());
+         results.insert(begin(results) + position, failureResult);
+
+         const auto result = makeWrapper([=] { reportAll(results); })().result;
+         RC_ASSERT(result == failureResult);
+       });
+
+  prop("result description contains descriptions of all reported failures",
+       [] {
+         auto failureResults =
+             *gen::container<std::vector<CaseResult>>(
+                 genResultOfType({CaseResult::Type::Failure}));
+
+         const auto result = makeWrapper([=] { reportAll(failureResults); })();
+         for (const auto &failureResult : failureResults) {
+           RC_ASSERT(descriptionContains(result, failureResult.description));
+         }
+       });
+
+  prop("returns CaseResult as is",
+       [](const CaseResult &result) {
+         RC_ASSERT(makeWrapper([=] { return result; })().result == result);
+       });
+
   SECTION("returns success result for void callables") {
     REQUIRE(makeWrapper([] {})().result.type == CaseResult::Type::Success);
   }
