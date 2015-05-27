@@ -32,6 +32,7 @@ void AdapterContext::reportResult(const CaseResult &result) {
       m_messages.push_back(result.description);
       m_resultType = CaseResult::Type::Failure;
     }
+    break;
 
   case CaseResult::Type::Success:
     if (m_resultType == CaseResult::Type::Success) {
