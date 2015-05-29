@@ -3,6 +3,7 @@
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/gen/Arbitrary.h"
 #include "rapidcheck/gen/Transform.h"
+#include "rapidcheck/Random.h"
 
 namespace rc {
 namespace gen {
@@ -91,7 +92,7 @@ public:
 
   Shrinkable<std::tuple<Ts...>> operator()(const Random &random,
                                            int size) const {
-    Random r(random);
+    auto r = random;
     Random randoms[sizeof...(Ts)];
     for (std::size_t i = 0; i < sizeof...(Ts); i++) {
       randoms[i] = r.split();

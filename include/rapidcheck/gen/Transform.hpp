@@ -2,6 +2,7 @@
 
 #include "rapidcheck/shrinkable/Transform.h"
 #include "rapidcheck/gen/Arbitrary.h"
+#include "rapidcheck/gen/Tuple.h"
 #include "rapidcheck/GenerationFailure.h"
 #include "rapidcheck/Random.h"
 
@@ -123,6 +124,15 @@ mapcat(Gen<T> gen, Mapper &&mapper) {
 template <typename T>
 Gen<T> join(Gen<Gen<T>> gen) {
   return detail::JoinGen<T>(std::move(gen));
+}
+
+template <typename Callable, typename... Ts>
+Gen<typename std::result_of<Callable(Ts...)>::type> apply(Callable &&callable,
+                                                          Gen<Ts>... gens) {
+  return gen::map(gen::tuple(std::move(gens)...),
+                  [=](std::tuple<Ts...> &&tuple) {
+                    return rc::detail::applyTuple(std::move(tuple), callable);
+                  });
 }
 
 template <typename T, typename Predicate>
