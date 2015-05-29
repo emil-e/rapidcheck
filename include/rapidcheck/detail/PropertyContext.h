@@ -12,7 +12,12 @@ namespace detail {
 class PropertyContext {
 public:
   /// Reports a result.
-  virtual void reportResult(const CaseResult &result) = 0;
+  ///
+  /// @param result  The result.
+  ///
+  /// @return `true` if the result was handled and reported, `false` it it was
+  ///         ignored
+  virtual bool reportResult(const CaseResult &result) = 0;
 
   /// Adds a tag to the current scope.
   virtual void addTag(std::string str) = 0;

@@ -8,7 +8,7 @@ namespace detail {
 AdapterContext::AdapterContext()
     : m_resultType(CaseResult::Type::Success) {}
 
-void AdapterContext::reportResult(const CaseResult &result) {
+bool AdapterContext::reportResult(const CaseResult &result) {
   switch (result.type) {
   case CaseResult::Type::Discard:
     // Discard overrides all, no previous result is valid. However, we're only
@@ -43,6 +43,8 @@ void AdapterContext::reportResult(const CaseResult &result) {
     }
     break;
   }
+
+  return true;
 }
 
 void AdapterContext::addTag(std::string str) {

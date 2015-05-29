@@ -16,7 +16,7 @@ class AdapterContext : public PropertyContext {
 public:
   AdapterContext();
 
-  void reportResult(const CaseResult &result) override;
+  bool reportResult(const CaseResult &result) override;
   void addTag(std::string str) override;
   TaggedResult result() const;
 
