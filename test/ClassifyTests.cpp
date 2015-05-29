@@ -5,6 +5,7 @@ using namespace rc;
 using namespace rc::detail;
 
 struct TagCollector : public PropertyContext {
+  bool reportResult(const CaseResult &) { return false; }
   void addTag(std::string str) override { tags.push_back(std::move(str)); }
 
   std::vector<std::string> tags;

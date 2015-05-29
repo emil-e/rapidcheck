@@ -183,6 +183,55 @@ TEST_CASE("gen::join") {
   }
 }
 
+TEST_CASE("gen::apply") {
+  prop("has tuple shrinking semantics",
+       [] {
+         const auto g1 = genFixedCountdown(*gen::inRange(0, 10));
+         const auto g2 = genFixedCountdown(*gen::inRange(0, 10));
+         const auto g3 = genFixedCountdown(*gen::inRange(0, 10));
+
+         const auto gen = gen::apply([](int a, int b, int c) {
+           return std::make_tuple(a, b, c);
+         }, g1, g2, g3);
+         const auto tupleGen = gen::tuple(g1, g2, g3);
+
+         assertEquivalent(gen(Random(), 0), tupleGen(Random(), 0));
+       });
+
+  prop("passes correct size",
+       [](const GenParams &params) {
+         const auto gen = gen::apply([](int a, int b, int c) {
+           return std::make_tuple(a, b, c);
+         }, genSize(), genSize(), genSize());
+         const auto value = gen(params.random, params.size).value();
+
+         RC_ASSERT(value ==
+                   std::make_tuple(params.size, params.size, params.size));
+       });
+
+  prop("passed random generators are unique",
+       [](const GenParams &params) {
+         const auto gen = gen::apply([](Random &&a, Random &&b, Random &&c) {
+           return std::make_tuple(std::move(a), std::move(b), std::move(c));
+         }, genRandom(), genRandom(), genRandom());
+         const auto value = gen(params.random, params.size).value();
+
+         RC_ASSERT(std::get<0>(value) != std::get<1>(value));
+         RC_ASSERT(std::get<0>(value) != std::get<2>(value));
+         RC_ASSERT(std::get<1>(value) != std::get<2>(value));
+       });
+
+  SECTION("works with non-copyable types") {
+    const auto gen = gen::apply([](NonCopyable &&a, NonCopyable &&b) {
+      return std::make_tuple(std::move(a), std::move(b));
+    }, gen::arbitrary<NonCopyable>(), gen::arbitrary<NonCopyable>());
+    const auto value = gen(Random(), 0).value();
+
+    RC_ASSERT(isArbitraryPredictable(std::get<0>(value)));
+    RC_ASSERT(isArbitraryPredictable(std::get<1>(value)));
+  }
+}
+
 TEST_CASE("gen::cast") {
   prop("casting to a larger type and then back yields original",
        [](const Shrinkable<uint8_t> &shrinkable) {

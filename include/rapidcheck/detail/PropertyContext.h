@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "rapidcheck/detail/Results.h"
+
 namespace rc {
 namespace detail {
 
@@ -9,6 +11,14 @@ namespace detail {
 /// properties communicate with the framework.
 class PropertyContext {
 public:
+  /// Reports a result.
+  ///
+  /// @param result  The result.
+  ///
+  /// @return `true` if the result was handled and reported, `false` it it was
+  ///         ignored
+  virtual bool reportResult(const CaseResult &result) = 0;
+
   /// Adds a tag to the current scope.
   virtual void addTag(std::string str) = 0;
 

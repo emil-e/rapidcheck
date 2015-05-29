@@ -15,7 +15,11 @@ template <typename Testable>
 void prop(const std::string &description, Testable &&testable) {
   using namespace detail;
 
+#ifdef CATCH_CONFIG_PREFIX_ALL
+  CATCH_SECTION(description) {
+#else
   SECTION(description) {
+#endif
     const auto result = checkTestable(std::forward<Testable>(testable));
     if (result.template is<SuccessResult>()) {
       const auto success = result.template get<SuccessResult>();
@@ -27,8 +31,13 @@ void prop(const std::string &description, Testable &&testable) {
     } else {
       std::ostringstream ss;
       printResultMessage(result, ss);
+#ifdef CATCH_CONFIG_PREFIX_ALL
+      CATCH_INFO(ss.str() << "\n");
+      CATCH_FAIL();
+#else
       INFO(ss.str() << "\n");
       FAIL();
+#endif
     }
   }
 }

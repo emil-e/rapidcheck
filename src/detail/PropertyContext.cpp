@@ -7,6 +7,7 @@ namespace {
 
 class DummyPropertyContext : public PropertyContext {
 public:
+  bool reportResult(const CaseResult &result) override { return false; }
   void addTag(std::string str) override {}
 };
 

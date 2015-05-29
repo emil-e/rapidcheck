@@ -15,35 +15,92 @@ using namespace rc::detail;
 namespace {
 
 template <typename Callable>
-PropertyWrapper<Decay<Callable>> makeWrapper(Callable &&callable) {
-  return PropertyWrapper<Decay<Callable>>(std::forward<Callable>(callable));
+PropertyAdapter<Decay<Callable>> makeAdapter(Callable &&callable) {
+  return PropertyAdapter<Decay<Callable>>(std::forward<Callable>(callable));
 }
 
-bool descriptionContains(const WrapperResult &result, const std::string &str) {
+bool descriptionContains(const TaggedResult &result, const std::string &str) {
   return result.result.description.find(str) != std::string::npos;
+}
+
+void reportAll(const std::vector<CaseResult> &results) {
+  for (const auto &result : results) {
+    ImplicitParam<param::CurrentPropertyContext>::value()->reportResult(result);
+  }
+}
+
+Gen<CaseResult> genResultOfType(std::initializer_list<CaseResult::Type> types) {
+  return gen::build<CaseResult>(
+      gen::set(&CaseResult::type,
+               gen::elementOf<std::vector<CaseResult::Type>>(types)),
+      gen::set(&CaseResult::description));
 }
 
 } // namespace
 
-TEST_CASE("PropertyWrapper") {
+TEST_CASE("PropertyAdapter") {
+  prop("Discard overrides any other reported result",
+       [] {
+         auto results =
+             *gen::container<std::vector<CaseResult>>(genResultOfType(
+                 {CaseResult::Type::Success, CaseResult::Type::Failure}));
+         const auto discardResult =
+             *genResultOfType({CaseResult::Type::Discard});
+         const auto position = *gen::inRange<std::size_t>(0, results.size());
+         results.insert(begin(results) + position, discardResult);
+
+         const auto result = makeAdapter([=] { reportAll(results); })().result;
+         RC_ASSERT(result == discardResult);
+       });
+
+  prop("Failure overrides any reported successes",
+       [] {
+         auto results = *gen::container<std::vector<CaseResult>>(
+                            genResultOfType({CaseResult::Type::Success}));
+         const auto failureResult =
+             *genResultOfType({CaseResult::Type::Failure});
+         const auto position = *gen::inRange<std::size_t>(0, results.size());
+         results.insert(begin(results) + position, failureResult);
+
+         const auto result = makeAdapter([=] { reportAll(results); })().result;
+         RC_ASSERT(result == failureResult);
+       });
+
+  prop("result description contains descriptions of all reported failures",
+       [] {
+         auto failureResults =
+             *gen::container<std::vector<CaseResult>>(
+                 genResultOfType({CaseResult::Type::Failure}));
+
+         const auto result = makeAdapter([=] { reportAll(failureResults); })();
+         for (const auto &failureResult : failureResults) {
+           RC_ASSERT(descriptionContains(result, failureResult.description));
+         }
+       });
+
+  prop("returns CaseResult as is",
+       [](const CaseResult &result) {
+         RC_ASSERT(makeAdapter([=] { return result; })().result == result);
+       });
+
   SECTION("returns success result for void callables") {
-    REQUIRE(makeWrapper([] {})().result.type == CaseResult::Type::Success);
+    REQUIRE(makeAdapter([] {})().result.type == CaseResult::Type::Success);
   }
 
   SECTION("if callable returns a bool") {
     SECTION("returns success result for true") {
-      REQUIRE(makeWrapper([] { return true; })().result.type ==
+      REQUIRE(makeAdapter([] { return true; })().result.type ==
               CaseResult::Type::Success);
     }
 
     SECTION("returns success result for false") {
-      REQUIRE(makeWrapper([] { return false; })().result.type ==
+      REQUIRE(makeAdapter([] { return false; })().result.type ==
               CaseResult::Type::Failure);
     }
   }
 
   SECTION("returns success for empty strings") {
-    REQUIRE(makeWrapper([] { return std::string(); })().result.type ==
+    REQUIRE(makeAdapter([] { return std::string(); })().result.type ==
             CaseResult::Type::Success);
   }
 
@@ -51,20 +108,20 @@ TEST_CASE("PropertyWrapper") {
        [] {
          // TODO non-empty generator
          const auto msg = *gen::nonEmpty<std::string>();
-         const auto result = makeWrapper([&] { return msg; })();
+         const auto result = makeAdapter([&] { return msg; })();
          RC_ASSERT(result.result.type == CaseResult::Type::Failure);
          RC_ASSERT(descriptionContains(result, msg));
        });
 
   prop("if a CaseResult is thrown, returns that case result",
        [](const CaseResult &result) {
-         RC_ASSERT(makeWrapper([&] { throw result; })().result == result);
+         RC_ASSERT(makeAdapter([&] { throw result; })().result == result);
        });
 
   prop("returns a discard result if a GenerationFailure is thrown",
        [](const std::string &msg) {
          const auto result =
-             makeWrapper([&] { throw GenerationFailure(msg); })();
+             makeAdapter([&] { throw GenerationFailure(msg); })();
          RC_ASSERT(result.result.type == CaseResult::Type::Discard);
          RC_ASSERT(descriptionContains(result, msg));
        });
@@ -74,7 +131,7 @@ TEST_CASE("PropertyWrapper") {
       " thrown",
       [](const std::string &msg) {
         const auto result =
-            makeWrapper([&] { throw std::runtime_error(msg); })();
+            makeAdapter([&] { throw std::runtime_error(msg); })();
         RC_ASSERT(result.result.type == CaseResult::Type::Failure);
         RC_ASSERT(descriptionContains(result, msg));
       });
@@ -83,30 +140,30 @@ TEST_CASE("PropertyWrapper") {
       "returns a failure result with the string as the message if a string"
       " is thrown",
       [](const std::string &msg) {
-        const auto result = makeWrapper([&] { throw msg; })();
+        const auto result = makeAdapter([&] { throw msg; })();
         RC_ASSERT(result.result.type == CaseResult::Type::Failure);
         RC_ASSERT(descriptionContains(result, msg));
       });
 
   SECTION("returns a failure result if other values are thrown") {
-    const auto result = makeWrapper([&] { throw 1337; })();
+    const auto result = makeAdapter([&] { throw 1337; })();
     RC_ASSERT(result.result.type == CaseResult::Type::Failure);
   }
 
   prop("forwards arguments to callable",
        [](int a, const std::string &b, NonCopyable c) {
          const auto expected = std::to_string(a) + b + std::to_string(c.extra);
-         const auto wrapper =
-             makeWrapper([](int a, const std::string &b, NonCopyable c) {
+         const auto adapter =
+             makeAdapter([](int a, const std::string &b, NonCopyable c) {
                return std::to_string(a) + b + std::to_string(c.extra);
              });
-         const auto result = wrapper(std::move(a), std::move(b), std::move(c));
+         const auto result = adapter(std::move(a), std::move(b), std::move(c));
          RC_ASSERT(result.result.description == expected);
        });
 
   prop("returns any tags that were added",
        [](const std::vector<std::string> &tags) {
-         const auto result = makeWrapper([&]{
+         const auto result = makeAdapter([&] {
            for (const auto &tag : tags) {
              ImplicitParam<param::CurrentPropertyContext>::value()->addTag(tag);
            }

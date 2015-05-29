@@ -11,6 +11,9 @@ The following document is a work in progress and some parts are still missing. T
 - [Configuration](configuration.md)
 - [Stateful testing](state.md)
 
+## Integration ##
+- [Google Mock](gmock.md)
+
 ## Reference ##
 - [Generators](generators_ref.md)
 

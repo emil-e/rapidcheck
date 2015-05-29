@@ -53,12 +53,8 @@ add_executable(rapidcheck_tests
   util/ShrinkableUtils.cpp
   )
 
-target_link_libraries(rapidcheck_tests rapidcheck)
-target_include_directories(rapidcheck_tests
-  PRIVATE
-  .
-  ../ext/catch/include
-  ../src)
+target_link_libraries(rapidcheck_tests rapidcheck catch)
+target_include_directories(rapidcheck_tests PRIVATE . ../src)
 
 add_test(
   NAME rapidcheck_tests
