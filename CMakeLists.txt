@@ -39,6 +39,8 @@ set_property(SOURCE src/Random.cpp
 
 target_include_directories(rapidcheck PUBLIC include)
 
+add_subdirectory(ext)
+
 if (RC_BUILD_TESTS)
   add_subdirectory(test)
 endif()
@@ -46,3 +48,5 @@ endif()
 if (RC_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
+add_subdirectory(extras)
