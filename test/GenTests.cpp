@@ -5,8 +5,10 @@
 #include "rapidcheck/shrinkable/Create.h"
 
 #include "util/ArbitraryRandom.h"
+#include "util/DestructNotifier.h"
 
 using namespace rc;
+using namespace rc::test;
 using namespace rc::detail;
 using namespace rc::gen::detail;
 
@@ -95,6 +97,36 @@ TEST_CASE("Gen") {
     }
 
     SECTION("returns what is returned by onGenerate") { RC_ASSERT(x == 456); }
+  }
+
+  SECTION("retains implementation object until no copies remain") {
+    std::vector<std::string> log;
+    Maybe<Gen<DestructNotifier>> s1 =
+        gen::just(DestructNotifier("foobar", &log));
+    REQUIRE(log.empty());
+
+    Maybe<Gen<DestructNotifier>> s2 = s1;
+    REQUIRE(log.empty());
+
+    s1.reset();
+    REQUIRE(log.empty());
+
+    s2.reset();
+    REQUIRE(log.size() == 1);
+    REQUIRE(log[0] == "foobar");
+  }
+
+  SECTION("moving steals reference") {
+    std::vector<std::string> log;
+    auto s1 = gen::just(DestructNotifier("foobar", &log));
+
+    {
+      const auto s2 = std::move(s1);
+      REQUIRE(log.empty());
+    }
+
+    REQUIRE(log.size() == 1);
+    REQUIRE(log[0] == "foobar");
   }
 
   SECTION("self assignment leaves value unchanged") {

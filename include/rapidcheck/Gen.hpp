@@ -21,7 +21,8 @@ template <typename T>
 class Gen<T>::IGenImpl {
 public:
   virtual Shrinkable<T> generate(const Random &random, int size) const = 0;
-  virtual std::unique_ptr<IGenImpl> copy() const = 0;
+  virtual void retain() = 0;
+  virtual void release() = 0;
   virtual ~IGenImpl() = default;
 };
 
@@ -31,18 +32,24 @@ class Gen<T>::GenImpl : public IGenImpl {
 public:
   template <typename... Args>
   GenImpl(Args &&... args)
-      : m_impl(std::forward<Args>(args)...) {}
+      : m_impl(std::forward<Args>(args)...)
+      , m_count(1) {}
 
   Shrinkable<T> generate(const Random &random, int size) const override {
     return m_impl(random, size);
   }
 
-  std::unique_ptr<IGenImpl> copy() const override {
-    return std::unique_ptr<IGenImpl>(new GenImpl(*this));
+  void retain() override { m_count.fetch_add(1L); }
+
+  void release() override {
+    if (m_count.fetch_sub(1L) == 1L) {
+      delete this;
+    }
   }
 
 private:
   const Impl m_impl;
+  std::atomic<long> m_count;
 };
 
 template <typename T>
@@ -72,13 +79,41 @@ T Gen<T>::operator*() const {
 }
 
 template <typename T>
-Gen<T>::Gen(const Gen &other)
-    : m_impl(other.m_impl->copy()) {}
+Gen<T>::Gen(const Gen &other) noexcept
+    : m_impl(other.m_impl) {
+  m_impl->retain();
+}
 
 template <typename T>
-Gen<T> &Gen<T>::operator=(const Gen &rhs) {
-  m_impl = rhs.m_impl->copy();
+Gen<T> &Gen<T>::operator=(const Gen &rhs) noexcept {
+  rhs.m_impl->retain();
+  if (m_impl) {
+    m_impl->release();
+  }
+  m_impl = rhs.m_impl;
   return *this;
+}
+
+template <typename T>
+Gen<T>::Gen(Gen &&other) noexcept : m_impl(other.m_impl) {
+  other.m_impl = nullptr;
+}
+
+template <typename T>
+Gen<T> &Gen<T>::operator=(Gen &&rhs) noexcept {
+  if (m_impl) {
+    m_impl->release();
+  }
+  m_impl = rhs.m_impl;
+  rhs.m_impl = nullptr;
+  return *this;
+}
+
+template <typename T>
+Gen<T>::~Gen() noexcept {
+  if (m_impl) {
+    m_impl->release();
+  }
 }
 
 } // namespace rc
