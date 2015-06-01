@@ -32,6 +32,10 @@ TEST_CASE("Seq") {
     REQUIRE_FALSE(Seq<int>().next());
   }
 
+  SECTION("Nothing constructed Seq is empty") {
+    REQUIRE_FALSE(Seq<int>(Nothing).next());
+  }
+
   SECTION("calls operator()() of the implementation object") {
     bool nextCalled = false;
     Seq<int> seq = Seq<int>([&] {

@@ -4,6 +4,7 @@
 #include <memory>
 #include <iostream>
 
+#include "rapidcheck/Nothing.h"
 #include "rapidcheck/Maybe.h"
 #include "rapidcheck/Traits.h"
 
@@ -41,7 +42,10 @@ public:
   using ValueType = T;
 
   /// Constructs an empty `Seq` that has no values.
-  Seq() = default;
+  Seq() noexcept = default;
+
+  /// Equivalent to default constructor.
+  Seq(NothingType) noexcept;
 
   /// Constructs a `Seq` from the given implementation object.
   template <typename Impl,
