@@ -179,5 +179,12 @@ Gen<T> noShrink(Gen<T> gen) {
   };
 }
 
+template <typename T, typename Shrink>
+Gen<T> shrink(Gen<T> gen, Shrink &&shrink) {
+  return [=](const Random &random, int size) {
+    return shrinkable::postShrink(gen(random, size), shrink);
+  };
+}
+
 } // namespace gen
 } // namespace rc

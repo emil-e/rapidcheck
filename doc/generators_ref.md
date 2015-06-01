@@ -452,3 +452,20 @@ Returns a generator which generates the same values as `gen` but RapidCheck will
 // Example:
 const auto fixedInt = *gen::noShrink(gen::arbitrary<int>());
 ```
+
+#### `Gen<T> shrink(Gen<T> gen, Shrink shrink)` ####
+Returns a version of the given generator that will try shrinks returned by the given callable after the regular shrinks have been tried. Use this to add further shrinking to an existing generator.
+
+```C++
+// Examples:
+const auto treeNode =
+    *gen::shrink(gen::arbitrary<TreeNode>(),
+                 [](TreeNode &&node) {
+                   // Shrink by flattening single-child nodes
+                   if (node.children.size() == 1) {
+                     return seq::just(std::move(node.children[0]));
+                   }
+
+                   return Seq<TreeNode>();
+                 });
+```
