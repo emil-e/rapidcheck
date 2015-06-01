@@ -199,3 +199,49 @@ TEST_CASE("shrinkable::pair") {
          RC_ASSERT(shrinkable == expected);
        });
 }
+
+TEST_CASE("shrinkable::postShrink") {
+  prop("postShrink(just(x), f) == shrinkRecur(x, f)",
+       [] {
+         const auto x = *gen::inRange(0, 5);
+         const auto appendShrinkable =
+             shrinkable::postShrink(shrinkable::just(x), &countdownSeq);
+         const auto recurShrinkable = shrinkable::shrinkRecur(x, &countdownSeq);
+         RC_ASSERT(appendShrinkable == recurShrinkable);
+       });
+
+  prop("postShrink(s, fn::constant(Seq<T>())) == s",
+       [](Shrinkable<int> s) {
+         RC_ASSERT(shrinkable::postShrink(s, fn::constant(Seq<int>())) == s);
+       });
+
+  prop("tail of shrink sequence is always the appended shrinks",
+       [] {
+         const auto x1 = *gen::inRange(0, 10);
+         const auto x2 = *gen::inRange(0, 10);
+         const auto shrinkable = shrinkable::postShrink(
+             shrinkable::map(countdownShrinkable(x1),
+                             [=](int x) { return std::make_pair(x, x2); }),
+             [](const std::pair<int, int> &p) {
+               return seq::map(
+                   countdownSeq(p.second),
+                   [=](int x) { return std::make_pair(p.first, x); });
+             });
+
+         onAnyPath(shrinkable,
+                   [](const Shrinkable<std::pair<int, int>> &value,
+                      const Shrinkable<std::pair<int, int>> &shrink) {
+                     const auto v = value.value();
+                     const auto shrinks = value.shrinks();
+                     std::vector<Shrinkable<std::pair<int, int>>> shrinkVec(
+                         begin(shrinks), end(shrinks));
+                     const auto tail = seq::map(
+                         seq::fromIteratorRange(end(shrinkVec) - v.second,
+                                                end(shrinkVec)),
+                         [](const Shrinkable<std::pair<int, int>> &p) {
+                           return p.value().second;
+                         });
+                     RC_ASSERT(tail == countdownSeq(v.second));
+                   });
+       });
+}
