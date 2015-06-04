@@ -208,6 +208,57 @@ template <typename... Args>
 class GenericContainerStrategy<std::unordered_multimap<Args...>, true, true>
     : public MultiMapStrategy<std::unordered_multimap<Args...>> {};
 
+template <typename F>
+class UniqueContainerStrategy {
+public:
+  template <typename Arg>
+  explicit UniqueContainerStrategy(Arg &&arg)
+      : m_f(std::move(arg)) {}
+
+  template <typename T>
+  Shrinkables<T> generateElements(const Random &random,
+                                  int size,
+                                  std::size_t count,
+                                  const Gen<T> &gen) const {
+    using Key = Decay<typename std::result_of<F(T)>::type>;
+    std::set<Key> values;
+    return detail::generateShrinkables(random,
+                                       size,
+                                       count,
+                                       gen,
+                                       [&](const Shrinkable<T> &s) {
+                                         return values.insert(m_f(s.value()))
+                                             .second;
+                                       });
+  }
+
+  template <typename T>
+  Seq<Shrinkables<T>>
+  shrinkElements(const Shrinkables<T> &shrinkables) const {
+    using Key = Decay<typename std::result_of<F(T)>::type>;
+    const auto keys = std::make_shared<std::set<Key>>();
+    for (const auto &shrinkable : shrinkables) {
+      keys->insert(m_f(shrinkable.value()));
+    }
+
+    return shrink::eachElement(shrinkables,
+                               [=](const Shrinkable<T> &s) {
+                                 const auto valueKey = m_f(s.value());
+                                 return seq::filter(
+                                     s.shrinks(),
+                                     [=](const Shrinkable<T> &shrink) {
+                                       const auto shrinkKey = m_f(shrink.value());
+                                       return (!(valueKey < shrinkKey) &&
+                                               !(shrinkKey < valueKey)) ||
+                                           keys->count(shrinkKey) == 0;
+                                     });
+                               });
+  }
+
+private:
+  F m_f;
+};
+
 template <typename Container, typename Strategy>
 class ContainerHelper {
 public:
@@ -369,6 +420,23 @@ Gen<Container> container(std::size_t count, Gen<Ts>... gens) {
 
   return [=](const Random &random, int size) {
     return helper.generate(count, random, size, gens...);
+  };
+}
+
+template <typename Container, typename T>
+Gen<Container> unique(Gen<T> gen) {
+  return gen::uniqueBy<Container>(std::move(gen),
+                                  [](const T &x) -> const T & { return x; });
+}
+
+template <typename Container, typename T, typename F>
+Gen<Container> uniqueBy(Gen<T> gen, F &&f) {
+  using Strategy = detail::UniqueContainerStrategy<Decay<F>>;
+  detail::ContainerHelper<Container, Strategy> helper(
+      Strategy(std::forward<F>(f)));
+
+  return [=](const Random &random, int size) {
+    return helper.generate(random, size, gen);
   };
 }
 
