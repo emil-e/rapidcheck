@@ -48,7 +48,8 @@ TEST_CASE("checkTestable") {
        });
 
   prop("returns the correct number of shrinks on a failing case",
-       [] {
+       [](const TestParams &params) {
+         RC_PRE(params.maxSuccess > 0);
          const auto evenInteger =
              gen::scale(0.25,
                         gen::suchThat(gen::positive<int>(),
@@ -58,7 +59,7 @@ TEST_CASE("checkTestable") {
            const auto v1 = *genFixedCountdown(values.first);
            const auto v2 = *genFixedCountdown(values.second);
            return ((v1 % 2) != 0) || ((v2 % 2) != 0);
-         });
+         }, params);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
@@ -67,14 +68,15 @@ TEST_CASE("checkTestable") {
        });
 
   prop("returns a correct counter-example",
-       [](std::vector<int> values) {
+       [](const TestParams &params, std::vector<int> values) {
+         RC_PRE(params.maxSuccess > 0);
          const auto results =
              checkTestable([&](FixedCountdown<0>, FixedCountdown<0>) {
                for (auto value : values) {
                  *gen::just(value);
                }
                return false;
-             });
+             }, params);
 
          Example expected;
          expected.reserve(values.size() + 1);
@@ -96,16 +98,17 @@ TEST_CASE("checkTestable") {
        });
 
   prop("counter-example is not affected by nested tests",
-       [] {
-         const auto results = checkTestable([] {
+       [](const TestParams &params1, const TestParams &params2) {
+         RC_PRE(params1.maxSuccess > 0);
+         const auto results = checkTestable([&] {
            *gen::just<std::string>("foo");
            auto innerResults = checkTestable([&] {
              *gen::just<std::string>("bar");
              *gen::just<std::string>("baz");
-           });
+           }, params2);
 
            return false;
-         });
+         }, params1);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
@@ -115,8 +118,10 @@ TEST_CASE("checkTestable") {
        });
 
   prop("on failure, description contains message",
-       [](const std::string &description) {
-         const auto results = checkTestable([&] { RC_FAIL(description); });
+       [](const TestParams &params, const std::string &description) {
+         RC_PRE(params.maxSuccess > 0);
+         const auto results =
+             checkTestable([&] { RC_FAIL(description); }, params);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
@@ -156,8 +161,10 @@ TEST_CASE("checkTestable") {
        });
 
   prop("on giving up, description contains message",
-       [](const std::string &description) {
-         const auto results = checkTestable([&] { RC_DISCARD(description); });
+       [](const TestParams &params, const std::string &description) {
+         RC_PRE(params.maxSuccess > 0);
+         const auto results =
+             checkTestable([&] { RC_DISCARD(description); }, params);
 
          GaveUpResult gaveUp;
          RC_ASSERT(results.match(gaveUp));
