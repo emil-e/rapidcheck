@@ -11,8 +11,7 @@ namespace detail {
 class LogTestListener : public TestListener {
 public:
   explicit LogTestListener(std::ostream &os);
-  void onTestCaseFinished(const TestCase &testCase,
-                          const CaseDescription &description) override;
+  void onTestCaseFinished(const CaseDescription &description) override;
   void onShrinkTried(const CaseDescription &shrink, bool accepted) override;
   void onTestFinished(const TestResult &result) override;
 

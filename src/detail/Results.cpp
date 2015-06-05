@@ -8,17 +8,6 @@
 namespace rc {
 namespace detail {
 
-bool operator==(const TestCase &r1, const TestCase &r2) {
-  return (r1.size == r2.size) && (r1.seed == r2.seed);
-}
-
-bool operator!=(const TestCase &r1, const TestCase &r2) { return !(r1 == r2); }
-
-std::ostream &operator<<(std::ostream &os, const detail::TestCase &testCase) {
-  os << "seed=" << testCase.seed << ", size=" << testCase.size;
-  return os;
-}
-
 CaseResult::CaseResult()
     : type(CaseResult::Type::Failure) {}
 
@@ -52,7 +41,6 @@ std::ostream &operator<<(std::ostream &os,
 
 bool operator==(const FailureResult &r1, const FailureResult &r2) {
   return (r1.numSuccess == r2.numSuccess) &&
-      (r1.failingCase == r2.failingCase) &&
       (r1.description == r2.description) && (r1.numShrinks == r2.numShrinks) &&
       (r1.counterExample == r2.counterExample);
 }
@@ -63,9 +51,8 @@ bool operator!=(const FailureResult &r1, const FailureResult &r2) {
 
 std::ostream &operator<<(std::ostream &os,
                          const detail::FailureResult &result) {
-  os << "numSuccess=" << result.numSuccess << ", failingCase=<"
-     << result.failingCase << ">"
-     << ", description='" << result.description << "'"
+  os << "numSuccess=" << result.numSuccess << ", description='"
+     << result.description << "'"
      << ", numShrinks=" << result.numShrinks << ", counterExample=";
   show(result.counterExample, os);
   return os;

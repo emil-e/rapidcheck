@@ -20,16 +20,6 @@ bool messageContains(const T &msg, const std::string &substr) {
 
 } // namespace
 
-TEST_CASE("TestCase") {
-  SECTION("operator==/operator!=") {
-    propConformsToEquals<TestCase>();
-    PROP_REPLACE_MEMBER_INEQUAL(TestCase, size);
-    PROP_REPLACE_MEMBER_INEQUAL(TestCase, seed);
-  }
-
-  SECTION("operator<<") { propConformsToOutputOperator<TestCase>(); }
-}
-
 TEST_CASE("CaseResult") {
   SECTION("operator==/operator!=") {
     propConformsToEquals<CaseResult>();
@@ -72,7 +62,6 @@ TEST_CASE("FailureResult") {
   SECTION("operator==/operator!=") {
     propConformsToEquals<FailureResult>();
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, numSuccess);
-    PROP_REPLACE_MEMBER_INEQUAL(FailureResult, failingCase);
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, description);
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, numShrinks);
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, counterExample);

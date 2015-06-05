@@ -8,8 +8,7 @@ namespace detail {
 LogTestListener::LogTestListener(std::ostream &os)
     : m_out(os) {}
 
-void LogTestListener::onTestCaseFinished(const TestCase &testCase,
-                                         const CaseDescription &description) {
+void LogTestListener::onTestCaseFinished(const CaseDescription &description) {
   switch (description.result.type) {
   case CaseResult::Type::Success:
     m_out << ".";

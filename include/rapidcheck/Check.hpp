@@ -3,9 +3,16 @@
 #include <iostream>
 
 #include "rapidcheck/detail/LogTestlistener.h"
+#include "rapidcheck/detail/TestParams.h"
 
 namespace rc {
 namespace detail {
+
+TestResult checkProperty(const Property &property,
+                         const TestParams &params,
+                         TestListener &listener);
+
+TestResult checkProperty(const Property &property, const TestParams &params);
 
 template <typename Testable, typename... Args>
 TestResult checkTestable(Testable &&testable, Args &&... args) {

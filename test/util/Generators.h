@@ -23,22 +23,6 @@ struct Arbitrary<detail::Configuration> {
 };
 
 template <>
-struct Arbitrary<detail::TestCase> {
-  static Gen<detail::TestCase> arbitrary() {
-    return gen::build<detail::TestCase>(gen::set(&detail::TestCase::size,
-                                                 gen::withSize([](int size) {
-                                                   // TODO this should be
-                                                   // replaced by a sized ranged
-                                                   // generator
-                                                   // instead
-                                                   return gen::inRange<int>(
-                                                       0, size + 1);
-                                                 })),
-                                        gen::set(&detail::TestCase::seed));
-  }
-};
-
-template <>
 struct Arbitrary<detail::CaseResult::Type> {
   static Gen<detail::CaseResult::Type> arbitrary() {
     return gen::element(detail::CaseResult::Type::Success,
@@ -73,7 +57,6 @@ struct Arbitrary<detail::FailureResult> {
   static Gen<detail::FailureResult> arbitrary() {
     return gen::build<detail::FailureResult>(
         gen::set(&detail::FailureResult::numSuccess, gen::positive<int>()),
-        gen::set(&detail::FailureResult::failingCase),
         gen::set(&detail::FailureResult::description),
         gen::set(&detail::FailureResult::numShrinks, gen::positive<int>()),
         gen::set(&detail::FailureResult::counterExample));

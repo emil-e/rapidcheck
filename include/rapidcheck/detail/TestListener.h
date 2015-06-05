@@ -13,8 +13,7 @@ public:
   ///
   /// @param testCase     The test case that was run.
   /// @param description  The case description.
-  virtual void onTestCaseFinished(const TestCase &testCase,
-                                  const CaseDescription &description) = 0;
+  virtual void onTestCaseFinished(const CaseDescription &description) = 0;
 
   /// Called when a test case shrink has been tried.
   ///

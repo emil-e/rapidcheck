@@ -25,6 +25,7 @@ add_library(rapidcheck
   src/detail/PropertyContext.cpp
   src/detail/Results.cpp
   src/detail/TestParams.cpp
+  src/detail/Testing.cpp
   src/detail/Utility.cpp
   src/gen/Numeric.cpp
   src/gen/Text.cpp

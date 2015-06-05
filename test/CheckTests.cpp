@@ -44,7 +44,6 @@ TEST_CASE("checkTestable") {
          FailureResult failure;
          RC_ASSERT(result.match(failure));
          RC_ASSERT(failure.numSuccess == targetSuccess);
-         RC_ASSERT(failure.failingCase.size == lastSize);
        });
 
   prop("returns the correct number of shrinks on a failing case",
