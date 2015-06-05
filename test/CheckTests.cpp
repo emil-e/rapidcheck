@@ -19,33 +19,6 @@ using namespace rc::detail;
 // TODO good candidate for profiling
 
 TEST_CASE("checkTestable") {
-  prop("runs all test cases if no cases fail",
-       [](const TestParams &params) {
-         auto numCases = 0;
-         const auto result = checkTestable([&] { numCases++; }, params);
-         RC_ASSERT(numCases == params.maxSuccess);
-
-         SuccessResult success;
-         RC_ASSERT(result.match(success));
-         RC_ASSERT(success.numSuccess == params.maxSuccess);
-       });
-
-  prop("returns correct information about failing case",
-       [](const TestParams &params) {
-         RC_PRE(params.maxSuccess > 0);
-         auto caseIndex = 0;
-         auto lastSize = -1;
-         const auto targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
-         const auto result = checkTestable([&] {
-           lastSize = (*genPassedParams()).size;
-           RC_ASSERT(caseIndex < targetSuccess);
-           caseIndex++;
-         }, params);
-         FailureResult failure;
-         RC_ASSERT(result.match(failure));
-         RC_ASSERT(failure.numSuccess == targetSuccess);
-       });
-
   prop("returns the correct number of shrinks on a failing case",
        [](const TestParams &params) {
          RC_PRE(params.maxSuccess > 0);
@@ -127,38 +100,6 @@ TEST_CASE("checkTestable") {
          RC_ASSERT(failure.description.find(description) != std::string::npos);
        });
 
-  prop("gives up if too many test cases are discarded",
-       [](const TestParams &params) {
-         RC_PRE(params.maxSuccess > 0);
-         const auto maxDiscards = params.maxSuccess * params.maxDiscardRatio;
-         const auto targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
-         int numTests = 0;
-         const auto results = checkTestable([&] {
-           numTests++;
-           RC_PRE(numTests <= targetSuccess);
-         }, params);
-         RC_ASSERT(numTests >= (targetSuccess + maxDiscards));
-
-         GaveUpResult gaveUp;
-         RC_ASSERT(results.match(gaveUp));
-         RC_ASSERT(gaveUp.numSuccess == targetSuccess);
-       });
-
-  prop("does not give up if not enough tests are discarded",
-       [](const TestParams &params) {
-         const auto maxDiscards = params.maxSuccess * params.maxDiscardRatio;
-         const auto targetDiscard = *gen::inRange<int>(0, maxDiscards + 1);
-         int numTests = 0;
-         const auto results = checkTestable([&] {
-           numTests++;
-           RC_PRE(numTests > targetDiscard);
-         }, params);
-
-         SuccessResult success;
-         RC_ASSERT(results.match(success));
-         RC_ASSERT(success.numSuccess == params.maxSuccess);
-       });
-
   prop("on giving up, description contains message",
        [](const TestParams &params, const std::string &description) {
          RC_PRE(params.maxSuccess > 0);
@@ -189,29 +130,6 @@ TEST_CASE("checkTestable") {
 
          RC_ASSERT(results1 == results2);
          RC_ASSERT(values1 == values2);
-       });
-
-  prop("if maxSuccess > 1, the max size used is maxSize",
-       [](const TestParams &params) {
-         RC_SUCCEED_IF(params.maxSuccess <= 1);
-
-         int usedMax = 0;
-         const auto property = [&] { usedMax = std::max(*genSize(), usedMax); };
-         checkTestable(property, params);
-         RC_ASSERT(usedMax == params.maxSize);
-       });
-
-  prop("maxSuccess > maxSize, all sizes will be used",
-       [] {
-         TestParams params;
-         params.maxSize = *gen::inRange(0, 100);
-         params.maxSuccess = *gen::inRange(params.maxSuccess + 1, 200);
-
-         std::vector<int> frequencies(params.maxSize + 1, 0);
-         const auto property = [&] { frequencies[*genSize()]++; };
-         checkTestable(property, params);
-
-         RC_ASSERT(std::count(begin(frequencies), end(frequencies), 0) == 0);
        });
 
   prop("correctly reports test case distribution",
@@ -250,13 +168,5 @@ TEST_CASE("checkTestable") {
          SuccessResult success;
          RC_ASSERT(result.match(success));
          RC_ASSERT(success.distribution.empty());
-       });
-
-  prop("should increase size eventually if enough tests are discarded",
-       [](TestParams params) {
-         params.maxDiscardRatio = 100;
-         const auto result =
-             checkTestable([] { RC_PRE(*genSize() != 0); }, params);
-         RC_ASSERT(result.template is<SuccessResult>());
        });
 }

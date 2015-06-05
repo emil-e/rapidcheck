@@ -13,7 +13,7 @@ namespace rc {
 namespace detail {
 
 struct SearchResult {
-  enum class Type { Ok, Failure, GaveUp };
+  enum class Type { Success, Failure, GaveUp };
 
   /// The type of the result.
   Type type;

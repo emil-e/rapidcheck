@@ -20,6 +20,7 @@ add_executable(rapidcheck_tests
   detail/ResultsTests.cpp
   detail/ShowTypeTests.cpp
   detail/TestParamsTests.cpp
+  detail/TestingTests.cpp
   detail/VariantTests.cpp
   fn/CommonTests.cpp
   gen/BuildTests.cpp

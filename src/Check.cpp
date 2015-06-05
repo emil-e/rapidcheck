@@ -15,7 +15,7 @@ TestResult doCheckProperty(const Property &property,
                            const TestParams &params,
                            TestListener &listener) {
   const auto searchResult = searchProperty(property, params, listener);
-  if (searchResult.type == SearchResult::Type::Ok) {
+  if (searchResult.type == SearchResult::Type::Success) {
     SuccessResult success;
     success.numSuccess = searchResult.numSuccess;
     for (const auto &tags : searchResult.tags) {

@@ -25,7 +25,7 @@ struct CaseResult {
   };
 
   CaseResult();
-  CaseResult(Type t, std::string desc);
+  CaseResult(Type t, std::string desc = "");
 
   /// The type of the result.
   Type type;

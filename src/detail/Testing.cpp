@@ -29,7 +29,7 @@ SearchResult searchProperty(const Property &property,
                             const TestParams &params,
                             TestListener &listener) {
   SearchResult searchResult;
-  searchResult.type = SearchResult::Type::Ok;
+  searchResult.type = SearchResult::Type::Success;
   searchResult.numSuccess = 0;
   searchResult.numDiscarded = 0;
   searchResult.tags.reserve(params.maxSuccess);
@@ -52,15 +52,16 @@ SearchResult searchProperty(const Property &property,
 
     switch (result.type) {
     case CaseResult::Type::Failure:
+      searchResult.type = SearchResult::Type::Failure;
       searchResult.failure = std::move(shrinkable);
       return searchResult;
 
     case CaseResult::Type::Discard:
-      searchResult.failure = std::move(shrinkable);
       searchResult.numDiscarded++;
       recentDiscards++;
       if (searchResult.numDiscarded > maxDiscard) {
         searchResult.type = SearchResult::Type::GaveUp;
+        searchResult.failure = std::move(shrinkable);
         return searchResult;
       }
       break;
