@@ -4,8 +4,12 @@
 #include "rapidcheck/detail/ImplicitParam.h"
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/Configuration.h"
+#include "rapidcheck/detail/TestListenerAdapter.h"
 
 namespace rc {
+
+void beforeMinimalTestCase() {}
+
 namespace detail {
 namespace {
 
@@ -43,9 +47,31 @@ Distribution collectTags(std::vector<Tags> allTags) {
   return distribution;
 }
 
-} // namespace
+std::pair<CaseDescription, int>
+shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
+               TestListener &listener) {
+  int numShrinks = 0;
+  Shrinkable<CaseDescription> best = shrinkable;
 
-TestResult checkProperty(const Property &property, const TestParams &params) {
+  auto shrinks = shrinkable.shrinks();
+  while (auto shrink = shrinks.next()) {
+    auto caseDescription = shrink->value();
+    bool accept = isFailure(caseDescription);
+    listener.onShrinkTried(caseDescription, accept);
+    if (accept) {
+      best = std::move(*shrink);
+      shrinks = best.shrinks();
+      numShrinks++;
+    }
+  }
+
+  beforeMinimalTestCase();
+  return std::make_pair(best.value(), numShrinks);
+}
+
+TestResult doCheckProperty(const Property &property,
+                           const TestParams &params,
+                           TestListener &listener) {
   const auto maxDiscard = params.maxDiscardRatio * params.maxSuccess;
 
   auto numSuccess = 0;
@@ -56,20 +82,19 @@ TestResult checkProperty(const Property &property, const TestParams &params) {
   std::vector<Tags> tags;
   tags.reserve(params.maxSuccess);
 
-  TestCase currentCase;
-
   while (numSuccess < params.maxSuccess) {
+    TestCase currentCase;
     currentCase.size = sizeFor(params, numSuccess) + (recentDiscards / 10);
     currentCase.seed = avalanche(params.seed + numSuccess + recentDiscards);
 
     const auto shrinkable =
         property(Random(currentCase.seed), currentCase.size);
     const auto caseDescription = shrinkable.value();
+    listener.onTestCaseFinished(currentCase, caseDescription);
     const auto &result = caseDescription.result;
     if (result.type == CaseResult::Type::Failure) {
       // Test case failed, shrink it
-      const auto shrinkResult =
-          shrinkable::findLocalMin(shrinkable, &isFailure);
+      const auto shrinkResult = shrinkTestCase(shrinkable, listener);
       const auto &caseDesc = shrinkResult.first;
       FailureResult failure;
       failure.numSuccess = numSuccess;
@@ -100,6 +125,21 @@ TestResult checkProperty(const Property &property, const TestParams &params) {
   success.numSuccess = numSuccess;
   success.distribution = collectTags(std::move(tags));
   return success;
+}
+
+} // namespace
+
+TestResult checkProperty(const Property &property,
+                         const TestParams &params,
+                         TestListener &listener) {
+  TestResult result = doCheckProperty(property, params, listener);
+  listener.onTestFinished(result);
+  return result;
+}
+
+TestResult checkProperty(const Property &property, const TestParams &params) {
+  TestListenerAdapter listener;
+  return checkProperty(property, params, listener);
 }
 
 } // namespace detail

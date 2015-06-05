@@ -2,12 +2,15 @@
 
 #include <iostream>
 
+#include "rapidcheck/detail/LogTestlistener.h"
+
 namespace rc {
 namespace detail {
 
 template <typename Testable, typename... Args>
-TestResult checkTestable(Testable &&testable, const Args &... args) {
-  return checkProperty(toProperty(std::forward<Testable>(testable)), args...);
+TestResult checkTestable(Testable &&testable, Args &&... args) {
+  return checkProperty(toProperty(std::forward<Testable>(testable)),
+                       std::forward<Args>(args)...);
 }
 
 } // namespace detail
@@ -26,9 +29,14 @@ bool check(const std::string &description, Testable &&testable) {
   if (!description.empty()) {
     std::cerr << std::endl << "- " << description << std::endl;
   }
-  const auto result = detail::checkTestable(std::forward<Testable>(testable));
+
+  detail::LogTestListener listener(std::cerr);
+  const auto result = detail::checkTestable(
+      std::forward<Testable>(testable), detail::defaultTestParams(), listener);
+
   printResultMessage(result, std::cerr);
   std::cerr << std::endl;
+
   return result.template is<detail::SuccessResult>();
 }
 

@@ -19,6 +19,7 @@ add_library(rapidcheck
   src/detail/ExpressionCaptor.cpp
   src/detail/FrequencyMap.cpp
   src/detail/ImplicitParam.cpp
+  src/detail/LogTestListener.cpp
   src/detail/MapParser.cpp
   src/detail/Property.cpp
   src/detail/PropertyContext.cpp

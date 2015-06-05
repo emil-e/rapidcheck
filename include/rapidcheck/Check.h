@@ -1,9 +1,9 @@
 #pragma once
 
+#include "rapidcheck/detail/Property.h"
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/TestParams.h"
-
-#include "rapidcheck/detail/Property.h"
+#include "rapidcheck/detail/TestListener.h"
 
 namespace rc {
 namespace detail {
@@ -11,11 +11,15 @@ namespace detail {
 /// Checks the given property using the given parameters and returns the
 /// results.
 TestResult checkProperty(const Property &property,
-                         const TestParams &params = defaultTestParams());
+                         const TestParams &params,
+                         TestListener &listener);
+
+/// Overload of `checkProperty`.
+TestResult checkProperty(const Property &property, const TestParams &params);
 
 /// Overload which first converts the testable to a property.
 template <typename Testable, typename... Args>
-TestResult checkTestable(Testable &&testable, const Args &... args);
+TestResult checkTestable(Testable &&testable, Args &&... args);
 
 } // namespace detail
 
