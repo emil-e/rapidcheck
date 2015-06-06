@@ -5,10 +5,18 @@
 namespace rc {
 namespace detail {
 
-LogTestListener::LogTestListener(std::ostream &os)
-    : m_out(os) {}
+LogTestListener::LogTestListener(std::ostream &os,
+                                 bool verboseProgress,
+                                 bool verboseShrinking)
+    : m_verboseProgress(verboseProgress)
+    , m_verboseShrinking(verboseShrinking)
+    , m_out(os) {}
 
 void LogTestListener::onTestCaseFinished(const CaseDescription &description) {
+  if (!m_verboseProgress) {
+    return;
+  }
+
   switch (description.result.type) {
   case CaseResult::Type::Success:
     m_out << ".";
@@ -17,13 +25,18 @@ void LogTestListener::onTestCaseFinished(const CaseDescription &description) {
     m_out << "x";
     break;
   case CaseResult::Type::Failure:
-    m_out << std::endl << "Found failure, shrinking:" << std::endl;
+    m_out << std::endl << "Found failure, shrinking";
+    m_out << (m_verboseShrinking ? ":" : "...") << std::endl;
     break;
   }
 }
 
 void LogTestListener::onShrinkTried(const CaseDescription &shrink,
                                     bool accepted) {
+  if (!m_verboseShrinking) {
+    return;
+  }
+
   if (accepted) {
     m_out << "!";
   } else {
@@ -32,7 +45,9 @@ void LogTestListener::onShrinkTried(const CaseDescription &shrink,
 }
 
 void LogTestListener::onTestFinished(const TestResult &result) {
-  m_out << std::endl;
+  if (m_verboseShrinking || m_verboseProgress) {
+    m_out << std::endl;
+  }
 }
 
 } // namespace detail
