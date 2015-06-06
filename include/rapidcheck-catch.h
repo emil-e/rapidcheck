@@ -21,8 +21,7 @@ void prop(const std::string &description, Testable &&testable) {
   SECTION(description) {
 #endif
 
-    const auto result =
-        checkTestable(std::forward<Testable>(testable), defaultTestParams());
+    const auto result = checkTestable(std::forward<Testable>(testable));
 
     if (result.template is<SuccessResult>()) {
       const auto success = result.template get<SuccessResult>();
@@ -42,7 +41,6 @@ void prop(const std::string &description, Testable &&testable) {
       FAIL();
 #endif
     }
-
   }
 }
 

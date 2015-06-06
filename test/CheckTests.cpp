@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
+#include "rapidcheck/detail/TestListenerAdapter.h"
+
 #include "util/MockTestListener.h"
 #include "util/GenUtils.h"
 #include "util/Generators.h"
@@ -10,6 +12,12 @@ using namespace rc::test;
 using namespace rc::detail;
 
 // TODO good candidate for profiling
+
+namespace {
+
+TestListenerAdapter dummyListener;
+
+} // namespace
 
 TEST_CASE("checkTestable") {
   prop("returns the correct number of shrinks on a failing case",
@@ -24,7 +32,7 @@ TEST_CASE("checkTestable") {
            const auto v1 = *genFixedCountdown(values.first);
            const auto v2 = *genFixedCountdown(values.second);
            return ((v1 % 2) != 0) || ((v2 % 2) != 0);
-         }, params);
+         }, params, dummyListener);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
@@ -41,7 +49,7 @@ TEST_CASE("checkTestable") {
                  *gen::just(value);
                }
                return false;
-             }, params);
+             }, params, dummyListener);
 
          Example expected;
          expected.reserve(values.size() + 1);
@@ -70,10 +78,10 @@ TEST_CASE("checkTestable") {
            auto innerResults = checkTestable([&] {
              *gen::just<std::string>("bar");
              *gen::just<std::string>("baz");
-           }, params2);
+           }, params2, dummyListener);
 
            return false;
-         }, params1);
+         }, params1, dummyListener);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
@@ -85,8 +93,8 @@ TEST_CASE("checkTestable") {
   prop("on failure, description contains message",
        [](const TestParams &params, const std::string &description) {
          RC_PRE(params.maxSuccess > 0);
-         const auto results =
-             checkTestable([&] { RC_FAIL(description); }, params);
+         const auto results = checkTestable(
+             [&] { RC_FAIL(description); }, params, dummyListener);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
@@ -96,8 +104,8 @@ TEST_CASE("checkTestable") {
   prop("on giving up, description contains message",
        [](const TestParams &params, const std::string &description) {
          RC_PRE(params.maxSuccess > 0);
-         const auto results =
-             checkTestable([&] { RC_DISCARD(description); }, params);
+         const auto results = checkTestable(
+             [&] { RC_DISCARD(description); }, params, dummyListener);
 
          GaveUpResult gaveUp;
          RC_ASSERT(results.match(gaveUp));
@@ -114,11 +122,11 @@ TEST_CASE("checkTestable") {
            return result == end(x);
          };
 
-         const auto results1 = checkTestable(property, params);
+         const auto results1 = checkTestable(property, params, dummyListener);
          auto values1 = std::move(values);
 
          values = std::vector<std::vector<int>>();
-         const auto results2 = checkTestable(property, params);
+         const auto results2 = checkTestable(property, params, dummyListener);
          auto values2 = std::move(values);
 
          RC_ASSERT(results1 == results2);
@@ -141,7 +149,7 @@ TEST_CASE("checkTestable") {
              ImplicitParam<param::CurrentPropertyContext>::value()->addTag(tag);
            }
          };
-         const auto result = checkTestable(property, params);
+         const auto result = checkTestable(property, params, dummyListener);
 
          Distribution expected;
          for (auto &tags : allTags) {
@@ -157,7 +165,7 @@ TEST_CASE("checkTestable") {
 
   prop("does not include untagged cases in distribution",
        [](const TestParams &params) {
-         const auto result = checkTestable([] {}, params);
+         const auto result = checkTestable([] {}, params, dummyListener);
          SuccessResult success;
          RC_ASSERT(result.match(success));
          RC_ASSERT(success.distribution.empty());

@@ -10,15 +10,21 @@
 namespace rc {
 
 template <>
+struct Arbitrary<detail::TestParams> {
+  static Gen<detail::TestParams> arbitrary() {
+    return gen::build<detail::TestParams>(
+        gen::set(&detail::TestParams::seed),
+        gen::set(&detail::TestParams::maxSuccess, gen::inRange(0, 100)),
+        gen::set(&detail::TestParams::maxSize, gen::inRange(0, 101)),
+        gen::set(&detail::TestParams::maxDiscardRatio, gen::inRange(0, 100)));
+  }
+};
+
+template <>
 struct Arbitrary<detail::Configuration> {
   static Gen<detail::Configuration> arbitrary() {
     return gen::build<detail::Configuration>(
-        gen::set(&detail::Configuration::seed),
-        gen::set(&detail::Configuration::maxSuccess,
-                 gen::inRange<int>(0, 1000)),
-        gen::set(&detail::Configuration::maxSize, gen::inRange<int>(0, 1000)),
-        gen::set(&detail::Configuration::maxDiscardRatio,
-                 gen::inRange<int>(0, 100)));
+        gen::set(&detail::Configuration::testParams));
   }
 };
 
@@ -69,17 +75,6 @@ struct Arbitrary<detail::GaveUpResult> {
     return gen::build<detail::GaveUpResult>(
         gen::set(&detail::GaveUpResult::numSuccess, gen::positive<int>()),
         gen::set(&detail::GaveUpResult::description));
-  }
-};
-
-template <>
-struct Arbitrary<detail::TestParams> {
-  static Gen<detail::TestParams> arbitrary() {
-    return gen::build<detail::TestParams>(
-        gen::set(&detail::TestParams::seed),
-        gen::set(&detail::TestParams::maxSuccess, gen::inRange(0, 100)),
-        gen::set(&detail::TestParams::maxSize, gen::inRange(0, 101)),
-        gen::set(&detail::TestParams::maxDiscardRatio, gen::inRange(0, 100)));
   }
 };
 

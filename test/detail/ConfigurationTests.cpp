@@ -12,10 +12,7 @@ using namespace rc::detail;
 TEST_CASE("Configuration") {
   SECTION("operator==/operator!=") {
     propConformsToEquals<Configuration>();
-    PROP_REPLACE_MEMBER_INEQUAL(Configuration, seed);
-    PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSuccess);
-    PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxSize);
-    PROP_REPLACE_MEMBER_INEQUAL(Configuration, maxDiscardRatio);
+    PROP_REPLACE_MEMBER_INEQUAL(Configuration, testParams);
   }
 
   SECTION("operator<<") { propConformsToOutputOperator<Configuration>(); }

@@ -2,8 +2,10 @@
 
 #include <iostream>
 
-#include "rapidcheck/detail/LogTestlistener.h"
-#include "rapidcheck/detail/TestParams.h"
+#include "rapidcheck/detail/Configuration.h"
+#include "rapidcheck/detail/Results.h"
+#include "rapidcheck/detail/Property.h"
+#include "rapidcheck/detail/TestListener.h"
 
 namespace rc {
 namespace detail {
@@ -12,7 +14,8 @@ TestResult checkProperty(const Property &property,
                          const TestParams &params,
                          TestListener &listener);
 
-TestResult checkProperty(const Property &property, const TestParams &params);
+// Uses defaults from configuration
+TestResult checkProperty(const Property &property);
 
 template <typename Testable, typename... Args>
 TestResult checkTestable(Testable &&testable, Args &&... args) {
@@ -29,17 +32,17 @@ bool check(Testable &&testable) {
 
 template <typename Testable>
 bool check(const std::string &description, Testable &&testable) {
+  using namespace rc::detail;
+
   // Force loading of the configuration so that message comes _before_ the
   // description
-  detail::defaultTestParams();
+  ImplicitParam<param::CurrentConfiguration>::value();
 
   if (!description.empty()) {
     std::cerr << std::endl << "- " << description << std::endl;
   }
 
-  detail::LogTestListener listener(std::cerr);
-  const auto result = detail::checkTestable(
-      std::forward<Testable>(testable), detail::defaultTestParams(), listener);
+  const auto result = detail::checkTestable(std::forward<Testable>(testable));
 
   printResultMessage(result, std::cerr);
   std::cerr << std::endl;

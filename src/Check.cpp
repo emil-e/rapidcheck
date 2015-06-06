@@ -53,9 +53,10 @@ TestResult checkProperty(const Property &property,
   return result;
 }
 
-TestResult checkProperty(const Property &property, const TestParams &params) {
+TestResult checkProperty(const Property &property) {
+  const auto config = ImplicitParam<param::CurrentConfiguration>::value();
   TestListenerAdapter listener;
-  return checkProperty(property, params, listener);
+  return checkProperty(property, config.testParams, listener);
 }
 
 } // namespace detail
