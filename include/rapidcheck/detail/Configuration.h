@@ -13,6 +13,12 @@ namespace detail {
 struct Configuration {
   /// The default test parameters.
   TestParams testParams;
+
+  /// Enable/disable verbose printing during testing.
+  bool verboseProgress = false;
+
+  /// Enable/disable verbose printing during shrinking.
+  bool verboseShrinking = false;
 };
 
 std::ostream &operator<<(std::ostream &os, const Configuration &config);

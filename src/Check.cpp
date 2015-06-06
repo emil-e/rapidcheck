@@ -1,6 +1,6 @@
 #include "rapidcheck/Check.h"
 
-#include "rapidcheck/detail/TestListenerAdapter.h"
+#include "rapidcheck/detail/LogTestlistener.h"
 #include "detail/Testing.h"
 
 namespace rc {
@@ -55,7 +55,8 @@ TestResult checkProperty(const Property &property,
 
 TestResult checkProperty(const Property &property) {
   const auto config = ImplicitParam<param::CurrentConfiguration>::value();
-  TestListenerAdapter listener;
+  LogTestListener listener(
+      std::cerr, config.verboseProgress, config.verboseShrinking);
   return checkProperty(property, config.testParams, listener);
 }
 

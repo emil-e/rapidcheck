@@ -16,7 +16,9 @@ std::ostream &operator<<(std::ostream &os, const Configuration &config) {
 }
 
 bool operator==(const Configuration &c1, const Configuration &c2) {
-  return (c1.testParams == c2.testParams);
+  return (c1.testParams == c2.testParams) &&
+      (c1.verboseProgress == c2.verboseProgress) &&
+      (c1.verboseShrinking == c2.verboseShrinking);
 }
 
 bool operator!=(const Configuration &c1, const Configuration &c2) {
@@ -32,39 +34,38 @@ const char *ConfigurationException::what() const noexcept {
 
 namespace {
 
+template <typename T>
+void fromString(const std::string &str, T &out, bool &ok) {
+  std::istringstream in(std::move(str));
+  in >> out;
+  ok = !in.fail();
+}
+
+template <>
+void fromString(const std::string &str, std::string &out, bool &ok) {
+  ok = true;
+  out = str;
+}
+
 // Returns false only on invalid format, not on missing key
 template <typename T, typename Validator>
-void loadParam(const std::map<std::string, std::string> &map,
+bool loadParam(const std::map<std::string, std::string> &map,
                const std::string &key,
                T &dest,
                std::string failMsg,
                const Validator &validate) {
   auto it = map.find(key);
   if (it == end(map)) {
-    return;
+    return false;
   }
 
-  std::istringstream in(it->second);
+  bool ok = false;
   T value;
-  in >> value;
-  if (in.fail() || !validate(value)) {
+  fromString<T>(it->second, value, ok);
+  if (!ok || !validate(value)) {
     throw ConfigurationException(std::move(failMsg));
   }
   dest = value;
-}
-
-template <typename Validator>
-bool loadParam(const std::map<std::string, std::string> &map,
-               const std::string &key,
-               std::string &dest,
-               const std::string &failMsg,
-               const Validator &validate = [](const std::string &) {
-                 return true;
-               }) {
-  auto it = map.find(key);
-  if (it != end(map)) {
-    dest = it->second;
-  }
   return true;
 }
 
@@ -106,6 +107,18 @@ Configuration configFromMap(const std::map<std::string, std::string> &map,
             "'max_discard_ratio' must be a valid non-negative integer",
             isNonNegative<int>);
 
+  loadParam(map,
+            "verbose_progress",
+            config.verboseProgress,
+            "'verbose_progress' must be either '1' or '0'",
+            anything<bool>);
+
+  loadParam(map,
+            "verbose_shrinking",
+            config.verboseShrinking,
+            "'verbose_shrinking' must be either '1' or '0'",
+            anything<bool>);
+
   return config;
 }
 
@@ -114,7 +127,9 @@ std::map<std::string, std::string> mapFromConfig(const Configuration &config) {
       {"seed", std::to_string(config.testParams.seed)},
       {"max_success", std::to_string(config.testParams.maxSuccess)},
       {"max_size", std::to_string(config.testParams.maxSize)},
-      {"max_discard_ratio", std::to_string(config.testParams.maxDiscardRatio)}};
+      {"max_discard_ratio", std::to_string(config.testParams.maxDiscardRatio)},
+      {"verbose_progress", std::to_string(config.verboseProgress)},
+      {"verbose_shrinking", std::to_string(config.verboseShrinking)}};
 }
 
 std::map<std::string, std::string>

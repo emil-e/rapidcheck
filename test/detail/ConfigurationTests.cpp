@@ -13,6 +13,8 @@ TEST_CASE("Configuration") {
   SECTION("operator==/operator!=") {
     propConformsToEquals<Configuration>();
     PROP_REPLACE_MEMBER_INEQUAL(Configuration, testParams);
+    PROP_REPLACE_MEMBER_INEQUAL(Configuration, verboseProgress);
+    PROP_REPLACE_MEMBER_INEQUAL(Configuration, verboseShrinking);
   }
 
   SECTION("operator<<") { propConformsToOutputOperator<Configuration>(); }
@@ -51,6 +53,20 @@ TEST_CASE("configFromString") {
     REQUIRE_THROWS_AS(configFromString("max_discard_ratio=foobar"),
                       ConfigurationException);
     REQUIRE_THROWS_AS(configFromString("max_discard_ratio=-2"),
+                      ConfigurationException);
+  }
+
+  SECTION("throws on invalid verbose progress setting") {
+    REQUIRE_THROWS_AS(configFromString("verbose_progress=foo"),
+                      ConfigurationException);
+    REQUIRE_THROWS_AS(configFromString("verbose_progress=2"),
+                      ConfigurationException);
+  }
+
+  SECTION("throws on invalid verbose shrinking setting") {
+    REQUIRE_THROWS_AS(configFromString("verbose_shrinking=foo"),
+                      ConfigurationException);
+    REQUIRE_THROWS_AS(configFromString("verbose_shrinking=2"),
                       ConfigurationException);
   }
 
