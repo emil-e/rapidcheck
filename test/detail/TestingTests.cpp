@@ -6,6 +6,7 @@
 
 #include "util/Generators.h"
 #include "util/GenUtils.h"
+#include "util/ShrinkableUtils.h"
 #include "util/MockTestListener.h"
 
 using namespace rc;
@@ -175,7 +176,7 @@ TEST_CASE("searchProperty") {
          RC_ASSERT(result.tags == expected);
        });
 
-  prop("reports case description for each successful test",
+  prop("calls onTestCaseFinished for each successful test",
        [](const TestParams &params, int limit) {
          std::vector<CaseDescription> descriptions;
          MockTestListener listener;
@@ -205,5 +206,71 @@ TEST_CASE("searchProperty") {
          }, params, listener);
 
          RC_ASSERT(descriptions == expected);
+       });
+}
+
+Shrinkable<CaseDescription> countdownEven(int start) {
+  return shrinkable::map(countdownShrinkable(start),
+                         [=](int x) {
+                           CaseDescription desc;
+                           desc.result.type = ((x % 2) == 0)
+                               ? CaseResult::Type::Failure
+                               : CaseResult::Type::Success;
+                           desc.result.description = std::to_string(x);
+                           return desc;
+                         });
+}
+
+TEST_CASE("shrinkTestCase") {
+  prop("returns the minimum shrinkable",
+       [] {
+         const auto target = *gen::positive<int>();
+         const auto shrinkable =
+             shrinkable::map(shrinkable::shrinkRecur(
+                                 std::numeric_limits<int>::max(),
+                                 [](int x) { return shrink::towards(x, 0); }),
+                             [=](int x) {
+                               CaseDescription desc;
+                               desc.result.type = (x >= target)
+                                   ? CaseResult::Type::Failure
+                                   : CaseResult::Type::Success;
+                               desc.result.description = std::to_string(x);
+                               return desc;
+                             });
+
+         TestListenerAdapter listener;
+         const auto result = shrinkTestCase(shrinkable, listener);
+         RC_ASSERT(result.first.value().result.type ==
+                   CaseResult::Type::Failure);
+         RC_ASSERT(result.first.value().result.description ==
+                   std::to_string(target));
+       });
+
+  prop("returns the number of successful shrinks",
+       [] {
+         const auto start = *gen::suchThat(gen::inRange<int>(0, 100),
+                                           [](int x) { return (x % 2) == 0; });
+         const auto shrinkable = countdownEven(start);
+
+         TestListenerAdapter listener;
+         const auto result = shrinkTestCase(shrinkable, listener);
+         RC_ASSERT(result.second == start / 2);
+       });
+
+  prop("calls onShrinkTried for each shrink tried",
+       [] {
+         const auto start = *gen::suchThat(gen::inRange<int>(0, 100),
+                                           [](int x) { return (x % 2) == 0; });
+         const auto shrinkable = countdownEven(start);
+
+         MockTestListener listener;
+         int acceptedBalance = 0;
+         listener.onShrinkTriedCallback =
+             [&](const CaseDescription &desc, bool accepted) {
+               const auto x = std::stoi(desc.result.description);
+               RC_ASSERT(((x % 2) == 0) == accepted);
+               acceptedBalance += accepted ? 1 : -1;
+             };
+         const auto result = shrinkTestCase(shrinkable, listener);
        });
 }
