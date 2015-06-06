@@ -179,7 +179,12 @@ Configuration loadConfiguration() {
 
   auto params = std::getenv("RC_PARAMS");
   if (params != nullptr) {
-    config = configFromString(params, config);
+    try {
+      config = configFromString(params, config);
+    } catch (const ConfigurationException &e) {
+      std::cerr << "Error parsing configuration: " << e.what() << std::endl;
+      std::exit(1);
+    }
   }
 
   // TODO rapidcheck logging framework ftw
