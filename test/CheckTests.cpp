@@ -1,16 +1,9 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
-#include "util/Util.h"
-#include "util/Generators.h"
-#include "util/TemplateProps.h"
+#include "util/MockTestListener.h"
 #include "util/GenUtils.h"
-
-#include "rapidcheck/detail/Configuration.h"
-#include "rapidcheck/Check.h"
-#include "rapidcheck/gen/Create.h"
-#include "rapidcheck/gen/Container.h"
-#include "rapidcheck/gen/Numeric.h"
+#include "util/Generators.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -168,5 +161,26 @@ TEST_CASE("checkTestable") {
          SuccessResult success;
          RC_ASSERT(result.match(success));
          RC_ASSERT(success.distribution.empty());
+       });
+
+  prop("calls onTestFinished with the test results once",
+       [](const TestParams &params, int limit) {
+         Maybe<TestResult> callbackResult;
+         MockTestListener listener;
+         listener.onTestFinishedCallback = [&](const TestResult &result) {
+           RC_ASSERT(!callbackResult);
+           callbackResult = result;
+         };
+
+         const auto result = checkTestable([&] {
+           const auto x = *gen::arbitrary<int>();
+           if ((x % 3) == 0) {
+             RC_DISCARD("");
+           }
+           RC_ASSERT(x < limit);
+         }, params, listener);
+
+         RC_ASSERT(callbackResult);
+         RC_ASSERT(*callbackResult == result);
        });
 }
