@@ -28,9 +28,7 @@ struct PushBack : public StringVecCmd {
       : value(*gen::arbitrary<std::string>()) {}
   std::string value;
 
-  void apply(StringVec &s0) const override {
-    s0.push_back(value);
-  }
+  void apply(StringVec &s0) const override { s0.push_back(value); }
 
   void run(const StringVec &s0, StringVec &sut) const override {
     sut.push_back(value);
@@ -181,11 +179,13 @@ TEST_CASE("Commands") {
 }
 
 TEST_CASE("isValidCommand") {
-  prop("returns true for valid commands",
-       [] { RC_ASSERT(isValidCommand(PushBack(), StringVec())); });
+  SECTION("returns true for valid commands") {
+    REQUIRE(isValidCommand(PushBack(), StringVec()));
+  }
 
-  prop("returns false for invalid commands",
-       [] { RC_ASSERT(!isValidCommand(PopBack(), StringVec())); });
+  SECTION("returns false for invalid commands") {
+    REQUIRE(!isValidCommand(PopBack(), StringVec()));
+  }
 }
 
 Gen<StringVecCmdSP> captureParams(const StringVec &vec) {
@@ -235,8 +235,6 @@ struct CountCmd : public IntVecCmd {
   int value;
 
   void apply(IntVec &s0) const override {
-    RC_PRE(!s0.empty());
-    RC_PRE(s0.back() == (value - 1));
     s0.push_back(value);
   }
 
@@ -461,13 +459,9 @@ struct Open : public BagCommand {
     s0.open = true;
   }
 
-  void run(const State &s0, Sut &sut) const override {
-    sut.open = true;
-  }
+  void run(const State &s0, Sut &sut) const override { sut.open = true; }
 
-  void show(std::ostream &os) const override {
-    os << "Open";
-  }
+  void show(std::ostream &os) const override { os << "Open"; }
 };
 
 struct Close : public BagCommand {
@@ -476,13 +470,9 @@ struct Close : public BagCommand {
     s0.open = false;
   }
 
-  void run(const State &s0, Sut &sut) const override {
-    sut.open = false;
-  }
+  void run(const State &s0, Sut &sut) const override { sut.open = false; }
 
-  void show(std::ostream &os) const override {
-    os << "Close";
-  }
+  void show(std::ostream &os) const override { os << "Close"; }
 };
 
 struct Add : public BagCommand {
@@ -497,9 +487,7 @@ struct Add : public BagCommand {
     sut.items.push_back(item);
   }
 
-  void show(std::ostream &os) const override {
-    os << "Add(" << item << ")";
-  }
+  void show(std::ostream &os) const override { os << "Add(" << item << ")"; }
 };
 
 struct Del : public BagCommand {
@@ -520,15 +508,13 @@ struct Del : public BagCommand {
     sut.items.erase(begin(sut.items) + index);
   }
 
-  void show(std::ostream &os) const override {
-    os << "Del(" << index << ")";
-  }
+  void show(std::ostream &os) const override { os << "Del(" << index << ")"; }
 };
 
-struct Get : public BagCommand {
+struct BuggyGet : public BagCommand {
   std::size_t index;
 
-  explicit Get(const Bag &s0) {
+  explicit BuggyGet(const Bag &s0) {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
@@ -542,8 +528,24 @@ struct Get : public BagCommand {
     RC_ASSERT(sut.items[index] == s0.items[index]);
   }
 
+  void show(std::ostream &os) const override { os << "BuggyGet(" << index << ")"; }
+};
+
+struct BuggyDelAll : public BagCommand {
+  int value;
+
+  explicit BuggyDelAll(const Bag &s0) { value = *gen::elementOf(s0.items); }
+
+  void apply(State &s0) const override {
+    RC_PRE(s0.open);
+    s0.items.erase(std::remove(begin(s0.items), end(s0.items), value),
+                   end(s0.items));
+  }
+
+  void run(const State &s0, Sut &sut) const override { RC_FAIL("Bug!"); }
+
   void show(std::ostream &os) const override {
-    os << "Get(" << index << ")";
+    os << "BuggyDelAll(" << value << ")";
   }
 };
 
@@ -562,29 +564,57 @@ std::vector<std::string> showCommands(const Commands<Cmd> &commands) {
   return cmdStrings;
 }
 
+namespace {
+
+template <typename Cmd>
+Commands<Cmd> findMinCommands(const GenParams &params,
+                              const Gen<Commands<Cmd>> &gen,
+                              const typename Cmd::State &s0) {
+  return searchGen(params.random,
+                   params.size,
+                   gen,
+                   [=](const Commands<Cmd> &cmd) {
+                     const auto cmdStrings = showCommands(cmd);
+                     try {
+                       typename Cmd::Sut sut;
+                       cmd.run(s0, sut);
+                     } catch (...) {
+                       return true;
+                     }
+                     return false;
+                   });
+}
+
+} // namespace
+
 TEST_CASE("state integration tests") {
-  prop("db",
-       [](const GenParams &params) {
-         Bag s0;
-         const auto gen = genCommands<BagCommand>(
-             s0, &state::anyCommand<Open, Close, Add, Del, Get>);
-         const auto commands = searchGen(params.random,
-                                         params.size,
-                                         gen,
-                                         [=](const Commands<BagCommand> &cmd) {
-                                           try {
-                                             Bag sut;
-                                             cmd.run(s0, sut);
-                                           } catch (...) {
-                                             return true;
-                                           }
-                                           return false;
-                                         });
-         const auto cmdStrings = showCommands(commands);
-         RC_ASSERT(cmdStrings.size() == 4);
-         RC_ASSERT(cmdStrings[0] == "Open");
-         RC_ASSERT(cmdStrings[1] == "Add(0)");
-         RC_ASSERT(cmdStrings[2] == "Add(0)");
-         RC_ASSERT((cmdStrings[3] == "Get(0)") || (cmdStrings[3] == "Get(1)"));
-       });
+  prop(
+      "should find minimum when some commands might fail to generate while "
+      "shrinking",
+      [](const GenParams &params) {
+        Bag s0;
+        const auto gen = genCommands<BagCommand>(
+            s0, &state::anyCommand<Open, Close, Add, Del, BuggyGet>);
+        const auto commands = findMinCommands(params, gen, s0);
+        const auto cmdStrings = showCommands(commands);
+        RC_ASSERT(cmdStrings.size() == 4);
+        RC_ASSERT(cmdStrings[0] == "Open");
+        RC_ASSERT(cmdStrings[1] == "Add(0)");
+        RC_ASSERT(cmdStrings[2] == "Add(0)");
+        RC_ASSERT((cmdStrings[3] == "BuggyGet(0)") ||
+                  (cmdStrings[3] == "BuggyGet(1)"));
+      });
+
+  prop(
+      "should find minimum when later commands depend on the shrunk values of "
+      "previous commands",
+      [](const GenParams &params) {
+        Bag s0;
+        const auto gen = genCommands<BagCommand>(
+            s0, &state::anyCommand<Open, Close, Add, Del, BuggyDelAll>);
+        const auto commands = findMinCommands(params, gen, s0);
+        const auto cmdStrings = showCommands(commands);
+        std::vector<std::string> expected{"Open", "Add(0)", "BuggyDelAll(0)"};
+        RC_ASSERT(cmdStrings == expected);
+      });
 }
