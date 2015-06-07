@@ -176,6 +176,19 @@ TEST_CASE("searchProperty") {
          RC_ASSERT(result.tags == expected);
        });
 
+  prop("does not include tags applied from generators",
+       [](const TestParams &params) {
+         const auto result = searchTestable([&] {
+           *Gen<int>([](const Random &, int) {
+             ImplicitParam<param::CurrentPropertyContext>::value()->addTag(
+                 "foobar");
+             return shrinkable::just(1337);
+           });
+         }, params);
+
+         RC_ASSERT(result.tags.empty());
+       });
+
   prop("calls onTestCaseFinished for each successful test",
        [](const TestParams &params, int limit) {
          std::vector<CaseDescription> descriptions;

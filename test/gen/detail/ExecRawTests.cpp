@@ -223,4 +223,16 @@ TEST_CASE("execRaw") {
     const auto value = execRaw([] { return 0; })(Random(), 0).value();
     REQUIRE(value.second.ingredients.empty());
   }
+
+  prop("disallows nested use of operator*",
+       [](const GenParams &params) {
+         const auto gen = execRaw([] {
+           return *Gen<int>([](const Random &, int) {
+             *gen::just(1337);
+             return shrinkable::just(1337);
+           });
+         });
+         const auto shrinkable = gen(params.random, params.size);
+         REQUIRE_THROWS(shrinkable.value());
+       });
 }
