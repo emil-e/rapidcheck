@@ -100,6 +100,16 @@ struct Arbitrary<detail::TestParams> {
   }
 };
 
+template <>
+struct Arbitrary<detail::CaseDescription> {
+  static Gen<detail::CaseDescription> arbitrary() {
+    return gen::build<detail::CaseDescription>(
+        gen::set(&detail::CaseDescription::result),
+        gen::set(&detail::CaseDescription::tags),
+        gen::set(&detail::CaseDescription::example));
+  }
+};
+
 template <typename T>
 struct Arbitrary<Seq<T>> {
   static Gen<Seq<T>> arbitrary() {
