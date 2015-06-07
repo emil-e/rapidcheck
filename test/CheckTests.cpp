@@ -21,8 +21,9 @@ TestListenerAdapter dummyListener;
 
 TEST_CASE("checkTestable") {
   prop("returns the correct number of shrinks on a failing case",
-       [](const TestParams &params) {
+       [](TestParams params) {
          RC_PRE(params.maxSuccess > 0);
+         params.disableShrinking = false;
          const auto evenInteger =
              gen::scale(0.25,
                         gen::suchThat(gen::positive<int>(),
@@ -190,5 +191,22 @@ TEST_CASE("checkTestable") {
 
          RC_ASSERT(callbackResult);
          RC_ASSERT(*callbackResult == result);
+       });
+
+  prop("does not shrink result if disableShrinking is set",
+       [](TestParams params) {
+         RC_PRE(params.maxSuccess > 0);
+
+         params.disableShrinking = true;
+         const auto result = checkTestable([] {
+           *Gen<int>([](const Random &, int) {
+             return shrinkable::just(1337, seq::just(shrinkable::just(0)));
+           });
+           RC_FAIL("oh noes");
+         }, params, dummyListener);
+
+         FailureResult failure;
+         RC_ASSERT(result.match(failure));
+         RC_ASSERT(failure.counterExample.front().second == "1337");
        });
 }

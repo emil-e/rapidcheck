@@ -108,6 +108,12 @@ Configuration configFromMap(const std::map<std::string, std::string> &map,
             isNonNegative<int>);
 
   loadParam(map,
+            "noshrink",
+            config.testParams.disableShrinking,
+            "'noshrink' must be either '1' or '0'",
+            anything<bool>);
+
+  loadParam(map,
             "verbose_progress",
             config.verboseProgress,
             "'verbose_progress' must be either '1' or '0'",
@@ -128,6 +134,7 @@ std::map<std::string, std::string> mapFromConfig(const Configuration &config) {
       {"max_success", std::to_string(config.testParams.maxSuccess)},
       {"max_size", std::to_string(config.testParams.maxSize)},
       {"max_discard_ratio", std::to_string(config.testParams.maxDiscardRatio)},
+      {"noshrink", config.testParams.disableShrinking ? "1" : "0"},
       {"verbose_progress", std::to_string(config.verboseProgress)},
       {"verbose_shrinking", std::to_string(config.verboseShrinking)}};
 }
