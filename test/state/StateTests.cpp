@@ -24,9 +24,13 @@ using StringVecCmdSP = std::shared_ptr<const StringVecCmd>;
 using StringVecCmdsN = Commands<StringVecCmd>;
 
 struct PushBack : public StringVecCmd {
+  std::string value;
+
   PushBack()
       : value(*gen::arbitrary<std::string>()) {}
-  std::string value;
+
+  PushBack(std::string str)
+      : value(std::move(str)) {}
 
   void apply(StringVec &s0) const override { s0.push_back(value); }
 
@@ -106,6 +110,16 @@ TEST_CASE("Command") {
            auto post = sut;
            StringVecCmd().run(state, post);
            RC_ASSERT(pre == post);
+         });
+  }
+
+  SECTION("nextState") {
+    prop("uses `apply` to calculate next state",
+         [](StringVec state, const std::string &value) {
+           PushBack cmd(value);
+           const auto s1 = cmd.nextState(state);
+           cmd.apply(state);
+           RC_ASSERT(s1 == state);
          });
   }
 

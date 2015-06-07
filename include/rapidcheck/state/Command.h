@@ -31,6 +31,10 @@ public:
   /// output stream.
   virtual void show(std::ostream &os) const;
 
+  /// Convenience method which given a state returns the state after this
+  /// command has been applied using `apply`.
+  State nextState(const State &s0) const;
+
   virtual ~Command() = default;
 };
 
