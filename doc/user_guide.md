@@ -11,8 +11,9 @@ The following document is a work in progress and some parts are still missing. T
 - [Configuration](configuration.md)
 - [Stateful testing](state.md)
 
-## Integration ##
-- [Google Mock](gmock.md)
+## Extras ##
+- [Google Mock integration](gmock.md)
+- [Boost support](boost.md)
 
 ## Reference ##
 - [Generators](generators_ref.md)
