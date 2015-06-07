@@ -104,8 +104,9 @@ CATCH_TEST_CASE("RapidCheckListener") {
          RC_ASSERT(isEqual(mock->lastResult.message(), result.message()));
        });
 
-  prop("does not forward OnTestPartResult when in property",
+  prop("does not forward non-fatal OnTestPartResult when in property",
        [](const ::testing::TestPartResult &result) {
+         RC_PRE(result.type() != ::testing::TestPartResult::kFatalFailure);
          const auto mock = new MockListener();
          RapidCheckListener listener{
              std::unique_ptr<::testing::TestEventListener>(mock)};
@@ -118,6 +119,7 @@ CATCH_TEST_CASE("RapidCheckListener") {
 
   prop("reported CaseResult contains relevant information",
        [](const ::testing::TestPartResult &result) {
+         RC_PRE(result.type() != ::testing::TestPartResult::kFatalFailure);
          const auto mock = new MockListener();
          RapidCheckListener listener{
              std::unique_ptr<::testing::TestEventListener>(mock)};
@@ -131,9 +133,9 @@ CATCH_TEST_CASE("RapidCheckListener") {
          if (result.file_name()) {
            RC_ASSERT(
                descriptionContains(mockContext.lastResult, result.file_name()));
+           RC_ASSERT(descriptionContains(mockContext.lastResult,
+                                         std::to_string(result.line_number())));
          }
-         RC_ASSERT(descriptionContains(mockContext.lastResult,
-                                       std::to_string(result.line_number())));
          RC_ASSERT(
              descriptionContains(mockContext.lastResult, result.message()));
        });
