@@ -194,7 +194,7 @@ TEST_CASE("Commands") {
 
 TEST_CASE("isValidCommand") {
   SECTION("returns true for valid commands") {
-    REQUIRE(isValidCommand(PushBack(), StringVec()));
+    REQUIRE(isValidCommand(PushBack("foo"), StringVec()));
   }
 
   SECTION("returns false for invalid commands") {
