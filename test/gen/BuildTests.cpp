@@ -180,6 +180,22 @@ struct Foobar {
   T e;
 };
 
+struct Mixed {
+  void setB(uint64_t bb) {
+    b = bb;
+  }
+
+  void setCD(uint64_t cc, const std::string &dd) {
+    c = cc;
+    d = dd;
+  }
+
+  uint64_t a;
+  uint64_t b;
+  uint64_t c;
+  std::string d;
+};
+
 } // namespace
 
 TEST_CASE("gen::build") {
@@ -307,5 +323,18 @@ TEST_CASE("gen::build") {
     RC_ASSERT(isArbitraryPredictable(value.c));
     RC_ASSERT(isArbitraryPredictable(value.d));
     RC_ASSERT(isArbitraryPredictable(value.e));
+  }
+
+  SECTION("works if types don't match exactly but are convertible'") {
+    const auto gen = gen::build<Mixed>(
+        gen::set(&Mixed::a, gen::just(static_cast<short>(1))),
+        gen::set(&Mixed::setB, gen::just(static_cast<short>(2))),
+        gen::set(&Mixed::setCD,
+                 gen::just(std::make_tuple(static_cast<short>(3), "4"))));
+    const auto value = gen(Random(), 0).value();
+    RC_ASSERT(value.a == 1);
+    RC_ASSERT(value.b == 2);
+    RC_ASSERT(value.c == 3);
+    RC_ASSERT(value.d == "4");
   }
 }
