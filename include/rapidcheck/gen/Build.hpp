@@ -7,9 +7,6 @@ namespace rc {
 namespace gen {
 namespace detail {
 
-template <typename T>
-class Lens;
-
 // Member variables
 template <typename Type, typename T>
 class Lens<T(Type::*)> {
@@ -21,7 +18,10 @@ public:
   Lens(MemberPtr ptr)
       : m_ptr(ptr) {}
 
-  void set(Target &obj, T &&arg) const { obj.*m_ptr = std::move(arg); }
+  template <typename Arg>
+  void set(Target &obj, Arg &&arg) const {
+    obj.*m_ptr = std::move(std::forward<Arg>(arg));
+  }
 
 private:
   MemberPtr m_ptr;
@@ -38,7 +38,10 @@ public:
   Lens(MemberPtr ptr)
       : m_ptr(ptr) {}
 
-  void set(Target &obj, ValueType &&arg) const { (obj.*m_ptr)(std::move(arg)); }
+  template <typename Arg>
+  void set(Target &obj, Arg &&arg) const {
+    (obj.*m_ptr)(std::forward<Arg>(arg));
+  }
 
 private:
   MemberPtr m_ptr;
@@ -55,9 +58,10 @@ public:
   Lens(MemberPtr ptr)
       : m_ptr(ptr) {}
 
-  void set(Target &obj, ValueType &&arg) const {
+  template <typename Arg>
+  void set(Target &obj, Arg &&arg) const {
     rc::detail::applyTuple(
-        std::move(arg),
+        std::forward<Arg>(arg),
         [&](Decay<T1> &&arg1, Decay<T2> &&arg2, Decay<Ts> &&... args) {
           (obj.*m_ptr)(std::move(arg1), std::move(arg2), std::move(args)...);
         });
@@ -67,29 +71,30 @@ private:
   MemberPtr m_ptr;
 };
 
-template <typename Member>
+template <typename Member, typename SourceType>
 struct Binding {
-  using LensT = Lens<Member>;
-  using Target = typename LensT::Target;
-  using ValueType = typename LensT::ValueType;
-  using GenT = Gen<ValueType>;
-
-  Binding(LensT &&l, GenT &&g)
+  Binding(Lens<Member> &&l, Gen<SourceType> &&g)
       : lens(std::move(l))
       , gen(std::move(g)) {}
 
-  LensT lens;
-  GenT gen;
+  Lens<Member> lens;
+  Gen<SourceType> gen;
 };
 
-template<typename T>
-T &deref(T &x) { return x; }
+template <typename T>
+T &deref(T &x) {
+  return x;
+}
 
-template<typename T>
-T &deref(std::unique_ptr<T> &x) { return *x; }
+template <typename T>
+T &deref(std::unique_ptr<T> &x) {
+  return *x;
+}
 
-template<typename T>
-T &deref(std::shared_ptr<T> &x) { return *x; }
+template <typename T>
+T &deref(std::shared_ptr<T> &x) {
+  return *x;
+}
 
 template <typename T, typename Indexes, typename... Lenses>
 class BuildMapper;
@@ -146,39 +151,40 @@ template <typename T, typename... Args>
 Gen<std::shared_ptr<T>> makeShared(Gen<Args>... gens) {
   return gen::map(gen::tuple(std::move(gens)...),
                   [](std::tuple<Args...> &&argsTuple) {
-                    return rc::detail::applyTuple(
-                        std::move(argsTuple),
-                        [](Args &&... args) {
-                          return std::make_shared<T>(std::move(args)...);
-                        });
+                    return rc::detail::applyTuple(std::move(argsTuple),
+                                                  [](Args &&... args) {
+                                                    return std::make_shared<T>(
+                                                        std::move(args)...);
+                                                  });
                   });
 }
 
-template <typename Member>
-detail::Binding<Member> set(Member member,
-                            typename detail::Binding<Member>::GenT gen) {
-  return detail::Binding<Member>(detail::Lens<Member>(member), std::move(gen));
+template <typename Member, typename T>
+detail::Binding<Member, T> set(Member member, Gen<T> gen) {
+  return detail::Binding<Member, T>(detail::Lens<Member>(member),
+                                    std::move(gen));
 }
 
 template <typename Member>
-detail::Binding<Member> set(Member member) {
-  using T = typename detail::Binding<Member>::ValueType;
+detail::Binding<Member, typename detail::Lens<Member>::ValueType>
+set(Member member) {
+  using T = typename detail::Lens<Member>::ValueType;
   return set(member, gen::arbitrary<T>());
 }
 
-template <typename T, typename... Members>
-Gen<T> build(Gen<T> gen, const detail::Binding<Members> &... bs) {
+template <typename T, typename... Members, typename... SourceTypes>
+Gen<T> build(Gen<T> gen, const detail::Binding<Members, SourceTypes> &... bs) {
   using Mapper =
       detail::BuildMapper<T,
                           rc::detail::MakeIndexSequence<sizeof...(Members)>,
-                          typename detail::Binding<Members>::LensT...>;
+                          detail::Lens<Members>...>;
 
   return gen::map(gen::tuple(std::move(gen), std::move(bs.gen)...),
                   Mapper(bs.lens...));
 }
 
-template <typename T, typename... Members>
-Gen<T> build(const detail::Binding<Members> &... bs) {
+template <typename T, typename... Members, typename... SourceTypes>
+Gen<T> build(const detail::Binding<Members, SourceTypes> &... bs) {
   return build<T>(fn::constant(shrinkable::lambda([] { return T(); })), bs...);
 }
 

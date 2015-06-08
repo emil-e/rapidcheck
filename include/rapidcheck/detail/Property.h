@@ -12,7 +12,9 @@ struct CaseDescription {
   Example example;
 };
 
-inline std::ostream &operator<<(std::ostream &os, const CaseDescription &desc);
+bool operator==(const CaseDescription &lhs, const CaseDescription &rhs);
+bool operator!=(const CaseDescription &lhs, const CaseDescription &rhs);
+std::ostream &operator<<(std::ostream &os, const CaseDescription &desc);
 
 using Property = Gen<CaseDescription>;
 

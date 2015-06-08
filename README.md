@@ -80,3 +80,6 @@ Can you guess what the bug is? The fact that there are exactly 10 items should g
 
 ## Further documentation ##
 Sounds interesting? Why don't you read the [User Guide](doc/user_guide.md) to learn more!
+
+## Thanks ##
+Big thanks to my employer, Spotify, for making it possible for me to spend work time improving RapidCheck.

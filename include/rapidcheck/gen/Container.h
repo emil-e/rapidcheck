@@ -15,6 +15,15 @@ Gen<Container> container(Gen<Ts>... gens);
 template <typename Container, typename... Ts>
 Gen<Container> container(std::size_t count, Gen<Ts>... gens);
 
+/// Generates a container of unique `T`.
+template <typename Container, typename T>
+Gen<Container> unique(Gen<T> gen);
+
+/// Generates a container of `T` such that for every element `e` in the
+/// container, `f(e)` is unique.
+template <typename Container, typename T, typename F>
+Gen<Container> uniqueBy(Gen<T> gen, F &&f);
+
 } // namespace gen
 } // namespace rc
 

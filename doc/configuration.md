@@ -13,7 +13,14 @@ This allows you to reproduce the exact test in case of a failure.
 ## Reference ##
 The following settings are provided:
 
-- `seed` -- The global random seed used. This is a 64-bit integer. If not set, a random one is chosen using the system random device.
-- `max_success` -- The maximum number of successful test cases to run before deciding that a property holds. Defaults to `100`.
-- `max_size` -- The maximum size to use. The size starts at `0` and increases to `max_size` as the final value. Defaults to `100`.
-- `max_discard_ratio` -- The maximum number of discarded test cases per successful test case. If exceeded, RapidCheck gives up on the property. Defaults to `10`.
+- `seed` - The global random seed used. This is a 64-bit integer. If not set, a random one is chosen using the system random device.
+- `max_success` - The maximum number of successful test cases to run before deciding that a property holds. Defaults to `100`.
+- `max_size` - The maximum size to use. The size starts at `0` and increases to `max_size` as the final value. Defaults to `100`.
+- `max_discard_ratio` - The maximum number of discarded test cases per successful test case. If exceeded, RapidCheck gives up on the property. Defaults to `10`.
+- `noshrink` - If set to `1`, disables test case shrinking. Defaults to `0`.
+- `verbose_progress` - If set to `1`, enables verbose feedback of progress during the testing of a property. For each test case that is run, a character will be printed. Default is `0`. Legend:
+  - `.` - Success
+  - `x` - Discarded
+- `verbose_shrinking` - If set to `1`, enables verbose feedback during shrinking. For each shrink that is tried, a character will be printed. Default is `0`. Legend:
+  - `.` - Unsuccessful shrink
+  - `!` - Successful shrink

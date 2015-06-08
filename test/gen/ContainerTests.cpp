@@ -19,37 +19,29 @@ using namespace rc::test;
 
 namespace {
 
-template <typename Container,
-          bool = rc::gen::detail::IsMapContainer<Container>::value>
-struct Generators {
-  template <typename T>
-  static Gen<Container> make(Gen<T> gen) {
+struct ContainerFactory {
+  template <typename Container, typename T>
+  static Gen<Container> makeGen(Gen<T> gen) {
     return gen::container<Container>(std::move(gen));
   }
 
-  template <typename T>
-  static Gen<Container> make(std::size_t count, Gen<T> gen) {
+  template <typename Container, typename T>
+  static Gen<Container> makeGen(std::size_t count, Gen<T> gen) {
     return gen::container<Container>(count, std::move(gen));
   }
 };
 
-template <typename Container>
-struct Generators<Container, true> {
-  template <typename T>
-  static Gen<Container> make(Gen<T> gen) {
-    return gen::container<Container>(gen, gen);
+struct MapFactory {
+  template <typename Map, typename T>
+  static Gen<Map> makeGen(Gen<T> gen) {
+    return gen::container<Map>(gen, gen);
   }
 
-  template <typename T>
-  static Gen<Container> make(std::size_t count, Gen<T> gen) {
-    return gen::container<Container>(count, gen, gen);
+  template <typename Map, typename T>
+  static Gen<Map> makeGen(std::size_t count, Gen<T> gen) {
+    return gen::container<Map>(count, gen, gen);
   }
 };
-
-template <typename Container, typename... Args>
-Gen<Container> makeGen(Args &&... args) {
-  return Generators<Container>::make(std::forward<Args>(args)...);
-}
 
 bool hasSize(int size, const std::pair<const GenParams, GenParams> &p) {
   return (p.first.size == size) && (p.second.size == size);
@@ -68,21 +60,23 @@ bool insertRandoms(std::unordered_set<Random> &randoms,
   return randoms.insert(params.random).second;
 }
 
+template <typename Factory>
 struct GenericProperties {
   template <typename T>
   static void exec() {
     templatedProp<T>(
         "generated container never has more elements than the current size",
         [](const GenParams &params) {
-          const auto value =
-              makeGen<T>(genCountdown())(params.random, params.size).value();
+          const auto value = Factory::template makeGen<T>(genCountdown())(
+                                 params.random, params.size)
+                                 .value();
           RC_ASSERT(std::distance(begin(value), end(value)) <= params.size);
         });
 
     templatedProp<T>("first shrink is empty",
                      [](const GenParams &params) {
-                       const auto shrinkable = makeGen<T>(genCountdown())(
-                           params.random, params.size);
+                       const auto shrinkable = Factory::template makeGen<T>(
+                           genCountdown())(params.random, params.size);
                        RC_PRE(!shrinkable.value().empty());
                        RC_ASSERT(shrinkable.shrinks().next()->value().empty());
                      });
@@ -90,8 +84,8 @@ struct GenericProperties {
     templatedProp<T>(
         "the size of each shrink is the same or smaller than the original",
         [](const GenParams &params) {
-          const auto shrinkable =
-              makeGen<T>(genCountdown())(params.random, params.size);
+          const auto shrinkable = Factory::template makeGen<T>(genCountdown())(
+              params.random, params.size);
           onAnyPath(
               shrinkable,
               [](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
@@ -102,8 +96,8 @@ struct GenericProperties {
 
     templatedProp<T>("none of the shrinks equal the original value",
                      [](const GenParams &params) {
-                       const auto shrinkable = makeGen<T>(genCountdown())(
-                           params.random, params.size);
+                       const auto shrinkable = Factory::template makeGen<T>(
+                           genCountdown())(params.random, params.size);
                        onAnyPath(shrinkable,
                                  [](const Shrinkable<T> &value,
                                     const Shrinkable<T> &shrink) {
@@ -113,27 +107,31 @@ struct GenericProperties {
   }
 };
 
+template <typename Factory>
 struct ParamsProperties {
   template <typename T>
   static void exec() {
     using Element = typename T::value_type;
 
-    templatedProp<T>(
-        "passes the correct size to the element generators",
-        [](const GenParams &params) {
-          const auto value =
-              makeGen<T>(genPassedParams())(params.random, params.size).value();
-          RC_ASSERT(std::all_of(
-              begin(value),
-              end(value),
-              [&](const Element &x) { return hasSize(params.size, x); }));
-        });
+    templatedProp<T>("passes the correct size to the element generators",
+                     [](const GenParams &params) {
+                       const auto value =
+                           Factory::template makeGen<T>(genPassedParams())(
+                               params.random, params.size)
+                               .value();
+                       RC_ASSERT(std::all_of(begin(value),
+                                             end(value),
+                                             [&](const Element &x) {
+                                               return hasSize(params.size, x);
+                                             }));
+                     });
 
     templatedProp<T>(
         "the random generators passed to element generators are unique",
         [](const GenParams &params) {
-          const auto value =
-              makeGen<T>(genPassedParams())(params.random, params.size).value();
+          const auto value = Factory::template makeGen<T>(genPassedParams())(
+                                 params.random, params.size)
+                                 .value();
           std::unordered_set<Random> randoms;
           RC_ASSERT(std::all_of(
               begin(value),
@@ -370,13 +368,18 @@ struct ArbitraryProperties {
 } // namespace
 
 TEST_CASE("gen::container") {
-  meta::forEachType<GenericProperties,
-                    RC_GENERIC_CONTAINERS(int),
+  meta::forEachType<GenericProperties<ContainerFactory>,
+                    RC_SEQUENCE_CONTAINERS(int),
+                    RC_SET_CONTAINERS(int),
                     std::basic_string<int>>();
+  meta::forEachType<GenericProperties<MapFactory>,
+                    RC_MAP_CONTAINERS(int)>();
 
-  meta::forEachType<ParamsProperties,
-                    RC_GENERIC_CONTAINERS(GenParams),
-                    std::array<GenParams, 5>>();
+  meta::forEachType<ParamsProperties<ContainerFactory>,
+                    RC_SEQUENCE_CONTAINERS(GenParams),
+                    RC_SET_CONTAINERS(GenParams)>();
+  meta::forEachType<ParamsProperties<MapFactory>,
+                    RC_MAP_CONTAINERS(GenParams)>();
 
   meta::forEachType<SequenceProperties,
                     RC_SEQUENCE_CONTAINERS(int),
@@ -405,6 +408,7 @@ TEST_CASE("gen::container") {
 
 namespace {
 
+template <typename Factory>
 struct GenericFixedProperties {
   template <typename T>
   static void exec() {
@@ -412,8 +416,8 @@ struct GenericFixedProperties {
         "generated value always has the requested number of elements",
         [](const GenParams &params) {
           const auto count = *gen::inRange<std::size_t>(0, 10);
-          const auto shrinkable =
-              makeGen<T>(count, genCountdown())(params.random, params.size);
+          const auto shrinkable = Factory::template makeGen<T>(
+              count, genCountdown())(params.random, params.size);
           onAnyPath(
               shrinkable,
               [=](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
@@ -424,7 +428,7 @@ struct GenericFixedProperties {
     templatedProp<T>("none of the shrinks equal the original value",
                      [](const GenParams &params) {
                        const auto count = *gen::inRange<std::size_t>(0, 10);
-                       const auto shrinkable = makeGen<T>(
+                       const auto shrinkable = Factory::template makeGen<T>(
                            count, genCountdown())(params.random, params.size);
                        onAnyPath(shrinkable,
                                  [](const Shrinkable<T> &value,
@@ -435,6 +439,7 @@ struct GenericFixedProperties {
   }
 };
 
+template <typename Factory>
 struct ParamsFixedProperties {
   template <typename T>
   static void exec() {
@@ -443,7 +448,8 @@ struct ParamsFixedProperties {
     templatedProp<T>("passes the correct size to the element generators",
                      [](const GenParams &params) {
                        const auto count = *gen::inRange<std::size_t>(0, 10);
-                       const auto value = makeGen<T>(count, genPassedParams())(
+                       const auto value = Factory::template makeGen<T>(
+                                              count, genPassedParams())(
                                               params.random, params.size)
                                               .value();
                        RC_ASSERT(std::all_of(begin(value),
@@ -458,7 +464,8 @@ struct ParamsFixedProperties {
         [](const GenParams &params) {
           const auto count = *gen::inRange<std::size_t>(0, 10);
           const auto value =
-              makeGen<T>(count, genPassedParams())(params.random, params.size)
+              Factory::template makeGen<T>(count, genPassedParams())(
+                  params.random, params.size)
                   .value();
           std::unordered_set<Random> randoms;
           RC_ASSERT(std::all_of(
@@ -472,11 +479,18 @@ struct ParamsFixedProperties {
 } // namespace
 
 TEST_CASE("gen::container(std::size_t)") {
-  meta::forEachType<GenericFixedProperties,
-                    RC_GENERIC_CONTAINERS(int),
+  meta::forEachType<GenericFixedProperties<ContainerFactory>,
+                    RC_SEQUENCE_CONTAINERS(int),
+                    RC_SET_CONTAINERS(int),
                     std::basic_string<int>>();
+  meta::forEachType<GenericFixedProperties<MapFactory>,
+                    RC_MAP_CONTAINERS(int)>();
 
-  meta::forEachType<ParamsFixedProperties, RC_GENERIC_CONTAINERS(GenParams)>();
+  meta::forEachType<ParamsFixedProperties<ContainerFactory>,
+                    RC_SEQUENCE_CONTAINERS(GenParams),
+                    RC_SET_CONTAINERS(GenParams)>();
+  meta::forEachType<ParamsFixedProperties<MapFactory>,
+                    RC_MAP_CONTAINERS(GenParams)>();
 
   prop("throws GenerationFailure for std::array if count != N",
        [](const GenParams &params) {
@@ -496,4 +510,121 @@ TEST_CASE("gen::container(std::size_t)") {
        });
 
   // TODO shrink tests?
+}
+
+struct UniqueFactory {
+  template <typename Container, typename T>
+  static Gen<Container> makeGen(Gen<T> gen) {
+    return gen::unique<Container>(std::move(gen));
+  }
+};
+
+template <typename Factory>
+struct UniqueProperties {
+  template <typename T>
+  static void exec() {
+    templatedProp<T>(
+        "generated values are unique",
+        [](const GenParams &params) {
+          const auto gen = Factory::template makeGen<T>(gen::arbitrary<int>());
+          onAnyPath(
+              gen(params.random, params.size),
+              [](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
+                const auto v = value.value();
+                std::set<int> s(begin(v), end(v));
+                RC_ASSERT(s.size() == std::distance(begin(v), end(v)));
+              });
+        });
+
+    templatedProp<T>(
+        "finds minimum where at least two elements must have values greater "
+        "than a certain value",
+        [](const GenParams &params) {
+          const auto gen = Factory::template makeGen<T>(gen::arbitrary<int>());
+          const auto target = *gen::inRange(0, 10);
+          const auto result = searchGen(
+              params.random,
+              params.size,
+              gen,
+              [=](T elements) {
+                return std::count_if(begin(elements),
+                                     end(elements),
+                                     [=](int x) { return x >= target; }) >= 2;
+              });
+
+          RC_ASSERT((std::set<int>(begin(result), end(result)) ==
+                     std::set<int>{target + 1, target}));
+        });
+  }
+};
+
+TEST_CASE("gen::unique") {
+  meta::forEachType<GenericProperties<ContainerFactory>,
+                    RC_SEQUENCE_CONTAINERS(int),
+                    std::basic_string<int>>();
+  meta::forEachType<ParamsProperties<ContainerFactory>,
+                    RC_SEQUENCE_CONTAINERS(GenParams)>();
+  meta::forEachType<UniqueProperties<UniqueFactory>,
+                    RC_SEQUENCE_CONTAINERS(int)>();
+}
+
+struct UniqueByFactory {
+  template <typename Container, typename T1, typename T2>
+  static Gen<Container> makeGen(Gen<std::pair<T1, T2>> gen) {
+    return gen::uniqueBy<Container>(
+        std::move(gen), [](const std::pair<T1, T2> &p) { return p.first; });
+  }
+};
+
+template <typename Factory>
+struct UniqueByProperties {
+  template <typename T>
+  static void exec() {
+    templatedProp<T>("generated values are unique by key",
+                     [](const GenParams &params) {
+                       const auto gen = Factory::template makeGen<T>(
+                           gen::arbitrary<std::pair<int, int>>());
+                       onAnyPath(gen(params.random, params.size),
+                                 [](const Shrinkable<T> &value,
+                                    const Shrinkable<T> &shrink) {
+                                   const auto v = value.value();
+                                   std::set<int> s;
+                                   for (const auto &x : v) {
+                                     s.insert(x.first);
+                                   }
+                                   RC_ASSERT(s.size() ==
+                                             std::distance(begin(v), end(v)));
+                                 });
+                     });
+
+    templatedProp<T>(
+        "finds minimum where at least two elements must have keys than a "
+        "certain value",
+        [](const GenParams &params) {
+          const auto gen = Factory::template makeGen<T>(
+              gen::arbitrary<std::pair<int, int>>());
+          const auto target = *gen::inRange(0, 10);
+          const auto result = searchGen(
+              params.random,
+              params.size,
+              gen,
+              [=](T elements) {
+                return std::count_if(begin(elements),
+                                     end(elements),
+                                     [=](const std::pair<int, int> &x) {
+                                       return x.first >= target;
+                                     }) >= 2;
+              });
+
+          using Set = std::set<std::pair<int, int>>;
+          RC_ASSERT((Set(begin(result), end(result)) ==
+                     Set{{target + 1, 0}, {target, 0}}));
+        });
+  }
+};
+
+TEST_CASE("gen::uniqueBy") {
+  using Pair = std::pair<int, int>;
+  meta::forEachType<UniqueByProperties<UniqueByFactory>,
+                    RC_SEQUENCE_CONTAINERS(Pair)>();
 }

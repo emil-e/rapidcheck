@@ -4,3 +4,4 @@ GRTAGS
 GTAGS
 TAGS
 ext/gmock
+ext/boost

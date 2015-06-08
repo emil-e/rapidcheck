@@ -2,12 +2,25 @@
 
 #include <iostream>
 
+#include "rapidcheck/detail/Configuration.h"
+#include "rapidcheck/detail/Results.h"
+#include "rapidcheck/detail/Property.h"
+#include "rapidcheck/detail/TestListener.h"
+
 namespace rc {
 namespace detail {
 
+TestResult checkProperty(const Property &property,
+                         const TestParams &params,
+                         TestListener &listener);
+
+// Uses defaults from configuration
+TestResult checkProperty(const Property &property);
+
 template <typename Testable, typename... Args>
-TestResult checkTestable(Testable &&testable, const Args &... args) {
-  return checkProperty(toProperty(std::forward<Testable>(testable)), args...);
+TestResult checkTestable(Testable &&testable, Args &&... args) {
+  return checkProperty(toProperty(std::forward<Testable>(testable)),
+                       std::forward<Args>(args)...);
 }
 
 } // namespace detail
@@ -19,16 +32,21 @@ bool check(Testable &&testable) {
 
 template <typename Testable>
 bool check(const std::string &description, Testable &&testable) {
+  using namespace rc::detail;
+
   // Force loading of the configuration so that message comes _before_ the
   // description
-  detail::defaultTestParams();
+  ImplicitParam<param::CurrentConfiguration>::value();
 
   if (!description.empty()) {
     std::cerr << std::endl << "- " << description << std::endl;
   }
+
   const auto result = detail::checkTestable(std::forward<Testable>(testable));
+
   printResultMessage(result, std::cerr);
   std::cerr << std::endl;
+
   return result.template is<detail::SuccessResult>();
 }
 

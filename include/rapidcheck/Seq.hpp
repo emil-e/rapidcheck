@@ -31,6 +31,9 @@ private:
 };
 
 template <typename T>
+Seq<T>::Seq(NothingType) noexcept {}
+
+template <typename T>
 template <typename Impl, typename>
 Seq<T>::Seq(Impl &&impl)
     : m_impl(new SeqImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}

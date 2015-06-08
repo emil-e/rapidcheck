@@ -9,16 +9,39 @@ namespace gen {
 namespace detail {
 namespace {
 
-uint64_t mulDiv(uint64_t a, uint64_t b, uint64_t c) {
-  const uint64_t ah = a >> 32;
-  const uint64_t al = a & 0xFFFFFFFFULL;
-  const uint64_t bh = b >> 32;
-  const uint64_t bl = b & 0xFFFFFFFFULL;
+// Calculates (a * b) / c, rounded
+uint64_t mulDiv(uint64_t a, uint32_t b, uint32_t c) {
+  constexpr uint64_t kMask = 0xFFFFFFFFULL;
 
-  const uint64_t x1 = ((ah * bl) / c) << 32;
-  const uint64_t x2 = ((al * bh) / c) << 32;
-  const uint64_t x3 = (al * bl) / c;
-  return x1 + x2 + x3;
+  const uint64_t ah = a >> 32;
+  const uint64_t al = a & kMask;
+  const uint64_t bl = b;
+
+  const uint64_t x1 = al * bl;
+  const uint64_t x2 = ah * bl;
+  uint64_t xh = x2 >> 32;
+  uint64_t xl = x2 << 32;
+  const uint64_t xl0 = xl;
+  xl += x1;
+  if (xl < xl0) {
+    xh++;
+  }
+
+  uint64_t y = 0;
+  uint64_t r = 0;
+
+  r |= xh;
+  r = (r % c) << 32;
+
+  r |= xl >> 32;
+  y |= (r / c) << 32;
+  r = (r % c) << 32;
+
+  r |= xl & kMask;
+  y |= r / c;
+  r = r % c;
+
+  return (r < (c / 2)) ? y : (y + 1);
 }
 
 } // namespace

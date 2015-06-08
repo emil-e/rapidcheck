@@ -10,31 +10,24 @@
 namespace rc {
 
 template <>
-struct Arbitrary<detail::Configuration> {
-  static Gen<detail::Configuration> arbitrary() {
-    return gen::build<detail::Configuration>(
-        gen::set(&detail::Configuration::seed),
-        gen::set(&detail::Configuration::maxSuccess,
-                 gen::inRange<int>(0, 1000)),
-        gen::set(&detail::Configuration::maxSize, gen::inRange<int>(0, 1000)),
-        gen::set(&detail::Configuration::maxDiscardRatio,
-                 gen::inRange<int>(0, 100)));
+struct Arbitrary<detail::TestParams> {
+  static Gen<detail::TestParams> arbitrary() {
+    return gen::build<detail::TestParams>(
+        gen::set(&detail::TestParams::seed),
+        gen::set(&detail::TestParams::maxSuccess, gen::inRange(0, 100)),
+        gen::set(&detail::TestParams::maxSize, gen::inRange(0, 101)),
+        gen::set(&detail::TestParams::maxDiscardRatio, gen::inRange(0, 100)),
+        gen::set(&detail::TestParams::disableShrinking));
   }
 };
 
 template <>
-struct Arbitrary<detail::TestCase> {
-  static Gen<detail::TestCase> arbitrary() {
-    return gen::build<detail::TestCase>(gen::set(&detail::TestCase::size,
-                                                 gen::withSize([](int size) {
-                                                   // TODO this should be
-                                                   // replaced by a sized ranged
-                                                   // generator
-                                                   // instead
-                                                   return gen::inRange<int>(
-                                                       0, size + 1);
-                                                 })),
-                                        gen::set(&detail::TestCase::seed));
+struct Arbitrary<detail::Configuration> {
+  static Gen<detail::Configuration> arbitrary() {
+    return gen::build<detail::Configuration>(
+      gen::set(&detail::Configuration::testParams),
+      gen::set(&detail::Configuration::verboseProgress),
+      gen::set(&detail::Configuration::verboseShrinking));
   }
 };
 
@@ -73,7 +66,6 @@ struct Arbitrary<detail::FailureResult> {
   static Gen<detail::FailureResult> arbitrary() {
     return gen::build<detail::FailureResult>(
         gen::set(&detail::FailureResult::numSuccess, gen::positive<int>()),
-        gen::set(&detail::FailureResult::failingCase),
         gen::set(&detail::FailureResult::description),
         gen::set(&detail::FailureResult::numShrinks, gen::positive<int>()),
         gen::set(&detail::FailureResult::counterExample));
@@ -90,13 +82,12 @@ struct Arbitrary<detail::GaveUpResult> {
 };
 
 template <>
-struct Arbitrary<detail::TestParams> {
-  static Gen<detail::TestParams> arbitrary() {
-    return gen::build<detail::TestParams>(
-        gen::set(&detail::TestParams::seed),
-        gen::set(&detail::TestParams::maxSuccess, gen::inRange(0, 100)),
-        gen::set(&detail::TestParams::maxSize, gen::inRange(0, 101)),
-        gen::set(&detail::TestParams::maxDiscardRatio, gen::inRange(0, 100)));
+struct Arbitrary<detail::CaseDescription> {
+  static Gen<detail::CaseDescription> arbitrary() {
+    return gen::build<detail::CaseDescription>(
+        gen::set(&detail::CaseDescription::result),
+        gen::set(&detail::CaseDescription::tags),
+        gen::set(&detail::CaseDescription::example));
   }
 };
 

@@ -380,3 +380,27 @@ TEST_CASE("gen::withSize") {
          RC_ASSERT(value == params);
        });
 }
+
+TEST_CASE("gen::shrink") {
+  prop("passes generation params unchanged",
+       [](const GenParams &params) {
+         const auto gen =
+             gen::shrink(genPassedParams(), fn::constant(Seq<GenParams>()));
+         const auto value = gen(params.random, params.size).value();
+         RC_ASSERT(value == params);
+       });
+
+  prop("applies postShrink to returned Shrinkable",
+       [](const GenParams &params) {
+         const auto gen = gen::arbitrary<int>();
+         const auto f = [](int v) {
+           return seq::takeWhile(seq::iterate(v, [](int x) { return x / 2; }),
+                                 [](int x) { return x > 0; });
+         };
+         const auto expected =
+             shrinkable::postShrink(gen(params.random, params.size), f);
+         const auto actual = gen::shrink(gen, f)(params.random, params.size);
+
+         assertEquivalent(actual, expected);
+       });
+}

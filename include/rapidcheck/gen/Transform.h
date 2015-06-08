@@ -72,6 +72,12 @@ withSize(Callable &&callable);
 template <typename T>
 Gen<T> noShrink(Gen<T> gen);
 
+/// Returns a version of the given generator that will try shrinks returned by
+/// the given callable after the regular shrinks have been tried. Use this to
+/// add further shrinking to an existing generator.
+template <typename T, typename Shrink>
+Gen<T> shrink(Gen<T> gen, Shrink &&shrink);
+
 } // namespace gen
 } // namespace rc
 

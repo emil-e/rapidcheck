@@ -66,7 +66,7 @@ T BitStream<Source>::next(int nbits) {
 template <typename Source>
 template <typename T>
 T BitStream<Source>::nextWithSize(int size) {
-  return next<T>((size * numBits<T>()) / kNominalSize);
+  return next<T>((size * numBits<T>() + (kNominalSize / 2)) / kNominalSize);
 }
 
 template <typename Source>

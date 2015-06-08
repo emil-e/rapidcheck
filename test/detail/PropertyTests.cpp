@@ -6,11 +6,23 @@
 #include "util/Generators.h"
 #include "util/Predictable.h"
 #include "util/GenUtils.h"
+#include "util/TemplateProps.h"
 #include "util/ShrinkableUtils.h"
 
 using namespace rc;
 using namespace rc::test;
 using namespace rc::detail;
+
+TEST_CASE("CaseDescription") {
+  SECTION("operator==/operator!=") {
+    propConformsToEquals<CaseDescription>();
+    PROP_REPLACE_MEMBER_INEQUAL(CaseDescription, result);
+    PROP_REPLACE_MEMBER_INEQUAL(CaseDescription, tags);
+    PROP_REPLACE_MEMBER_INEQUAL(CaseDescription, example);
+  }
+
+  SECTION("operator<<") { propConformsToOutputOperator<CaseDescription>(); }
+}
 
 namespace {
 

@@ -6,12 +6,12 @@
 #define RC_CLASSIFY(condition, ...)                                            \
   do {                                                                         \
     if (condition) {                                                           \
-      detail::classify(#condition, {__VA_ARGS__});                             \
+      ::rc::detail::classify(#condition, {__VA_ARGS__});                       \
     }                                                                          \
   } while (false)
 
 /// Tags the current test case with the given values which will be converted to
 /// strings.
-#define RC_TAG(...) detail::tag({__VA_ARGS__})
+#define RC_TAG(...) ::rc::detail::tag({__VA_ARGS__})
 
 #include "Classify.hpp"

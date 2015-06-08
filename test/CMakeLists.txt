@@ -1,3 +1,11 @@
+add_library(rapidcheck_test_utils
+  util/ArbitraryRandom.cpp
+  util/GenUtils.cpp
+  util/ShrinkableUtils.cpp)
+
+target_link_libraries(rapidcheck_test_utils PUBLIC rapidcheck)
+target_include_directories(rapidcheck_test_utils PUBLIC .)
+
 add_executable(rapidcheck_tests
   AssertionsTests.cpp
   CheckTests.cpp
@@ -15,11 +23,13 @@ add_executable(rapidcheck_tests
   detail/ExpressionCaptorTests.cpp
   detail/FrequencyMapTests.cpp
   detail/ImplicitParamTests.cpp
+  detail/LogTestListenerTests.cpp
   detail/MapParserTests.cpp
   detail/PropertyTests.cpp
   detail/ResultsTests.cpp
   detail/ShowTypeTests.cpp
   detail/TestParamsTests.cpp
+  detail/TestingTests.cpp
   detail/VariantTests.cpp
   fn/CommonTests.cpp
   gen/BuildTests.cpp
@@ -48,12 +58,9 @@ add_executable(rapidcheck_tests
   shrinkable/OperationsTests.cpp
   shrinkable/TransformTests.cpp
   state/StateTests.cpp
-  util/ArbitraryRandom.cpp
-  util/GenUtils.cpp
-  util/ShrinkableUtils.cpp
   )
 
-target_link_libraries(rapidcheck_tests rapidcheck catch)
+target_link_libraries(rapidcheck_tests rapidcheck catch rapidcheck_test_utils)
 target_include_directories(rapidcheck_tests PRIVATE . ../src)
 
 add_test(

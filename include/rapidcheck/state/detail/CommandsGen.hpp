@@ -54,30 +54,12 @@ private:
       return entries[i - 1].postState;
     }
 
-    void repairEntriesFrom(std::size_t start) {
+    void regenerateEntriesFrom(std::size_t start) {
       for (auto i = start; i < entries.size(); i++) {
-        if (!repairEntryAt(i)) {
+        if (!regenerateEntryAt(i)) {
           entries.erase(begin(entries) + i--);
         }
       }
-    }
-
-    bool repairEntryAt(std::size_t i) {
-      using namespace ::rc::detail;
-      try {
-        auto &entry = entries[i];
-        const auto cmd = entry.shrinkable.value();
-        entry.postState = stateAt(i);
-        cmd->apply(entry.postState);
-      } catch (const CaseResult &result) {
-        if (result.type != CaseResult::Type::Discard) {
-          throw;
-        }
-
-        return regenerateEntryAt(i);
-      }
-
-      return true;
     }
 
     bool regenerateEntryAt(std::size_t i) {
@@ -94,7 +76,6 @@ private:
         if (result.type != CaseResult::Type::Discard) {
           throw;
         }
-
       } catch (const GenerationFailure &failure) {
         // Just return false below
       }
@@ -147,11 +128,12 @@ private:
   nextEntry(const Random &random, int size, const State &state) const {
     using namespace ::rc::detail;
     auto r = random;
+    const auto gen = m_genFunc(state);
     // TODO configurability?
     for (int tries = 0; tries < 100; tries++) {
       try {
         auto random = r.split();
-        auto shrinkable = m_genFunc(state)(random, size);
+        auto shrinkable = gen(random, size);
         auto postState = state;
         shrinkable.value()->apply(postState);
 
@@ -182,7 +164,7 @@ private:
                       auto shrunk = s;
                       shrunk.entries.erase(begin(shrunk.entries) + r.first,
                                            begin(shrunk.entries) + r.second);
-                      shrunk.repairEntriesFrom(r.first);
+                      shrunk.regenerateEntriesFrom(r.first);
                       return shrunk;
                     });
   }
@@ -200,10 +182,15 @@ private:
                          return seq::map(std::move(valid),
                                          [=](Shrinkable<CmdSP> &&cmd) {
                                            auto shrunk = s;
-                                           shrunk.entries[i].shrinkable =
-                                               std::move(cmd);
+                                           auto &entry = shrunk.entries[i];
+
+                                           entry.shrinkable = std::move(cmd);
+                                           entry.postState = shrunk.stateAt(i);
+                                           entry.shrinkable.value()->apply(
+                                               entry.postState);
+                                           shrunk.regenerateEntriesFrom(i + 1);
+
                                            shrunk.numFixed = i;
-                                           shrunk.repairEntriesFrom(i);
                                            return shrunk;
                                          });
                        });

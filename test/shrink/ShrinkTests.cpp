@@ -233,7 +233,7 @@ struct RealProperties {
     templatedProp<T>("tries 0.0 first",
                      [] {
                        T value = *gen::nonZero<T>();
-                       REQUIRE(*shrink::real<T>(value).next() == 0.0);
+                       RC_ASSERT(*shrink::real<T>(value).next() == 0.0);
                      });
 
     templatedProp<T>(

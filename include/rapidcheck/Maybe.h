@@ -1,15 +1,8 @@
 #pragma once
 
+#include "rapidcheck/Nothing.h"
+
 namespace rc {
-
-/// Tag struct that can be used to construct a `Maybe` to an initialized state.
-struct NothingType {
-  /// Explicit conversion to false.
-  explicit operator bool() const { return false; }
-};
-
-/// Singleton NothingType value.
-constexpr NothingType Nothing = NothingType();
 
 /// Represents the presence of a value or nothing at all. Like `Maybe` in
 /// Haskell, `Option` in Scala or `optional` in Boost. But we're not Haskell nor

@@ -1,26 +1,24 @@
 #pragma once
 
 #include <cstdint>
+#include <stdexcept>
+#include <string>
 
-#include "rapidcheck/Gen.h"
+#include "rapidcheck/detail/TestParams.h"
 
 namespace rc {
 namespace detail {
 
 /// Global suite configuration.
 struct Configuration {
-  /// The global seed. The actual seed for a particular test case will be a
-  /// hash of this and some specific data which identifies that case.
-  uint64_t seed = 0;
+  /// The default test parameters.
+  TestParams testParams;
 
-  /// The number of test cases for each property.
-  int maxSuccess = 100;
+  /// Enable/disable verbose printing during testing.
+  bool verboseProgress = false;
 
-  /// The maximum size for each property.
-  int maxSize = kNominalSize;
-
-  /// The maximum discard ratio.
-  int maxDiscardRatio = 10;
+  /// Enable/disable verbose printing during shrinking.
+  bool verboseShrinking = false;
 };
 
 std::ostream &operator<<(std::ostream &os, const Configuration &config);

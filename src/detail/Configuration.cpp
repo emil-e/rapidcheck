@@ -2,6 +2,8 @@
 
 #include <random>
 #include <cstdlib>
+#include <sstream>
+#include <iostream>
 
 #include "MapParser.h"
 
@@ -14,8 +16,9 @@ std::ostream &operator<<(std::ostream &os, const Configuration &config) {
 }
 
 bool operator==(const Configuration &c1, const Configuration &c2) {
-  return (c1.seed == c2.seed) && (c1.maxSuccess == c2.maxSuccess) &&
-      (c1.maxSize == c2.maxSize) && (c1.maxDiscardRatio == c2.maxDiscardRatio);
+  return (c1.testParams == c2.testParams) &&
+      (c1.verboseProgress == c2.verboseProgress) &&
+      (c1.verboseShrinking == c2.verboseShrinking);
 }
 
 bool operator!=(const Configuration &c1, const Configuration &c2) {
@@ -31,39 +34,38 @@ const char *ConfigurationException::what() const noexcept {
 
 namespace {
 
+template <typename T>
+void fromString(const std::string &str, T &out, bool &ok) {
+  std::istringstream in(std::move(str));
+  in >> out;
+  ok = !in.fail();
+}
+
+template <>
+void fromString(const std::string &str, std::string &out, bool &ok) {
+  ok = true;
+  out = str;
+}
+
 // Returns false only on invalid format, not on missing key
 template <typename T, typename Validator>
-void loadParam(const std::map<std::string, std::string> &map,
+bool loadParam(const std::map<std::string, std::string> &map,
                const std::string &key,
                T &dest,
                std::string failMsg,
                const Validator &validate) {
   auto it = map.find(key);
   if (it == end(map)) {
-    return;
+    return false;
   }
 
-  std::istringstream in(it->second);
+  bool ok = false;
   T value;
-  in >> value;
-  if (in.fail() || !validate(value)) {
+  fromString<T>(it->second, value, ok);
+  if (!ok || !validate(value)) {
     throw ConfigurationException(std::move(failMsg));
   }
   dest = value;
-}
-
-template <typename Validator>
-bool loadParam(const std::map<std::string, std::string> &map,
-               const std::string &key,
-               std::string &dest,
-               const std::string &failMsg,
-               const Validator &validate = [](const std::string &) {
-                 return true;
-               }) {
-  auto it = map.find(key);
-  if (it != end(map)) {
-    dest = it->second;
-  }
   return true;
 }
 
@@ -83,36 +85,58 @@ Configuration configFromMap(const std::map<std::string, std::string> &map,
 
   loadParam(map,
             "seed",
-            config.seed,
+            config.testParams.seed,
             "'seed' must be a valid integer",
             anything<uint64_t>);
 
   loadParam(map,
             "max_success",
-            config.maxSuccess,
+            config.testParams.maxSuccess,
             "'max_success' must be a valid non-negative integer",
             isNonNegative<int>);
 
   loadParam(map,
             "max_size",
-            config.maxSize,
+            config.testParams.maxSize,
             "'max_size' must be a valid non-negative integer",
             isNonNegative<int>);
 
   loadParam(map,
             "max_discard_ratio",
-            config.maxDiscardRatio,
+            config.testParams.maxDiscardRatio,
             "'max_discard_ratio' must be a valid non-negative integer",
             isNonNegative<int>);
+
+  loadParam(map,
+            "noshrink",
+            config.testParams.disableShrinking,
+            "'noshrink' must be either '1' or '0'",
+            anything<bool>);
+
+  loadParam(map,
+            "verbose_progress",
+            config.verboseProgress,
+            "'verbose_progress' must be either '1' or '0'",
+            anything<bool>);
+
+  loadParam(map,
+            "verbose_shrinking",
+            config.verboseShrinking,
+            "'verbose_shrinking' must be either '1' or '0'",
+            anything<bool>);
 
   return config;
 }
 
 std::map<std::string, std::string> mapFromConfig(const Configuration &config) {
-  return {{"seed", std::to_string(config.seed)},
-          {"max_success", std::to_string(config.maxSuccess)},
-          {"max_size", std::to_string(config.maxSize)},
-          {"max_discard_ratio", std::to_string(config.maxDiscardRatio)}};
+  return {
+      {"seed", std::to_string(config.testParams.seed)},
+      {"max_success", std::to_string(config.testParams.maxSuccess)},
+      {"max_size", std::to_string(config.testParams.maxSize)},
+      {"max_discard_ratio", std::to_string(config.testParams.maxDiscardRatio)},
+      {"noshrink", config.testParams.disableShrinking ? "1" : "0"},
+      {"verbose_progress", std::to_string(config.verboseProgress)},
+      {"verbose_shrinking", std::to_string(config.verboseShrinking)}};
 }
 
 std::map<std::string, std::string>
@@ -158,11 +182,16 @@ Configuration loadConfiguration() {
   Configuration config;
   // Default to random seed
   std::random_device device;
-  config.seed = (static_cast<uint64_t>(device()) << 32) | device();
+  config.testParams.seed = (static_cast<uint64_t>(device()) << 32) | device();
 
   auto params = std::getenv("RC_PARAMS");
   if (params != nullptr) {
-    config = configFromString(params, config);
+    try {
+      config = configFromString(params, config);
+    } catch (const ConfigurationException &e) {
+      std::cerr << "Error parsing configuration: " << e.what() << std::endl;
+      std::exit(1);
+    }
   }
 
   // TODO rapidcheck logging framework ftw

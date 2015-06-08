@@ -31,6 +31,11 @@ void Commands<Cmd>::show(std::ostream &os) const {
   }
 }
 
+template <typename Cmd>
+void showValue(const Commands<Cmd> &command, std::ostream &os) {
+  command.show(os);
+}
+
 } // namespace detail
 } // namespace state
 

@@ -23,20 +23,33 @@ public:
 
   void OnTestPartResult(const ::testing::TestPartResult &result) override {
     using namespace rc::detail;
-    const auto context = ImplicitParam<param::CurrentPropertyContext>::value();
+    using namespace ::testing;
 
     std::string msg;
-    msg += result.file_name() ? result.file_name() : "<unknown>";
-    msg += ':';
-    msg += std::to_string(result.line_number());
-    msg += ":\n";
+    if (result.file_name()) {
+      msg += result.file_name();
+      msg += ':';
+      msg += std::to_string(result.line_number());
+      msg += ":\n";
+    }
     msg += result.message();
-    const auto type =
+
+    // No point in reporting fatal failures since we will be aborted anyway.
+    if (result.type() != TestPartResult::kFatalFailure) {
+      const auto context = ImplicitParam<param::CurrentPropertyContext>::value();
+
+      const auto type =
         result.failed() ? CaseResult::Type::Failure : CaseResult::Type::Success;
-    if (context->reportResult(CaseResult(type, msg))) {
-      return;
-    } else if (m_delegate) {
+      if (context->reportResult(CaseResult(type, msg))) {
+        return;
+      }
+    }
+
+    // Not handled, delegate if possible, otherwise print to stderr
+    if (m_delegate) {
       m_delegate->OnTestPartResult(result);
+    } else {
+      std::cerr << msg << std::endl;
     }
   }
 

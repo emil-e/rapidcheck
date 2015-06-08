@@ -34,6 +34,12 @@ mapcat(Shrinkable<T> shrinkable, Mapper &&mapper);
 template <typename T1, typename T2>
 Shrinkable<std::pair<T1, T2>> pair(Shrinkable<T1> s1, Shrinkable<T2> s2);
 
+/// Recursively appends shrinks using the given shrinking callable. The callable
+/// should take the value to shrink as the only argument and return a `Seq` of
+/// shrinks of that value.
+template <typename T, typename Shrink>
+Shrinkable<T> postShrink(Shrinkable<T> shrinkable, Shrink &&shrink);
+
 } // namespace shrinkable
 } // namespace rc
 

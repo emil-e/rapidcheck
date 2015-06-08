@@ -47,10 +47,11 @@ public:
   /// pick a value in an impure context.
   T operator*() const;
 
-  Gen(const Gen &other);
-  Gen &operator=(const Gen &rhs);
-  Gen(Gen &&other) = default;
-  Gen &operator=(Gen &&rhs) = default;
+  Gen(const Gen &other) noexcept;
+  Gen &operator=(const Gen &rhs) noexcept;
+  Gen(Gen &&other) noexcept;
+  Gen &operator=(Gen &&rhs) noexcept;
+  ~Gen() noexcept;
 
 private:
   class IGenImpl;
@@ -58,7 +59,7 @@ private:
   template <typename Impl>
   class GenImpl;
 
-  std::unique_ptr<IGenImpl> m_impl;
+  IGenImpl *m_impl;
 };
 
 } // namespace rc

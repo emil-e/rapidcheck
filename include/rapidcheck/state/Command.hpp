@@ -19,6 +19,13 @@ void showValue(const Command<State, Sut> &command, std::ostream &os) {
   command.show(os);
 }
 
+template <typename State, typename Sut>
+State Command<State, Sut>::nextState(const State &s0) const {
+  auto s1 = s0;
+  apply(s1);
+  return s1;
+}
+
 } // namespace state
 
 template <typename State, typename Sut>

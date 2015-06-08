@@ -26,8 +26,6 @@ private:
   Tags m_tags;
 };
 
-std::ostream &operator<<(std::ostream &os, const CaseDescription &desc);
-
 CaseResult toCaseResult(bool value);
 CaseResult toCaseResult(std::string value);
 CaseResult toCaseResult(CaseResult caseResult);

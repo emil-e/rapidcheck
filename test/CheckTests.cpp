@@ -1,16 +1,11 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
 
-#include "util/Util.h"
-#include "util/Generators.h"
-#include "util/TemplateProps.h"
-#include "util/GenUtils.h"
+#include "rapidcheck/detail/TestListenerAdapter.h"
 
-#include "rapidcheck/detail/Configuration.h"
-#include "rapidcheck/Check.h"
-#include "rapidcheck/gen/Create.h"
-#include "rapidcheck/gen/Container.h"
-#include "rapidcheck/gen/Numeric.h"
+#include "util/MockTestListener.h"
+#include "util/GenUtils.h"
+#include "util/Generators.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -18,37 +13,17 @@ using namespace rc::detail;
 
 // TODO good candidate for profiling
 
+namespace {
+
+TestListenerAdapter dummyListener;
+
+} // namespace
+
 TEST_CASE("checkTestable") {
-  prop("runs all test cases if no cases fail",
-       [](const TestParams &params) {
-         auto numCases = 0;
-         const auto result = checkTestable([&] { numCases++; }, params);
-         RC_ASSERT(numCases == params.maxSuccess);
-
-         SuccessResult success;
-         RC_ASSERT(result.match(success));
-         RC_ASSERT(success.numSuccess == params.maxSuccess);
-       });
-
-  prop("returns correct information about failing case",
-       [](const TestParams &params) {
-         RC_PRE(params.maxSuccess > 0);
-         auto caseIndex = 0;
-         auto lastSize = -1;
-         const auto targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
-         const auto result = checkTestable([&] {
-           lastSize = (*genPassedParams()).size;
-           RC_ASSERT(caseIndex < targetSuccess);
-           caseIndex++;
-         }, params);
-         FailureResult failure;
-         RC_ASSERT(result.match(failure));
-         RC_ASSERT(failure.numSuccess == targetSuccess);
-         RC_ASSERT(failure.failingCase.size == lastSize);
-       });
-
   prop("returns the correct number of shrinks on a failing case",
-       [] {
+       [](TestParams params) {
+         RC_PRE(params.maxSuccess > 0);
+         params.disableShrinking = false;
          const auto evenInteger =
              gen::scale(0.25,
                         gen::suchThat(gen::positive<int>(),
@@ -58,7 +33,7 @@ TEST_CASE("checkTestable") {
            const auto v1 = *genFixedCountdown(values.first);
            const auto v2 = *genFixedCountdown(values.second);
            return ((v1 % 2) != 0) || ((v2 % 2) != 0);
-         });
+         }, params, dummyListener);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
@@ -67,14 +42,15 @@ TEST_CASE("checkTestable") {
        });
 
   prop("returns a correct counter-example",
-       [](std::vector<int> values) {
+       [](const TestParams &params, std::vector<int> values) {
+         RC_PRE(params.maxSuccess > 0);
          const auto results =
              checkTestable([&](FixedCountdown<0>, FixedCountdown<0>) {
                for (auto value : values) {
                  *gen::just(value);
                }
                return false;
-             });
+             }, params, dummyListener);
 
          Example expected;
          expected.reserve(values.size() + 1);
@@ -96,16 +72,17 @@ TEST_CASE("checkTestable") {
        });
 
   prop("counter-example is not affected by nested tests",
-       [] {
-         const auto results = checkTestable([] {
+       [](const TestParams &params1, const TestParams &params2) {
+         RC_PRE(params1.maxSuccess > 0);
+         const auto results = checkTestable([&] {
            *gen::just<std::string>("foo");
            auto innerResults = checkTestable([&] {
              *gen::just<std::string>("bar");
              *gen::just<std::string>("baz");
-           });
+           }, params2, dummyListener);
 
            return false;
-         });
+         }, params1, dummyListener);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
@@ -115,49 +92,21 @@ TEST_CASE("checkTestable") {
        });
 
   prop("on failure, description contains message",
-       [](const std::string &description) {
-         const auto results = checkTestable([&] { RC_FAIL(description); });
+       [](const TestParams &params, const std::string &description) {
+         RC_PRE(params.maxSuccess > 0);
+         const auto results = checkTestable(
+             [&] { RC_FAIL(description); }, params, dummyListener);
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
          RC_ASSERT(failure.description.find(description) != std::string::npos);
        });
 
-  prop("gives up if too many test cases are discarded",
-       [](const TestParams &params) {
-         RC_PRE(params.maxSuccess > 0);
-         const auto maxDiscards = params.maxSuccess * params.maxDiscardRatio;
-         const auto targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
-         int numTests = 0;
-         const auto results = checkTestable([&] {
-           numTests++;
-           RC_PRE(numTests <= targetSuccess);
-         }, params);
-         RC_ASSERT(numTests >= (targetSuccess + maxDiscards));
-
-         GaveUpResult gaveUp;
-         RC_ASSERT(results.match(gaveUp));
-         RC_ASSERT(gaveUp.numSuccess == targetSuccess);
-       });
-
-  prop("does not give up if not enough tests are discarded",
-       [](const TestParams &params) {
-         const auto maxDiscards = params.maxSuccess * params.maxDiscardRatio;
-         const auto targetDiscard = *gen::inRange<int>(0, maxDiscards + 1);
-         int numTests = 0;
-         const auto results = checkTestable([&] {
-           numTests++;
-           RC_PRE(numTests > targetDiscard);
-         }, params);
-
-         SuccessResult success;
-         RC_ASSERT(results.match(success));
-         RC_ASSERT(success.numSuccess == params.maxSuccess);
-       });
-
   prop("on giving up, description contains message",
-       [](const std::string &description) {
-         const auto results = checkTestable([&] { RC_DISCARD(description); });
+       [](const TestParams &params, const std::string &description) {
+         RC_PRE(params.maxSuccess > 0);
+         const auto results = checkTestable(
+             [&] { RC_DISCARD(description); }, params, dummyListener);
 
          GaveUpResult gaveUp;
          RC_ASSERT(results.match(gaveUp));
@@ -174,38 +123,15 @@ TEST_CASE("checkTestable") {
            return result == end(x);
          };
 
-         const auto results1 = checkTestable(property, params);
+         const auto results1 = checkTestable(property, params, dummyListener);
          auto values1 = std::move(values);
 
          values = std::vector<std::vector<int>>();
-         const auto results2 = checkTestable(property, params);
+         const auto results2 = checkTestable(property, params, dummyListener);
          auto values2 = std::move(values);
 
          RC_ASSERT(results1 == results2);
          RC_ASSERT(values1 == values2);
-       });
-
-  prop("if maxSuccess > 1, the max size used is maxSize",
-       [](const TestParams &params) {
-         RC_SUCCEED_IF(params.maxSuccess <= 1);
-
-         int usedMax = 0;
-         const auto property = [&] { usedMax = std::max(*genSize(), usedMax); };
-         checkTestable(property, params);
-         RC_ASSERT(usedMax == params.maxSize);
-       });
-
-  prop("maxSuccess > maxSize, all sizes will be used",
-       [] {
-         TestParams params;
-         params.maxSize = *gen::inRange(0, 100);
-         params.maxSuccess = *gen::inRange(params.maxSuccess + 1, 200);
-
-         std::vector<int> frequencies(params.maxSize + 1, 0);
-         const auto property = [&] { frequencies[*genSize()]++; };
-         checkTestable(property, params);
-
-         RC_ASSERT(std::count(begin(frequencies), end(frequencies), 0) == 0);
        });
 
   prop("correctly reports test case distribution",
@@ -224,7 +150,7 @@ TEST_CASE("checkTestable") {
              ImplicitParam<param::CurrentPropertyContext>::value()->addTag(tag);
            }
          };
-         const auto result = checkTestable(property, params);
+         const auto result = checkTestable(property, params, dummyListener);
 
          Distribution expected;
          for (auto &tags : allTags) {
@@ -240,17 +166,47 @@ TEST_CASE("checkTestable") {
 
   prop("does not include untagged cases in distribution",
        [](const TestParams &params) {
-         const auto result = checkTestable([] {}, params);
+         const auto result = checkTestable([] {}, params, dummyListener);
          SuccessResult success;
          RC_ASSERT(result.match(success));
          RC_ASSERT(success.distribution.empty());
        });
 
-  prop("should increase size eventually if enough tests are discarded",
+  prop("calls onTestFinished with the test results once",
+       [](const TestParams &params, int limit) {
+         Maybe<TestResult> callbackResult;
+         MockTestListener listener;
+         listener.onTestFinishedCallback = [&](const TestResult &result) {
+           RC_ASSERT(!callbackResult);
+           callbackResult = result;
+         };
+
+         const auto result = checkTestable([&] {
+           const auto x = *gen::arbitrary<int>();
+           if ((x % 3) == 0) {
+             RC_DISCARD("");
+           }
+           RC_ASSERT(x < limit);
+         }, params, listener);
+
+         RC_ASSERT(callbackResult);
+         RC_ASSERT(*callbackResult == result);
+       });
+
+  prop("does not shrink result if disableShrinking is set",
        [](TestParams params) {
-         params.maxDiscardRatio = 100;
-         const auto result =
-             checkTestable([] { RC_PRE(*genSize() != 0); }, params);
-         RC_ASSERT(result.template is<SuccessResult>());
+         RC_PRE(params.maxSuccess > 0);
+
+         params.disableShrinking = true;
+         const auto result = checkTestable([] {
+           *Gen<int>([](const Random &, int) {
+             return shrinkable::just(1337, seq::just(shrinkable::just(0)));
+           });
+           RC_FAIL("oh noes");
+         }, params, dummyListener);
+
+         FailureResult failure;
+         RC_ASSERT(result.match(failure));
+         RC_ASSERT(failure.counterExample.front().second == "1337");
        });
 }

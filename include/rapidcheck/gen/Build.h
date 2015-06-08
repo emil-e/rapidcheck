@@ -4,7 +4,10 @@ namespace rc {
 namespace gen {
 namespace detail {
 
-template <typename Member>
+template <typename T>
+class Lens;
+
+template <typename Member, typename SourceType>
 struct Binding;
 
 } // namespace detail
@@ -38,14 +41,14 @@ Gen<std::shared_ptr<T>> makeShared(Gen<Args>... gens);
 ///   generator for that type.
 /// - A member function that takes multiple arguments. `gen` should be a
 ///   generator of tuples matching those arguments.
-template <typename Member>
-detail::Binding<Member> set(Member member,
-                            typename detail::Binding<Member>::GenT gen);
+template <typename Member, typename T>
+detail::Binding<Member, T> set(Member member, Gen<T> gen);
 
 /// Same as `set(Member, Gen)` but uses an appropriate arbitrary generator for
 /// the member.
 template <typename Member>
-detail::Binding<Member> set(Member member);
+detail::Binding<Member, typename detail::Lens<Member>::ValueType>
+set(Member member);
 
 /// Creates a generator that builds an object by setting properties of that
 /// object from generated values. `gen` will be used to generate the intitial
@@ -57,13 +60,13 @@ detail::Binding<Member> set(Member member);
 /// create a generator for a type is that both the initial value and the
 /// properties are treated as independent. This gives better shrinking
 /// characteristics.
-template <typename T, typename... Members>
-Gen<T> build(Gen<T> gen, const detail::Binding<Members> &... bs);
+template <typename T, typename... Members, typename... SourceTypes>
+Gen<T> build(Gen<T> gen, const detail::Binding<Members, SourceTypes> &... bs);
 
 /// Same as `build(Gen, Bindings...)` but default constructs `T` instead of
 /// generating. `T` cannot be deduced and must be specified.
-template <typename T, typename... Members>
-Gen<T> build(const detail::Binding<Members> &... bs);
+template <typename T, typename... Members, typename... SourceTypes>
+Gen<T> build(const detail::Binding<Members, SourceTypes> &... bs);
 
 } // namespace gen
 } // namespace rc

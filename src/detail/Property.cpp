@@ -65,13 +65,18 @@ TaggedResult AdapterContext::result() const {
   return result;
 }
 
+bool operator==(const CaseDescription &lhs, const CaseDescription &rhs) {
+  return (lhs.result == rhs.result) && (lhs.tags == rhs.tags) &&
+      (lhs.example == rhs.example);
+}
+
+bool operator!=(const CaseDescription &lhs, const CaseDescription &rhs) {
+  return !(lhs == rhs);
+}
+
 std::ostream &operator<<(std::ostream &os, const CaseDescription &desc) {
-  os << desc.result << std::endl;
-  os << std::endl;
-  for (const auto &p : desc.example) {
-    os << p.first << ": " << p.second << std::endl;
-  }
-  os << std::endl;
+  os << "{result='" << desc.result << "', tags=" << toString(desc.tags)
+     << ", example=" << toString(desc.example) << "}";
   return os;
 }
 

@@ -12,18 +12,6 @@ using Example = std::vector<std::pair<std::string, std::string>>;
 using Tags = std::vector<std::string>;
 using Distribution = std::map<Tags, int>;
 
-/// Describes a particular test case.
-struct TestCase {
-  /// The used size.
-  int size = 0;
-  /// The used seed.
-  uint64_t seed = 0;
-};
-
-std::ostream &operator<<(std::ostream &os, const detail::TestCase &testCase);
-bool operator==(const TestCase &r1, const TestCase &r2);
-bool operator!=(const TestCase &r1, const TestCase &r2);
-
 /// Describes the result of a test case.
 struct CaseResult {
   /// Enum for the type of the result.
@@ -37,7 +25,7 @@ struct CaseResult {
   };
 
   CaseResult();
-  CaseResult(Type t, std::string desc);
+  CaseResult(Type t, std::string desc = "");
 
   /// The type of the result.
   Type type;
@@ -68,8 +56,6 @@ bool operator!=(const SuccessResult &r1, const SuccessResult &r2);
 struct FailureResult {
   /// The number of successful tests run.
   int numSuccess;
-  /// The failing test case.
-  TestCase failingCase;
   /// A description of the failure.
   std::string description;
   /// The number of shrinks performed.

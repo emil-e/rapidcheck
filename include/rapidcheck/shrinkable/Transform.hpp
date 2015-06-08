@@ -141,5 +141,12 @@ Shrinkable<std::pair<T1, T2>> pair(Shrinkable<T1> s1, Shrinkable<T2> s2) {
       });
 }
 
+template <typename T, typename Shrink>
+Shrinkable<T> postShrink(Shrinkable<T> shrinkable, Shrink &&shrink) {
+  return shrinkable::mapcat(
+      std::move(shrinkable),
+      [=](T &&x) { return shrinkable::shrinkRecur(std::move(x), shrink); });
+}
+
 } // namespace shrinkable
 } // namespace rc
