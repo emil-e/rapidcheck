@@ -172,8 +172,8 @@ TEST_CASE("shrinkable::mapcat") {
 TEST_CASE("shrinkable::pair") {
   prop("has no shrinks if the two Shrinkables have no shrinks",
        [](int a, int b) {
-         REQUIRE(shrinkable::pair(shrinkable::just(a), shrinkable::just(b)) ==
-                 shrinkable::just(std::make_pair(a, b)));
+         RC_ASSERT(shrinkable::pair(shrinkable::just(a), shrinkable::just(b)) ==
+                   shrinkable::just(std::make_pair(a, b)));
        });
 
   prop("shrinks first element and then the second one",

@@ -29,8 +29,10 @@ TestResult doCheckProperty(const Property &property,
         std::move(searchResult.failure->value().result.description);
     return gaveUp;
   } else {
-    // Shrink it
-    const auto shrinkResult = shrinkTestCase(*searchResult.failure, listener);
+    // Shrink it unless shrinking is disabled
+    const auto shrinkResult = params.disableShrinking
+        ? std::make_pair(*searchResult.failure, 0)
+        : shrinkTestCase(*searchResult.failure, listener);
     beforeMinimalTestCase();
     const auto caseDescription = shrinkResult.first.value();
 

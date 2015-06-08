@@ -233,6 +233,12 @@ TEST_CASE("execRaw") {
            });
          });
          const auto shrinkable = gen(params.random, params.size);
-         REQUIRE_THROWS(shrinkable.value());
+         // TODO RC_ASSERT_THROWS
+         try {
+           shrinkable.value();
+         } catch (...) {
+           RC_SUCCEED("Threw exception");
+         }
+         RC_FAIL("Did not throw exception");
        });
 }

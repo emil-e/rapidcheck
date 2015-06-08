@@ -23,7 +23,7 @@ TEST_CASE("gen::nonEmpty") {
        [](const GenParams &params) {
          const auto gen = gen::nonEmpty<std::vector<Predictable>>();
          const auto value = gen(params.random, params.size).value();
-         REQUIRE(std::all_of(
+         RC_ASSERT(std::all_of(
              begin(value),
              end(value),
              [](const Predictable &p) { return isArbitraryPredictable(p); }));
