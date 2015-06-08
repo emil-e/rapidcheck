@@ -45,7 +45,6 @@ install:
 
 script:
   - mkdir build && cd build
-  - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DRC_BUILD_TESTS=ON -DRC_BUILD_EXAMPLES=ON -DRC_BUILD_GMOCK=ON -G Ninja ..
+  - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DRC_BUILD_TESTS=ON -DRC_BUILD_EXAMPLES=ON -DRC_BUILD_GMOCK=ON -DRC_BUILD_BOOST=ON -G Ninja ..
   - ninja -j1 # Don't run out of memory, please
-  - test/rapidcheck_tests
-  - extras/gmock/test/rapidcheck_gmock_tests
+  - ctest --output-on-failure
