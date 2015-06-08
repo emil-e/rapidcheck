@@ -4,6 +4,7 @@ add_executable(rapidcheck_boost_tests
   )
 
 target_link_libraries(rapidcheck_boost_tests
+  boost
   rapidcheck_boost
   rapidcheck_test_utils
   catch)
