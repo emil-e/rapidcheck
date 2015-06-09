@@ -57,7 +57,7 @@ void check(const State &initialState, Sut &sut, GenFunc &&generationFunc) {
   const auto commands =
       *detail::genCommands<Command<Decay<State>, Sut>>(
           initialState, std::forward<GenFunc>(generationFunc));
-  commands.run(initialState, sut);
+  runAll(commands, initialState, sut);
 }
 
 template <typename State, typename Sut>

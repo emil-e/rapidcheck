@@ -134,62 +134,75 @@ TEST_CASE("Command") {
   }
 }
 
-TEST_CASE("Commands") {
-  SECTION("apply") {
-    prop("returns next state by applying the commands in sequence",
-         [](const StringVec &s0) {
-           StringVecCmdsN cmds;
-           cmds.commands = *pushBackCommands();
+TEST_CASE("state::applyAll") {
+  prop("returns next state by applying the commands in sequence",
+       [](const StringVec &s0) {
+         const auto cmds = *pushBackCommands();
 
-           StringVec expected(s0);
-           for (const auto &cmd : cmds.commands) {
-             std::ostringstream os;
-             cmd->show(os);
-             expected.push_back(os.str());
-           }
+         auto expected = s0;
+         for (const auto &cmd : cmds) {
+           std::ostringstream os;
+           cmd->show(os);
+           expected.push_back(os.str());
+         }
 
-           auto s1 = s0;
-           cmds.apply(s1);
-           RC_ASSERT(s1 == expected);
-         });
-  }
+         auto s1 = s0;
+         applyAll(cmds, s1);
+         RC_ASSERT(s1 == expected);
+       });
+}
 
-  SECTION("run") {
-    prop("runs the commands in sequence",
-         [](const StringVec &s0) {
-           StringVecCmdsN cmds;
-           cmds.commands = *pushBackCommands();
+TEST_CASE("state::runAll") {
+  prop("runs the commands in sequence",
+       [](const StringVec &s0) {
+         const auto cmds = *pushBackCommands();
 
-           StringVec expected(s0);
-           for (const auto &cmd : cmds.commands) {
-             std::ostringstream os;
-             cmd->show(os);
-             expected.push_back(os.str());
-           }
+         auto expected = s0;
+         for (const auto &cmd : cmds) {
+           std::ostringstream os;
+           cmd->show(os);
+           expected.push_back(os.str());
+         }
 
-           StringVec actual(s0);
-           cmds.run(s0, actual);
-           RC_ASSERT(actual == expected);
-         });
-  }
+         StringVec actual(s0);
+         runAll(cmds, s0, actual);
+         RC_ASSERT(actual == expected);
+       });
+}
 
-  SECTION("show") {
-    prop("displays each command on a separate line",
-         [] {
-           StringVecCmdsN cmds;
-           cmds.commands = *pushBackCommands();
+TEST_CASE("state::isValidSequence") {
+  prop("returns true if all commands are valid",
+       [](StringVec s0) {
+         auto sequence = *gen::container<Commands<StringVecCmd>>(
+                             gen::makeShared<StringVecCmd>());
+         RC_ASSERT(isValidSequence(sequence, s0));
+       });
 
-           std::ostringstream expected;
-           for (const auto &cmd : cmds.commands) {
-             cmd->show(expected);
-             expected << std::endl;
-           }
+  prop("returns false if there is an invalid command in the sequence",
+       [](StringVec s0) {
+         auto sequence = *gen::container<Commands<StringVecCmd>>(
+                             gen::makeShared<StringVecCmd>());
+         const auto i = *gen::inRange<std::size_t>(0, sequence.size());
+         sequence.insert(begin(sequence) + i, std::make_shared<PreNeverHolds>());
+         RC_ASSERT(!isValidSequence(sequence, s0));
+       });
+}
 
-           std::ostringstream actual;
-           cmds.show(actual);
-           RC_ASSERT(expected.str() == actual.str());
-         });
-  }
+TEST_CASE("show(Commands<Cmd>)") {
+  prop("displays each command on a separate line",
+       [] {
+         const auto cmds = *pushBackCommands();
+
+         std::ostringstream expected;
+         for (const auto &cmd : cmds) {
+           cmd->show(expected);
+           expected << std::endl;
+         }
+
+         std::ostringstream actual;
+         show(cmds, actual);
+         RC_ASSERT(expected.str() == actual.str());
+       });
 }
 
 TEST_CASE("isValidCommand") {
@@ -214,8 +227,8 @@ Gen<StringVecCmdSP> captureParams(const StringVec &vec) {
 
 std::vector<GenParams> collectParams(const StringVecCmdsN &cmds) {
   std::vector<GenParams> params;
-  std::transform(begin(cmds.commands),
-                 end(cmds.commands),
+  std::transform(begin(cmds),
+                 end(cmds),
                  std::back_inserter(params),
                  [](const StringVecCmdSP &cmd) {
                    const auto paramsCmd =
@@ -267,7 +280,7 @@ TEST_CASE("genCommands") {
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecCmdsN> &value,
                        const Shrinkable<StringVecCmdsN> &shrink) {
-                     RC_ASSERT(isValidCommand(value.value(), s0));
+                     RC_ASSERT(isValidSequence(value.value(), s0));
                    });
        });
 
@@ -278,8 +291,7 @@ TEST_CASE("genCommands") {
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecCmdsN> &value,
                        const Shrinkable<StringVecCmdsN> &shrink) {
-                     RC_ASSERT(value.value().commands.size() <=
-                               value.value().commands.size());
+                     RC_ASSERT(value.value().size() <= value.value().size());
                    });
        });
 
@@ -289,7 +301,7 @@ TEST_CASE("genCommands") {
              genCommands<StringVecCmd>(StringVec(), &captureParams);
          const auto cmds = gen(params.random, params.size).value();
          const auto randoms = collectRandoms(cmds);
-         RC_ASSERT(randoms.size() == cmds.commands.size());
+         RC_ASSERT(randoms.size() == cmds.size());
        });
 
   prop("shrinks use a subset of the original random generators",
@@ -342,7 +354,7 @@ TEST_CASE("genCommands") {
                    [&](const Shrinkable<IntVecCmds> &value,
                        const Shrinkable<IntVecCmds> &shrink) {
                      auto sut = s0;
-                     value.value().run(s0, sut);
+                     runAll(value.value(), s0, sut);
                      int x = 0;
                      for (int value : sut) {
                        RC_ASSERT(value == x++);
@@ -360,7 +372,7 @@ TEST_CASE("genCommands") {
                                        [&](const StringVecCmdsN &cmds) {
                                          try {
                                            StringVec sut = s0;
-                                           cmds.run(s0, sut);
+                                           runAll(cmds, s0, sut);
                                          } catch (...) {
                                            return true;
                                          }
@@ -368,9 +380,9 @@ TEST_CASE("genCommands") {
 
                                        });
 
-         RC_ASSERT(result.commands.size() == 1);
+         RC_ASSERT(result.size() == 1);
          std::ostringstream os;
-         result.commands.front()->show(os);
+         result.front()->show(os);
          RC_ASSERT(os.str().find("AlwaysFail") != std::string::npos);
        });
 
@@ -420,27 +432,11 @@ TEST_CASE("show(Command)") {
          show(cmd, actual);
          RC_ASSERT(actual.str() == expected.str());
        });
-
-  prop("passing Commands to show yields the same result as Commands::show",
-       [] {
-         StringVecCmdsN cmds;
-         cmds.commands = *pushBackCommands();
-         std::ostringstream expected;
-         cmds.show(expected);
-         std::ostringstream actual;
-         show(cmds, actual);
-         RC_ASSERT(actual.str() == expected.str());
-       });
 }
 
 TEST_CASE("typeToString<Command<...>>") {
   using CommandT = Command<Foo, Bar>;
   REQUIRE(typeToString<CommandT>() == "Command<FFoo, BBar>");
-}
-
-TEST_CASE("typeToString<Commands<...>>") {
-  using CommandsT = Commands<Foo>;
-  REQUIRE(typeToString<CommandsT>() == "Commands<FFoo>");
 }
 
 TEST_CASE("state::check") {
@@ -568,8 +564,8 @@ struct BuggyDelAll : public BagCommand {
 template <typename Cmd>
 std::vector<std::string> showCommands(const Commands<Cmd> &commands) {
   std::vector<std::string> cmdStrings;
-  cmdStrings.reserve(commands.commands.size());
-  for (const auto &cmd : commands.commands) {
+  cmdStrings.reserve(commands.size());
+  for (const auto &cmd : commands) {
     std::ostringstream ss;
     cmd->show(ss);
     cmdStrings.push_back(ss.str());
@@ -587,11 +583,10 @@ Commands<Cmd> findMinCommands(const GenParams &params,
   return searchGen(params.random,
                    params.size,
                    gen,
-                   [=](const Commands<Cmd> &cmd) {
-                     const auto cmdStrings = showCommands(cmd);
+                   [=](const Commands<Cmd> &cmds) {
                      try {
                        typename Cmd::Sut sut;
-                       cmd.run(s0, sut);
+                       runAll(cmds, s0, sut);
                      } catch (...) {
                        return true;
                      }
