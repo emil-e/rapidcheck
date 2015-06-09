@@ -57,6 +57,10 @@ add_executable(rapidcheck_tests
   shrinkable/CreateTests.cpp
   shrinkable/OperationsTests.cpp
   shrinkable/TransformTests.cpp
+  state/CommandTests.cpp
+  state/CommandsGenTests.cpp
+  state/CommandsTests.cpp
+  state/IntegrationTests.cpp
   state/StateTests.cpp
   )
 
