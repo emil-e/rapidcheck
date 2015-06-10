@@ -7,7 +7,6 @@
 
 using namespace rc;
 using namespace rc::test;
-using namespace rc::state;
 using namespace rc::state::detail;
 
 namespace {
@@ -54,17 +53,15 @@ std::set<Random> collectRandoms(const StringVecCmds &cmds) {
 }
 
 using IntVec = std::vector<int>;
-using IntVecCmd = Command<IntVec, IntVec>;
-using IntVecCmds = Commands<IntVecCmd>;
+using IntVecCmd = state::Command<IntVec, IntVec>;
+using IntVecCmds = state::Commands<IntVecCmd>;
 
 struct CountCmd : public IntVecCmd {
   CountCmd(int x)
       : value(x) {}
   int value;
 
-  void apply(IntVec &s0) const override {
-    s0.push_back(value);
-  }
+  void apply(IntVec &s0) const override { s0.push_back(value); }
 
   void run(const IntVec &s0, IntVec &sut) const override {
     sut.push_back(value);
@@ -75,11 +72,11 @@ struct CountCmd : public IntVecCmd {
 
 } // namespace
 
-TEST_CASE("genCommands") {
+TEST_CASE("state::gen::commands") {
   prop("command sequences are always valid",
        [](const GenParams &params, const StringVec &s0) {
-         const auto gen =
-             genCommands<StringVecCmd>(s0, &anyCommand<PushBack, PopBack>);
+         const auto gen = state::gen::commands<StringVecCmd>(
+           s0, &state::anyCommand<PushBack, PopBack>);
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecCmds> &value,
                        const Shrinkable<StringVecCmds> &shrink) {
@@ -89,8 +86,8 @@ TEST_CASE("genCommands") {
 
   prop("shrinks are shorter or equal length when compared to original",
        [](const GenParams &params, const StringVec &s0) {
-         const auto gen =
-             genCommands<StringVecCmd>(s0, &anyCommand<PushBack, PopBack>);
+         const auto gen = state::gen::commands<StringVecCmd>(
+           s0, &state::anyCommand<PushBack, PopBack>);
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecCmds> &value,
                        const Shrinkable<StringVecCmds> &shrink) {
@@ -101,7 +98,7 @@ TEST_CASE("genCommands") {
   prop("passed random generators are unique",
        [](const GenParams &params) {
          const auto gen =
-             genCommands<StringVecCmd>(StringVec(), &captureParams);
+             state::gen::commands<StringVecCmd>(StringVec(), &captureParams);
          const auto cmds = gen(params.random, params.size).value();
          const auto randoms = collectRandoms(cmds);
          RC_ASSERT(randoms.size() == cmds.size());
@@ -110,7 +107,7 @@ TEST_CASE("genCommands") {
   prop("shrinks use a subset of the original random generators",
        [](const GenParams &params) {
          const auto gen =
-             genCommands<StringVecCmd>(StringVec(), &captureParams);
+             state::gen::commands<StringVecCmd>(StringVec(), &captureParams);
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecCmds> &value,
                        const Shrinkable<StringVecCmds> &shrink) {
@@ -129,7 +126,7 @@ TEST_CASE("genCommands") {
   prop("passes the correct size",
        [](const GenParams &params) {
          const auto gen =
-             genCommands<StringVecCmd>(StringVec(), &captureParams);
+             state::gen::commands<StringVecCmd>(StringVec(), &captureParams);
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecCmds> &value,
                        const Shrinkable<StringVecCmds> &shrink) {
@@ -145,7 +142,7 @@ TEST_CASE("genCommands") {
   prop("correctly threads the state when generating commands",
        [](const GenParams &params) {
          IntVec s0({0});
-         const auto gen = genCommands<IntVecCmd>(
+         const auto gen = state::gen::commands<IntVecCmd>(
              s0,
              [](const IntVec &vec) {
                auto cmd = std::make_shared<const CountCmd>(vec.back() + 1);
@@ -167,8 +164,8 @@ TEST_CASE("genCommands") {
 
   prop("finds minimum where one commands always fails",
        [](const GenParams &params, const StringVec &s0) {
-         const auto gen = genCommands<StringVecCmd>(
-             s0, &anyCommand<AlwaysFail, PushBack, PopBack, SomeCommand>);
+         const auto gen = state::gen::commands<StringVecCmd>(
+           s0, &state::anyCommand<AlwaysFail, PushBack, PopBack, SomeCommand>);
          const auto result = searchGen(params.random,
                                        params.size,
                                        gen,

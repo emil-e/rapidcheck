@@ -2,6 +2,7 @@
 
 namespace rc {
 namespace state {
+namespace gen {
 namespace detail {
 
 template <typename Cmd, typename GenFunc>
@@ -201,13 +202,15 @@ private:
   GenFunc m_genFunc;
 };
 
-template <typename Cmd, typename State, typename GenerationFunc>
-Gen<Commands<Cmd>> genCommands(State &&initialState,
-                                  GenerationFunc &&genFunc) {
+} // namespace detail
+
+template <typename Cmd, typename GenerationFunc>
+Gen<Commands<Cmd>> commands(const typename Cmd::State &initialState,
+                            GenerationFunc &&genFunc) {
   return detail::CommandsGen<Cmd, Decay<GenerationFunc>>(
-      std::forward<State>(initialState), std::forward<GenerationFunc>(genFunc));
+      initialState, std::forward<GenerationFunc>(genFunc));
 }
 
-} // namespace detail
+} // namespace gen
 } // namespace state
 } // namespace rc

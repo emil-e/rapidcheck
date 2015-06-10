@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include "rapidcheck/state/detail/CommandsGen.h"
+#include "rapidcheck/state/gen/Commands.h"
 
 namespace rc {
 namespace state {
@@ -55,7 +55,7 @@ struct CommandPicker<Cmd, Cmds...> {
 template <typename State, typename Sut, typename GenFunc>
 void check(const State &initialState, Sut &sut, GenFunc &&generationFunc) {
   const auto commands =
-      *detail::genCommands<Command<Decay<State>, Sut>>(
+      *gen::commands<Command<Decay<State>, Sut>>(
           initialState, std::forward<GenFunc>(generationFunc));
   runAll(commands, initialState, sut);
 }
@@ -81,7 +81,7 @@ anyCommand(const typename Cmd::State &state) {
   return [=](const Random &random, int size) {
     auto r = random;
     std::size_t n = r.split().next() % (sizeof...(Cmds) + 1);
-    return gen::exec([=] {
+    return rc::gen::exec([=] {
       return detail::CommandPicker<Cmd, Cmds...>::pick(state, n);
     })(r, size); // TODO monadic bind
   };

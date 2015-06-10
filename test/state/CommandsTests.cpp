@@ -5,7 +5,6 @@
 
 using namespace rc;
 using namespace rc::test;
-using namespace rc::state;
 
 namespace {
 
@@ -55,17 +54,18 @@ TEST_CASE("state::runAll") {
 TEST_CASE("state::isValidSequence") {
   prop("returns true if all commands are valid",
        [](StringVec s0) {
-         auto sequence = *gen::container<Commands<StringVecCmd>>(
+         auto sequence = *gen::container<state::Commands<StringVecCmd>>(
                              gen::makeShared<StringVecCmd>());
          RC_ASSERT(isValidSequence(sequence, s0));
        });
 
   prop("returns false if there is an invalid command in the sequence",
        [](StringVec s0) {
-         auto sequence = *gen::container<Commands<StringVecCmd>>(
+         auto sequence = *gen::container<state::Commands<StringVecCmd>>(
                              gen::makeShared<StringVecCmd>());
          const auto i = *gen::inRange<std::size_t>(0, sequence.size());
-         sequence.insert(begin(sequence) + i, std::make_shared<PreNeverHolds>());
+         sequence.insert(begin(sequence) + i,
+                         std::make_shared<PreNeverHolds>());
          RC_ASSERT(!isValidSequence(sequence, s0));
        });
 }

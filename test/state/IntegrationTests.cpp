@@ -5,7 +5,6 @@
 
 using namespace rc;
 using namespace rc::test;
-using namespace rc::state;
 using namespace rc::state::detail;
 
 namespace {
@@ -15,7 +14,7 @@ struct Bag {
   bool open = false;
 };
 
-using BagCommand = Command<Bag, Bag>;
+using BagCommand = state::Command<Bag, Bag>;
 
 struct Open : public BagCommand {
   void apply(State &s0) const override {
@@ -92,7 +91,9 @@ struct BuggyGet : public BagCommand {
     RC_ASSERT(sut.items[index] == s0.items[index]);
   }
 
-  void show(std::ostream &os) const override { os << "BuggyGet(" << index << ")"; }
+  void show(std::ostream &os) const override {
+    os << "BuggyGet(" << index << ")";
+  }
 };
 
 struct BuggyDelAll : public BagCommand {
@@ -114,7 +115,7 @@ struct BuggyDelAll : public BagCommand {
 };
 
 template <typename Cmd>
-std::vector<std::string> showCommands(const Commands<Cmd> &commands) {
+std::vector<std::string> showCommands(const state::Commands<Cmd> &commands) {
   std::vector<std::string> cmdStrings;
   cmdStrings.reserve(commands.size());
   for (const auto &cmd : commands) {
@@ -127,13 +128,13 @@ std::vector<std::string> showCommands(const Commands<Cmd> &commands) {
 }
 
 template <typename Cmd>
-Commands<Cmd> findMinCommands(const GenParams &params,
-                              const Gen<Commands<Cmd>> &gen,
-                              const typename Cmd::State &s0) {
+state::Commands<Cmd> findMinCommands(const GenParams &params,
+                                     const Gen<state::Commands<Cmd>> &gen,
+                                     const typename Cmd::State &s0) {
   return searchGen(params.random,
                    params.size,
                    gen,
-                   [=](const Commands<Cmd> &cmds) {
+                   [=](const state::Commands<Cmd> &cmds) {
                      try {
                        typename Cmd::Sut sut;
                        runAll(cmds, s0, sut);
@@ -152,7 +153,7 @@ TEST_CASE("state integration tests") {
       "shrinking",
       [](const GenParams &params) {
         Bag s0;
-        const auto gen = genCommands<BagCommand>(
+        const auto gen = state::gen::commands<BagCommand>(
             s0, &state::anyCommand<Open, Close, Add, Del, BuggyGet>);
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
@@ -169,7 +170,7 @@ TEST_CASE("state integration tests") {
       "previous commands",
       [](const GenParams &params) {
         Bag s0;
-        const auto gen = genCommands<BagCommand>(
+        const auto gen = state::gen::commands<BagCommand>(
             s0, &state::anyCommand<Open, Close, Add, Del, BuggyDelAll>);
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
