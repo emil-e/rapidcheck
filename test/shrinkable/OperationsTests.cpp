@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#include <rapidcheck-catch.h>
+#include <rapidcheck/catch.h>
 
 #include "rapidcheck/shrinkable/Operations.h"
 #include "rapidcheck/shrinkable/Create.h"

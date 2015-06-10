@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#include <rapidcheck-catch.h>
+#include <rapidcheck/catch.h>
 
 #include "rapidcheck/gen/Transform.h"
 #include "rapidcheck/gen/Create.h"

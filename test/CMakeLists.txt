@@ -3,8 +3,10 @@ add_library(rapidcheck_test_utils
   util/GenUtils.cpp
   util/ShrinkableUtils.cpp)
 
-target_link_libraries(rapidcheck_test_utils PUBLIC rapidcheck)
-target_include_directories(rapidcheck_test_utils PUBLIC .)
+target_link_libraries(rapidcheck_test_utils PUBLIC
+  rapidcheck)
+target_include_directories(rapidcheck_test_utils PUBLIC
+  .)
 
 add_executable(rapidcheck_tests
   AssertionsTests.cpp
@@ -64,8 +66,14 @@ add_executable(rapidcheck_tests
   state/gen/Commands.cpp
   )
 
-target_link_libraries(rapidcheck_tests rapidcheck catch rapidcheck_test_utils)
-target_include_directories(rapidcheck_tests PRIVATE . ../src)
+target_link_libraries(rapidcheck_tests
+  rapidcheck
+  catch
+  rapidcheck_catch
+  rapidcheck_test_utils)
+target_include_directories(rapidcheck_tests PRIVATE
+  .
+  ../src)
 
 add_test(
   NAME rapidcheck_tests

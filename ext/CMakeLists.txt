@@ -1,4 +1,4 @@
-if (RC_ENABLE_TESTS)
+if (RC_ENABLE_TESTS OR RC_ENABLE_CATCH)
   add_library(catch INTERFACE)
   target_include_directories(catch INTERFACE catch/include)
 endif()
