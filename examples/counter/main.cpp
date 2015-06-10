@@ -1,6 +1,4 @@
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
-#include <rapidcheck-catch.h>
+#include <rapidcheck.h>
 #include <rapidcheck/state.h>
 
 using namespace rc;
@@ -28,9 +26,7 @@ struct CounterModel {
 };
 
 struct Inc : public state::Command<CounterModel, Counter> {
-  void apply(CounterModel &s0) const override {
-    s0.value++;
-  }
+  void apply(CounterModel &s0) const override { s0.value++; }
 
   void run(const CounterModel &s0, Counter &counter) const override {
     auto prev = counter.get();
@@ -52,11 +48,12 @@ struct Dec : public state::Command<CounterModel, Counter> {
   }
 };
 
-TEST_CASE("Counter") {
-  prop("state test",
-       [] {
-         CounterModel state;
-         Counter sut;
-         state::check(state, sut, state::anyCommand<Inc, Dec>);
-       });
+int main() {
+  check([] {
+    CounterModel state;
+    Counter sut;
+    state::check(state, sut, state::anyCommand<Inc, Dec>);
+  });
+
+  return 0;
 }
