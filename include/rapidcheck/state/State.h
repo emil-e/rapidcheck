@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "rapidcheck/Gen.h"
+
 namespace rc {
 namespace state {
 

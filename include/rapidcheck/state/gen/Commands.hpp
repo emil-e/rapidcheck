@@ -1,7 +1,12 @@
 #pragma once
 
+#include "rapidcheck/Random.h"
+#include "rapidcheck/GenerationFailure.h"
+#include "rapidcheck/shrinkable/Transform.h"
+
 namespace rc {
 namespace state {
+namespace gen {
 namespace detail {
 
 template <typename Cmd, typename GenFunc>
@@ -16,7 +21,8 @@ public:
       : m_initialState(std::forward<StateArg>(initialState))
       , m_genFunc(std::forward<GenFuncArg>(genFunc)) {}
 
-  Shrinkable<Commands<Cmd>> operator()(const Random &random, int size) const {
+  Shrinkable<Commands<Cmd>> operator()(const Random &random,
+                                          int size) const {
     return generateCommands(random, size);
   }
 
@@ -85,15 +91,15 @@ private:
   };
 
   Shrinkable<Commands<Cmd>> generateCommands(const Random &random,
-                                             int size) const {
+                                                int size) const {
     return shrinkable::map(generateSequence(random, size),
                            [](const CommandSequence &sequence) {
                              Commands<Cmd> cmds;
                              const auto &entries = sequence.entries;
-                             cmds.commands.reserve(entries.size());
+                             cmds.reserve(entries.size());
                              std::transform(begin(entries),
                                             end(entries),
-                                            std::back_inserter(cmds.commands),
+                                            std::back_inserter(cmds),
                                             [](const CommandEntry &entry) {
                                               return entry.shrinkable.value();
                                             });
@@ -170,42 +176,45 @@ private:
   }
 
   static Seq<CommandSequence> shrinkIndividual(const CommandSequence &s) {
-    return seq::mapcat(seq::range(s.numFixed, s.entries.size()),
-                       [=](std::size_t i) {
-                         const auto &preState = s.stateAt(i);
-                         auto valid = seq::filter(
-                             s.entries[i].shrinkable.shrinks(),
-                             [=](const Shrinkable<CmdSP> &s) {
-                               return isValidCommand(*s.value(), preState);
-                             });
+    return seq::mapcat(
+        seq::range(s.numFixed, s.entries.size()),
+        [=](std::size_t i) {
+          const auto &preState = s.stateAt(i);
+          auto valid =
+              seq::filter(s.entries[i].shrinkable.shrinks(),
+                          [=](const Shrinkable<CmdSP> &s) {
+                            return isValidCommand(*s.value(), preState);
+                          });
 
-                         return seq::map(std::move(valid),
-                                         [=](Shrinkable<CmdSP> &&cmd) {
-                                           auto shrunk = s;
-                                           auto &entry = shrunk.entries[i];
+          return seq::map(std::move(valid),
+                          [=](Shrinkable<CmdSP> &&cmd) {
+                            auto shrunk = s;
+                            auto &entry = shrunk.entries[i];
 
-                                           entry.shrinkable = std::move(cmd);
-                                           entry.postState = shrunk.stateAt(i);
-                                           entry.shrinkable.value()->apply(
-                                               entry.postState);
-                                           shrunk.regenerateEntriesFrom(i + 1);
+                            entry.shrinkable = std::move(cmd);
+                            entry.postState = shrunk.stateAt(i);
+                            entry.shrinkable.value()->apply(entry.postState);
+                            shrunk.regenerateEntriesFrom(i + 1);
 
-                                           shrunk.numFixed = i;
-                                           return shrunk;
-                                         });
-                       });
+                            shrunk.numFixed = i;
+                            return shrunk;
+                          });
+        });
   }
 
   State m_initialState;
   GenFunc m_genFunc;
 };
 
-template <typename Cmd, typename State, typename GenerationFunc>
-Gen<Commands<Cmd>> genCommands(State &&initialState, GenerationFunc &&genFunc) {
+} // namespace detail
+
+template <typename Cmd, typename GenerationFunc>
+Gen<Commands<Cmd>> commands(const typename Cmd::State &initialState,
+                            GenerationFunc &&genFunc) {
   return detail::CommandsGen<Cmd, Decay<GenerationFunc>>(
-      std::forward<State>(initialState), std::forward<GenerationFunc>(genFunc));
+      initialState, std::forward<GenerationFunc>(genFunc));
 }
 
-} // namespace detail
+} // namespace gen
 } // namespace state
 } // namespace rc

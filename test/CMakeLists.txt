@@ -57,7 +57,11 @@ add_executable(rapidcheck_tests
   shrinkable/CreateTests.cpp
   shrinkable/OperationsTests.cpp
   shrinkable/TransformTests.cpp
+  state/CommandTests.cpp
+  state/CommandsTests.cpp
+  state/IntegrationTests.cpp
   state/StateTests.cpp
+  state/gen/Commands.cpp
   )
 
 target_link_libraries(rapidcheck_tests rapidcheck catch rapidcheck_test_utils)

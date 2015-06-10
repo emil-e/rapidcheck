@@ -185,14 +185,8 @@ void showValue(const std::array<T, N> &value, std::ostream &os) {
   showCollection("[", "]", value, os);
 }
 
-struct NoShowValue {};
-NoShowValue showValue(...);
-template <typename T>
-using HasShowValue = typename std::integral_constant<
-    bool,
-    !std::is_same<NoShowValue,
-                  decltype(
-                      showValue(std::declval<T>(), std::cout))>::value>::type;
+RC_SFINAE_TRAIT(HasShowValue, decltype(showValue(std::declval<T>(), std::cout)))
+
 template <typename T,
           bool = HasShowValue<T>::value,
           bool = IsStreamInsertible<T>::value>

@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
+#include <rapidcheck/state.h>
 
 using namespace rc;
 
