@@ -1,5 +1,8 @@
 #pragma once
 
+#include "rapidcheck/detail/Utility.h"
+#include "rapidcheck/detail/ShowType.h"
+
 namespace rc {
 namespace state {
 

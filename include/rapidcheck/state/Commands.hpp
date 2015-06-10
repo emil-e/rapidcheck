@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/detail/Results.h"
+
 namespace rc {
 namespace state {
 

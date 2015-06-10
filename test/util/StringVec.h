@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rapidcheck/state.h>
+
 namespace rc {
 namespace test {
 

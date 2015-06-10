@@ -1,5 +1,6 @@
 #include <catch.hpp>
 #include <rapidcheck-catch.h>
+#include <rapidcheck/state.h>
 
 #include "util/StringVec.h"
 #include "util/GenUtils.h"

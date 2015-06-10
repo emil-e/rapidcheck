@@ -1,4 +1,5 @@
 #include <rapidcheck.h>
+#include <rapidcheck/state.h>
 
 #include "Database.h"
 #include "DatabaseConnection.h"

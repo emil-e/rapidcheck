@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include "rapidcheck/state/gen/Commands.h"
+#include "rapidcheck/gen/Exec.h"
 
 namespace rc {
 namespace state {
