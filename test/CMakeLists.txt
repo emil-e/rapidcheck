@@ -63,7 +63,7 @@ add_executable(rapidcheck_tests
   state/CommandsTests.cpp
   state/IntegrationTests.cpp
   state/StateTests.cpp
-  state/gen/Commands.cpp
+  state/gen/CommandsTests.cpp
   )
 
 target_link_libraries(rapidcheck_tests
