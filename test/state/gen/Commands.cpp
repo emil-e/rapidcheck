@@ -68,7 +68,7 @@ struct CountCmd : public IntVecCmd {
     sut.push_back(value);
   }
 
-  void show(std::ostream &os) const { os << value; }
+  void show(std::ostream &os) const override { os << value; }
 };
 
 } // namespace
