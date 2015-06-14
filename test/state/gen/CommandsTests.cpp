@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#include <rapidcheck-catch.h>
+#include <rapidcheck/catch.h>
 #include <rapidcheck/state.h>
 
 #include "util/StringVec.h"
@@ -68,7 +68,7 @@ struct CountCmd : public IntVecCmd {
     sut.push_back(value);
   }
 
-  void show(std::ostream &os) const { os << value; }
+  void show(std::ostream &os) const override { os << value; }
 };
 
 } // namespace

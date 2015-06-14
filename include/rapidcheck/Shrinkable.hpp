@@ -95,7 +95,6 @@ template <typename Impl, typename... Args>
 Shrinkable<Decay<decltype(std::declval<Impl>().value())>>
 makeShrinkable(Args &&... args) {
   using T = decltype(std::declval<Impl>().value());
-  using IShrinkableImpl = typename Shrinkable<T>::IShrinkableImpl;
   using ShrinkableImpl = typename Shrinkable<T>::template ShrinkableImpl<Impl>;
 
   Shrinkable<T> shrinkable;

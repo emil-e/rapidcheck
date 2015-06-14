@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#include <rapidcheck-catch.h>
+#include <rapidcheck/catch.h>
 
 #include "util/ArbitraryRandom.h"
 #include "util/Predictable.h"
