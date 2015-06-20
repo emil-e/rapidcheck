@@ -41,12 +41,6 @@ void fromString(const std::string &str, T &out, bool &ok) {
   ok = !in.fail();
 }
 
-template <>
-void fromString(const std::string &str, std::string &out, bool &ok) {
-  ok = true;
-  out = str;
-}
-
 // Returns false only on invalid format, not on missing key
 template <typename T, typename Validator>
 bool loadParam(const std::map<std::string, std::string> &map,
