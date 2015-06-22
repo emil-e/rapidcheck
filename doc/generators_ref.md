@@ -1,7 +1,5 @@
 Generators reference
 ====================
-_This section is incomplete._
-
 The following is a reference of all the included generators of RapidCheck. These generators are accessed by factory functions in the `rc::gen` namespace. The signatures are not the actual signatures in the source code and should be seen as pseudo C++ for pedagogical purposes. The real signatures are, of course, uglier.
 
 ## Basic ##
