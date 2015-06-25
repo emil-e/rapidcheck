@@ -35,13 +35,21 @@ Shrinkables<T> generateShrinkables(const Random &random,
   Shrinkables<T> shrinkables;
   shrinkables.reserve(count);
 
-  int currentSize = size;
+  auto currentSize = size;
+  int tries = 0;
   while (shrinkables.size() < count) {
     auto shrinkable = gen(r.split(), currentSize);
     if (predicate(shrinkable)) {
       shrinkables.push_back(std::move(shrinkable));
+      tries = 0;
     } else {
-      // TODO give up eventually
+      tries++;
+      if (tries >= 100) {
+        // TODO magic constant!
+        throw GenerationFailure("Gave up trying to generate " +
+                                std::to_string(count) +
+                                " values for container");
+      }
       currentSize++;
     }
   }

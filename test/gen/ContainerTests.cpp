@@ -31,6 +31,14 @@ struct ContainerFactory {
   }
 };
 
+template <std::size_t Min, std::size_t Max>
+struct FixedContainerFactory {
+  template <typename Container, typename T>
+  static Gen<Container> makeGen(Gen<T> gen) {
+    return gen::container<Container>(*gen::inRange(Min, Max), std::move(gen));
+  }
+};
+
 struct MapFactory {
   template <typename Map, typename T>
   static Gen<Map> makeGen(Gen<T> gen) {
@@ -40,6 +48,14 @@ struct MapFactory {
   template <typename Map, typename T>
   static Gen<Map> makeGen(std::size_t count, Gen<T> gen) {
     return gen::container<Map>(count, gen, gen);
+  }
+};
+
+template <std::size_t Min, std::size_t Max>
+struct FixedMapFactory {
+  template <typename Container, typename T>
+  static Gen<Container> makeGen(Gen<T> gen) {
+    return gen::container<Container>(*gen::inRange(Min, Max), gen, gen);
   }
 };
 
@@ -365,6 +381,38 @@ struct ArbitraryProperties {
   }
 };
 
+template <typename Factory>
+struct RetrialProperties {
+  template <typename T>
+  static void exec() {
+    templatedProp<T>("gives up if not enough unique elements can be generated",
+                     [](const Random &random) {
+                       const auto gen = Factory::template makeGen<T>(gen::just(0));
+                       auto r = random;
+                       while (true) {
+                         try {
+                           gen(r.split(), kNominalSize).value();
+                         } catch (const GenerationFailure &) {
+                           RC_SUCCEED("Threw GenerationFailure");
+                         }
+                       }
+                     });
+
+    templatedProp<T>(
+        "increases size when enough unique elements cannot be generated",
+        [](const GenParams &params) {
+          RC_PRE(params.size > 0);
+          const auto gen = Factory::template makeGen<T>(genSize());
+          auto r = params.random;
+          try {
+            gen(r.split(), params.size).value();
+          } catch (const GenerationFailure &e) {
+            RC_FAIL(std::string("Threw GenerationFailure: ") + e.what());
+          }
+        });
+  }
+};
+
 } // namespace
 
 TEST_CASE("gen::container") {
@@ -404,6 +452,13 @@ TEST_CASE("gen::container") {
                     RC_GENERIC_CONTAINERS(NonCopyable),
                     std::array<Predictable, 5>,
                     std::array<NonCopyable, 5>>();
+
+  meta::forEachType<RetrialProperties<MapFactory>,
+                    std::map<int, int>,
+                    std::unordered_map<int, int>>();
+  meta::forEachType<RetrialProperties<ContainerFactory>,
+                    std::set<int>,
+                    std::unordered_set<int>>();
 }
 
 namespace {
@@ -492,6 +547,13 @@ TEST_CASE("gen::container(std::size_t)") {
   meta::forEachType<ParamsFixedProperties<MapFactory>,
                     RC_MAP_CONTAINERS(GenParams)>();
 
+  meta::forEachType<RetrialProperties<FixedMapFactory<2, 15>>,
+                    std::map<int, int>,
+                    std::unordered_map<int, int>>();
+  meta::forEachType<RetrialProperties<FixedContainerFactory<2, 15>>,
+                    std::set<int>,
+                    std::unordered_set<int>>();
+
   prop("throws GenerationFailure for std::array if count != N",
        [](const GenParams &params) {
          const auto count = *gen::distinctFrom(3);
@@ -566,6 +628,10 @@ TEST_CASE("gen::unique") {
                     RC_SEQUENCE_CONTAINERS(GenParams)>();
   meta::forEachType<UniqueProperties<UniqueFactory>,
                     RC_SEQUENCE_CONTAINERS(int)>();
+
+  meta::forEachType<RetrialProperties<UniqueFactory>,
+                    RC_SEQUENCE_CONTAINERS(int),
+                    std::basic_string<int>>();
 }
 
 struct UniqueByFactory {
