@@ -8,7 +8,6 @@
 
 using namespace rc;
 using namespace rc::test;
-using namespace rc::state::detail;
 
 namespace {
 
@@ -77,7 +76,7 @@ TEST_CASE("state::gen::commands") {
   prop("command sequences are always valid",
        [](const GenParams &params, const StringVec &s0) {
          const auto gen = state::gen::commands<StringVecCmd>(
-           s0, &state::anyCommand<PushBack, PopBack>);
+             s0, &state::gen::execOneOf<PushBack, PopBack>);
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecCmds> &value,
                        const Shrinkable<StringVecCmds> &shrink) {
@@ -88,7 +87,7 @@ TEST_CASE("state::gen::commands") {
   prop("shrinks are shorter or equal length when compared to original",
        [](const GenParams &params, const StringVec &s0) {
          const auto gen = state::gen::commands<StringVecCmd>(
-           s0, &state::anyCommand<PushBack, PopBack>);
+             s0, &state::gen::execOneOf<PushBack, PopBack>);
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecCmds> &value,
                        const Shrinkable<StringVecCmds> &shrink) {
@@ -163,29 +162,31 @@ TEST_CASE("state::gen::commands") {
                    });
        });
 
-  prop("finds minimum where one commands always fails",
-       [](const GenParams &params, const StringVec &s0) {
-         const auto gen = state::gen::commands<StringVecCmd>(
-           s0, &state::anyCommand<AlwaysFail, PushBack, PopBack, SomeCommand>);
-         const auto result = searchGen(params.random,
-                                       params.size,
-                                       gen,
-                                       [&](const StringVecCmds &cmds) {
-                                         try {
-                                           StringVec sut = s0;
-                                           runAll(cmds, s0, sut);
-                                         } catch (...) {
-                                           return true;
-                                         }
-                                         return false;
+  prop(
+      "finds minimum where one commands always fails",
+      [](const GenParams &params, const StringVec &s0) {
+        const auto gen = state::gen::commands<StringVecCmd>(
+            s0,
+            &state::gen::execOneOf<AlwaysFail, PushBack, PopBack, SomeCommand>);
+        const auto result = searchGen(params.random,
+                                      params.size,
+                                      gen,
+                                      [&](const StringVecCmds &cmds) {
+                                        try {
+                                          StringVec sut = s0;
+                                          runAll(cmds, s0, sut);
+                                        } catch (...) {
+                                          return true;
+                                        }
+                                        return false;
 
-                                       });
+                                      });
 
-         RC_ASSERT(result.size() == 1);
-         std::ostringstream os;
-         result.front()->show(os);
-         RC_ASSERT(os.str().find("AlwaysFail") != std::string::npos);
-       });
+        RC_ASSERT(result.size() == 1);
+        std::ostringstream os;
+        result.front()->show(os);
+        RC_ASSERT(os.str().find("AlwaysFail") != std::string::npos);
+      });
 
   // TODO test give up
 }

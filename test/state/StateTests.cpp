@@ -9,8 +9,6 @@
 
 using namespace rc;
 using namespace rc::detail;
-using namespace rc::state::detail;
-using namespace rc::state;
 using namespace rc::test;
 
 TEST_CASE("state::isValidCommand") {
@@ -42,11 +40,12 @@ struct AlwaysDiscard : public StringVecCmd {
 
 } // namespace
 
-TEST_CASE("state::anyCommand") {
+TEST_CASE("state::execOneOf") {
   prop("returns one of the commands",
        [](const GenParams &params, const StringVec &s0) {
          const auto cmd =
-             anyCommand<A, B, C>(s0)(params.random, params.size).value();
+             state::gen::execOneOf<A, B, C>(s0)(params.random, params.size)
+                 .value();
          const auto &cmdRef = *cmd;
          const auto &id = typeid(cmdRef);
          RC_ASSERT((id == typeid(A)) || (id == typeid(B)) || (id == typeid(C)));
@@ -55,7 +54,7 @@ TEST_CASE("state::anyCommand") {
   prop("all commands are eventually returned",
        [](const GenParams &params, const StringVec &s0) {
          auto r = params.random;
-         const auto gen = anyCommand<A, B, C>(s0);
+         const auto gen = state::gen::execOneOf<A, B, C>(s0);
          std::set<std::type_index> all{typeid(A), typeid(B), typeid(C)};
          std::set<std::type_index> generated;
          while (generated != all) {
@@ -68,9 +67,9 @@ TEST_CASE("state::anyCommand") {
 
   prop("uses state constructor if there is one, passing it the state",
        [](const GenParams &params, const StringVec &s0) {
-         const auto cmd =
-             anyCommand<DualConstructible>(s0)(params.random, params.size)
-                 .value();
+         const auto cmd = state::gen::execOneOf<DualConstructible>(s0)(
+                              params.random, params.size)
+                              .value();
          RC_ASSERT(static_cast<const DualConstructible &>(*cmd).state == s0);
        });
 }
@@ -78,13 +77,13 @@ TEST_CASE("state::anyCommand") {
 TEST_CASE("state::check") {
   prop("if no command fails, check succeeds",
        [](const StringVec &s0, StringVec sut) {
-         state::check(s0, sut, &anyCommand<PushBack>);
+         state::check(s0, sut, &state::gen::execOneOf<PushBack>);
        });
 
   prop("if some command fails, check fails",
        [](const StringVec &s0, StringVec sut) {
          try {
-           state::check(s0, sut, &anyCommand<AlwaysFail>);
+           state::check(s0, sut, &state::gen::execOneOf<AlwaysFail>);
            RC_FAIL("Check succeeded");
          } catch (const CaseResult &result) {
            RC_ASSERT(result.type == CaseResult::Type::Failure);

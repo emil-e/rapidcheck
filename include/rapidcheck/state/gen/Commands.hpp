@@ -13,12 +13,12 @@ template <typename Cmd, typename GenFunc>
 class CommandsGen {
 public:
   using CmdSP = std::shared_ptr<const Cmd>;
-  using State = typename Cmd::State;
+  using Model = typename Cmd::Model;
   using Sut = typename Cmd::Sut;
 
-  template <typename StateArg, typename GenFuncArg>
-  CommandsGen(StateArg &&initialState, GenFuncArg &&genFunc)
-      : m_initialState(std::forward<StateArg>(initialState))
+  template <typename ModelArg, typename GenFuncArg>
+  CommandsGen(ModelArg &&initialState, GenFuncArg &&genFunc)
+      : m_initialState(std::forward<ModelArg>(initialState))
       , m_genFunc(std::forward<GenFuncArg>(genFunc)) {}
 
   Shrinkable<Commands<Cmd>> operator()(const Random &random,
@@ -30,30 +30,30 @@ private:
   struct CommandEntry {
     CommandEntry(Random &&aRandom,
                  Shrinkable<CmdSP> &&aShrinkable,
-                 State &&aState)
+                 Model &&aState)
         : random(std::move(aRandom))
         , shrinkable(std::move(aShrinkable))
         , postState(std::move(aState)) {}
 
     Random random;
     Shrinkable<CmdSP> shrinkable;
-    State postState;
+    Model postState;
   };
 
   struct CommandSequence {
-    CommandSequence(const State &initState, const GenFunc &func, int sz)
+    CommandSequence(const Model &initState, const GenFunc &func, int sz)
         : initialState(initState)
         , genFunc(func)
         , size(sz)
         , numFixed(0) {}
 
-    State initialState;
+    Model initialState;
     GenFunc genFunc;
     int size;
     std::size_t numFixed;
     std::vector<CommandEntry> entries;
 
-    const State &stateAt(std::size_t i) const {
+    const Model &stateAt(std::size_t i) const {
       if (i <= 0) {
         return initialState;
       }
@@ -76,6 +76,8 @@ private:
         entry.shrinkable = genFunc(preState)(entry.random, size);
         const auto cmd = entry.shrinkable.value();
         entry.postState = preState;
+        // NOTE: Apply might throw which leaves us with an incorrect postState
+        // but that's okay since the entry will discarded anyway in that case.
         cmd->apply(entry.postState);
         return true;
       } catch (const CaseResult &result) {
@@ -131,7 +133,7 @@ private:
   }
 
   CommandEntry
-  nextEntry(const Random &random, int size, const State &state) const {
+  nextEntry(const Random &random, int size, const Model &state) const {
     using namespace ::rc::detail;
     auto r = random;
     const auto gen = m_genFunc(state);
@@ -202,14 +204,14 @@ private:
         });
   }
 
-  State m_initialState;
+  Model m_initialState;
   GenFunc m_genFunc;
 };
 
 } // namespace detail
 
 template <typename Cmd, typename GenerationFunc>
-Gen<Commands<Cmd>> commands(const typename Cmd::State &initialState,
+Gen<Commands<Cmd>> commands(const typename Cmd::Model &initialState,
                             GenerationFunc &&genFunc) {
   return detail::CommandsGen<Cmd, Decay<GenerationFunc>>(
       initialState, std::forward<GenerationFunc>(genFunc));

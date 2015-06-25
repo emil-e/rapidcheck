@@ -17,6 +17,7 @@ The following document is a work in progress and some parts are still missing. T
 
 ## Reference ##
 - [Generators](generators_ref.md)
+- [Stateful testing](state_ref.md)
 
 ## Advanced topics ##
 - [Gen<T>](Gen.md)

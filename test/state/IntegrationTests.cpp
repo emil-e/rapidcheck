@@ -6,7 +6,6 @@
 
 using namespace rc;
 using namespace rc::test;
-using namespace rc::state::detail;
 
 namespace {
 
@@ -18,23 +17,23 @@ struct Bag {
 using BagCommand = state::Command<Bag, Bag>;
 
 struct Open : public BagCommand {
-  void apply(State &s0) const override {
+  void apply(Model &s0) const override {
     RC_PRE(!s0.open);
     s0.open = true;
   }
 
-  void run(const State &s0, Sut &sut) const override { sut.open = true; }
+  void run(const Model &s0, Sut &sut) const override { sut.open = true; }
 
   void show(std::ostream &os) const override { os << "Open"; }
 };
 
 struct Close : public BagCommand {
-  void apply(State &s0) const override {
+  void apply(Model &s0) const override {
     RC_PRE(s0.open);
     s0.open = false;
   }
 
-  void run(const State &s0, Sut &sut) const override { sut.open = false; }
+  void run(const Model &s0, Sut &sut) const override { sut.open = false; }
 
   void show(std::ostream &os) const override { os << "Close"; }
 };
@@ -42,12 +41,12 @@ struct Close : public BagCommand {
 struct Add : public BagCommand {
   int item = *gen::arbitrary<int>();
 
-  void apply(State &s0) const override {
+  void apply(Model &s0) const override {
     RC_PRE(s0.open);
     s0.items.push_back(item);
   }
 
-  void run(const State &s0, Sut &sut) const override {
+  void run(const Model &s0, Sut &sut) const override {
     sut.items.push_back(item);
   }
 
@@ -61,14 +60,14 @@ struct Del : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  void apply(State &s0) const override {
+  void apply(Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
     auto s1 = s0;
     s0.items.erase(begin(s0.items) + index);
   }
 
-  void run(const State &s0, Sut &sut) const override {
+  void run(const Model &s0, Sut &sut) const override {
     sut.items.erase(begin(sut.items) + index);
   }
 
@@ -82,12 +81,12 @@ struct BuggyGet : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  void apply(State &s0) const override {
+  void apply(Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
   }
 
-  void run(const State &s0, Sut &sut) const override {
+  void run(const Model &s0, Sut &sut) const override {
     RC_ASSERT(sut.items.size() < 2);
     RC_ASSERT(sut.items[index] == s0.items[index]);
   }
@@ -102,13 +101,13 @@ struct BuggyDelAll : public BagCommand {
 
   explicit BuggyDelAll(const Bag &s0) { value = *gen::elementOf(s0.items); }
 
-  void apply(State &s0) const override {
+  void apply(Model &s0) const override {
     RC_PRE(s0.open);
     s0.items.erase(std::remove(begin(s0.items), end(s0.items), value),
                    end(s0.items));
   }
 
-  void run(const State &s0, Sut &sut) const override { RC_FAIL("Bug!"); }
+  void run(const Model &s0, Sut &sut) const override { RC_FAIL("Bug!"); }
 
   void show(std::ostream &os) const override {
     os << "BuggyDelAll(" << value << ")";
@@ -131,7 +130,7 @@ std::vector<std::string> showCommands(const state::Commands<Cmd> &commands) {
 template <typename Cmd>
 state::Commands<Cmd> findMinCommands(const GenParams &params,
                                      const Gen<state::Commands<Cmd>> &gen,
-                                     const typename Cmd::State &s0) {
+                                     const typename Cmd::Model &s0) {
   return searchGen(params.random,
                    params.size,
                    gen,
@@ -155,7 +154,7 @@ TEST_CASE("state integration tests") {
       [](const GenParams &params) {
         Bag s0;
         const auto gen = state::gen::commands<BagCommand>(
-            s0, &state::anyCommand<Open, Close, Add, Del, BuggyGet>);
+            s0, &state::gen::execOneOf<Open, Close, Add, Del, BuggyGet>);
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
         RC_ASSERT(cmdStrings.size() == 4);
@@ -172,7 +171,7 @@ TEST_CASE("state integration tests") {
       [](const GenParams &params) {
         Bag s0;
         const auto gen = state::gen::commands<BagCommand>(
-            s0, &state::anyCommand<Open, Close, Add, Del, BuggyDelAll>);
+            s0, &state::gen::execOneOf<Open, Close, Add, Del, BuggyDelAll>);
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
         std::vector<std::string> expected{"Open", "Add(0)", "BuggyDelAll(0)"};

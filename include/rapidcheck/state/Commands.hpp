@@ -5,16 +5,16 @@
 namespace rc {
 namespace state {
 
-template <typename Cmds, typename State>
-void applyAll(const Cmds &commands, State &state) {
+template <typename Cmds, typename Model>
+void applyAll(const Cmds &commands, Model &state) {
   for (const auto &command : commands) {
     command->apply(state);
   }
 }
 
-template <typename Cmds, typename State, typename Sut>
-void runAll(const Cmds &commands, const State &state, Sut &sut) {
-  State currentState = state;
+template <typename Cmds, typename Model, typename Sut>
+void runAll(const Cmds &commands, const Model &state, Sut &sut) {
+  Model currentState = state;
   for (const auto &command : commands) {
     auto preState = currentState;
     // We need to apply first so we trigger any precondition assertions
@@ -24,8 +24,8 @@ void runAll(const Cmds &commands, const State &state, Sut &sut) {
   }
 }
 
-template <typename Cmds, typename State>
-bool isValidSequence(const Cmds &commands, const State &s0) {
+template <typename Cmds, typename Model>
+bool isValidSequence(const Cmds &commands, const Model &s0) {
   try {
     auto s1 = s0;
     applyAll(commands, s1);
@@ -39,9 +39,9 @@ bool isValidSequence(const Cmds &commands, const State &s0) {
   return true;
 }
 
-template <typename State, typename Sut>
+template <typename Model, typename Sut>
 void showValue(const std::vector<
-                   std::shared_ptr<const state::Command<State, Sut>>> &commands,
+                   std::shared_ptr<const state::Command<Model, Sut>>> &commands,
                std::ostream &os) {
   for (const auto &command : commands) {
     command->show(os);
