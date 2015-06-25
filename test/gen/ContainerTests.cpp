@@ -621,10 +621,10 @@ struct UniqueProperties {
 };
 
 TEST_CASE("gen::unique") {
-  meta::forEachType<GenericProperties<ContainerFactory>,
+  meta::forEachType<GenericProperties<UniqueFactory>,
                     RC_SEQUENCE_CONTAINERS(int),
                     std::basic_string<int>>();
-  meta::forEachType<ParamsProperties<ContainerFactory>,
+  meta::forEachType<ParamsProperties<UniqueFactory>,
                     RC_SEQUENCE_CONTAINERS(GenParams)>();
   meta::forEachType<UniqueProperties<UniqueFactory>,
                     RC_SEQUENCE_CONTAINERS(int)>();
