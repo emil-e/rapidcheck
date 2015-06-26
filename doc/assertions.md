@@ -37,6 +37,9 @@ The selection of assertion macros is currently rather slim. Suggestions on how t
 ### `RC_ASSERT(expression)` ###
 Fails the test case if `expression` evaluates to `false`.
 
+### `RC_ASSERT_FALSE(expression)` ###
+Fails the test case if `expression` evaluates to `true`. Use this instead of `RC_ASSERT(!(...))` since RapidCheck cannot capture the expression in that case.
+
 ### `RC_FAIL(msg)` ###
 Unconditionally fails the test case with `msg` as message.
 
