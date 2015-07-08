@@ -7,11 +7,11 @@ bool check(Testable);
 bool check(std::string, Testable);
 ```
 
-The only difference between these two is that the second one takes a description description of the promise which will be printed to stderr then the property is run. If the property succeeds, `true` will be returned, otherwise `false` will be returned.
+The only difference between these two is that the second one takes a description of the promise which will be printed to stderr when the property is run. If the property succeeds, `true` will be returned, otherwise `false` will be returned.
 
-The other argument whose type we denote as `Testable` and this is the actual implementation of the property. This argument is a callable that will be called repeatedly by RapidCheck with different inputs to try and find a set of inputs for which the property does not hold. This callable must meet the following:
+The other argument, whose type we denote as `Testable`, is the actual implementation of the property. This argument is a callable that will be called repeatedly by RapidCheck with different inputs to try to find a set of inputs for which the property does not hold. This callable must meet the following requirements:
 
-- Its parameters must have types that RapidCheck knows how to generate. The arguments must taken by value (`T`), by const reference (`const T &`) or by rvalue reference (`T &&`). Non-const references are not allowed since the arguments are passed as rvalues (temporaries). When called, RapidCheck will generate random values for these parameters. For more information about this, check out the documentation on [generators](generators.md).
+- Its parameters must have types that RapidCheck knows how to generate. The arguments must be taken by value (`T`), by const reference (`const T &`) or by rvalue reference (`T &&`). Non-const references are not allowed since the arguments are passed as rvalues (temporaries). When called, RapidCheck will generate random values for these parameters. For more information about this, check out the documentation on [generators](generators.md).
 - Its return type must be either `void` or `bool`. If the return type is `void`, the property is assumed to succeed unless an exception is thrown, most likely by an [assertion macro](assertions.md). If the property returns `bool`, `true` is taken to mean success while `false` means failure.
 - The call operator must not be a template.
 
@@ -24,7 +24,7 @@ rc::check([](const std::string &str) {
 ```
 
 ## Checking preconditions ##
-Many properties that we want to check are only valid if certain preconditions on the inputs are met. For example, if we wanted to test a function that splits a string into two equally sized parts, the precondition would be that the length of the string must be even. This can be achieved with the `RC_PRE` macro like this:
+Many properties that we want to check are only valid if certain preconditions on the inputs are met. For example, if we wanted to test a function that splits a string into two equally sized parts, the precondition would be that the length of the string must be even. This can be achieved with the `RC_PRE` macro:
 
 ```C++
 rc::check([](const std::string &str) {

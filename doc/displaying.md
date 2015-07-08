@@ -1,6 +1,6 @@
 Displaying values
 =================
-RapidCheck often needs to display values as strings, such as when printing assertion messages or counterexamples. To do this, it calls the `rc::show(const T &, std::ostream &)` template function. This template takes a value to display and a stream to output the string representation to. Given a value `v` and an output stream `os`, calling this template will do one of the following
+RapidCheck often needs to display values as strings, such as when printing assertion messages or counterexamples. To do this, RapidCheck calls the `rc::show(const T &, std::ostream &)` template function. This template takes a value to display and a stream to output the string representation to. Given a value `v` and an output stream `os`, calling this template will do one of the following
 
 - If there is a valid overload for a call to `showValue(v, os)`, calls this overload.
 - If there is a valid stream insertion operator (i.e. `std::ostream &operator<<(std::ostream &, const T &)`) defined, this is used.
