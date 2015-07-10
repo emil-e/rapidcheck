@@ -33,14 +33,18 @@ TestResult doCheckProperty(const Property &property,
     const auto shrinkResult = params.disableShrinking
         ? std::make_pair(*searchResult.failure, 0)
         : shrinkTestCase(*searchResult.failure, listener);
+
+    // Give the developer a chance to set a breakpoint before the final minimal
+    // test case is run
     beforeMinimalTestCase();
+    // ...and here we actually run it
     const auto caseDescription = shrinkResult.first.value();
 
     FailureResult failure;
     failure.numSuccess = searchResult.numSuccess;
     failure.description = std::move(caseDescription.result.description);
     failure.numShrinks = shrinkResult.second;
-    failure.counterExample = std::move(caseDescription.example);
+    failure.counterExample = caseDescription.example();
     return failure;
   }
 }

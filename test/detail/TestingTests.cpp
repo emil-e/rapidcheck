@@ -211,7 +211,7 @@ TEST_CASE("searchProperty") {
            const auto strx = std::to_string(x);
            desc.result.description = strx;
            desc.tags.push_back(strx);
-           desc.example.emplace_back("int", strx);
+           desc.example = [=] { return Example{{"int", strx}}; };
            ImplicitParam<param::CurrentPropertyContext>::value()->addTag(strx);
            expected.push_back(desc);
 

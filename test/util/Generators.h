@@ -87,7 +87,12 @@ struct Arbitrary<detail::CaseDescription> {
     return gen::build<detail::CaseDescription>(
         gen::set(&detail::CaseDescription::result),
         gen::set(&detail::CaseDescription::tags),
-        gen::set(&detail::CaseDescription::example));
+        gen::set(&detail::CaseDescription::example,
+                 gen::map<detail::Example>(
+                     [](detail::Example &&example)
+                         -> std::function<detail::Example()> {
+                           return fn::constant(std::move(example));
+                         })));
   }
 };
 

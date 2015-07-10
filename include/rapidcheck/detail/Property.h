@@ -9,7 +9,7 @@ namespace detail {
 struct CaseDescription {
   CaseResult result;
   std::vector<std::string> tags;
-  Example example;
+  std::function<Example()> example;
 };
 
 bool operator==(const CaseDescription &lhs, const CaseDescription &rhs);
