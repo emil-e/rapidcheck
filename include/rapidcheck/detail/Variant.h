@@ -42,15 +42,17 @@ public:
   template <typename T>
   bool is() const;
 
-  /// Returns a reference to the internal value as a reference to `T`.
-  /// nchecked.
+  /// Returns a reference to the internal value. Unchecked.
   template <typename T>
-  T &get();
+  T &get()&;
 
-  /// Returns a reference to the internal value as a reference to `const T`.
-  /// nchecked.
+  /// Returns a const reference to the internal value. Unchecked.
   template <typename T>
-  const T &get() const;
+  const T &get() const &;
+
+  /// Returns an rvalue reference to the internal value. Unchecked.
+  template <typename T>
+  T &&get()&&;
 
   /// If this variant is of type `T`, assigns the value of the variant to
   /// `value` and return `true`.

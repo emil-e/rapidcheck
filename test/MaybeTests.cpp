@@ -341,6 +341,15 @@ TEST_CASE("Maybe") {
     }
   }
 
+  SECTION("operator*") {
+    SECTION("dereference rvalue is rvalue") {
+      Maybe<Logger> maybe(foo);
+      const auto logger = *std::move(maybe);
+      // If copied instead of moved above there will be two copies
+      REQUIRE(logger.numberOf("copy") == 1);
+    }
+  }
+
   SECTION("operator->") {
     SECTION("returns a pointer to the value") {
       Maybe<int> maybe;

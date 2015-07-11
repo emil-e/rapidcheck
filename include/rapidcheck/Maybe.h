@@ -45,11 +45,15 @@ public:
   void reset();
 
   /// Returns a reference to the contained value. No checking is performed.
-  T &operator*();
+  T &operator*() &;
 
   /// Returns a const reference to the contained value. No checking is
   /// performed.
-  const T &operator*() const;
+  const T &operator*() const &;
+
+  /// Returns an rvalue reference to the contained value. No checking is
+  /// performed.
+  T &&operator*() &&;
 
   /// Returns a pointer to the contained value. No checking is performed.
   T *operator->();
