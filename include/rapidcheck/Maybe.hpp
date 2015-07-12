@@ -65,13 +65,18 @@ void Maybe<T>::reset() {
 }
 
 template <typename T>
-T &Maybe<T>::operator*() {
+T &Maybe<T>::operator*() & {
   return *reinterpret_cast<T *>(&m_storage);
 }
 
 template <typename T>
-const T &Maybe<T>::operator*() const {
+const T &Maybe<T>::operator*() const & {
   return *reinterpret_cast<const T *>(&m_storage);
+}
+
+template <typename T>
+T &&Maybe<T>::operator*() && {
+  return std::move(*reinterpret_cast<T *>(&m_storage));
 }
 
 template <typename T>

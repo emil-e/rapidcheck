@@ -18,7 +18,17 @@ TEST_CASE("CaseDescription") {
     propConformsToEquals<CaseDescription>();
     PROP_REPLACE_MEMBER_INEQUAL(CaseDescription, result);
     PROP_REPLACE_MEMBER_INEQUAL(CaseDescription, tags);
-    PROP_REPLACE_MEMBER_INEQUAL(CaseDescription, example);
+
+    prop("not equal if example not equal",
+         [](const CaseDescription &original) {
+           auto other(original);
+           const auto otherExample = *gen::distinctFrom(other.example());
+           other.example = [=] { return otherExample; };
+           RC_ASSERT(original != other);
+           RC_ASSERT(other != original);
+           RC_ASSERT(!(original == other));
+           RC_ASSERT(!(other == original));
+         });
   }
 
   SECTION("operator<<") { propConformsToOutputOperator<CaseDescription>(); }
@@ -239,7 +249,7 @@ TEST_CASE("toProperty") {
          onAnyPath(shrinkable,
                    [&](const ShrinkableResult &value,
                        const ShrinkableResult &shrink) {
-                     RC_ASSERT(value.value().example == expected);
+                     RC_ASSERT(value.value().example() == expected);
                    });
        });
 
@@ -278,7 +288,7 @@ TEST_CASE("toProperty") {
         onAnyPath(
             shrinkable,
             [&](const ShrinkableResult &value, const ShrinkableResult &shrink) {
-              RC_ASSERT(value.value().example == expected);
+              RC_ASSERT(value.value().example() == expected);
             });
       });
 
@@ -293,7 +303,7 @@ TEST_CASE("toProperty") {
              [](const ShrinkableResult &value, const ShrinkableResult &shrink) {
                const auto desc = value.value();
                RC_ASSERT((desc.result.type == CaseResult::Type::Success) ==
-                         ((std::stoi(desc.example.back().second) % 2) == 0));
+                         ((std::stoi(desc.example().back().second) % 2) == 0));
              });
        });
 
@@ -312,7 +322,7 @@ TEST_CASE("toProperty") {
              shrinkable,
              [](const ShrinkableResult &value, const ShrinkableResult &shrink) {
                const auto desc = value.value();
-               RC_ASSERT(toString(desc.tags) == desc.example.back().second);
+               RC_ASSERT(toString(desc.tags) == desc.example().back().second);
              });
        });
 }

@@ -67,7 +67,7 @@ TaggedResult AdapterContext::result() const {
 
 bool operator==(const CaseDescription &lhs, const CaseDescription &rhs) {
   return (lhs.result == rhs.result) && (lhs.tags == rhs.tags) &&
-      (lhs.example == rhs.example);
+      (lhs.example() == rhs.example());
 }
 
 bool operator!=(const CaseDescription &lhs, const CaseDescription &rhs) {
@@ -118,18 +118,21 @@ Gen<CaseDescription>
 mapToCaseDescription(Gen<std::pair<TaggedResult, gen::detail::Recipe>> gen) {
   return gen::map(std::move(gen),
                   [](std::pair<TaggedResult, gen::detail::Recipe> &&p) {
-                    Example example;
-                    const auto &ingr = p.second.ingredients;
-                    example.reserve(ingr.size());
-                    std::transform(begin(ingr),
-                                   end(ingr),
-                                   std::back_inserter(example),
-                                   &describeShrinkable);
-
                     CaseDescription description;
                     description.result = std::move(p.first.result);
                     description.tags = std::move(p.first.tags);
-                    description.example = std::move(example);
+
+                    const auto ingredients = std::move(p.second.ingredients);
+                    description.example = [ingredients] {
+                      Example example;
+                      example.reserve(ingredients.size());
+                      std::transform(begin(ingredients),
+                                     end(ingredients),
+                                     std::back_inserter(example),
+                                     &describeShrinkable);
+                      return example;
+                    };
+
                     return description;
                   });
 }

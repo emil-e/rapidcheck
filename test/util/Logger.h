@@ -47,12 +47,12 @@ public:
   }
 
   template <typename... Args>
-  void requireExact(Args &&... args) {
+  void requireExact(Args &&... args) const {
     std::vector<std::string> expected{std::forward<Args>(args)...};
     REQUIRE(log == expected);
   }
 
-  bool hasLogItem(const std::string &item) {
+  bool hasLogItem(const std::string &item) const {
     return std::find(begin(log), end(log), item) != end(log);
   }
 

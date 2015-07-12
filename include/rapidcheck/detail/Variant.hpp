@@ -71,16 +71,22 @@ operator=(T &&value) noexcept {
 
 template <typename Type, typename... Types>
 template <typename T>
-T &Variant<Type, Types...>::get() {
+T &Variant<Type, Types...>::get() & {
   assert(indexOfType<T>() == m_typeIndex);
   return *reinterpret_cast<T *>(&m_storage);
 }
 
 template <typename Type, typename... Types>
 template <typename T>
-const T &Variant<Type, Types...>::get() const {
+const T &Variant<Type, Types...>::get() const & {
   assert(indexOfType<T>() == m_typeIndex);
   return *reinterpret_cast<const T *>(&m_storage);
+}
+
+template <typename Type, typename... Types>
+template <typename T>
+T &&Variant<Type, Types...>::get() && {
+  return std::move(get<T>());
 }
 
 // TODO this would be more fun with varargs and lambdas

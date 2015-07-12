@@ -227,6 +227,14 @@ TEST_CASE("Variant") {
     }
   }
 
+  SECTION("get") {
+    SECTION("returns rvalue reference for rvalues") {
+      ABC v(Logger("foo"));
+      const auto logger = std::move(v).get<Logger>();
+      REQUIRE(logger.numberOf("copy") == 0);
+    }
+  }
+
   SECTION("match") {
     A a("AAA");
     B b("BBB");
