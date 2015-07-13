@@ -34,17 +34,6 @@ template <typename Callable, typename... Ts>
 Gen<typename std::result_of<Callable(Ts...)>::type>
 apply(Callable &&callable, Gen<Ts>... gens);
 
-/// Returns a generator that uses the given generator to generate only values
-/// that match the given predicate. Throws a `GenerationFailure` if such a value
-/// cannot be generated after an unspecified number of tries.
-template <typename T, typename Predicate>
-Gen<T> suchThat(Gen<T> gen, Predicate &&pred);
-
-/// Convenience function which calls `suchThat(Gen<T>, Predicate)` with
-/// `gen::arbitrary<T>`
-template <typename T, typename Predicate>
-Gen<T> suchThat(Predicate &&pred);
-
 /// Returns a generator that casts the generated values to `T` using
 /// `static_cast<T>(...)`.
 template <typename T, typename U>

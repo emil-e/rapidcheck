@@ -11,6 +11,7 @@ The following document is a work in progress and some parts are still missing. T
 - [Assertions](assertions.md)
 - [Reporting distribution](distribution.md)
 - [Configuration](configuration.md)
+- [Debugging](debugging.md)
 - [Stateful testing](state.md)
 
 ## Extras ##

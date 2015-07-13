@@ -1,13 +1,10 @@
 #include "rapidcheck/Check.h"
 
 #include "rapidcheck/detail/LogTestListener.h"
+#include "rapidcheck/BeforeMinimalTestCase.h"
 #include "detail/Testing.h"
 
 namespace rc {
-
-/// Dummy function to set breakpoint on before running minimal test case.
-void beforeMinimalTestCase() {}
-
 namespace detail {
 namespace {
 

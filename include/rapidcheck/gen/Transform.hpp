@@ -70,36 +70,6 @@ private:
   Gen<Gen<T>> m_gen;
 };
 
-template <typename T, typename Predicate>
-class FilterGen {
-public:
-  template <typename PredicateArg>
-  FilterGen(Gen<T> gen, PredicateArg &&predicate)
-      : m_predicate(std::forward<PredicateArg>(predicate))
-      , m_gen(std::move(gen)) {}
-
-  Shrinkable<T> operator()(const Random &random, int size) const {
-    Random r(random);
-    int currentSize = size;
-    for (int tries = 0; tries < 100; tries++) {
-      auto shrinkable =
-          shrinkable::filter(m_gen(r.split(), currentSize), m_predicate);
-
-      if (shrinkable) {
-        return std::move(*shrinkable);
-      }
-      currentSize++;
-    }
-
-    throw GenerationFailure(
-        "Gave up trying to generate value satisfying predicate.");
-  }
-
-private:
-  Predicate m_predicate;
-  Gen<T> m_gen;
-};
-
 } // namespace detail
 
 template <typename T, typename Mapper>
@@ -133,17 +103,6 @@ Gen<typename std::result_of<Callable(Ts...)>::type> apply(Callable &&callable,
                   [=](std::tuple<Ts...> &&tuple) {
                     return rc::detail::applyTuple(std::move(tuple), callable);
                   });
-}
-
-template <typename T, typename Predicate>
-Gen<T> suchThat(Gen<T> gen, Predicate &&pred) {
-  return detail::FilterGen<T, Decay<Predicate>>(std::move(gen),
-                                                std::forward<Predicate>(pred));
-}
-
-template <typename T, typename Predicate>
-Gen<T> suchThat(Predicate &&pred) {
-  return gen::suchThat(gen::arbitrary<T>(), std::forward<Predicate>(pred));
 }
 
 template <typename T, typename U>

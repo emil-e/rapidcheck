@@ -8,6 +8,7 @@ option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -std=c++11")
 
 add_library(rapidcheck
+  src/BeforeMinimalTestCase.cpp
   src/Check.cpp
   src/Classify.cpp
   src/GenerationFailure.cpp

@@ -76,6 +76,11 @@ struct DefaultArbitrary<double> {
 };
 
 template <>
+struct DefaultArbitrary<long double> {
+  static Gen<long double> arbitrary() { return real<long double>; }
+};
+
+template <>
 struct DefaultArbitrary<bool> {
   static Gen<bool> arbitrary() { return boolean; }
 };
@@ -103,26 +108,6 @@ Gen<T> inRange(T min, T max) {
     return shrinkable::shrinkRecur(
         value, [=](T x) { return shrink::towards<T>(x, min); });
   };
-}
-
-template <typename T>
-Gen<T> nonZero() {
-  return gen::suchThat(gen::arbitrary<T>(), [](T x) { return x != 0; });
-}
-
-template <typename T>
-Gen<T> positive() {
-  return gen::suchThat(gen::arbitrary<T>(), [](T x) { return x > 0; });
-}
-
-template <typename T>
-Gen<T> negative() {
-  return gen::suchThat(gen::arbitrary<T>(), [](T x) { return x < 0; });
-}
-
-template <typename T>
-Gen<T> nonNegative() {
-  return gen::suchThat(gen::arbitrary<T>(), [](T x) { return x >= 0; });
 }
 
 } // namespace gen

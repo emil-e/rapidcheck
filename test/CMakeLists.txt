@@ -39,7 +39,6 @@ add_executable(rapidcheck_tests
   gen/ContainerTests/NonFixed.cpp
   gen/ContainerTests/Unique.cpp
   gen/CreateTests.cpp
-  gen/DistinctTests.cpp
   gen/ExecTests.cpp
   gen/MaybeTests.cpp
   gen/NumericTests.cpp
