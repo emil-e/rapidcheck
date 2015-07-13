@@ -110,25 +110,5 @@ Gen<T> inRange(T min, T max) {
   };
 }
 
-template <typename T>
-Gen<T> nonZero() {
-  return gen::suchThat(gen::arbitrary<T>(), [](T x) { return x != 0; });
-}
-
-template <typename T>
-Gen<T> positive() {
-  return gen::suchThat(gen::arbitrary<T>(), [](T x) { return x > 0; });
-}
-
-template <typename T>
-Gen<T> negative() {
-  return gen::suchThat(gen::arbitrary<T>(), [](T x) { return x < 0; });
-}
-
-template <typename T>
-Gen<T> nonNegative() {
-  return gen::suchThat(gen::arbitrary<T>(), [](T x) { return x >= 0; });
-}
-
 } // namespace gen
 } // namespace rc

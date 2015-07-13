@@ -16,7 +16,6 @@
 #include "rapidcheck/gen/Build.h"
 #include "rapidcheck/gen/Container.h"
 #include "rapidcheck/gen/Create.h"
-#include "rapidcheck/gen/Distinct.h"
 #include "rapidcheck/gen/Exec.h"
 #include "rapidcheck/gen/Maybe.h"
 #include "rapidcheck/gen/Numeric.h"
