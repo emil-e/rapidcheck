@@ -76,6 +76,11 @@ struct DefaultArbitrary<double> {
 };
 
 template <>
+struct DefaultArbitrary<long double> {
+  static Gen<long double> arbitrary() { return real<long double>; }
+};
+
+template <>
 struct DefaultArbitrary<bool> {
   static Gen<bool> arbitrary() { return boolean; }
 };
