@@ -17,6 +17,15 @@ void check(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
   runAll(commands, initialState, sut);
 }
 
+template <typename Model, typename Sut, typename GenFunc>
+void checkParallel(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
+  const auto commands =
+      *gen::commands<Command<Model, Sut>>(
+          initialState, std::forward<GenFunc>(generationFunc));
+  runAllParallel(commands, initialState, sut);
+}
+
+
 template <typename Model, typename Sut>
 bool isValidCommand(const Command<Model, Sut> &command, const Model &s0) {
   try {

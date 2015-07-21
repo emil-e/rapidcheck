@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(rapidcheck)
 enable_testing()
 
-option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
+option(RC_ENABLE_TESTS "Build RapidCheck tests" ON)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -std=c++11")

@@ -10,7 +10,10 @@ template <typename Model, typename Sut>
 void Command<Model, Sut>::apply(Model &s0) const {}
 
 template <typename Model, typename Sut>
-void Command<Model, Sut>::run(const Model &s0, Sut &sut) const {}
+void Command<Model, Sut>::run(Sut &sut) const {}
+
+template <typename Model, typename Sut>
+void Command<Model, Sut>::verify(const Model &s0) const {}
 
 template <typename Model, typename Sut>
 void Command<Model, Sut>::show(std::ostream &os) const {

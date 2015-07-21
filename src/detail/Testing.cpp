@@ -83,16 +83,20 @@ shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
                TestListener &listener) {
   int numShrinks = 0;
   Shrinkable<CaseDescription> best = shrinkable;
+  bool failed = false;
 
   auto shrinks = shrinkable.shrinks();
   while (auto shrink = shrinks.next()) {
-    auto caseDescription = shrink->value();
-    bool accept = caseDescription.result.type == CaseResult::Type::Failure;
-    listener.onShrinkTried(caseDescription, accept);
-    if (accept) {
-      best = std::move(*shrink);
-      shrinks = best.shrinks();
-      numShrinks++;
+    for (int i=0; i<10000; i++){
+      auto caseDescription = shrink->value();
+      bool accept = caseDescription.result.type == CaseResult::Type::Failure;
+      listener.onShrinkTried(caseDescription, accept);
+      if (accept) {
+        best = std::move(*shrink);
+        shrinks = best.shrinks();
+        numShrinks++;
+        break;
+      }
     }
   }
 
