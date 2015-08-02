@@ -20,7 +20,7 @@ void check(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
 template <typename Model, typename Sut, typename GenFunc>
 void checkParallel(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
   const auto commands =
-      *gen::commands<Command<Model, Sut>>(
+      *gen::parallelCommands<Command<Model, Sut>>(
           initialState, std::forward<GenFunc>(generationFunc));
   runAllParallel(commands, initialState, sut);
 }

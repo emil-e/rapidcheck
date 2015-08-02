@@ -1,6 +1,8 @@
 #pragma once
 
 #include "rapidcheck/detail/Results.h"
+#include "rapidcheck/state/gen/ParallelCommands.hpp"
+#include "rapidcheck/Assertions.h"
 #include <thread>
 #include <mutex>
 
@@ -54,40 +56,8 @@ private:
   unsigned int m_generation;
 };
 
-template<typename Cmds>
-struct ParallelCommandSequence
-{
-   ParallelCommandSequence(const Cmds& serialCmdSeq,
-                          const Cmds& parallelCmdSeq1,
-                          const Cmds& parallelCmdSeq2)
-      : serialCmdSeq(serialCmdSeq)
-      , parallelCmdSeq1(parallelCmdSeq1)
-      , parallelCmdSeq2(parallelCmdSeq2)
-   {
-   }
-
-   Cmds serialCmdSeq;
-   Cmds parallelCmdSeq1;
-   Cmds parallelCmdSeq2;
-};
-
-std::vector<std::vector<int>> commandIndeciesPermutations(int s1count, int s2count)
-{
-   // Create a vector with the desired number of zeros and ones
-   std::vector<int> indecies(s1count, 0);
-   std::vector<int> ones(s2count, 1);
-   indecies.insert(indecies.end(), ones.begin(), ones.end());
-
-   std::vector<std::vector<int>> permutations;
-   permutations.push_back(indecies);
-
-   while(std::next_permutation(indecies.begin(), indecies.end()))
-   {
-      permutations.push_back(indecies);
-   }
-
-   return permutations;
-}
+std::vector<std::vector<int>>
+commandIndeciesPermutations(int s1count, int s2count);
 
 template<typename Cmds>
 Cmds indexVectorToCommandSequence(std::vector<int> indecies, const Cmds& s1, const Cmds& s2)
@@ -111,7 +81,8 @@ Cmds indexVectorToCommandSequence(std::vector<int> indecies, const Cmds& s1, con
 }
 
 template <typename Cmds>
-std::vector<Cmds> commandSequencePermutations(const ParallelCommandSequence<Cmds>& parallelCmds)
+std::vector<Cmds> commandSequencePermutations(
+  const gen::detail::ParallelCommandSequence<Cmds>& parallelCmds)
 {
    auto& p1 = parallelCmds.parallelCmdSeq1;
    auto& p2 = parallelCmds.parallelCmdSeq2;
@@ -129,7 +100,7 @@ std::vector<Cmds> commandSequencePermutations(const ParallelCommandSequence<Cmds
 }
 
 template<typename Cmds>
-ParallelCommandSequence<Cmds> splitCommands(const Cmds& commands)
+gen::detail::ParallelCommandSequence<Cmds> splitCommands(const Cmds& commands)
 {
   // TODO: Refactor to a single case.
   auto cmdCount = commands.size();
@@ -138,7 +109,7 @@ ParallelCommandSequence<Cmds> splitCommands(const Cmds& commands)
     auto groupSize = cmdCount / 2;
     auto p1Begin = commands.begin();
     auto p2Begin = p1Begin + groupSize;
-    return ParallelCommandSequence<Cmds>(
+    return gen::detail::ParallelCommandSequence<Cmds>(
           Cmds(),
           Cmds(p1Begin, p1Begin + groupSize),
           Cmds(p2Begin, commands.end()));
@@ -148,7 +119,7 @@ ParallelCommandSequence<Cmds> splitCommands(const Cmds& commands)
     auto sBegin  = commands.begin();
     auto p1Begin = sBegin  + cmdCount - 12;
     auto p2Begin = p1Begin + 6;
-    return ParallelCommandSequence<Cmds>(
+    return gen::detail::ParallelCommandSequence<Cmds>(
           Cmds(sBegin, p1Begin),
           Cmds(p1Begin, p2Begin),
           Cmds(p2Begin, commands.end()));
@@ -156,7 +127,9 @@ ParallelCommandSequence<Cmds> splitCommands(const Cmds& commands)
 }
 
 template <typename Cmds, typename Model>
-void verifyCommandSequence(const ParallelCommandSequence<Cmds>& parallelCmdSeq, const Model &state)
+void verifyCommandSequence(
+  const gen::detail::ParallelCommandSequence<Cmds>& parallelCmdSeq,
+  const Model &state)
 {
   auto possibleSequences = commandSequencePermutations(parallelCmdSeq);
   bool atLeastOneFailed = false;
@@ -187,7 +160,7 @@ void verifyCommandSequence(const ParallelCommandSequence<Cmds>& parallelCmdSeq, 
 }
 
 template <typename Cmds, typename Sut>
-void runParallelCmdSeq(const ParallelCommandSequence<Cmds>& parallelCmdSeq, Sut &sut) {
+void runParallelCmdSeq(const gen::detail::ParallelCommandSequence<Cmds>& parallelCmdSeq, Sut &sut) {
   // Run serial commands
   for (const auto &command : parallelCmdSeq.serialCmdSeq) {
     command->run(sut);
@@ -221,10 +194,10 @@ void runParallelCmdSeq(const ParallelCommandSequence<Cmds>& parallelCmdSeq, Sut 
 template <typename Cmds, typename Model, typename Sut>
 void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
   // TODO: Verify pre-conditions for all possible interleavings
-  auto parallelCommandSeq = splitCommands(commands);
-  runParallelCmdSeq(parallelCommandSeq, sut);
+//  auto parallelCommandSeq = gen::detail::toParallelSequence(commands);
+  runParallelCmdSeq(commands, sut);
   // Verify that the interleaving can be explained by the model
-  verifyCommandSequence(parallelCommandSeq, state);
+  verifyCommandSequence(commands, state);
 }
 
 template <typename Cmds, typename Model, typename Sut>

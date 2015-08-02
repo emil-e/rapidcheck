@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/state/Command.h"
+#include "rapidcheck/Gen.h"
 
 namespace rc {
 namespace state {

@@ -87,18 +87,3 @@ TEST_CASE("show(Commands)") {
          RC_ASSERT(expected.str() == actual.str());
        });
 }
-
-TEST_CASE("state::splitCommands") {
-  prop("splits commands into three equally(ish) sized groups",
-       [] {
-         const auto cmds = *pushBackCommands();
-         auto parallelCmdSeq = splitCommands(cmds);
-
-         // Merged sequences should equal original sequence
-         auto mergedCmds = parallelCmdSeq.serialCmdSeq;
-         mergedCmds.insert(mergedCmds.end(), parallelCmdSeq.parallelCmdSeq1.begin(), parallelCmdSeq.parallelCmdSeq1.end());
-         mergedCmds.insert(mergedCmds.end(), parallelCmdSeq.parallelCmdSeq2.begin(), parallelCmdSeq.parallelCmdSeq2.end());
-
-         RC_ASSERT(std::equal(cmds.begin(), cmds.end(), mergedCmds.begin()));
-       });
-}
