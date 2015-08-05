@@ -14,6 +14,7 @@
 #include "rapidcheck/Gen.h"
 #include "rapidcheck/gen/Arbitrary.h"
 #include "rapidcheck/gen/Build.h"
+#include "rapidcheck/gen/Chrono.h"
 #include "rapidcheck/gen/Container.h"
 #include "rapidcheck/gen/Create.h"
 #include "rapidcheck/gen/Exec.h"
