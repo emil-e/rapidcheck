@@ -46,6 +46,7 @@ Out of the box, RapidCheck has support for generating arbitrary values of the fo
 - `std::basic_string<T>`
 - `std::tuple<Ts...>`
 - `std::pair<T1, T2>`
+- `rc::Maybe<T>`
 
 The caveat is, of course, that for template types, RapidCheck must know how to generate the template arguments.
 
