@@ -9,40 +9,17 @@ namespace detail {
 
 template <typename Cmds>
 struct ParallelCommandSequence {
-  ParallelCommandSequence(const Shrinkable<Cmds> &serialCmdSeq,
-                          const Shrinkable<Cmds> &parallelCmdSeq1,
-                          const Shrinkable<Cmds> &parallelCmdSeq2)
-      : serialCmdSeq(serialCmdSeq)
-      , parallelCmdSeq1(parallelCmdSeq1)
-      , parallelCmdSeq2(parallelCmdSeq2) {}
+  ParallelCommandSequence(const Shrinkable<Cmds> &prefix,
+                          const Shrinkable<Cmds> &left,
+                          const Shrinkable<Cmds> &right)
+      : prefix(prefix)
+      , left(left)
+      , right(right) {}
 
-  Shrinkable<Cmds> serialCmdSeq;
-  Shrinkable<Cmds> parallelCmdSeq1;
-  Shrinkable<Cmds> parallelCmdSeq2;
+  Shrinkable<Cmds> prefix;
+  Shrinkable<Cmds> left;
+  Shrinkable<Cmds> right;
 };
-
-template <typename Cmds>
-ParallelCommandSequence<Cmds> toParallelSequence(const Cmds &commands) {
-  // TODO: Refactor to a single case.
-  auto cmdCount = commands.size();
-  // If there are fewer than 12 commands, make all parallel
-  if (cmdCount < 12) {
-    auto groupSize = cmdCount / 2;
-    auto p1Begin = commands.begin();
-    auto p2Begin = p1Begin + groupSize;
-    return ParallelCommandSequence<Cmds>(Cmds(),
-                                         Cmds(p1Begin, p1Begin + groupSize),
-                                         Cmds(p2Begin, commands.end()));
-  } else {
-    // If there are more than 12 commands, make the 12 last ones parallel
-    auto sBegin = commands.begin();
-    auto p1Begin = sBegin + cmdCount - 12;
-    auto p2Begin = p1Begin + 6;
-    return ParallelCommandSequence<Cmds>(Cmds(sBegin, p1Begin),
-                                         Cmds(p1Begin, p2Begin),
-                                         Cmds(p2Begin, commands.end()));
-  }
-}
 
 template <typename Cmd, typename GenFunc>
 class ParallelCommandsGen {
@@ -87,31 +64,31 @@ private:
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
   shrinkPrefix(const ParallelCommandSequence<Commands<Cmd>> &s) {
-    auto shrunkSeqs = s.serialCmdSeq.shrinks();
+    auto shrunkSeqs = s.prefix.shrinks();
     return seq::map(std::move(shrunkSeqs),
                     [=](const Shrinkable<Commands<Cmd>> &commands) {
                       return ParallelCommandSequence<Commands<Cmd>>(
-                          commands, s.parallelCmdSeq1, s.parallelCmdSeq2);
+                          commands, s.left, s.right);
                     });
   }
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
   shrinkParallel1(const ParallelCommandSequence<Commands<Cmd>> &s) {
-    auto shrunkSeqs = s.parallelCmdSeq1.shrinks();
+    auto shrunkSeqs = s.left.shrinks();
     return seq::map(std::move(shrunkSeqs),
                     [=](const Shrinkable<Commands<Cmd>> &commands) {
                       return ParallelCommandSequence<Commands<Cmd>>(
-                          s.serialCmdSeq, commands, s.parallelCmdSeq2);
+                          s.prefix, commands, s.right);
                     });
   }
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
   shrinkParallel2(const ParallelCommandSequence<Commands<Cmd>> &s) {
-    auto shrunkSeqs = s.parallelCmdSeq2.shrinks();
+    auto shrunkSeqs = s.right.shrinks();
     return seq::map(std::move(shrunkSeqs),
                     [=](const Shrinkable<Commands<Cmd>> &commands) {
                       return ParallelCommandSequence<Commands<Cmd>>(
-                          s.serialCmdSeq, s.parallelCmdSeq1, commands);
+                          s.prefix, s.left, commands);
                     });
   }
 
@@ -135,11 +112,11 @@ template <typename Cmds>
 void showValue(const ParallelCommandSequence<Cmds> &sequence,
                std::ostream &os) {
   os << "Sequential sequence:" << std::endl;
-  show(sequence.serialCmdSeq.value(), os);
+  show(sequence.prefix.value(), os);
   os << "First parallel sequence:" << std::endl;
-  show(sequence.parallelCmdSeq1.value(), os);
+  show(sequence.left.value(), os);
   os << "Second parallel sequence:" << std::endl;
-  show(sequence.parallelCmdSeq2.value(), os);
+  show(sequence.right.value(), os);
 }
 
 } // detail

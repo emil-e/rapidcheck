@@ -25,13 +25,13 @@ Gen<std::vector<StringVecCmdSP>> pushBackCommands() {
 //          auto parallelCmdSeq = toParallelSequence(cmds);
 
 //          // Merged sequences should equal original sequence
-//          auto mergedCmds = parallelCmdSeq.serialCmdSeq;
+//          auto mergedCmds = parallelCmdSeq.prefix;
 //          mergedCmds.insert(mergedCmds.end(),
-//                            parallelCmdSeq.parallelCmdSeq1.begin(),
-//                            parallelCmdSeq.parallelCmdSeq1.end());
+//                            parallelCmdSeq.left.begin(),
+//                            parallelCmdSeq.left.end());
 //          mergedCmds.insert(mergedCmds.end(),
-//                            parallelCmdSeq.parallelCmdSeq2.begin(),
-//                            parallelCmdSeq.parallelCmdSeq2.end());
+//                            parallelCmdSeq.right.begin(),
+//                            parallelCmdSeq.right.end());
 
 //          RC_ASSERT(std::equal(cmds.begin(), cmds.end(), mergedCmds.begin()));
 //        });

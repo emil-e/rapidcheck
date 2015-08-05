@@ -73,9 +73,9 @@ struct CommandResult
 
 template <typename Model, typename Cmd>
 struct ParallelExecutionResult {
-  std::vector<CommandResult<Model, Cmd>> serialCmdsResult;
-  std::vector<CommandResult<Model, Cmd>> parallelCmdsResult1;
-  std::vector<CommandResult<Model, Cmd>> parallelCmdsResult2;
+  std::vector<CommandResult<Model, Cmd>> prefix;
+  std::vector<CommandResult<Model, Cmd>> left;
+  std::vector<CommandResult<Model, Cmd>> right;
 };
 
 std::vector<std::vector<int>>
@@ -106,13 +106,13 @@ template <typename Model, typename Cmd>
 std::vector<std::vector<CommandResult<Model, Cmd>>> commandSequencePermutations(
   const ParallelExecutionResult<Model, Cmd>& executionResult)
 {
-   auto p1 = executionResult.parallelCmdsResult1;
-   auto p2 = executionResult.parallelCmdsResult2;
+   auto p1 = executionResult.left;
+   auto p2 = executionResult.right;
    auto indeciesPermutations = commandIndeciesPermutations(p1.size(), p2.size());
    std::vector<std::vector<CommandResult<Model, Cmd>>> permutations;
 
    for (auto& indexVector: indeciesPermutations){
-      std::vector<CommandResult<Model, Cmd>> cmds = executionResult.serialCmdsResult;
+      std::vector<CommandResult<Model, Cmd>> cmds = executionResult.prefix;
       auto cmdSeq = indexVectorToCommandSequence(indexVector, p1, p2);
       cmds.insert(cmds.end(), cmdSeq.begin(), cmdSeq.end());
       permutations.push_back(cmds);
@@ -162,34 +162,34 @@ ParallelExecutionResult<Model, Cmd> runParallelCmdSeq(
   ParallelExecutionResult<Model, Cmd> result;
 
   // Run serial commands
-  for (const auto &command : parallelCmdSeq.serialCmdSeq.value()) {
+  for (const auto &command : parallelCmdSeq.prefix.value()) {
     auto verifyFunc = command->run(sut);
-    result.serialCmdsResult.emplace_back(
+    result.prefix.emplace_back(
         CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
   }
 
   Barrier b(2);
 
   // Run the two parallel command sequences in separate threads
-  auto parallelCommandSeq1 = parallelCmdSeq.parallelCmdSeq1.value();
+  auto parallelCommandSeq1 = parallelCmdSeq.left.value();
   auto t1 = std::thread([&parallelCommandSeq1, &result, &sut, &b] {
     b.wait();
     for (const auto &command : parallelCommandSeq1) {
       auto verifyFunc = command->run(sut);
       std::this_thread::yield();
-      result.parallelCmdsResult1.emplace_back(
+      result.left.emplace_back(
           CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
     }
   });
 
-  auto parallelCommandSeq2 = parallelCmdSeq.parallelCmdSeq2.value();
+  auto parallelCommandSeq2 = parallelCmdSeq.right.value();
   auto t2 = std::thread([&parallelCommandSeq2, &result, &sut, &b] {
     b.wait();
     for (const auto &command : parallelCommandSeq2) {
       auto verifyFunc = command->run(sut);
       std::this_thread::yield();
-      result.parallelCmdsResult2.emplace_back(
-          CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
+      result.right.emplace_back(
+        CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
     }
   });
 
@@ -202,7 +202,6 @@ ParallelExecutionResult<Model, Cmd> runParallelCmdSeq(
 template <typename Cmds, typename Model, typename Sut>
 void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
   // TODO: Verify pre-conditions for all possible interleavings
-//  auto parallelCommandSeq = gen::detail::toParallelSequence(commands);
   auto result = runParallelCmdSeq<Model>(commands, sut);
   // Verify that the interleaving can be explained by the model
   verifyCommandSequence(result, state);
