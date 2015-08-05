@@ -82,16 +82,36 @@ private:
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
   shrinkSequence(const ParallelCommandSequence<Commands<Cmd>> &s) {
-    return seq::concat(shrinkPrefix(s));
+    return seq::concat(shrinkPrefix(s), shrinkParallel1(s), shrinkParallel2(s));
   }
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
   shrinkPrefix(const ParallelCommandSequence<Commands<Cmd>> &s) {
-    auto shrunkPrefixSeq = s.serialCmdSeq.shrinks();
-    return seq::map(std::move(shrunkPrefixSeq),
-                    [=](const Shrinkable<Commands<Cmd>> &prefix) {
+    auto shrunkSeqs = s.serialCmdSeq.shrinks();
+    return seq::map(std::move(shrunkSeqs),
+                    [=](const Shrinkable<Commands<Cmd>> &commands) {
                       return ParallelCommandSequence<Commands<Cmd>>(
-                          prefix, s.parallelCmdSeq1, s.parallelCmdSeq2);
+                          commands, s.parallelCmdSeq1, s.parallelCmdSeq2);
+                    });
+  }
+
+  static Seq<ParallelCommandSequence<Commands<Cmd>>>
+  shrinkParallel1(const ParallelCommandSequence<Commands<Cmd>> &s) {
+    auto shrunkSeqs = s.parallelCmdSeq1.shrinks();
+    return seq::map(std::move(shrunkSeqs),
+                    [=](const Shrinkable<Commands<Cmd>> &commands) {
+                      return ParallelCommandSequence<Commands<Cmd>>(
+                          s.serialCmdSeq, commands, s.parallelCmdSeq2);
+                    });
+  }
+
+  static Seq<ParallelCommandSequence<Commands<Cmd>>>
+  shrinkParallel2(const ParallelCommandSequence<Commands<Cmd>> &s) {
+    auto shrunkSeqs = s.parallelCmdSeq2.shrinks();
+    return seq::map(std::move(shrunkSeqs),
+                    [=](const Shrinkable<Commands<Cmd>> &commands) {
+                      return ParallelCommandSequence<Commands<Cmd>>(
+                          s.serialCmdSeq, s.parallelCmdSeq1, commands);
                     });
   }
 
@@ -114,15 +134,28 @@ private:
 template <typename Cmds>
 void showValue(const ParallelCommandSequence<Cmds> &sequence,
                std::ostream &os) {
-  os << "Sequential:" << std::endl;
+  os << "Sequential sequence:" << std::endl;
   show(sequence.serialCmdSeq.value(), os);
-  os << "Parallel:" << std::endl;
+  os << "First parallel sequence:" << std::endl;
   show(sequence.parallelCmdSeq1.value(), os);
-  os << "," << std::endl;
+  os << "Second parallel sequence:" << std::endl;
   show(sequence.parallelCmdSeq2.value(), os);
 }
 
 } // detail
+} // gen
+} // state
+
+template <typename Cmds>
+struct ShowType<state::gen::detail::ParallelCommandSequence<Cmds>> {
+  static void showType(std::ostream &os) {
+    os << "Parallel command sequence";
+    //detail::showType<Cmds>(os);
+  }
+};
+
+namespace state {
+namespace gen {
 
 template <typename Cmd, typename GenerationFunc>
 Gen<detail::ParallelCommandSequence<Commands<Cmd>>>
