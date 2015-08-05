@@ -18,21 +18,21 @@ Gen<std::vector<StringVecCmdSP>> pushBackCommands() {
 
 } // namespace
 
-TEST_CASE("state::splitCommands") {
-  prop("splits commands into three equally(ish) sized groups",
-       [] {
-         const auto cmds = *pushBackCommands();
-         auto parallelCmdSeq = toParallelSequence(cmds);
+// TEST_CASE("state::splitCommands") {
+//   prop("splits commands into three equally(ish) sized groups",
+//        [] {
+//          const auto cmds = *pushBackCommands();
+//          auto parallelCmdSeq = toParallelSequence(cmds);
 
-         // Merged sequences should equal original sequence
-         auto mergedCmds = parallelCmdSeq.serialCmdSeq;
-         mergedCmds.insert(mergedCmds.end(),
-                           parallelCmdSeq.parallelCmdSeq1.begin(),
-                           parallelCmdSeq.parallelCmdSeq1.end());
-         mergedCmds.insert(mergedCmds.end(),
-                           parallelCmdSeq.parallelCmdSeq2.begin(),
-                           parallelCmdSeq.parallelCmdSeq2.end());
+//          // Merged sequences should equal original sequence
+//          auto mergedCmds = parallelCmdSeq.serialCmdSeq;
+//          mergedCmds.insert(mergedCmds.end(),
+//                            parallelCmdSeq.parallelCmdSeq1.begin(),
+//                            parallelCmdSeq.parallelCmdSeq1.end());
+//          mergedCmds.insert(mergedCmds.end(),
+//                            parallelCmdSeq.parallelCmdSeq2.begin(),
+//                            parallelCmdSeq.parallelCmdSeq2.end());
 
-         RC_ASSERT(std::equal(cmds.begin(), cmds.end(), mergedCmds.begin()));
-       });
-}
+//          RC_ASSERT(std::equal(cmds.begin(), cmds.end(), mergedCmds.begin()));
+//        });
+//}

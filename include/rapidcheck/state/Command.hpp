@@ -10,7 +10,9 @@ template <typename Model, typename Sut>
 void Command<Model, Sut>::apply(Model &s0) const {}
 
 template <typename Model, typename Sut>
-void Command<Model, Sut>::run(Sut &sut) const {}
+std::function<void(const Model&)> Command<Model, Sut>::run(Sut &sut) const {
+      return [](const Model& model){};
+}
 
 template <typename Model, typename Sut>
 void Command<Model, Sut>::verify(const Model &s0) const {}

@@ -25,7 +25,7 @@ public:
   ///
   /// Use rapidcheck assertion macros to check that the system behaves
   /// properly.
-  virtual void run(Sut &sut) const;
+  virtual std::function<void(const ModelT&)> run(Sut &sut) const;
 
   virtual void verify(const Model &s0) const;
 
