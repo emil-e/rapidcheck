@@ -59,7 +59,29 @@ private:
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
   shrinkSequence(const ParallelCommandSequence<Commands<Cmd>> &s) {
-    return seq::concat(shrinkPrefix(s), shrinkParallel1(s), shrinkParallel2(s));
+    return seq::concat(
+        shrinkPrefix(s), shrinkLeft(s), shrinkRight(s), unparallalize(s));
+  }
+
+  static Seq<ParallelCommandSequence<Commands<Cmd>>>
+  unparallalize(const ParallelCommandSequence<Commands<Cmd>> &s) {
+    auto s1prefix = s.prefix.value();
+    auto s1left = s.left.value();
+    auto leftHead = s1left.begin();
+    s1prefix.push_back(*leftHead);
+    s1left.erase(leftHead);
+
+    auto s2prefix = s.prefix.value();
+    auto s2right = s.right.value();
+    auto rightHead = s2right.begin();
+    s2prefix.push_back(*rightHead);
+    s2right.erase(rightHead);
+
+    return seq::just(
+        ParallelCommandSequence<Commands<Cmd>>(
+            shrinkable::just(s1prefix), shrinkable::just(s1left), s.right),
+        ParallelCommandSequence<Commands<Cmd>>(
+            shrinkable::just(s2prefix), s.left, shrinkable::just(s2right)));
   }
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
@@ -73,7 +95,7 @@ private:
   }
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
-  shrinkParallel1(const ParallelCommandSequence<Commands<Cmd>> &s) {
+  shrinkLeft(const ParallelCommandSequence<Commands<Cmd>> &s) {
     auto shrunkSeqs = s.left.shrinks();
     return seq::map(std::move(shrunkSeqs),
                     [=](const Shrinkable<Commands<Cmd>> &commands) {
@@ -83,7 +105,7 @@ private:
   }
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
-  shrinkParallel2(const ParallelCommandSequence<Commands<Cmd>> &s) {
+  shrinkRight(const ParallelCommandSequence<Commands<Cmd>> &s) {
     auto shrunkSeqs = s.right.shrinks();
     return seq::map(std::move(shrunkSeqs),
                     [=](const Shrinkable<Commands<Cmd>> &commands) {
