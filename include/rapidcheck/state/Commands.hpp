@@ -215,8 +215,7 @@ void runAll(const Cmds &commands, const Model &state, Sut &sut) {
     // We need to apply first so we trigger any precondition assertions
     // before running
     command->apply(currentState);
-    command->run(sut);
-    command->verify(preState);
+    command->run(preState, sut);
   }
 }
 

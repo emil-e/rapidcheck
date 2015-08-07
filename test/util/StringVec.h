@@ -21,7 +21,7 @@ struct PushBack : public StringVecCmd {
 
   void apply(StringVec &s0) const override { s0.push_back(value); }
 
-  void run(StringVec &sut) const override {
+  void run(const StringVec &s0, StringVec &sut) const override {
     sut.push_back(value);
   }
 
@@ -34,13 +34,13 @@ struct PopBack : public StringVecCmd {
     s0.pop_back();
   }
 
-  void run(StringVec &sut) const override {
+  void run(const StringVec &s0, StringVec &sut) const override {
     sut.pop_back();
   }
 };
 
 struct AlwaysFail : public StringVecCmd {
-  void run(StringVec &sut) const override {
+  void run(const StringVec &s0, StringVec &sut) const override {
     RC_FAIL("Always fails");
   }
 };

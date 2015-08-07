@@ -24,7 +24,7 @@ add_executable(rapidcheck_tests
   detail/ConfigurationTests.cpp
   detail/ExpressionCaptorTests.cpp
   detail/FrequencyMapTests.cpp
-#  detail/ImplicitParamTests.cpp
+  detail/ImplicitParamTests.cpp
   detail/LogTestListenerTests.cpp
   detail/MapParserTests.cpp
   detail/PropertyTests.cpp
@@ -60,11 +60,11 @@ add_executable(rapidcheck_tests
   shrinkable/CreateTests.cpp
   shrinkable/OperationsTests.cpp
   shrinkable/TransformTests.cpp
-#  state/CommandTests.cpp
+  state/CommandTests.cpp
   state/CommandsTests.cpp
-#  state/IntegrationTests.cpp
-#  state/StateTests.cpp
-#  state/gen/CommandsTests.cpp
+  state/IntegrationTests.cpp
+  state/StateTests.cpp
+  state/gen/CommandsTests.cpp
   state/gen/ParallelCommandsTests.cpp
   )
 
