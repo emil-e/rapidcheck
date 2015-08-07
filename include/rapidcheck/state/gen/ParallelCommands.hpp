@@ -9,17 +9,20 @@ namespace detail {
 
 template <typename Cmds>
 struct ParallelCommandSequence {
+  using Cmd = typename Cmds::value_type::element_type;
+
   ParallelCommandSequence(const Shrinkable<Cmds> &prefix,
                           const Shrinkable<Cmds> &left,
                           const Shrinkable<Cmds> &right)
-      : prefix(prefix)
-      , left(left)
-      , right(right) {}
+    : prefix(prefix)
+    , left(left)
+    , right(right) {}
 
   Shrinkable<Cmds> prefix;
   Shrinkable<Cmds> left;
   Shrinkable<Cmds> right;
 };
+
 
 template <typename Cmd, typename GenFunc>
 class ParallelCommandsGen {
@@ -60,11 +63,11 @@ private:
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
   shrinkSequence(const ParallelCommandSequence<Commands<Cmd>> &s) {
     return seq::concat(
-        shrinkPrefix(s), shrinkLeft(s), shrinkRight(s), unparallalize(s));
+        shrinkPrefix(s), shrinkLeft(s), shrinkRight(s), unparallelize(s));
   }
 
   static Seq<ParallelCommandSequence<Commands<Cmd>>>
-  unparallalize(const ParallelCommandSequence<Commands<Cmd>> &s) {
+  unparallelize(const ParallelCommandSequence<Commands<Cmd>> &s) {
     auto s1prefix = s.prefix.value();
     auto s1left = s.left.value();
     auto leftHead = s1left.begin();
@@ -156,8 +159,11 @@ struct ShowType<state::gen::detail::ParallelCommandSequence<Cmds>> {
 namespace state {
 namespace gen {
 
+template <typename CommandType>
+using ParallelCommands = detail::ParallelCommandSequence<Commands<CommandType>>;
+
 template <typename Cmd, typename GenerationFunc>
-Gen<detail::ParallelCommandSequence<Commands<Cmd>>>
+Gen<ParallelCommands<Cmd>>
 parallelCommands(const typename Cmd::Model &initialState,
                  GenerationFunc &&genFunc) {
   return detail::ParallelCommandsGen<Cmd, Decay<GenerationFunc>>(

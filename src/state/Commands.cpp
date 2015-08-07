@@ -2,6 +2,7 @@
 
 namespace rc {
 namespace state {
+namespace detail {
 
 std::vector<std::vector<int>> commandIndeciesPermutations(int s1count, int s2count)
 {
@@ -21,5 +22,6 @@ std::vector<std::vector<int>> commandIndeciesPermutations(int s1count, int s2cou
    return permutations;
 }
 
+} // namespace detail
 } // namespace state
 } // namespace rc

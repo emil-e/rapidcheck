@@ -16,6 +16,8 @@ void applyAll(const Cmds &commands, Model &state) {
   }
 }
 
+namespace detail {
+
 class Barrier
 {
 public:
@@ -153,59 +155,7 @@ void verifyCommandSequence(
      RC_FAIL("No valid sequence found");
   }
 }
-
-template <typename Model, typename Cmd, typename Sut>
-ParallelExecutionResult<Model, Cmd> runParallelCmdSeq(
-    const gen::detail::ParallelCommandSequence<Commands<Cmd>> &parallelCmdSeq,
-    Sut &sut) {
-
-  ParallelExecutionResult<Model, Cmd> result;
-
-  // Run serial commands
-  for (const auto &command : parallelCmdSeq.prefix.value()) {
-    auto verifyFunc = command->run(sut);
-    result.prefix.emplace_back(
-        CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
-  }
-
-  Barrier b(2);
-
-  // Run the two parallel command sequences in separate threads
-  auto parallelCommandSeq1 = parallelCmdSeq.left.value();
-  auto t1 = std::thread([&parallelCommandSeq1, &result, &sut, &b] {
-    b.wait();
-    for (const auto &command : parallelCommandSeq1) {
-      auto verifyFunc = command->run(sut);
-      std::this_thread::yield();
-      result.left.emplace_back(
-          CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
-    }
-  });
-
-  auto parallelCommandSeq2 = parallelCmdSeq.right.value();
-  auto t2 = std::thread([&parallelCommandSeq2, &result, &sut, &b] {
-    b.wait();
-    for (const auto &command : parallelCommandSeq2) {
-      auto verifyFunc = command->run(sut);
-      std::this_thread::yield();
-      result.right.emplace_back(
-        CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
-    }
-  });
-
-  t1.join();
-  t2.join();
-
-  return result;
-}
-
-template <typename Cmds, typename Model, typename Sut>
-void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
-  // TODO: Verify pre-conditions for all possible interleavings
-  auto result = runParallelCmdSeq<Model>(commands, sut);
-  // Verify that the interleaving can be explained by the model
-  verifyCommandSequence(result, state);
-}
+} // detail
 
 template <typename Cmds, typename Model, typename Sut>
 void runAll(const Cmds &commands, const Model &state, Sut &sut) {
@@ -218,6 +168,7 @@ void runAll(const Cmds &commands, const Model &state, Sut &sut) {
     command->run(preState, sut);
   }
 }
+
 
 template <typename Cmds, typename Model>
 bool isValidSequence(const Cmds &commands, const Model &s0) {
@@ -242,6 +193,53 @@ void showValue(const std::vector<
     command->show(os);
     os << std::endl;
   }
+}
+
+template <typename Cmds, typename Model, typename Sut>
+void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
+  using Cmd = typename Cmds::Cmd;
+
+  // TODO: Verify pre-conditions for all possible interleavings
+
+  detail::ParallelExecutionResult<Model, Cmd> result;
+
+  // Run serial commands
+  for (const auto &command : commands.prefix.value()) {
+    auto verifyFunc = command->run(sut);
+    result.prefix.emplace_back(
+        detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
+  }
+
+  detail::Barrier b(2);
+
+  // Run the two parallel command sequences in separate threads
+  auto parallelCommandSeq1 = commands.left.value();
+  auto t1 = std::thread([&parallelCommandSeq1, &result, &sut, &b] {
+    b.wait();
+    for (const auto &command : parallelCommandSeq1) {
+      auto verifyFunc = command->run(sut);
+      std::this_thread::yield();
+      result.left.emplace_back(
+          detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
+    }
+  });
+
+  auto parallelCommandSeq2 = commands.right.value();
+  auto t2 = std::thread([&parallelCommandSeq2, &result, &sut, &b] {
+    b.wait();
+    for (const auto &command : parallelCommandSeq2) {
+      auto verifyFunc = command->run(sut);
+      std::this_thread::yield();
+      result.right.emplace_back(
+          detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
+    }
+  });
+
+  t1.join();
+  t2.join();
+
+  // Verify that the interleaving can be explained by the model
+  verifyCommandSequence(result, state);
 }
 
 } // namespace state
