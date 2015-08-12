@@ -6,7 +6,6 @@
 #include "rapidcheck/shrinkable/Operations.h"
 
 #include "util/Generators.h"
-#include "util/CopyGuard.h"
 #include "util/ShrinkableUtils.h"
 
 using namespace rc;
