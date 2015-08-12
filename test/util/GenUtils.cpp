@@ -58,7 +58,7 @@ std::ostream &operator<<(std::ostream &os, const GenParams &params) {
 
 } // namespace test
 
-template class Arbitrary<test::GenParams>;
+template struct Arbitrary<test::GenParams>;
 template struct Arbitrary<test::PassedSize>;
 template struct Arbitrary<test::PassedRandom>;
 
