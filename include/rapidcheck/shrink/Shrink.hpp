@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <locale>
 
 #include "rapidcheck/seq/Transform.h"
 #include "rapidcheck/seq/Create.h"
