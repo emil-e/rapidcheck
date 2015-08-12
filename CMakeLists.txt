@@ -31,12 +31,12 @@ add_library(rapidcheck
   src/detail/ImplicitParam.cpp
   src/detail/LogTestListener.cpp
   src/detail/MapParser.cpp
+  src/detail/Platform.cpp
   src/detail/Property.cpp
   src/detail/PropertyContext.cpp
   src/detail/Results.cpp
   src/detail/TestParams.cpp
   src/detail/Testing.cpp
-  src/detail/Utility.cpp
   src/gen/Numeric.cpp
   src/gen/Text.cpp
   src/gen/detail/ExecHandler.cpp
