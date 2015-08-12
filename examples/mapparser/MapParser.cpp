@@ -2,6 +2,7 @@
 
 #include <cctype>
 #include <algorithm>
+#include <locale>
 
 ParseException::ParseException(std::string::size_type pos,
                                const std::string &msg)
@@ -40,7 +41,10 @@ bool takeWhile(ParseState &state, std::string &result, const Pred &pred) {
 
 bool skipSpace(ParseState &state) {
   std::string space;
-  return takeWhile(state, space, [](char c) { return std::isspace(c); });
+  return takeWhile(
+      state,
+      space,
+      [](char c) { return std::isspace(c, std::locale::classic()); });
 }
 
 bool parseQuotedString(ParseState &state, std::string &value) {
@@ -86,8 +90,11 @@ bool parseString(ParseState &state, std::string &value, Pred pred) {
 bool parsePair(ParseState &s0, std::pair<std::string, std::string> &pair) {
   ParseState s1(s0);
   skipSpace(s1);
-  parseString(
-      s1, pair.first, [](int c) { return (c != '=') && !std::isspace(c); });
+  parseString(s1,
+              pair.first,
+              [](int c) {
+                return (c != '=') && !std::isspace(c, std::locale::classic());
+              });
   if (pair.first.empty()) {
     return false;
   }
@@ -100,7 +107,9 @@ bool parsePair(ParseState &s0, std::pair<std::string, std::string> &pair) {
     // Have value, parse it.
     s1.pos++;
     skipSpace(s1);
-    parseString(s1, pair.second, [](int c) { return !std::isspace(c); });
+    parseString(s1,
+                pair.second,
+                [](int c) { return !std::isspace(c, std::locale::classic()); });
   }
 
   s0 = s1;
@@ -142,12 +151,13 @@ std::string maybeQuoteString(const std::string &str, bool doubleQuote) {
     return "\"\"";
   }
 
-  bool hasSpecialChar = std::any_of(begin(str),
-                                    end(str),
-                                    [](char c) {
-                                      return std::isspace(c) || isQuote(c) ||
-                                          (c == '=') || (c == '\\');
-                                    });
+  bool hasSpecialChar =
+      std::any_of(begin(str),
+                  end(str),
+                  [](char c) {
+                    return std::isspace(c, std::locale::classic()) ||
+                        isQuote(c) || (c == '=') || (c == '\\');
+                  });
 
   char quoteChar = doubleQuote ? '"' : '\'';
   return hasSpecialChar ? quoteString(str, quoteChar) : str;

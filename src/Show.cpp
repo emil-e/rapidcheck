@@ -3,14 +3,17 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <cctype>
+#include <locale>
 
 namespace rc {
 namespace detail {
 
 void showValue(const std::string &value, std::ostream &os) {
+  const auto &locale = std::locale::classic();
   os << '"';
   for (char c : value) {
-    if (!std::isspace(c) && std::isprint(c)) {
+    if (!std::isspace(c, locale) && std::isprint(c, locale)) {
       switch (c) {
       case '\\':
         os << "\\";

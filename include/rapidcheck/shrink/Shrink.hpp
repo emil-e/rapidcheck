@@ -172,13 +172,14 @@ Seq<bool> boolean(bool value) { return value ? seq::just(false) : Seq<bool>(); }
 
 template <typename T>
 Seq<T> character(T value) {
-  auto shrinks = seq::cast<T>(
-      seq::concat(seq::fromContainer(std::string("abc")),
-                  // TODO this seems a bit hacky
-                  std::islower(static_cast<char>(value))
-                      ? Seq<char>()
-                      : seq::just(static_cast<char>(std::tolower(value))),
-                  seq::fromContainer(std::string("ABC123 \n"))));
+  const auto &locale = std::locale::classic();
+  auto shrinks = seq::cast<T>(seq::concat(
+      seq::fromContainer(std::string("abc")),
+      // TODO this seems a bit hacky
+      std::islower(static_cast<char>(value), locale)
+          ? Seq<char>()
+          : seq::just(static_cast<char>(std::tolower(value, locale))),
+      seq::fromContainer(std::string("ABC123 \n"))));
 
   return seq::takeWhile(std::move(shrinks), [=](T x) { return x != value; });
 }
