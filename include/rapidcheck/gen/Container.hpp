@@ -200,21 +200,37 @@ public:
   }
 };
 
-template <typename... Args>
-class GenericContainerStrategy<std::multiset<Args...>, true, false>
-    : public CollectionStrategy<std::multiset<Args...>> {};
+template <typename Key, typename Compare, typename Allocator>
+class GenericContainerStrategy<std::multiset<Key, Compare, Allocator>,
+                               true,
+                               false>
+    : public CollectionStrategy<std::multiset<Key, Compare, Allocator>> {};
 
-template <typename... Args>
-class GenericContainerStrategy<std::unordered_multiset<Args...>, true, false>
-    : public CollectionStrategy<std::unordered_multiset<Args...>> {};
+template <typename Key, typename Hash, typename KeyEqual, typename Allocator>
+class GenericContainerStrategy<
+    std::unordered_multiset<Key, Hash, KeyEqual, Allocator>,
+    true,
+    false>
+    : public CollectionStrategy<
+          std::unordered_multiset<Key, Hash, KeyEqual, Allocator>> {};
 
-template <typename... Args>
-class GenericContainerStrategy<std::multimap<Args...>, true, true>
-    : public MultiMapStrategy<std::multimap<Args...>> {};
+template <typename Key, typename T, typename Compare, typename Allocator>
+class GenericContainerStrategy<std::multimap<Key, T, Compare, Allocator>,
+                               true,
+                               true>
+    : public MultiMapStrategy<std::multimap<Key, T, Compare, Allocator>> {};
 
-template <typename... Args>
-class GenericContainerStrategy<std::unordered_multimap<Args...>, true, true>
-    : public MultiMapStrategy<std::unordered_multimap<Args...>> {};
+template <typename Key,
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator>
+class GenericContainerStrategy<
+    std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>,
+    true,
+    true>
+    : public MultiMapStrategy<
+          std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>> {};
 
 template <typename F>
 class UniqueContainerStrategy {
@@ -357,49 +373,104 @@ private:
   Strategy m_strategy;
 };
 
-template <typename Container>
-struct ContainerArbitrary1 {
-  static Gen<Container> arbitrary() {
-    return gen::container<Container>(
-        gen::arbitrary<typename Container::value_type>());
+// MSVC HACK: there used to be a really nice macro and template solution here
+// that doesn't work with MSVC
+
+template <typename T, typename Allocator>
+struct DefaultArbitrary<std::vector<T, Allocator>> {
+  static Gen<std::vector<T, Allocator>> arbitrary() {
+    return gen::container<std::vector<T, Allocator>>(
+        gen::arbitrary<T>());
   }
 };
 
-template <typename Container>
-struct ContainerArbitrary2 {
-  static Gen<Container> arbitrary() {
-    return gen::container<Container>(
-        gen::arbitrary<typename Container::key_type>(),
-        gen::arbitrary<typename Container::mapped_type>());
+template <typename T, typename Allocator>
+struct DefaultArbitrary<std::deque<T, Allocator>> {
+  static Gen<std::deque<T, Allocator>> arbitrary() {
+    return gen::container<std::deque<T, Allocator>>(
+        gen::arbitrary<T>());
   }
 };
 
-#define SPECIALIZE_SEQUENCE_ARBITRARY1(Container)                              \
-  template <typename... Args>                                                  \
-  struct DefaultArbitrary<Container<Args...>>                                  \
-      : public gen::detail::ContainerArbitrary1<Container<Args...>> {};
+template <typename T, typename Allocator>
+struct DefaultArbitrary<std::forward_list<T, Allocator>> {
+  static Gen<std::forward_list<T, Allocator>> arbitrary() {
+    return gen::container<std::forward_list<T, Allocator>>(
+        gen::arbitrary<T>());
+  }
+};
 
-#define SPECIALIZE_SEQUENCE_ARBITRARY2(Container)                              \
-  template <typename... Args>                                                  \
-  struct DefaultArbitrary<Container<Args...>>                                  \
-      : public gen::detail::ContainerArbitrary2<Container<Args...>> {};
+template <typename T, typename Allocator>
+struct DefaultArbitrary<std::list<T, Allocator>> {
+  static Gen<std::list<T, Allocator>> arbitrary() {
+    return gen::container<std::list<T, Allocator>>(
+        gen::arbitrary<T>());
+  }
+};
 
-SPECIALIZE_SEQUENCE_ARBITRARY1(std::vector)
-SPECIALIZE_SEQUENCE_ARBITRARY1(std::deque)
-SPECIALIZE_SEQUENCE_ARBITRARY1(std::forward_list)
-SPECIALIZE_SEQUENCE_ARBITRARY1(std::list)
-SPECIALIZE_SEQUENCE_ARBITRARY1(std::set)
-SPECIALIZE_SEQUENCE_ARBITRARY1(std::multiset)
-SPECIALIZE_SEQUENCE_ARBITRARY1(std::unordered_set)
-SPECIALIZE_SEQUENCE_ARBITRARY1(std::unordered_multiset)
+template <typename Key, typename Compare, typename Allocator>
+struct DefaultArbitrary<std::set<Key, Compare, Allocator>> {
+  static Gen<std::set<Key, Compare, Allocator>> arbitrary() {
+    return gen::container<std::set<Key, Compare, Allocator>>(
+        gen::arbitrary<Key>());
+  }
+};
 
-SPECIALIZE_SEQUENCE_ARBITRARY2(std::map)
-SPECIALIZE_SEQUENCE_ARBITRARY2(std::multimap)
-SPECIALIZE_SEQUENCE_ARBITRARY2(std::unordered_map)
-SPECIALIZE_SEQUENCE_ARBITRARY2(std::unordered_multimap)
+template <typename Key, typename Compare, typename Allocator>
+struct DefaultArbitrary<std::multiset<Key, Compare, Allocator>> {
+  static Gen<std::multiset<Key, Compare, Allocator>> arbitrary() {
+    return gen::container<std::multiset<Key, Compare, Allocator>>(
+        gen::arbitrary<Key>());
+  }
+};
 
-#undef SPECIALIZE_SEQUENCE_ARBITRARY1
-#undef SPECIALIZE_SEQUENCE_ARBITRARY2
+template <typename Key, typename Hash, typename KeyEqual, typename Allocator>
+struct DefaultArbitrary<std::unordered_set<Key, Hash, KeyEqual, Allocator>> {
+  static Gen<std::unordered_set<Key, Hash, KeyEqual, Allocator>> arbitrary() {
+    return gen::container<std::unordered_set<Key, Hash, KeyEqual, Allocator>>(
+        gen::arbitrary<Key>());
+  }
+};
+
+template <typename Key, typename Hash, typename KeyEqual, typename Allocator>
+struct DefaultArbitrary<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>> {
+  static Gen<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>> arbitrary() {
+    return gen::container<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>>(
+        gen::arbitrary<Key>());
+  }
+};
+
+template <typename Key, typename T, typename Compare, typename Allocator>
+struct DefaultArbitrary<std::map<Key, T, Compare, Allocator>> {
+  static Gen<std::map<Key, T, Compare, Allocator>> arbitrary() {
+    return gen::container<std::map<Key, T, Compare, Allocator>>(
+      gen::arbitrary<Key>(), gen::arbitrary<T>());
+  }
+};
+
+template <typename Key, typename T, typename Compare, typename Allocator>
+struct DefaultArbitrary<std::multimap<Key, T, Compare, Allocator>> {
+  static Gen<std::multimap<Key, T, Compare, Allocator>> arbitrary() {
+    return gen::container<std::multimap<Key, T, Compare, Allocator>>(
+      gen::arbitrary<Key>(), gen::arbitrary<T>());
+  }
+};
+
+template <typename Key, typename T, typename Hash, typename KeyEqual, typename Allocator>
+struct DefaultArbitrary<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>> {
+  static Gen<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>> arbitrary() {
+    return gen::container<std::unordered_map<Key, T, Hash, KeyEqual, Allocator>>(
+      gen::arbitrary<Key>(), gen::arbitrary<T>());
+  }
+};
+
+template <typename Key, typename T, typename Hash, typename KeyEqual, typename Allocator>
+struct DefaultArbitrary<std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>> {
+  static Gen<std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>> arbitrary() {
+    return gen::container<std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>>(
+      gen::arbitrary<Key>(), gen::arbitrary<T>());
+  }
+};
 
 // std::array is a bit special since it has non-type template params
 template <typename T, std::size_t N>
