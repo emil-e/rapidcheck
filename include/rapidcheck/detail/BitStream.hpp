@@ -27,6 +27,18 @@ T BitStream<Source>::next() {
 template <typename Source>
 template <typename T>
 T BitStream<Source>::next(int nbits) {
+  return next<T>(nbits, std::is_same<T, bool>());
+}
+
+template <typename Source>
+template <typename T>
+T BitStream<Source>::next(int nbits, std::true_type) {
+  return next<unsigned int>(1) != 0;
+}
+
+template <typename Source>
+template <typename T>
+T BitStream<Source>::next(int nbits, std::false_type) {
   using SourceType = decltype(m_source.next());
 
   if (nbits == 0) {
@@ -42,8 +54,8 @@ T BitStream<Source>::next(int nbits) {
       m_numBits += numBits<SourceType>();
     }
 
-    int n = std::min(m_numBits, wantBits);
-    T bits = m_bits & bitMask<SourceType>(n);
+    const auto n = std::min(m_numBits, wantBits);
+    const auto bits = m_bits & bitMask<SourceType>(n);
     value |= (bits << (nbits - wantBits));
     m_bits >>= static_cast<SourceType>(n);
     m_numBits -= n;

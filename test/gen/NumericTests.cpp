@@ -19,10 +19,21 @@ using namespace rc::test;
 
 namespace {
 
+
+template <typename T>
+typename std::make_unsigned<T>::type absoluteInt(T x, std::true_type) {
+  return (x < 0) ? -x : x;
+}
+
+template <typename T>
+T absoluteInt(T x, std::false_type) {
+  return x;
+}
+
 template <typename T,
           typename = typename std::enable_if<std::is_integral<T>::value>::type>
 typename std::make_unsigned<T>::type absolute(T x) {
-  return (x < 0) ? -x : x;
+  return absoluteInt(x, std::is_signed<T>());
 }
 
 template <
@@ -74,7 +85,7 @@ struct IntegralProperties {
             double error = std::accumulate(begin(bins),
                                            end(bins),
                                            0.0,
-                                           [=](double error, double x) {
+                                           [=](double error, uint64_t x) {
                                              double diff = 1.0 - (x / ideal);
                                              return error + (diff * diff);
                                            });
@@ -205,7 +216,7 @@ struct InRangeProperties {
                        const auto shrinkable = gen(params.random, params.size);
                        try {
                          shrinkable.value();
-                       } catch (const GenerationFailure &e) {
+                       } catch (const GenerationFailure &) {
                          // TODO RC_ASSERT_THROWS
                          RC_SUCCEED("Threw GenerationFailure");
                        }

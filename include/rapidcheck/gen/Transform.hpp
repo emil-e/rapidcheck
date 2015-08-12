@@ -118,8 +118,9 @@ Gen<T> resize(int size, Gen<T> gen) {
 
 template <typename T>
 Gen<T> scale(double scale, Gen<T> gen) {
-  return
-      [=](const Random &random, int size) { return gen(random, size * scale); };
+  return [=](const Random &random, int size) {
+    return gen(random, static_cast<int>(size * scale));
+  };
 }
 
 template <typename Callable>

@@ -13,13 +13,14 @@ TEST_CASE("FrequencyMap") {
       gen::container<std::vector<std::size_t>>(gen::inRange(1, 10000)));
 
   SECTION("sum") {
-    prop("returns sum of frequencies", [] {
-      const auto frequencies = *genFrequencies;
-      const auto expected =
-          std::accumulate(begin(frequencies), end(frequencies), 0);
+    prop("returns sum of frequencies",
+         [] {
+           const auto frequencies = *genFrequencies;
+           const auto expected = std::accumulate(
+               begin(frequencies), end(frequencies), std::size_t(0));
 
-      RC_ASSERT(FrequencyMap(frequencies).sum() == expected);
-    });
+           RC_ASSERT(FrequencyMap(frequencies).sum() == expected);
+         });
   }
 
   SECTION("lookup") {

@@ -41,7 +41,7 @@ TEST_CASE("gen::suchThat") {
          const auto shrinkable = gen(params.random, params.size);
          try {
            shrinkable.value();
-         } catch (const GenerationFailure &e) {
+         } catch (const GenerationFailure &) {
            RC_SUCCEED("Threw GenerationFailure");
          }
          RC_FAIL("Didn't throw GenerationFailure");

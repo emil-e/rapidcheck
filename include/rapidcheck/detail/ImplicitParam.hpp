@@ -19,7 +19,7 @@ void popStackBinding() {
 
 template <typename Param>
 typename ImplicitParam<Param>::ValueType &ImplicitParam<Param>::value() {
-  int scopeLevel = ImplicitScope::m_scopes.size();
+  const auto scopeLevel = ImplicitScope::m_scopes.size();
   if (m_stack.empty() || (m_stack.top().second < scopeLevel)) {
     m_stack.push(
         std::make_pair(Param::defaultValue(), ImplicitScope::m_scopes.size()));

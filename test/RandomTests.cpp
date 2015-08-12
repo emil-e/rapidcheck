@@ -166,7 +166,7 @@ TEST_CASE("Random") {
          double error = std::accumulate(begin(bins),
                                         end(bins),
                                         0.0,
-                                        [=](double error, double x) {
+                                        [=](double error, uint64_t x) {
                                           double diff = 1.0 - (x / ideal);
                                           return error + (diff * diff);
                                         });

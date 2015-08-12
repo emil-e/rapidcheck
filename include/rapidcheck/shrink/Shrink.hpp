@@ -116,6 +116,25 @@ private:
   std::size_t m_i;
 };
 
+template <typename T>
+Seq<T> integral(T value, std::true_type) {
+  // The check for > min() is important since -min() == min() and we never
+  // want to include self
+  if ((value < 0) && (value > std::numeric_limits<T>::min())) {
+    // Drop the zero from towards and put that before the negation value
+    // so we don't have duplicate zeroes
+    return seq::concat(seq::just<T>(static_cast<T>(0), static_cast<T>(-value)),
+                       seq::drop(1, shrink::towards<T>(value, 0)));
+  }
+
+  return shrink::towards<T>(value, 0);
+}
+
+template <typename T>
+Seq<T> integral(T value, std::false_type) {
+  return shrink::towards<T>(value, 0);
+}
+
 } // namespace detail
 
 template <typename Container>
@@ -136,17 +155,11 @@ Seq<T> towards(T value, T target) {
 
 template <typename T>
 Seq<T> integral(T value) {
-  // The check for > min() is important since -min() == min() and we never
-  // want to include self
-  if ((value < 0) && (value > std::numeric_limits<T>::min())) {
-    // Drop the zero from towards and put that before the negation value
-    // so we don't have duplicate zeroes
-    return seq::concat(seq::just<T>(static_cast<T>(0), static_cast<T>(-value)),
-                       seq::drop(1, shrink::towards<T>(value, 0)));
-  }
-
-  return shrink::towards<T>(value, 0);
+  return detail::integral(value, std::is_signed<T>());
 }
+
+template <typename T, typename>
+Seq<T> integral(T value);
 
 template <typename T>
 Seq<T> real(T value) {
