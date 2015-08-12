@@ -155,7 +155,7 @@ TEST_CASE("Random") {
          Random random = *trulyArbitraryRandom();
          std::array<uint64_t, 16> bins;
          static constexpr uint64_t kBinSize =
-             std::numeric_limits<uint64_t>::max() / 16;
+             (std::numeric_limits<uint64_t>::max() / 16) + 1;
          bins.fill(0);
          static constexpr std::size_t nSamples = 200000;
          for (std::size_t i = 0; i < nSamples; i++) {

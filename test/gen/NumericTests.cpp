@@ -71,8 +71,8 @@ struct IntegralProperties {
             using UInt = typename std::make_unsigned<T>::type;
 
             std::array<uint64_t, 8> bins;
-            constexpr UInt kBinSize =
-                std::numeric_limits<UInt>::max() / bins.size();
+            constexpr auto kBinSize =
+                (std::numeric_limits<UInt>::max() / bins.size()) + 1;
             bins.fill(0);
 
             static constexpr std::size_t nSamples = 10000;
