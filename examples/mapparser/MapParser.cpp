@@ -93,7 +93,8 @@ bool parsePair(ParseState &s0, std::pair<std::string, std::string> &pair) {
   parseString(s1,
               pair.first,
               [](int c) {
-                return (c != '=') && !std::isspace(c, std::locale::classic());
+                return (c != '=') &&
+                    !std::isspace<char>(c, std::locale::classic());
               });
   if (pair.first.empty()) {
     return false;
@@ -109,7 +110,7 @@ bool parsePair(ParseState &s0, std::pair<std::string, std::string> &pair) {
     skipSpace(s1);
     parseString(s1,
                 pair.second,
-                [](int c) { return !std::isspace(c, std::locale::classic()); });
+                [](int c) { return !std::isspace<char>(c, std::locale::classic()); });
   }
 
   s0 = s1;
