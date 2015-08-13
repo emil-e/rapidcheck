@@ -6,7 +6,10 @@ namespace test {
 struct Foo {};
 struct Bar {};
 struct Baz {};
-struct NonspecializedPlain {};
+struct NonspecializedStruct {};
+class NonspecializedClass {};
+enum NonspecializedEnum {};
+enum class NonspecializedEnumClass {};
 
 template <typename T>
 struct NonspecializedTemplate {};
