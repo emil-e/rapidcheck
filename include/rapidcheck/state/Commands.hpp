@@ -195,6 +195,17 @@ void showValue(const std::vector<
   }
 }
 
+
+template <typename Cmd>
+void showValue(const gen::ParallelCommands<Cmd> &sequence, std::ostream &os) {
+  os << "Sequential sequence:" << std::endl;
+  show(sequence.prefix, os);
+  os << "First parallel sequence:" << std::endl;
+  show(sequence.left, os);
+  os << "Second parallel sequence:" << std::endl;
+  show(sequence.right, os);
+}
+
 template <typename Cmds, typename Model, typename Sut>
 void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
   using Cmd = typename Cmds::Cmd;
@@ -204,7 +215,7 @@ void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
   detail::ParallelExecutionResult<Model, Cmd> result;
 
   // Run serial commands
-  for (const auto &command : commands.prefix.value()) {
+  for (const auto &command : commands.prefix) {
     auto verifyFunc = command->run(sut);
     result.prefix.emplace_back(
         detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
@@ -213,7 +224,7 @@ void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
   detail::Barrier b(2);
 
   // Run the two parallel command sequences in separate threads
-  auto parallelCommandSeq1 = commands.left.value();
+  auto parallelCommandSeq1 = commands.left;
   auto t1 = std::thread([&parallelCommandSeq1, &result, &sut, &b] {
     b.wait();
     for (const auto &command : parallelCommandSeq1) {
@@ -224,7 +235,7 @@ void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
     }
   });
 
-  auto parallelCommandSeq2 = commands.right.value();
+  auto parallelCommandSeq2 = commands.right;
   auto t2 = std::thread([&parallelCommandSeq2, &result, &sut, &b] {
     b.wait();
     for (const auto &command : parallelCommandSeq2) {
