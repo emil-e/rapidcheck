@@ -23,13 +23,17 @@ struct Arbitrary<boost::optional<T>> {
   }
 };
 
+} // namespace rc
+
+namespace boost {
+
 template <typename T>
 void showValue(const boost::optional<T> &x, std::ostream &os) {
   if (x) {
-    show(*x, os);
+    rc::show(*x, os);
   } else {
     os << "boost::none";
   }
 }
 
-} // namespace rc
+} // namespace boost
