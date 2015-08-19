@@ -15,6 +15,7 @@ The following document is a work in progress and some parts are still missing. T
 - [Stateful testing](state.md)
 
 ## Extras ##
+- [Google Test integration](gtest.md)
 - [Google Mock integration](gmock.md)
 - [Boost support](boost.md)
 
