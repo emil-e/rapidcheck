@@ -95,7 +95,6 @@ void printDistribution(const SuccessResult &result, std::ostream &os) {
     }
     os << std::endl;
   }
-  os << std::endl;
 }
 
 void printResultMessage(const SuccessResult &result, std::ostream &os) {
