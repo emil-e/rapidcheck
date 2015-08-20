@@ -2,6 +2,8 @@ RapidCheck [![Build Status](https://travis-ci.org/emil-e/rapidcheck.svg?branch=m
 ==========
 RapidCheck is a C++ framework for property based testing inspired by QuickCheck and other similar frameworks. In property based testing, you state facts about your code that given certain precondition should always be true. RapidCheck then generates random test data to try and find a case for which the property doesn't hold. If such a case is found, RapidCheck tries to find the smallest case (for some definition of smallest) for which the property is still false and then displays this as a counterexample. For example, if the input is an integer, RapidCheck tries to find the smallest integer for which the property is false.
 
+Sounds interesting? Why don't you read the **[User Guide](doc/user_guide.md)** to learn more!
+
 ## Why RapidCheck? ##
 There are existing implementations of property based testing but the ones that I have found are either (in my humble opinion) a bit clunky or are missing essential features such as test case shrinking.
 
@@ -77,9 +79,6 @@ Expands to:
 Here RapidCheck tells us that it found a case for which the property does not hold after running 12 tests. When it found this case, it shrunk it 10 times to arrive at the counterexample in the output. The counterexample contains each input value that was used for the failing case along with its type. Since RapidCheck views property arguments as tuples, the type is shown here as `std::tuple<std::vector<int>>`.
 
 Can you guess what the bug is? The fact that there are exactly 10 items should give a clue. In this case, the bug is that the implementation sets the first element to `0` when `l0.size() >= 10`. This is also the reason for the initial `0`, the problem doesn't manifest when all elements are zero. How did this bug happen? Who knows!
-
-## Further documentation ##
-Sounds interesting? Why don't you read the [User Guide](doc/user_guide.md) to learn more!
 
 ## Thanks ##
 Big thanks to my employer, Spotify, for making it possible for me to spend work time improving RapidCheck.
