@@ -18,6 +18,7 @@ The following document is a work in progress and some parts are still missing. T
 - [Google Test integration](gtest.md)
 - [Google Mock integration](gmock.md)
 - [Boost support](boost.md)
+- [Boost Test integration](boost_test.md)
 
 ## Reference ##
 - [Generators](generators_ref.md)

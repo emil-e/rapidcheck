@@ -1,0 +1,3 @@
+add_library(rapidcheck_boost_test INTERFACE)
+target_link_libraries(rapidcheck_boost_test INTERFACE rapidcheck)
+target_include_directories(rapidcheck_boost_test INTERFACE include)
