@@ -1,0 +1,2 @@
+add_executable(boost_test_integration main.cpp)
+target_link_libraries(boost_test_integration rapidcheck_boost_test boost)
