@@ -60,6 +60,52 @@ private:
 
 
 template <typename Model, typename Cmd>
+void allInterleavingsAreValid(const Commands<Cmd> &left,
+                              const Commands<Cmd> &right,
+                              int leftIndex,
+                              int rightIndex,
+                              const Model &state) {
+  const auto hasLeft = leftIndex < left.size();
+  const auto hasRight = rightIndex < right.size();
+
+  if (hasLeft) {
+    auto preState = state;
+    auto currentState = state;
+    auto command = left[leftIndex];
+    command->apply(currentState);
+    allInterleavingsAreValid(
+        left, right, leftIndex + 1, rightIndex, currentState);
+  }
+
+  if (hasRight) {
+    auto preState = state;
+    auto currentState = state;
+    auto command = right[rightIndex];
+    command->apply(currentState);
+    allInterleavingsAreValid(
+        left, right, leftIndex, rightIndex + 1, currentState);
+  }
+}
+
+template <typename Model, typename Cmd>
+void isValidSequence(
+  const gen::ParallelCommands<Cmd> &cmds,
+  const Model &state) {
+
+  auto currentState = state;
+
+  // Check prefix
+  for (const auto &command : cmds.prefix) {
+    command->apply(currentState);
+  }
+
+  // verify parallel sequences
+  allInterleavingsAreValid(
+    cmds.left, cmds.right, 0, 0, currentState);
+}
+
+
+template <typename Model, typename Cmd>
 struct CommandResult
 {
   CommandResult(const std::shared_ptr<const Cmd>& command,
@@ -80,81 +126,77 @@ struct ParallelExecutionResult {
   std::vector<CommandResult<Model, Cmd>> right;
 };
 
-std::vector<std::vector<int>>
-commandIndeciesPermutations(int s1count, int s2count);
-
-template<typename Cmds>
-Cmds indexVectorToCommandSequence(std::vector<int> indecies, const Cmds& s1, const Cmds& s2)
-{
-   Cmds cmds;
-   auto s1iterator = s1.begin();
-   auto s2iterator = s2.begin();
-
-   for (auto& i: indecies) {
-      if (i == 0) {
-         cmds.push_back(*s1iterator);
-         std::advance(s1iterator, 1);
-      }
-      else {
-         cmds.push_back(*s2iterator);
-         std::advance(s2iterator, 1);
-      }
-   }
-
-   return cmds;
-}
 
 template <typename Model, typename Cmd>
-std::vector<std::vector<CommandResult<Model, Cmd>>> commandSequencePermutations(
-  const ParallelExecutionResult<Model, Cmd>& executionResult)
-{
-   auto p1 = executionResult.left;
-   auto p2 = executionResult.right;
-   auto indeciesPermutations = commandIndeciesPermutations(p1.size(), p2.size());
-   std::vector<std::vector<CommandResult<Model, Cmd>>> permutations;
+bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
+                          const std::vector<CommandResult<Model, Cmd>> &right,
+                          int leftIndex,
+                          int rightIndex,
+                          const Model &state) {
+  const auto hasLeft = leftIndex < left.size();
+  const auto hasRight = rightIndex < right.size();
 
-   for (auto& indexVector: indeciesPermutations){
-      std::vector<CommandResult<Model, Cmd>> cmds = executionResult.prefix;
-      auto cmdSeq = indexVectorToCommandSequence(indexVector, p1, p2);
-      cmds.insert(cmds.end(), cmdSeq.begin(), cmdSeq.end());
-      permutations.push_back(cmds);
-   }
+  // Base case, no more commands to verify
+  if (!hasRight && !hasLeft) {
+    return true;
+  }
 
-   return permutations;
-}
+  auto isValidLeft = false;
+  auto isValidRight = false;
 
-template <typename Model, typename Cmd>
-void verifyCommandSequence(
-  const ParallelExecutionResult<Model, Cmd>& executionResult,
-  const Model &state)
-{
-  auto possibleSequences = commandSequencePermutations(executionResult);
-  bool atLeastOneFailed = false;
-
-  for (const auto& seq: possibleSequences) {
-    Model currentState = state;
-    bool seqFailed = false;
-    for (const auto& commandResult: seq) {
-      try {
-         auto preState = currentState;
-         commandResult.command->apply(currentState);
-         commandResult.verifyFunc(preState);
-      }
-      catch (...) {
-         atLeastOneFailed = true;
-         seqFailed = true;
-      }
-    }
-    if (!seqFailed)
-    {
-       return; // There was a valid sequence
+  if (hasLeft) {
+    try {
+      auto preState = state;
+      auto currentState = state;
+      auto commandResult = left[leftIndex];
+      commandResult.command->apply(currentState);
+      commandResult.verifyFunc(preState);
+      isValidLeft = hasValidInterleaving(
+          left, right, leftIndex + 1, rightIndex, currentState);
+    } catch (...) {
+      // Failed
     }
   }
 
-  if (atLeastOneFailed) {
-     RC_FAIL("No valid sequence found");
+  if (hasRight) {
+    try {
+      auto preState = state;
+      auto currentState = state;
+      auto commandResult = right[rightIndex];
+      commandResult.command->apply(currentState);
+      commandResult.verifyFunc(preState);
+      isValidRight = hasValidInterleaving(
+          left, right, leftIndex, rightIndex + 1, currentState);
+    } catch (...) {
+      // Failed
+    }
   }
+
+  return isValidLeft || isValidRight;
 }
+
+
+template <typename Model, typename Cmd>
+bool isValidExecution(
+   const ParallelExecutionResult<Model, Cmd> &executionResult,
+   const Model &state) {
+  auto currentState = state;
+  // Verify prefix
+  for (const auto &commandResult : executionResult.prefix) {
+    try {
+      auto preState = currentState;
+      commandResult.command->apply(currentState);
+      commandResult.verifyFunc(preState);
+    } catch (...) {
+      return false;
+    }
+ }
+
+ // verify parallel sequences
+ return hasValidInterleaving(
+     executionResult.left, executionResult.right, 0, 0, currentState);
+}
+
 } // detail
 
 template <typename Cmds, typename Model, typename Sut>
@@ -210,7 +252,8 @@ template <typename Cmds, typename Model, typename Sut>
 void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
   using Cmd = typename Cmds::Cmd;
 
-  // TODO: Verify pre-conditions for all possible interleavings
+  // Verify pre-conditions for all possible interleavings
+  detail::isValidSequence(commands, state);
 
   detail::ParallelExecutionResult<Model, Cmd> result;
 
@@ -250,7 +293,9 @@ void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
   t2.join();
 
   // Verify that the interleaving can be explained by the model
-  verifyCommandSequence(result, state);
+  if (!isValidExecution(result, state)) {
+    RC_FAIL("No valid sequence found");
+  }
 }
 
 } // namespace state
