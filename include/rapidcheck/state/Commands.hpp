@@ -5,59 +5,11 @@
 #include "rapidcheck/Assertions.h"
 #include <thread>
 #include <mutex>
+#include "rapidcheck/detail/Barrier.h"
 
 namespace rc {
 namespace state {
-
-template <typename Cmds, typename Model>
-void applyAll(const Cmds &commands, Model &state) {
-  for (const auto &command : commands) {
-    command->apply(state);
-  }
-}
-
 namespace detail {
-
-class Barrier
-{
-public:
-  Barrier(unsigned int count)
-    : m_threshold(count)
-    , m_count(count)
-    , m_generation(0)
-  {
-    if (count == 0)
-    {
-      throw std::invalid_argument("count cannot be zero.");
-    }
-  }
-
-  bool wait()
-  {
-    std::unique_lock<std::mutex> lock(m_mutex);
-    unsigned int gen = m_generation;
-
-    if (--m_count == 0)
-    {
-      m_generation++;
-      m_count = m_threshold;
-      m_cond.notify_all();
-      return true;
-    }
-
-    while (gen == m_generation)
-      m_cond.wait(lock);
-    return false;
-  }
-
-private:
-  std::mutex m_mutex;
-  std::condition_variable m_cond;
-  unsigned int m_threshold;
-  unsigned int m_count;
-  unsigned int m_generation;
-};
-
 
 template <typename Model, typename Cmd>
 void allInterleavingsAreValid(const Commands<Cmd> &left,
@@ -199,6 +151,13 @@ bool isValidExecution(
 
 } // detail
 
+template <typename Cmds, typename Model>
+void applyAll(const Cmds &commands, Model &state) {
+  for (const auto &command : commands) {
+    command->apply(state);
+  }
+}
+
 template <typename Cmds, typename Model, typename Sut>
 void runAll(const Cmds &commands, const Model &state, Sut &sut) {
   Model currentState = state;
@@ -264,7 +223,7 @@ void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
         detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
   }
 
-  detail::Barrier b(2);
+  rc::detail::Barrier b(2);
 
   // Run the two parallel command sequences in separate threads
   auto parallelCommandSeq1 = commands.left;

@@ -16,6 +16,7 @@ add_library(rapidcheck
   src/Show.cpp
   src/detail/Any.cpp
   src/detail/Assertions.cpp
+  src/detail/Barrier.cpp
   src/detail/Configuration.cpp
   src/detail/ExpressionCaptor.cpp
   src/detail/FrequencyMap.cpp
