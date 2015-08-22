@@ -2,11 +2,13 @@
 
 #include <rapidcheck.h>
 
+#include "rapidcheck/detail/ExecFixture.h"
+
 namespace rc {
 namespace detail {
 
 template <typename Testable>
-void checkGtest(Testable &&testable) {
+void checkGTest(Testable &&testable) {
   const auto result = checkTestable(std::forward<Testable>(testable));
 
   if (result.template is<SuccessResult>()) {
@@ -25,11 +27,31 @@ void checkGtest(Testable &&testable) {
 } // namespace detail
 } // namespace rc
 
+/// Defines a RapidCheck property as a Google Test.
 #define RC_GTEST_PROP(TestCase, Name, ArgList)                                 \
-  void rapidCheckPropImpl_##TestCase##_##Name ArgList;                         \
+  void rapidCheck_propImpl_##TestCase##_##Name ArgList;                        \
                                                                                \
   TEST(TestCase, Name) {                                                       \
-    ::rc::detail::checkGtest(&rapidCheckPropImpl_##TestCase##_##Name);         \
+    ::rc::detail::checkGTest(&rapidCheck_propImpl_##TestCase##_##Name);        \
   }                                                                            \
                                                                                \
-  void rapidCheckPropImpl_##TestCase##_##Name ArgList
+  void rapidCheck_propImpl_##TestCase##_##Name ArgList
+
+/// Defines a RapidCheck property as a Google Test fixture based test. The
+/// fixture is reinstantiated for each test case of the property.
+#define RC_GTEST_FIXTURE_PROP(Fixture, Name, ArgList)                          \
+  class RapidCheckPropImpl_##Fixture##_##Name : public Fixture {               \
+  public:                                                                      \
+    void rapidCheck_fixtureSetUp() { SetUp(); }                                \
+    void TestBody() override {}                                                \
+    void operator() ArgList;                                                   \
+    void rapidCheck_fixtureTearDown() { TearDown(); }                          \
+  };                                                                           \
+                                                                               \
+  TEST_F(Fixture, Name) {                                                      \
+    ::rc::detail::checkGTest(                                                  \
+        &rc::detail::ExecFixture<                                              \
+            RapidCheckPropImpl_##Fixture##_##Name>::exec);                     \
+  }                                                                            \
+                                                                               \
+  void RapidCheckPropImpl_##Fixture##_##Name::operator() ArgList

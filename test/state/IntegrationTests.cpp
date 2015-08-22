@@ -39,7 +39,7 @@ struct Close : public BagCommand {
 };
 
 struct Add : public BagCommand {
-  int item = *gen::arbitrary<int>();
+  int item = *gen::inRange<int>(0, 10);
 
   void apply(Model &s0) const override {
     RC_PRE(s0.open);
@@ -103,6 +103,7 @@ struct BuggyDelAll : public BagCommand {
 
   void apply(Model &s0) const override {
     RC_PRE(s0.open);
+    RC_PRE(std::find(begin(s0.items), end(s0.items), value) != end(s0.items));
     s0.items.erase(std::remove(begin(s0.items), end(s0.items), value),
                    end(s0.items));
   }
@@ -111,6 +112,23 @@ struct BuggyDelAll : public BagCommand {
 
   void show(std::ostream &os) const override {
     os << "BuggyDelAll(" << value << ")";
+  }
+};
+
+struct SneakyBuggyGet : public BagCommand {
+  int value;
+
+  explicit SneakyBuggyGet(const Bag &s0) { value = *gen::elementOf(s0.items); }
+
+  void apply(Model &s0) const override {
+    RC_PRE(s0.open);
+    RC_PRE(std::find(begin(s0.items), end(s0.items), value) != end(s0.items));
+  }
+
+  void run(const Model &s0, Sut &sut) const override { RC_ASSERT(value != 2); }
+
+  void show(std::ostream &os) const override {
+    os << "SneakyBuggyGet(" << value << ")";
   }
 };
 
@@ -175,6 +193,19 @@ TEST_CASE("state integration tests") {
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
         std::vector<std::string> expected{"Open", "Add(0)", "BuggyDelAll(0)"};
+        RC_ASSERT(cmdStrings == expected);
+      });
+
+  prop(
+      "should find minimum when later commands depend on the specific values "
+      "of previous commands",
+      [](const GenParams &params) {
+        Bag s0;
+        const auto gen = state::gen::commands<BagCommand>(
+            s0, &state::gen::execOneOf<Open, Close, Add, Del, SneakyBuggyGet>);
+        const auto commands = findMinCommands(params, gen, s0);
+        const auto cmdStrings = showCommands(commands);
+        std::vector<std::string> expected{"Open", "Add(2)", "SneakyBuggyGet(2)"};
         RC_ASSERT(cmdStrings == expected);
       });
 }
