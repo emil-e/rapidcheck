@@ -2,6 +2,8 @@
 
 #include <rapidcheck.h>
 
+#include "rapidcheck/detail/ExecFixture.h"
+
 namespace rc {
 namespace detail {
 
@@ -27,11 +29,31 @@ void checkBoostTest(const std::string &description, Testable &&testable) {
 } // namespace detail
 } // namespace rc
 
+/// Defines a RapidCheck property as a Boost test.
 #define RC_BOOST_PROP(Name, ArgList)                                           \
-  void rapidCheckPropImpl_##Name ArgList;                                      \
+  void rapidCheck_propImpl_##Name ArgList;                                     \
                                                                                \
   BOOST_AUTO_TEST_CASE(Name) {                                                 \
-    ::rc::detail::checkBoostTest(#Name, &rapidCheckPropImpl_##Name);           \
+    ::rc::detail::checkBoostTest(#Name, &rapidCheck_propImpl_##Name);          \
   }                                                                            \
                                                                                \
-  void rapidCheckPropImpl_##Name ArgList
+  void rapidCheck_propImpl_##Name ArgList
+
+/// Defines a RapidCheck property as a Boost Test fixture based test. The
+/// fixture is reinstantiated for each test case of the property.
+#define RC_BOOST_FIXTURE_PROP(Name, Fixture, ArgList)                          \
+  class RapidCheckPropImpl_##Fixture##_##Name : public Fixture {               \
+  public:                                                                      \
+    void rapidCheck_fixtureSetUp() {}                                          \
+    void operator() ArgList;                                                   \
+    void rapidCheck_fixtureTearDown() {}                                       \
+  };                                                                           \
+                                                                               \
+  BOOST_AUTO_TEST_CASE(Name) {                                                 \
+    ::rc::detail::checkBoostTest(                                              \
+        #Name,                                                                 \
+        &rc::detail::ExecFixture<                                              \
+            RapidCheckPropImpl_##Fixture##_##Name>::exec);                     \
+  }                                                                            \
+                                                                               \
+  void RapidCheckPropImpl_##Fixture##_##Name::operator() ArgList
