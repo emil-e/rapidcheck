@@ -65,7 +65,7 @@ rc::state::check(initialState,
 However, the template can of course be used as is just as well.
 
 Some notes:
-- In the first example, we do not have to assert that `item` exists in the model in our `apply` implementation since a generated command will never be used for a different state. For more about this, see the [Stateful testing](state.md) section.
+- In the first example, we also have to assert that `item` exists in the model in our `apply` implementation since a generated command might be used for a different state, in particular during shrinking where the state may change because the commands prior in the sequence may be shrunk or removed. For more about this, see the [Stateful testing](state.md) section.
 - Discarding macros such as `RC_PRE` and `RC_DISCARD` can be used in the constructor of a command to immediately discard the command if it is not valid for the given state.
 
 #### `Gen<Commands<Cmd>> gen::commands(Model initialState, GenerationFunc f)` ####

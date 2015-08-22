@@ -103,7 +103,7 @@ In the example above, we use a pointer to the `rc::state::gen::execOneOf` templa
 Using these parameters, `rc::state::check` will generate a valid command sequence for the given initial state and run it on the System Under Test. If there is an assertion failure when the command sequence is run, the property will fail and a minimal counterexample will be printed.
 
 ## Command generation ##
-The state that is passed to the command generator function in `rc::state::check` (and `rc::state::gen::commands`, see the [reference](state_ref.md)) is always the state that will be used for the generated command. If the state changes during shrinking, a new command will be generated. The nice consequence of this is that if a command is valid for the state for which it was generated, it need not assert any preconditions. This is especially useful for `rc::state::gen::execOneOf`.
+The state that is passed to the command generator function in `rc::state::check` (and `rc::state::gen::commands`, see the [reference](state_ref.md)) is not necessarily the state that will be used for the generated command. If the state changes during shrinking, a new command will only be generated if the preconditions no longer hold. For this reason, you need to always assert _all_ preconditions for your command in `apply`. The state passed to the generator function should be seen as a hint to aid in generating useful commands, not a promise.
 
 ## Tips ##
 ### Generate initialization parameters ###
