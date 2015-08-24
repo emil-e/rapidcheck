@@ -101,7 +101,7 @@ bool operator!=(const Variant<Type, Types...> &lhs,
 template <typename Type,
           typename... Types,
           typename = typename std::enable_if<
-              AllTrue<IsStreamInsertible<Types>::value...>::value>::type>
+              AllIs<IsStreamInsertible, Types...>::value>::type>
 std::ostream &operator<<(std::ostream &os,
                          const Variant<Type, Types...> &value);
 

@@ -1,5 +1,5 @@
 #include <exception>
-#if (__GLIBCXX__ / 10000) == 2014
+#if (__GLIBCXX__ / 10000) >= 2014
 
 namespace std {
 
