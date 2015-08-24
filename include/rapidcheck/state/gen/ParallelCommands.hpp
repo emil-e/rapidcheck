@@ -37,21 +37,36 @@ private:
   struct CommandSequence {
     CommandSequence(const GenFunc &func, int sz)
         : genFunc(func)
-        , size(sz)
-        , numFixed(0) {}
+        , size(sz) {}
 
     Model initialState;
     GenFunc genFunc;
     int size;
-    std::size_t numFixed;
     std::vector<CommandEntry> entries;
 
-    void regenerateEntriesFrom(std::size_t start) {
+
+    void repairEntriesFrom(std::size_t start) {
       for (auto i = start; i < entries.size(); i++) {
-        if (!regenerateEntryAt(i)) {
+        if (!repairEntryAt(i)) {
           entries.erase(begin(entries) + i--);
         }
       }
+    }
+
+    bool repairEntryAt(std::size_t i) {
+      using namespace ::rc::detail;
+      try {
+        auto &entry = entries[i];
+        const auto cmd = entry.shrinkable.value();
+      } catch (const CaseResult &result) {
+        if (result.type != CaseResult::Type::Discard) {
+          throw;
+        }
+
+        return regenerateEntryAt(i);
+      }
+
+      return true;
     }
 
     bool regenerateEntryAt(std::size_t i) {
@@ -258,19 +273,19 @@ private:
   }
 
   static Seq<CommandSequence> shrinkRemoving(const CommandSequence &s) {
-    auto nonEmptyRanges = seq::subranges(s.numFixed, s.entries.size());
+    auto nonEmptyRanges = seq::subranges(0, s.entries.size());
     return seq::map(std::move(nonEmptyRanges),
                     [=](const std::pair<std::size_t, std::size_t> &r) {
                       auto shrunk = s;
                       shrunk.entries.erase(begin(shrunk.entries) + r.first,
                                            begin(shrunk.entries) + r.second);
-                      shrunk.regenerateEntriesFrom(r.first);
+                      shrunk.repairEntriesFrom(r.first);
                       return shrunk;
                     });
   }
 
   static Seq<CommandSequence> shrinkIndividual(const CommandSequence &s) {
-    return seq::mapcat(seq::range(s.numFixed, s.entries.size()),
+    return seq::mapcat(seq::range<std::size_t>(0, s.entries.size()),
                        [=](std::size_t i) {
                          return seq::map(s.entries[i].shrinkable.shrinks(),
                                          [=](Shrinkable<CmdSP> &&cmd) {
@@ -278,9 +293,8 @@ private:
                                            auto &entry = shrunk.entries[i];
 
                                            entry.shrinkable = std::move(cmd);
-                                           shrunk.regenerateEntriesFrom(i + 1);
+                                           shrunk.repairEntriesFrom(i);
 
-                                           shrunk.numFixed = i;
                                            return shrunk;
                                          });
                        });
