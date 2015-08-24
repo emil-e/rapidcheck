@@ -6,23 +6,6 @@ namespace rc {
 namespace state {
 namespace gen {
 
-template <typename CommandType>
-struct ParallelCommands {
-  using Cmd = CommandType;
-  using Cmds = Commands<CommandType>;
-
-  ParallelCommands() {}
-
-  ParallelCommands(const Cmds &prefix, const Cmds &left, const Cmds &right)
-      : prefix(prefix)
-      , left(left)
-      , right(right) {}
-
-  Cmds prefix;
-  Cmds left;
-  Cmds right;
-};
-
 namespace detail {
 template <typename Cmd, typename GenFunc>
 class ParallelCommandsGen {
@@ -334,7 +317,7 @@ parallelCommands(const typename Cmd::Model &initialState,
 } // namespace state
 
 template <typename Cmd>
-struct ShowType<state::gen::ParallelCommands<Cmd>> {
+struct ShowType<state::ParallelCommands<Cmd>> {
   static void showType(std::ostream &os) {
     os << "Parallel command sequence ";
     detail::showType<Cmd>(os);

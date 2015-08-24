@@ -41,7 +41,7 @@ void allInterleavingsAreValid(const Commands<Cmd> &left,
 
 template <typename Model, typename Cmd>
 void isValidSequence(
-  const gen::ParallelCommands<Cmd> &cmds,
+  const ParallelCommands<Cmd> &cmds,
   const Model &state) {
 
   auto currentState = state;
@@ -158,8 +158,8 @@ void applyAll(const Cmds &commands, Model &state) {
   }
 }
 
-template <typename Cmds, typename Model, typename Sut>
-void runAll(const Cmds &commands, const Model &state, Sut &sut) {
+template <typename Cmd, typename Model, typename Sut>
+void runAll(const Commands<Cmd> &commands, const Model &state, Sut &sut) {
   Model currentState = state;
   for (const auto &command : commands) {
     auto preState = currentState;
@@ -196,20 +196,25 @@ void showValue(const std::vector<
   }
 }
 
+template <typename CommandType>
+struct ParallelCommands {
+  using Cmd = CommandType;
+  using Cmds = Commands<CommandType>;
 
-template <typename Cmd>
-void showValue(const gen::ParallelCommands<Cmd> &sequence, std::ostream &os) {
-  os << "Sequential sequence:" << std::endl;
-  show(sequence.prefix, os);
-  os << "First parallel sequence:" << std::endl;
-  show(sequence.left, os);
-  os << "Second parallel sequence:" << std::endl;
-  show(sequence.right, os);
-}
+  ParallelCommands() {}
 
-template <typename Cmds, typename Model, typename Sut>
-void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
-  using Cmd = typename Cmds::Cmd;
+  ParallelCommands(const Cmds &prefix, const Cmds &left, const Cmds &right)
+      : prefix(prefix)
+      , left(left)
+      , right(right) {}
+
+  Cmds prefix;
+  Cmds left;
+  Cmds right;
+};
+
+template <typename Cmd, typename Model, typename Sut>
+void runAllParallel(const ParallelCommands<Cmd> &commands, const Model &state, Sut &sut) {
 
   // Verify pre-conditions for all possible interleavings
   detail::isValidSequence(commands, state);
@@ -255,6 +260,16 @@ void runAllParallel(const Cmds &commands, const Model &state, Sut &sut) {
   if (!isValidExecution(result, state)) {
     RC_FAIL("No valid sequence found");
   }
+}
+
+template <typename Cmd>
+void showValue(const ParallelCommands<Cmd> &sequence, std::ostream &os) {
+  os << "Sequential sequence:" << std::endl;
+  show(sequence.prefix, os);
+  os << "First parallel sequence:" << std::endl;
+  show(sequence.left, os);
+  os << "Second parallel sequence:" << std::endl;
+  show(sequence.right, os);
 }
 
 } // namespace state

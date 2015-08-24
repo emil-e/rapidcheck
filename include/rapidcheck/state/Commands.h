@@ -12,25 +12,35 @@ namespace state {
 template <typename CommandType>
 using Commands = std::vector<std::shared_ptr<const CommandType>>;
 
+/// Command sequence prepared for parallel testing.
+template <typename CommandType>
+struct ParallelCommands;
+
 /// Applies each command in `commands` to the given state. `commands` is assumed
 /// to be a container supporting `begin` and `end` containing pointers to
 /// commands appropriate for the given state.
 template <typename Cmds, typename Model>
 void applyAll(const Cmds &commands, Model &state);
 
-/// Runs each command in `command` on the given system under test assuming the
+/// Runs each command in `commands` on the given system under test assuming the
 /// given state. `commands` is assumed to be a container supporting `begin` and
 /// `end` containing pointers to commands appropriate for the given state and
 /// system under test.
 template <typename Cmds, typename Model, typename Sut>
 void runAll(const Cmds &commands, const Model &state, Sut &sut);
 
-template <typename Cmds, typename Model, typename Sut>
-void runAllParallel(const Cmds &commands, const Model &state, Sut &sut);
-
 /// Checks whether command is valid for the given state.
 template <typename Cmds, typename Model>
 bool isValidSequence(const Cmds &commands, const Model &s0);
+
+/// Runs each command in `commands` starting with the prefix and then left and
+/// are executed in parallel. The execution is then validated by searching for
+/// an interleaving of commands that progresses the model in such a way that it
+/// matches the output of the executed commands.
+template <typename Cmd, typename Model, typename Sut>
+void runAllParallel(const ParallelCommands<Cmd> &commands,
+                    const Model &state,
+                    Sut &sut);
 
 } // namespace state
 } // namespace rc
