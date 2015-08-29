@@ -21,8 +21,8 @@ add_executable(rapidcheck_tests
   detail/AnyTests.cpp
   detail/ApplyTupleTests.cpp
   detail/BitStreamTests.cpp
+  detail/CaptureTests.cpp
   detail/ConfigurationTests.cpp
-  detail/ExpressionCaptorTests.cpp
   detail/FrequencyMapTests.cpp
   detail/ImplicitParamTests.cpp
   detail/LogTestListenerTests.cpp
