@@ -12,7 +12,7 @@ namespace state {
 namespace detail {
 
 template <typename Model, typename Cmd>
-void allInterleavingsAreValid(const Commands<Cmd> &left,
+void verifyInterleavings(const Commands<Cmd> &left,
                               const Commands<Cmd> &right,
                               int leftIndex,
                               int rightIndex,
@@ -21,38 +21,34 @@ void allInterleavingsAreValid(const Commands<Cmd> &left,
   const auto hasRight = rightIndex < right.size();
 
   if (hasLeft) {
-    auto preState = state;
     auto currentState = state;
-    auto command = left[leftIndex];
+    const auto& command = left[leftIndex];
     command->apply(currentState);
-    allInterleavingsAreValid(
+    verifyInterleavings(
         left, right, leftIndex + 1, rightIndex, currentState);
   }
 
   if (hasRight) {
-    auto preState = state;
     auto currentState = state;
-    auto command = right[rightIndex];
+    const auto& command = right[rightIndex];
     command->apply(currentState);
-    allInterleavingsAreValid(
+    verifyInterleavings(
         left, right, leftIndex, rightIndex + 1, currentState);
   }
 }
 
 template <typename Model, typename Cmd>
-void isValidSequence(
+void verifyPreconditions(
   const ParallelCommands<Cmd> &cmds,
   const Model &state) {
 
   auto currentState = state;
 
   // Check prefix
-  for (const auto &command : cmds.prefix) {
-    command->apply(currentState);
-  }
+  applyAll(cmds.prefix, currentState);
 
   // verify parallel sequences
-  allInterleavingsAreValid(
+  verifyInterleavings(
     cmds.left, cmds.right, 0, 0, currentState);
 }
 
@@ -78,7 +74,6 @@ struct ParallelExecutionResult {
   std::vector<CommandResult<Model, Cmd>> right;
 };
 
-
 template <typename Model, typename Cmd>
 bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
                           const std::vector<CommandResult<Model, Cmd>> &right,
@@ -93,9 +88,6 @@ bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
     return true;
   }
 
-  auto isValidLeft = false;
-  auto isValidRight = false;
-
   if (hasLeft) {
     try {
       auto preState = state;
@@ -103,8 +95,10 @@ bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
       auto commandResult = left[leftIndex];
       commandResult.command->apply(currentState);
       commandResult.verifyFunc(preState);
-      isValidLeft = hasValidInterleaving(
-          left, right, leftIndex + 1, rightIndex, currentState);
+      if (hasValidInterleaving(
+              left, right, leftIndex + 1, rightIndex, currentState)) {
+        return true;
+      }
     } catch (...) {
       // Failed
     }
@@ -117,14 +111,16 @@ bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
       auto commandResult = right[rightIndex];
       commandResult.command->apply(currentState);
       commandResult.verifyFunc(preState);
-      isValidRight = hasValidInterleaving(
-          left, right, leftIndex, rightIndex + 1, currentState);
+      if (hasValidInterleaving(
+              left, right, leftIndex, rightIndex + 1, currentState)) {
+        return true;
+      }
     } catch (...) {
       // Failed
     }
   }
 
-  return isValidLeft || isValidRight;
+  return false;
 }
 
 template <typename Model, typename Cmd>
@@ -212,7 +208,7 @@ template <typename Cmd, typename Model, typename Sut>
 void runAllParallel(const ParallelCommands<Cmd> &commands, const Model &state, Sut &sut) {
 
   // Verify pre-conditions for all possible interleavings
-  detail::isValidSequence(commands, state);
+  detail::verifyPreconditions(commands, state);
 
   detail::ParallelExecutionResult<Model, Cmd> result;
 
@@ -253,17 +249,17 @@ void runAllParallel(const ParallelCommands<Cmd> &commands, const Model &state, S
 
   // Verify that the interleaving can be explained by the model
   if (!isValidExecution(result, state)) {
-    RC_FAIL("No valid sequence found");
+    RC_FAIL("No possible interleaving");
   }
 }
 
 template <typename Cmd>
 void showValue(const ParallelCommands<Cmd> &sequence, std::ostream &os) {
-  os << "Sequential sequence:" << std::endl;
+  os << "Sequential:" << std::endl;
   show(sequence.prefix, os);
-  os << "First parallel sequence:" << std::endl;
+  os << "Left branch:" << std::endl;
   show(sequence.left, os);
-  os << "Second parallel sequence:" << std::endl;
+  os << "Right branch:" << std::endl;
   show(sequence.right, os);
 }
 
