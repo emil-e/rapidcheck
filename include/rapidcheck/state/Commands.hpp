@@ -127,26 +127,21 @@ bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
   return isValidLeft || isValidRight;
 }
 
-
 template <typename Model, typename Cmd>
 bool isValidExecution(
-   const ParallelExecutionResult<Model, Cmd> &executionResult,
-   const Model &state) {
+    const ParallelExecutionResult<Model, Cmd> &executionResult,
+    const Model &state) {
   auto currentState = state;
-  // Verify prefix
+  // Verify prefix.
   for (const auto &commandResult : executionResult.prefix) {
-    try {
-      auto preState = currentState;
-      commandResult.command->apply(currentState);
-      commandResult.verifyFunc(preState);
-    } catch (...) {
-      return false;
-    }
- }
+    auto preState = currentState;
+    commandResult.command->apply(currentState);
+    commandResult.verifyFunc(preState);
+  }
 
- // verify parallel sequences
- return hasValidInterleaving(
-     executionResult.left, executionResult.right, 0, 0, currentState);
+  // verify parallel sequences
+  return hasValidInterleaving(
+      executionResult.left, executionResult.right, 0, 0, currentState);
 }
 
 } // detail
