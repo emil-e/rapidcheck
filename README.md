@@ -14,6 +14,7 @@ Let's throw together a list of features:
 - Great support for STL types, including maps and sets
 - Advanced combinators for creating your own generators
 - Stateful based on commands in the vein of Erlang QuickCheck
+- Integration with popular testing frameworks such as Boost Test, Google Test and Google Mock
 
 ## Prerequisites and installation ##
 RapidCheck makes extensive use of C++11 and thus requires a compliant compiler. RapidCheck continuous integration builds using Clang 3.4 and GCC 4.9 and any later versions should also work. MSVC 2013 lacks too many C++11 features to successfully compile RapidCheck but it is possible that MSVC 2015 will work when it's released.
