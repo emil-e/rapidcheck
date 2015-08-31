@@ -207,7 +207,37 @@ struct ParallelCommands {
 };
 
 template <typename Cmd, typename Model, typename Sut>
-void runAllParallel(const ParallelCommands<Cmd> &commands, const Model &state, Sut &sut) {
+std::thread executeCommandSequenceInNewThread(
+    const Commands<Cmd> &commands,
+    std::vector<detail::CommandResult<Model, Cmd>> &results,
+    Sut &sut,
+    rc::detail::Barrier &barrier,
+    std::exception_ptr &error) {
+
+  return std::thread([&commands, &results, &sut, &barrier, &error] {
+    try {
+      barrier.wait();
+      for (const auto &command : commands) {
+        auto verifyFunc = command->run(sut);
+        results.emplace_back(
+            detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
+      }
+    } catch (...) {
+      error = std::current_exception();
+    }
+  });
+}
+
+void rethrowOnException(std::exception_ptr e) {
+  if (e != nullptr) {
+    std::rethrow_exception(e);
+  };
+}
+
+template <typename Cmd, typename Model, typename Sut>
+void runAllParallel(const ParallelCommands<Cmd> &commands,
+                    const Model &state,
+                    Sut &sut) {
 
   // Verify pre-conditions for all possible interleavings
   detail::verifyPreconditions(commands, state);
@@ -222,32 +252,20 @@ void runAllParallel(const ParallelCommands<Cmd> &commands, const Model &state, S
   }
 
   rc::detail::Barrier b(2);
+  std::exception_ptr e1 = nullptr;
+  std::exception_ptr e2 = nullptr;
 
   // Run the two parallel command sequences in separate threads
-  auto parallelCommandSeq1 = commands.left;
-  auto t1 = std::thread([&parallelCommandSeq1, &result, &sut, &b] {
-    b.wait();
-    for (const auto &command : parallelCommandSeq1) {
-      auto verifyFunc = command->run(sut);
-      std::this_thread::yield();
-      result.left.emplace_back(
-          detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
-    }
-  });
-
-  auto parallelCommandSeq2 = commands.right;
-  auto t2 = std::thread([&parallelCommandSeq2, &result, &sut, &b] {
-    b.wait();
-    for (const auto &command : parallelCommandSeq2) {
-      auto verifyFunc = command->run(sut);
-      std::this_thread::yield();
-      result.right.emplace_back(
-          detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
-    }
-  });
+  auto t1 =
+      executeCommandSequenceInNewThread(commands.left, result.left, sut, b, e1);
+  auto t2 = executeCommandSequenceInNewThread(
+      commands.right, result.right, sut, b, e2);
 
   t1.join();
   t2.join();
+
+  rethrowOnException(e1);
+  rethrowOnException(e2);
 
   // Verify that the interleaving can be explained by the model
   verifyExecution(result, state);
