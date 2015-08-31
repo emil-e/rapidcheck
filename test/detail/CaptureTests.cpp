@@ -97,7 +97,7 @@ TEST_CASE("RC_INTERNAL_CAPTURE") {
 
   SECTION("mixed") {
     VERIFY_EXPRESSION(2 + 3 == 5, "2 + 3 == 5");
-    VERIFY_EXPRESSION(2 % 3 == 5 == 6, "2 % 3 == 5 == 6");
+    VERIFY_EXPRESSION(2 % 3 == 5 == true, "2 % 3 == 5 == true");
   }
 }
 

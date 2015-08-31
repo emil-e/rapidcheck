@@ -30,7 +30,7 @@ bool isQuote(int c) { return (c == '\'') || (c == '\"'); }
 
 template <typename Pred>
 bool takeWhile(ParseState &state, std::string &result, const Pred &pred) {
-  const int start = state.pos;
+  const auto start = state.pos;
   while (!state.end() && pred(state.c())) {
     state.pos++;
   }

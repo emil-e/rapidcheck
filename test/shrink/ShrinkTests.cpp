@@ -56,9 +56,9 @@ struct RemoveChunksProperties {
         "every removal of consecutive elements is a possible shrink",
         [] {
           const auto elements = *fewNonEmptyValues;
-          const auto size = elements.size();
-          const auto a = *gen::inRange<int>(0, size + 1);
-          const auto b = *gen::distinctFrom(gen::inRange<int>(0, size + 1), a);
+          const auto size = int(elements.size());
+          const auto a = *gen::inRange(0, size + 1);
+          const auto b = *gen::distinctFrom(gen::inRange(0, size + 1), a);
           const auto left = std::min(a, b);
           const auto right = std::max(a, b);
 

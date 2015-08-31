@@ -9,7 +9,7 @@ if(MSVC)
   # /bigobj - some object files become very large so we need this
   # /wd4503 - truncation of decorated name, not much we can do about it so
   #           disable it
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /wd4503")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /wd4503 /WX")
   # /RTC* is incompatible with /O2 needed for Random.cpp to speed it up
   string(REGEX REPLACE "/RTC(su|[1su])" ""
     CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")

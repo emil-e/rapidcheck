@@ -30,7 +30,7 @@ TEST_CASE("seq::last") {
 
   prop("returns the last element of the Seq",
        [] {
-         auto elements = *gen::nonEmpty<std::vector<int>>();
+         const auto elements = *gen::nonEmpty<std::vector<int>>();
          RC_ASSERT(*seq::last(seq::fromContainer(elements)) == elements.back());
        });
 }
@@ -38,7 +38,7 @@ TEST_CASE("seq::last") {
 TEST_CASE("seq::contains") {
   prop("returns false for elements not in Seq",
        [](const std::vector<int> &elements) {
-         int value = *gen::suchThat<int>([&](int x) {
+         const auto value = *gen::suchThat<int>([&](int x) {
            return std::find(begin(elements), end(elements), x) == end(elements);
          });
          RC_ASSERT(!seq::contains(seq::fromContainer(elements), value));
@@ -47,7 +47,7 @@ TEST_CASE("seq::contains") {
   prop("returns true for elements in Seq",
        [] {
          auto elements = *gen::nonEmpty<std::vector<int>>();
-         int value = *gen::elementOf(elements);
+         const auto value = *gen::elementOf(elements);
          RC_ASSERT(seq::contains(seq::fromContainer(elements), value));
        });
 }
@@ -55,16 +55,16 @@ TEST_CASE("seq::contains") {
 TEST_CASE("seq::all") {
   prop("returns true if all elements match predicate",
        [](int value) {
-         int n = *gen::inRange<std::size_t>(0, 200);
+         const auto n = *gen::inRange(0, 200);
          auto seq = seq::take(n, seq::repeat(value));
          RC_ASSERT(seq::all(seq, [=](int x) { return x == value; }));
        });
 
   prop("returns false if one element does not match predicate",
        [](int value) {
-         int other = *gen::distinctFrom(value);
-         int n1 = *gen::inRange<std::size_t>(0, 100);
-         int n2 = *gen::inRange<std::size_t>(0, 100);
+         const auto other = *gen::distinctFrom(value);
+         const auto n1 = *gen::inRange(0, 100);
+         const auto n2 = *gen::inRange(0, 100);
          auto seq = seq::concat(seq::take(n1, seq::repeat(value)),
                                 seq::just(other),
                                 seq::take(n2, seq::repeat(value)));
@@ -75,9 +75,9 @@ TEST_CASE("seq::all") {
 TEST_CASE("seq::any") {
   prop("seq::any(..., pred) != seq::all(..., !pred)",
        [] {
-         auto someNumber = gen::inRange<std::size_t>(0, 200);
-         int x = *someNumber;
-         auto elements = *gen::container<std::vector<int>>(someNumber);
+         auto someNumber = gen::inRange(0, 200);
+         const auto x = *someNumber;
+         const auto elements = *gen::container<std::vector<int>>(someNumber);
          auto seq = seq::fromContainer(elements);
          const auto pred = [=](int y) { return x == y; };
          const auto npred = [=](int y) { return x != y; };
@@ -89,16 +89,16 @@ TEST_CASE("seq::at") {
   prop("returns the element at the given position if index < size",
        [] {
          const auto elements = *gen::nonEmpty<std::vector<int>>();
-         std::size_t i = *gen::inRange<std::size_t>(0, elements.size());
-         auto x = seq::at(seq::fromContainer(elements), i);
+         const auto i = *gen::inRange<std::size_t>(0, elements.size());
+         const auto x = seq::at(seq::fromContainer(elements), i);
          RC_ASSERT(x);
          RC_ASSERT(*x == elements[i]);
        });
 
   prop("returns Nothing for indexes past end",
        [](int x) {
-         std::size_t n = *gen::inRange<std::size_t>(0, 100);
-         std::size_t i = *gen::inRange<std::size_t>(n, 200);
+         const auto n = *gen::inRange(0, 100);
+         const auto i = *gen::inRange(n, 200);
          RC_ASSERT(!seq::at(seq::take(n, seq::repeat(x)), i));
        });
 }
