@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gmock/gmock.h>
 #include <rapidcheck.h>
+#include <gmock/gmock.h>
 
 namespace rc {
 namespace gmock {

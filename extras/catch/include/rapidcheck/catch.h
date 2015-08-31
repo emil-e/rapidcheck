@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include <catch.hpp>
 #include <rapidcheck.h>
+#include <catch.hpp>
 
 namespace rc {
 
