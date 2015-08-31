@@ -124,7 +124,7 @@ bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
 }
 
 template <typename Model, typename Cmd>
-bool isValidExecution(
+void verifyExecution(
     const ParallelExecutionResult<Model, Cmd> &executionResult,
     const Model &state) {
   auto currentState = state;
@@ -136,8 +136,10 @@ bool isValidExecution(
   }
 
   // verify parallel sequences
-  return hasValidInterleaving(
-      executionResult.left, executionResult.right, 0, 0, currentState);
+  if (!hasValidInterleaving(
+        executionResult.left, executionResult.right, 0, 0, currentState)) {
+    RC_FAIL("No possible interleaving");
+  }
 }
 
 } // detail
@@ -248,9 +250,7 @@ void runAllParallel(const ParallelCommands<Cmd> &commands, const Model &state, S
   t2.join();
 
   // Verify that the interleaving can be explained by the model
-  if (!isValidExecution(result, state)) {
-    RC_FAIL("No possible interleaving");
-  }
+  verifyExecution(result, state);
 }
 
 template <typename Cmd>
