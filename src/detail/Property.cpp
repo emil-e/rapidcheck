@@ -76,7 +76,7 @@ bool operator!=(const CaseDescription &lhs, const CaseDescription &rhs) {
 
 std::ostream &operator<<(std::ostream &os, const CaseDescription &desc) {
   os << "{result='" << desc.result << "', tags=" << toString(desc.tags)
-     << ", example=" << toString(desc.example) << "}";
+     << ", example=" << toString(desc.example()) << "}";
   return os;
 }
 
