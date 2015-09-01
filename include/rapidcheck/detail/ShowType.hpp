@@ -11,8 +11,8 @@
 #include <stack>
 #include <sstream>
 
-#include "Utility.h"
-#include "Traits.h"
+#include "rapidcheck/detail/Platform.h"
+#include "rapidcheck/detail/Traits.h"
 
 namespace rc {
 namespace detail {

@@ -100,7 +100,7 @@ private:
         if (result.type != CaseResult::Type::Discard) {
           throw;
         }
-      } catch (const GenerationFailure &failure) {
+      } catch (const GenerationFailure &) {
         // Just return false below
       }
 
@@ -168,7 +168,7 @@ private:
           throw;
         }
         // What to do?
-      } catch (const GenerationFailure &failure) {
+      } catch (const GenerationFailure &) {
         // What to do?
       }
     }

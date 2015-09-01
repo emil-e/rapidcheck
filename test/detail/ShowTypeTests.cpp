@@ -49,14 +49,21 @@ TEST_CASE("typeToString") {
   }
 
   SECTION("non-specialized types") {
-    REQUIRE(typeToString<NonspecializedPlain>() ==
-            "rc::test::NonspecializedPlain");
-    REQUIRE(typeToString<NonspecializedTemplate<NonspecializedPlain>>() ==
-            "rc::test::NonspecializedTemplate<rc::test::NonspecializedPlain>");
-    REQUIRE(typeToString<NonspecializedPlain *>() ==
-            "rc::test::NonspecializedPlain *");
-    REQUIRE(typeToString<const NonspecializedPlain *>() ==
-            "const rc::test::NonspecializedPlain *");
+    REQUIRE(typeToString<NonspecializedStruct>() ==
+            "rc::test::NonspecializedStruct");
+    REQUIRE(typeToString<NonspecializedClass>() ==
+            "rc::test::NonspecializedClass");
+    REQUIRE(typeToString<NonspecializedEnum>() ==
+            "rc::test::NonspecializedEnum");
+    REQUIRE(typeToString<NonspecializedEnumClass>() ==
+            "rc::test::NonspecializedEnumClass");
+
+    REQUIRE(typeToString<NonspecializedTemplate<NonspecializedStruct>>() ==
+            "rc::test::NonspecializedTemplate<rc::test::NonspecializedStruct>");
+    REQUIRE(typeToString<NonspecializedStruct *>() ==
+            "rc::test::NonspecializedStruct *");
+    REQUIRE(typeToString<const NonspecializedStruct *>() ==
+            "const rc::test::NonspecializedStruct *");
   }
 
   SECTION("std::string") {

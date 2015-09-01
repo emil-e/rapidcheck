@@ -24,9 +24,6 @@ namespace detail {
 /// Unique identifier helper.
 #define RC_UNIQUE(prefix) RC_GLUE(prefix, __LINE__)
 
-/// Demangles a mangled C++
-std::string demangle(const char *name);
-
 /// Base case for `pushBackAll`
 template <typename Collection>
 void pushBackAll(Collection &collection) {

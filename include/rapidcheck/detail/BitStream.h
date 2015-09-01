@@ -27,6 +27,12 @@ public:
   T nextWithSize(int size);
 
 private:
+  template <typename T>
+  T next(int nbits, std::true_type);
+
+  template <typename T>
+  T next(int nbits, std::false_type);
+
   Source m_source;
   uint64_t m_bits;
   int m_numBits;

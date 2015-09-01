@@ -39,12 +39,12 @@ template <typename T>
 Shrinkable<T> real(const Random &random, int size) {
   // TODO this implementation sucks
   auto stream = rc::detail::bitStreamOf(random);
-  double scale =
+  const double scale =
       std::min(size, kNominalSize) / static_cast<double>(kNominalSize);
-  double a = stream.nextWithSize<int64_t>(size);
-  double b =
+  const double a = static_cast<double>(stream.nextWithSize<int64_t>(size));
+  const double b =
       (stream.next<uint64_t>() * scale) / std::numeric_limits<uint64_t>::max();
-  T value = a + b;
+  const T value = static_cast<T>(a + b);
   return shrinkable::shrinkRecur(value, &shrink::real<T>);
 }
 

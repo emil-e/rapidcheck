@@ -141,7 +141,7 @@ TEST_CASE("checkTestable") {
                  gen::scale(0.1, gen::arbitrary<std::vector<std::string>>()));
          TestParams params;
          params.maxSize = *gen::inRange(0, 200);
-         params.maxSuccess = allTags.size();
+         params.maxSuccess = static_cast<int>(allTags.size());
 
          auto i = 0;
          const auto property = [&] {
@@ -178,7 +178,7 @@ TEST_CASE("checkTestable") {
          MockTestListener listener;
          listener.onTestFinishedCallback = [&](const TestResult &result) {
            RC_ASSERT(!callbackResult);
-           callbackResult = result;
+           callbackResult.init(result);
          };
 
          const auto result = checkTestable([&] {

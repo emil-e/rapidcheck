@@ -1,5 +1,9 @@
 #pragma once
 
+// MSVC HACK - Undefine stupid macros MS macros
+#undef min
+#undef max
+
 #include "rapidcheck/Seq.h"
 #include "rapidcheck/seq/Create.h"
 #include "rapidcheck/seq/Operations.h"

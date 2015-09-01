@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "rapidcheck/Gen.h"
 #include "rapidcheck/detail/Results.h"
 

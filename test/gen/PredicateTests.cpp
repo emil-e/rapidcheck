@@ -41,7 +41,7 @@ TEST_CASE("gen::suchThat") {
          const auto shrinkable = gen(params.random, params.size);
          try {
            shrinkable.value();
-         } catch (const GenerationFailure &e) {
+         } catch (const GenerationFailure &) {
            RC_SUCCEED("Threw GenerationFailure");
          }
          RC_FAIL("Didn't throw GenerationFailure");
@@ -154,7 +154,7 @@ struct PositiveProperties {
                        onAnyPath(shrinkable,
                                  [](const Shrinkable<T> &value,
                                     const Shrinkable<T> &shrink) {
-                                   RC_ASSERT(value.value() > 0);
+                                   RC_ASSERT(value.value() > T(0));
                                  });
                      });
   }
@@ -202,7 +202,7 @@ struct NonNegativeProperties {
                        onAnyPath(shrinkable,
                                  [](const Shrinkable<T> &value,
                                     const Shrinkable<T> &shrink) {
-                                   RC_ASSERT(value.value() >= 0);
+                                   RC_ASSERT(value.value() >= T(0));
                                  });
                      });
   }

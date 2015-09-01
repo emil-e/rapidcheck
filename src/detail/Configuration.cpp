@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "MapParser.h"
+#include "rapidcheck/detail/Platform.h"
 
 namespace rc {
 namespace detail {
@@ -178,10 +179,10 @@ Configuration loadConfiguration() {
   std::random_device device;
   config.testParams.seed = (static_cast<uint64_t>(device()) << 32) | device();
 
-  auto params = std::getenv("RC_PARAMS");
-  if (params != nullptr) {
+  const auto params = getEnvValue("RC_PARAMS");
+  if (params) {
     try {
-      config = configFromString(params, config);
+      config = configFromString(*params, config);
     } catch (const ConfigurationException &e) {
       std::cerr << "Error parsing configuration: " << e.what() << std::endl;
       std::exit(1);
