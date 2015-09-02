@@ -16,8 +16,15 @@ namespace state {
 /// @param generationFunc  A callable which takes the current model state as a
 ///                        parameter and returns a generator for a (possibly)
 ///                        suitable command.
-template <typename Model, typename Sut, typename GenFunc>
-void check(const Model &initialState, Sut &sut, GenFunc &&generationFunc);
+template <typename Model, typename Sut, typename Cmd>
+void check(const Model &initialState,
+           Sut &sut,
+           Cmd (*generationFunc)(const Model &));
+
+template <typename Model, typename Sut, typename Cmd>
+void checkParallel(const Model &initialState,
+                   Sut &sut,
+                   Cmd (*generationFunc)());
 
 /// Checks whether command is valid for the given state.
 template <typename Model, typename Sut>

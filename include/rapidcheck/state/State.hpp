@@ -9,22 +9,25 @@
 namespace rc {
 namespace state {
 
-template <typename Model, typename Sut, typename GenFunc>
-void check(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
+template <typename Model, typename Sut, typename Cmd>
+void check(const Model &initialState,
+           Sut &sut,
+           Cmd (*generationFunc)(const Model &)) {
   const auto commands =
       *gen::commands<Command<Model, Sut>>(
-          initialState, std::forward<GenFunc>(generationFunc));
+          initialState, std::forward<Cmd (*)(const Model &)>(generationFunc));
   runAll(commands, initialState, sut);
 }
 
-template <typename Model, typename Sut, typename GenFunc>
-void checkParallel(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
+template <typename Model, typename Sut, typename Cmd>
+void checkParallel(const Model &initialState,
+                   Sut &sut,
+                   Cmd (*generationFunc)()) {
   const auto commands =
       *gen::parallelCommands<Command<Model, Sut>>(
-          initialState, std::forward<GenFunc>(generationFunc));
+          initialState, std::forward<Cmd (*)()>(generationFunc));
   runAllParallel(commands, initialState, sut);
 }
-
 
 template <typename Model, typename Sut>
 bool isValidCommand(const Command<Model, Sut> &command, const Model &s0) {

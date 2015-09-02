@@ -60,7 +60,7 @@ execOneOf(const typename Cmd::Model &state) {
 
 template <typename Cmd, typename... Cmds>
 Gen<std::shared_ptr<const typename Cmd::CommandType>>
-execOneOfParallel() {
+execOneOf() {
   using CmdSP = std::shared_ptr<const typename Cmd::CommandType>;
   using State = typename Cmd::Model;
   using MakeFunc = CmdSP (*)();
