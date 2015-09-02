@@ -273,7 +273,7 @@ void runAllParallel(const ParallelCommands<Cmd> &commands,
 
 template <typename Cmd>
 void showValue(const ParallelCommands<Cmd> &sequence, std::ostream &os) {
-  os << "Sequential:" << std::endl;
+  os << "Sequential prefix:" << std::endl;
   show(sequence.prefix, os);
   os << "Left branch:" << std::endl;
   show(sequence.left, os);
