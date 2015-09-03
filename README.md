@@ -1,4 +1,4 @@
-RapidCheck [![Build Status](https://travis-ci.org/emil-e/rapidcheck.svg?branch=master)](https://travis-ci.org/emil-e/rapidcheck)
+RapidCheck [![Build Status](https://travis-ci.org/emil-e/rapidcheck.svg?branch=master)](https://travis-ci.org/emil-e/rapidcheck) [![Build status](https://ci.appveyor.com/api/projects/status/8hms56ghn27agpcj/branch/master?svg=true)](https://ci.appveyor.com/project/emil-e/rapidcheck/branch/master)
 ==========
 RapidCheck is a C++ framework for property based testing inspired by QuickCheck and other similar frameworks. In property based testing, you state facts about your code that given certain precondition should always be true. RapidCheck then generates random test data to try and find a case for which the property doesn't hold. If such a case is found, RapidCheck tries to find the smallest case (for some definition of smallest) for which the property is still false and then displays this as a counterexample. For example, if the input is an integer, RapidCheck tries to find the smallest integer for which the property is false.
 
@@ -17,7 +17,7 @@ Let's throw together a list of features:
 - Integration with popular testing frameworks such as Boost Test, Google Test and Google Mock
 
 ## Prerequisites and installation ##
-RapidCheck makes extensive use of C++11 and thus requires a compliant compiler. RapidCheck continuous integration builds using Clang 3.4 and GCC 4.9 and any later versions should also work. MSVC 2013 lacks too many C++11 features to successfully compile RapidCheck but it is possible that MSVC 2015 will work when it's released.
+RapidCheck makes extensive use of C++11 and thus requires a compliant compiler. RapidCheck continuous integration builds using Clang 3.4, GCC 4.9 and Visual Studio 2015 so any later versions should also work. 
 
 RapidCheck uses CMake and is built like any other CMake project. If your own project uses CMake you can simply have RapidCheck as a subdirectory and add the following to your `CMakeLists.txt`:
 

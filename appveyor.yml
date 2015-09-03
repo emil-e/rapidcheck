@@ -1,0 +1,20 @@
+version: 1.0.{build}
+os: Visual Studio 2015
+
+environment:
+  matrix:
+  - CMAKE_BUILD_TYPE: Debug
+  - CMAKE_BUILD_TYPE: Release
+
+install:
+- git submodule update --init --recursive
+
+build_script:
+- md build
+- cd build
+- "\"C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\vcvarsall.bat\" amd64"
+- cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DRC_ENABLE_TESTS=ON -DRC_ENABLE_EXAMPLES=ON -RC_ENABLE_GTEST=ON -DRC_ENABLE_GMOCK=ON -DRC_ENABLE_BOOST=ON -DRC_ENABLE_BOOST_TEST=ON -G "NMake Makefiles" ..
+- nmake
+
+test_script:
+- ctest --output-on-failure
