@@ -77,7 +77,7 @@ std::string demangle(const char *name) {
 Maybe<std::string> getEnvValue(const std::string &name) {
   const auto value = std::getenv(name.c_str());
   if (value != nullptr) {
-    return name;
+    return std::string(value);
   } else {
     return Nothing;
   }
