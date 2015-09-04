@@ -127,26 +127,25 @@ private:
 
   Shrinkable<ParallelCommandSequence>
   generateParallelSequence(const Random &random, int size) const {
-    Random r(random);
-    std::size_t count = (r.split().next() % (size + 1)) + 1;
     return shrinkable::shrinkRecur(generateInitialParallel(random, size),
                                    &shrinkSequence);
   }
 
   ParallelCommandSequence generateInitialParallel(const Random &random,
                                                   int size) const {
-    auto r = random;
+    auto r1 = random;
+    auto r2 = r1.split();
     int prefixSz, leftSz, rightSz;
     std::tie(prefixSz, leftSz, rightSz) = parallelCommandDistribution(size);
 
-    std::size_t prefixCount = (r.split().next() % (prefixSz + 1));
-    std::size_t leftCount = (r.split().next() % (leftSz + 1));
-    std::size_t rightCount = (r.split().next() % (rightSz + 1));
+    std::size_t prefixCount = (r1.next() % (prefixSz + 1));
+    std::size_t leftCount = (r1.next() % (leftSz + 1));
+    std::size_t rightCount = (r1.next() % (rightSz + 1));
 
     return ParallelCommandSequence(
-        generateInitial(random, prefixSz, prefixCount),
-        generateInitial(random, leftSz, leftCount),
-        generateInitial(random, rightSz, rightCount));
+        generateInitial(r2.split(), prefixSz, prefixCount),
+        generateInitial(r2.split(), leftSz, leftCount),
+        generateInitial(r2.split(), rightSz, rightCount));
   }
 
   Shrinkable<CommandSequence> generateSequence(const Random &random,
