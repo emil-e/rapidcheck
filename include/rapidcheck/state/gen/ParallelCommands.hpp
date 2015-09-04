@@ -205,38 +205,32 @@ private:
 
   static Seq<ParallelCommandSequence>
   unparallelizeLeft(const ParallelCommandSequence &s) {
-    auto valid = seq::filter(seq::just(s),
-                             [](const ParallelCommandSequence &s) {
-                               return !s.left.entries.empty();
-                             });
+    if (s.left.entries.empty()) {
+      return Seq<ParallelCommandSequence>();
+    } else {
+      auto prefix = s.prefix;
+      auto left = s.left;
+      auto head = left.entries.begin();
+      prefix.entries.push_back(*head);
+      left.entries.erase(head);
 
-    return seq::map(std::move(valid),
-                    [](const ParallelCommandSequence &s) {
-                      auto prefix = s.prefix;
-                      auto left = s.left;
-                      auto head = left.entries.begin();
-                      prefix.entries.push_back(*head);
-                      left.entries.erase(head);
-                      return ParallelCommandSequence(prefix, left, s.right);
-                    });
+      return seq::just(ParallelCommandSequence(prefix, left, s.right));
+    }
   }
 
   static Seq<ParallelCommandSequence>
   unparallelizeRight(const ParallelCommandSequence &s) {
-    auto valid = seq::filter(seq::just(s),
-                             [](const ParallelCommandSequence &s) {
-                               return !s.right.entries.empty();
-                             });
+    if (s.right.entries.empty()) {
+      return Seq<ParallelCommandSequence>();
+    } else {
+      auto prefix = s.prefix;
+      auto right = s.right;
+      auto head = right.entries.begin();
+      prefix.entries.push_back(*head);
+      right.entries.erase(head);
 
-    return seq::map(std::move(valid),
-                    [](const ParallelCommandSequence &s) {
-                      auto prefix = s.prefix;
-                      auto right = s.right;
-                      auto head = right.entries.begin();
-                      prefix.entries.push_back(*head);
-                      right.entries.erase(head);
-                      return ParallelCommandSequence(prefix, s.left, right);
-                    });
+      return seq::just(ParallelCommandSequence(prefix, s.left, right));
+    }
   }
 
   static Seq<ParallelCommandSequence>
