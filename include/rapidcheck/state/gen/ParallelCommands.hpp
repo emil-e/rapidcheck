@@ -199,38 +199,44 @@ private:
     return seq::concat(shrinkPrefix(s),
                        shrinkLeft(s),
                        shrinkRight(s),
-                       unparallelizeLeft(s),
-                       unparallelizeRight(s));
+                       unparallelize(s));
   }
 
   static Seq<ParallelCommandSequence>
-  unparallelizeLeft(const ParallelCommandSequence &s) {
-    if (s.left.entries.empty()) {
-      return Seq<ParallelCommandSequence>();
-    } else {
-      auto prefix = s.prefix;
-      auto left = s.left;
-      auto head = left.entries.begin();
-      prefix.entries.push_back(*head);
-      left.entries.erase(head);
+  unparallelize(const ParallelCommandSequence &s) {
+    auto elemsToMove = seq::filter(
+        seq::combinations(
+            seq::range(static_cast<int>(s.left.entries.size()), -1),
+            seq::range(static_cast<int>(s.right.entries.size()), -1)),
+        [](const std::pair<int, int> &elemCounts) {
+          return elemCounts != std::make_pair(0, 0);
+        });
 
-      return seq::just(ParallelCommandSequence(prefix, left, s.right));
-    }
+    return seq::map(
+        std::move(elemsToMove),
+        [s](const std::pair<int, int> &elemCounts) {
+          auto prefix = s.prefix;
+
+          // move elements from left to prefix
+          auto left = s.left;
+          moveElements(left.entries, prefix.entries, std::get<0>(elemCounts));
+
+          // move elements from right to prefix
+          auto right = s.right;
+          moveElements(right.entries, prefix.entries, std::get<1>(elemCounts));
+
+          return ParallelCommandSequence(prefix, left, right);
+        });
   }
 
-  static Seq<ParallelCommandSequence>
-  unparallelizeRight(const ParallelCommandSequence &s) {
-    if (s.right.entries.empty()) {
-      return Seq<ParallelCommandSequence>();
-    } else {
-      auto prefix = s.prefix;
-      auto right = s.right;
-      auto head = right.entries.begin();
-      prefix.entries.push_back(*head);
-      right.entries.erase(head);
-
-      return seq::just(ParallelCommandSequence(prefix, s.left, right));
-    }
+  /// Move `count` elements from begin of `source` to end of `dest` and
+  /// erases the moved elements from source.
+  static void moveElements(std::vector<CommandEntry> &source,
+                           std::vector<CommandEntry> &dest,
+                           int count) {
+    auto sourceEndIt = std::next(begin(source), count);
+    std::move(begin(source), sourceEndIt, std::back_inserter(dest));
+    source.erase(begin(source), sourceEndIt);
   }
 
   static Seq<ParallelCommandSequence>
