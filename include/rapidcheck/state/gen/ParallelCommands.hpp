@@ -299,9 +299,9 @@ private:
                        });
   }
 
-  /// Calculates how many commands to generate for each subsequence.
-  /// Returns a three tuple with the number of commands for {prefix,
-  /// first parallel sequence, second parallel sequence}
+  /// Calculates the maximum number of commands to generate for each
+  /// subsequence. Returns a three tuple with the number of commands for
+  /// {prefix, left, right}
   static std::tuple<int, int, int> parallelCommandDistribution(int cmdCount) {
     if (cmdCount < 12) {
       // If there are fewer than 12 commands, make all parallel
