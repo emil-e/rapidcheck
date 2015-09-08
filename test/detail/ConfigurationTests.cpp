@@ -62,6 +62,13 @@ TEST_CASE("configFromString") {
     REQUIRE_THROWS_AS(configFromString("noshrink=2"), ConfigurationException);
   }
 
+  SECTION("throws on invalid shrinkTries") {
+    REQUIRE_THROWS_AS(configFromString("shrink_tries=foobar"),
+                      ConfigurationException);
+    REQUIRE_THROWS_AS(configFromString("shrink_tries=-2"),
+                      ConfigurationException);
+  }
+
   SECTION("throws on invalid verbose progress setting") {
     REQUIRE_THROWS_AS(configFromString("verbose_progress=foo"),
                       ConfigurationException);

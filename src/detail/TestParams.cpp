@@ -10,7 +10,8 @@ bool operator==(const TestParams &p1, const TestParams &p2) {
   return (p1.seed == p2.seed) && (p1.maxSuccess == p2.maxSuccess) &&
       (p1.maxSize == p2.maxSize) &&
       (p1.maxDiscardRatio == p2.maxDiscardRatio) &&
-      (p1.disableShrinking == p2.disableShrinking);
+      (p1.disableShrinking == p2.disableShrinking) &&
+      (p1.shrinkTries == p2.shrinkTries);
 }
 
 bool operator!=(const TestParams &p1, const TestParams &p2) {
@@ -21,7 +22,8 @@ std::ostream &operator<<(std::ostream &os, const TestParams &params) {
   os << "seed=" << params.seed << ", maxSuccess=" << params.maxSuccess
      << ", maxSize=" << params.maxSize
      << ", maxDiscardRatio=" << params.maxDiscardRatio
-     << ", disableShrinking=" << params.disableShrinking;
+     << ", disableShrinking=" << params.disableShrinking
+     << ", shrinkTries=" << params.shrinkTries;
   return os;
 }
 

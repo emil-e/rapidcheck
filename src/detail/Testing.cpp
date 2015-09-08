@@ -80,14 +80,16 @@ SearchResult searchProperty(const Property &property,
 
 std::pair<Shrinkable<CaseDescription>, int>
 shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
-               TestListener &listener) {
+               TestListener &listener,
+               const TestParams &params) {
   int numShrinks = 0;
+  int shrinkTries = params.shrinkTries;
   Shrinkable<CaseDescription> best = shrinkable;
   bool failed = false;
 
   auto shrinks = shrinkable.shrinks();
   while (auto shrink = shrinks.next()) {
-    for (int i=0; i<10000; i++){
+    for (int i = 0; i < shrinkTries; i++) {
       auto caseDescription = shrink->value();
       bool accept = caseDescription.result.type == CaseResult::Type::Failure;
       listener.onShrinkTried(caseDescription, accept);

@@ -16,4 +16,5 @@ TEST_CASE("TestParams") {
   PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSuccess);
   PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxSize);
   PROP_REPLACE_MEMBER_INEQUAL(TestParams, maxDiscardRatio);
+  PROP_REPLACE_MEMBER_INEQUAL(TestParams, shrinkTries);
 }

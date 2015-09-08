@@ -52,7 +52,8 @@ SearchResult searchProperty(const Property &property,
 /// were accepted.
 std::pair<Shrinkable<CaseDescription>, int>
 shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
-               TestListener &listener);
+               TestListener &listener,
+               const TestParams &params);
 
 } // namespace detail
 } // namespace rc

@@ -69,6 +69,11 @@ bool isNonNegative(T x) {
 }
 
 template <typename T>
+bool isPositive(T x) {
+  return x > 0;
+}
+
+template <typename T>
 bool anything(const T &) {
   return true;
 }
@@ -108,6 +113,12 @@ Configuration configFromMap(const std::map<std::string, std::string> &map,
             anything<bool>);
 
   loadParam(map,
+            "shrink_tries",
+            config.testParams.shrinkTries,
+            "'shrink_tries' must be a positive integer",
+            isPositive<int>);
+
+  loadParam(map,
             "verbose_progress",
             config.verboseProgress,
             "'verbose_progress' must be either '1' or '0'",
@@ -129,6 +140,7 @@ std::map<std::string, std::string> mapFromConfig(const Configuration &config) {
       {"max_size", std::to_string(config.testParams.maxSize)},
       {"max_discard_ratio", std::to_string(config.testParams.maxDiscardRatio)},
       {"noshrink", config.testParams.disableShrinking ? "1" : "0"},
+      {"shrink_tries", std::to_string(config.testParams.shrinkTries)},
       {"verbose_progress", std::to_string(config.verboseProgress)},
       {"verbose_shrinking", std::to_string(config.verboseShrinking)}};
 }

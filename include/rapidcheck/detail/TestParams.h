@@ -18,6 +18,8 @@ struct TestParams {
   int maxDiscardRatio = 10;
   /// Whether shrinking should be disabled or not.
   bool disableShrinking = false;
+  /// Number of times each shrink should be tested.
+  int shrinkTries = 1;
 };
 
 bool operator==(const TestParams &p1, const TestParams &p2);
