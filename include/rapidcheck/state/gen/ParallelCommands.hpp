@@ -26,17 +26,22 @@ public:
 
 private:
   struct CommandEntry {
-    CommandEntry(Random &&aRandom, Shrinkable<CmdSP> &&aShrinkable)
+    CommandEntry(Random &&aRandom,
+                 Shrinkable<CmdSP> &&aShrinkable,
+                 Model &&aState)
         : random(std::move(aRandom))
-        , shrinkable(std::move(aShrinkable)) {}
+        , shrinkable(std::move(aShrinkable))
+        , postState(std::move(aState)) {}
 
     Random random;
     Shrinkable<CmdSP> shrinkable;
+    Model postState;
   };
 
   struct CommandSequence {
-    CommandSequence(const GenFunc &func, int sz)
-        : genFunc(func)
+    CommandSequence(const Model &initState, const GenFunc &func, int sz)
+        : initialState(initState)
+        , genFunc(func)
         , size(sz) {}
 
     Model initialState;
@@ -44,6 +49,12 @@ private:
     int size;
     std::vector<CommandEntry> entries;
 
+    const Model &stateAt(std::size_t i) const {
+      if (i <= 0) {
+        return initialState;
+      }
+      return entries[i - 1].postState;
+    }
 
     void repairEntriesFrom(std::size_t start) {
       for (auto i = start; i < entries.size(); i++) {
@@ -58,6 +69,8 @@ private:
       try {
         auto &entry = entries[i];
         const auto cmd = entry.shrinkable.value();
+        entry.postState = stateAt(i);
+        cmd->apply(entry.postState);
       } catch (const CaseResult &result) {
         if (result.type != CaseResult::Type::Discard) {
           throw;
@@ -73,8 +86,13 @@ private:
       using namespace ::rc::detail;
       try {
         auto &entry = entries[i];
-        entry.shrinkable = genFunc()(entry.random, size);
+        const auto &preState = stateAt(i);
+        entry.shrinkable = genFunc(preState)(entry.random, size);
         const auto cmd = entry.shrinkable.value();
+        entry.postState = preState;
+        // NOTE: Apply might throw which leaves us with an incorrect postState
+        // but that's okay since the entry will discarded anyway in that case.
+        cmd->apply(entry.postState);
         return true;
       } catch (const CaseResult &result) {
         if (result.type != CaseResult::Type::Discard) {
@@ -85,6 +103,10 @@ private:
       }
 
       return false;
+    }
+
+    const Model& postState() {
+      return stateAt(entries.size());
     }
   };
 
@@ -142,44 +164,47 @@ private:
     std::size_t leftCount = (r1.next() % (leftSz + 1));
     std::size_t rightCount = (r1.next() % (rightSz + 1));
 
+    auto prefix =
+      generateInitial(m_initialState, r2.split(), prefixSz, prefixCount);
+
     return ParallelCommandSequence(
-        generateInitial(r2.split(), prefixSz, prefixCount),
-        generateInitial(r2.split(), leftSz, leftCount),
-        generateInitial(r2.split(), rightSz, rightCount));
+        prefix,
+        generateInitial(prefix.postState(), r2.split(), leftSz, leftCount),
+        generateInitial(prefix.postState(), r2.split(), rightSz, rightCount));
   }
 
-  Shrinkable<CommandSequence> generateSequence(const Random &random,
-                                               int size) const {
-    Random r(random);
-    std::size_t count = (r.split().next() % (size + 1)) + 1;
-    return shrinkable::shrinkRecur(generateInitial(random, size, count),
-                                   &shrinkSequence);
-  }
-
-  CommandSequence
-  generateInitial(const Random &random, int size, std::size_t count) const {
-    CommandSequence sequence(m_genFunc, size);
+  CommandSequence generateInitial(const Model &initialState,
+                                  const Random &random,
+                                  int size,
+                                  std::size_t count) const {
+    CommandSequence sequence(initialState, m_genFunc, size);
     sequence.entries.reserve(count);
 
+    auto *state = &initialState;
     auto r = random;
     while (sequence.entries.size() < count) {
-      sequence.entries.push_back(nextEntry(r.split(), size));
+      sequence.entries.push_back(nextEntry(r.split(), size, *state));
+      state = &sequence.entries.back().postState;
     }
 
     return sequence;
   }
 
-  CommandEntry nextEntry(const Random &random, int size) const {
+  CommandEntry
+  nextEntry(const Random &random, int size, const Model &state) const {
     using namespace ::rc::detail;
     auto r = random;
-    const auto gen = m_genFunc();
+    const auto gen = m_genFunc(state);
     // TODO configurability?
     for (int tries = 0; tries < 100; tries++) {
       try {
         auto random = r.split();
         auto shrinkable = gen(random, size);
+        auto postState = state;
+        shrinkable.value()->apply(postState);
 
-        return CommandEntry(std::move(random), std::move(shrinkable));
+        return CommandEntry(
+            std::move(random), std::move(shrinkable), std::move(postState));
       } catch (const CaseResult &result) {
         if (result.type != CaseResult::Type::Discard) {
           throw;
@@ -241,12 +266,12 @@ private:
 
   static Seq<ParallelCommandSequence>
   shrinkPrefix(const ParallelCommandSequence &s) {
-    auto shrunkSeqs =
-        seq::concat(shrinkRemoving(s.prefix), shrinkIndividual(s.prefix));
-    return seq::map(std::move(shrunkSeqs),
-                    [=](const CommandSequence &commands) {
-                      return ParallelCommandSequence(commands, s.left, s.right);
-                    });
+    auto individualShrinks =
+        seq::map(shrinkIndividual(s.prefix),
+                 [=](const CommandSequence &commands) {
+                   return ParallelCommandSequence(commands, s.left, s.right);
+                 });
+    return seq::concat(shrinkRemovingPrefix(s), individualShrinks);
   }
 
   static Seq<ParallelCommandSequence>
@@ -279,6 +304,31 @@ private:
                       shrunk.entries.erase(begin(shrunk.entries) + r.first,
                                            begin(shrunk.entries) + r.second);
                       shrunk.repairEntriesFrom(r.first);
+                      return shrunk;
+                    });
+  }
+
+  static Seq<ParallelCommandSequence>
+  shrinkRemovingPrefix(const ParallelCommandSequence &s) {
+    auto nonEmptyRanges = seq::subranges(0, s.prefix.entries.size());
+    return seq::map(std::move(nonEmptyRanges),
+                    [=](const std::pair<std::size_t, std::size_t> &r) {
+                      auto shrunk = s;
+                      auto &prefix = shrunk.prefix;
+
+                      // Remove elements from prefix
+                      prefix.entries.erase(begin(prefix.entries) + r.first,
+                                           begin(prefix.entries) + r.second);
+                      prefix.repairEntriesFrom(r.first);
+
+                      // Regenerate left
+                      shrunk.left.initialState = prefix.postState();
+                      shrunk.left.repairEntriesFrom(0);
+
+                      // Regenerate right
+                      shrunk.right.initialState = prefix.postState();
+                      shrunk.right.repairEntriesFrom(0);
+
                       return shrunk;
                     });
   }

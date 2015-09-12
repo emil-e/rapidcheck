@@ -228,12 +228,6 @@ std::thread executeCommandSequenceInNewThread(
   });
 }
 
-void rethrowOnException(std::exception_ptr e) {
-  if (e != nullptr) {
-    std::rethrow_exception(e);
-  };
-}
-
 template <typename Cmd, typename Model, typename Sut>
 void runAllParallel(const ParallelCommands<Cmd> &commands,
                     const Model &state,
@@ -264,8 +258,12 @@ void runAllParallel(const ParallelCommands<Cmd> &commands,
   t1.join();
   t2.join();
 
-  rethrowOnException(e1);
-  rethrowOnException(e2);
+  if (e1 != nullptr) {
+    std::rethrow_exception(e1);
+  };
+  if (e2 != nullptr) {
+    std::rethrow_exception(e2);
+  };
 
   // Verify that the interleaving can be explained by the model
   verifyExecution(result, state);

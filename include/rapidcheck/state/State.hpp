@@ -9,23 +9,19 @@
 namespace rc {
 namespace state {
 
-template <typename Model, typename Sut, typename Cmd>
-void check(const Model &initialState,
-           Sut &sut,
-           Cmd (*generationFunc)(const Model &)) {
+template <typename Model, typename Sut, typename GenFunc>
+void check(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
   const auto commands =
       *gen::commands<Command<Model, Sut>>(
-          initialState, std::forward<Cmd (*)(const Model &)>(generationFunc));
+          initialState, std::forward<GenFunc>(generationFunc));
   runAll(commands, initialState, sut);
 }
 
-template <typename Model, typename Sut, typename Cmd>
-void checkParallel(const Model &initialState,
-                   Sut &sut,
-                   Cmd (*generationFunc)()) {
+template <typename Model, typename Sut, typename GenFunc>
+void checkParallel(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
   const auto commands =
       *gen::parallelCommands<Command<Model, Sut>>(
-          initialState, std::forward<Cmd (*)()>(generationFunc));
+          initialState, std::forward<GenFunc>(generationFunc));
   runAllParallel(commands, initialState, sut);
 }
 
