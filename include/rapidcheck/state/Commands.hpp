@@ -142,6 +142,8 @@ void verifyExecution(
   }
 }
 
+void rethrowOnException(std::exception_ptr e);
+
 } // detail
 
 template <typename Cmds, typename Model>
@@ -258,12 +260,8 @@ void runAllParallel(const ParallelCommands<Cmd> &commands,
   t1.join();
   t2.join();
 
-  if (e1 != nullptr) {
-    std::rethrow_exception(e1);
-  };
-  if (e2 != nullptr) {
-    std::rethrow_exception(e2);
-  };
+  detail::rethrowOnException(e1);
+  detail::rethrowOnException(e2);
 
   // Verify that the interleaving can be explained by the model
   verifyExecution(result, state);

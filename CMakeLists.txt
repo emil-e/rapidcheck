@@ -35,6 +35,7 @@ add_library(rapidcheck
   src/gen/detail/GenerationHandler.cpp
   src/gen/detail/Recipe.cpp
   src/gen/detail/ScaleInteger.cpp
+  src/state/Commands.cpp
   )
 
 # Random is used a LOT so it should preferrably be really fast
