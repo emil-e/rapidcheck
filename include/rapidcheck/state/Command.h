@@ -29,6 +29,12 @@ public:
   /// properly.
   virtual void run(const Model &s0, Sut &sut) const;
 
+  /// Alterantive run function that allows rapidcheck to defer checking of the
+  /// system behaviour. This version must be used for parallel testing and can
+  /// be used for sequential testing.
+  ///
+  /// Use rapidcheck assertion macros in the returned function to check that the 
+  /// system behaves properly.
   virtual std::function<void(const ModelT&)> run(Sut &sut) const;
 
   /// Outputs a human readable representation of the command to the given
