@@ -224,34 +224,36 @@ private:
     return seq::concat(shrinkPrefix(s),
                        shrinkLeft(s),
                        shrinkRight(s),
-                       unparallelize(s));
+                       unparallelizeLeft(s),
+                       unparallelizeRight(s));
   }
 
   static Seq<ParallelCommandSequence>
-  unparallelize(const ParallelCommandSequence &s) {
-    auto elemsToMove = seq::filter(
-        seq::combinations(
-            seq::range(static_cast<int>(s.left.entries.size()), -1),
-            seq::range(static_cast<int>(s.right.entries.size()), -1)),
-        [](const std::pair<int, int> &elemCounts) {
-          return elemCounts != std::make_pair(0, 0);
-        });
+  unparallelizeLeft(const ParallelCommandSequence &s) {
+    auto elemCounts = seq::range(static_cast<int>(s.left.entries.size()), 0);
 
-    return seq::map(
-        std::move(elemsToMove),
-        [s](const std::pair<int, int> &elemCounts) {
-          auto prefix = s.prefix;
+    return seq::map(std::move(elemCounts),
+                    [s](const std::size_t &elemCount) {
+                      auto prefix = s.prefix;
+                      auto left = s.left;
+                      moveElements(left.entries, prefix.entries, elemCount);
 
-          // move elements from left to prefix
-          auto left = s.left;
-          moveElements(left.entries, prefix.entries, std::get<0>(elemCounts));
+                      return ParallelCommandSequence(prefix, left, s.right);
+                    });
+  }
 
-          // move elements from right to prefix
-          auto right = s.right;
-          moveElements(right.entries, prefix.entries, std::get<1>(elemCounts));
+  static Seq<ParallelCommandSequence>
+  unparallelizeRight(const ParallelCommandSequence &s) {
+    auto elemCounts = seq::range(static_cast<int>(s.right.entries.size()), 0);
 
-          return ParallelCommandSequence(prefix, left, right);
-        });
+    return seq::map(std::move(elemCounts),
+                    [s](const std::size_t &elemCount) {
+                      auto prefix = s.prefix;
+                      auto right = s.right;
+                      moveElements(right.entries, prefix.entries, elemCount);
+
+                      return ParallelCommandSequence(prefix, s.left, right);
+                    });
   }
 
   /// Move `count` elements from begin of `source` to end of `dest` and

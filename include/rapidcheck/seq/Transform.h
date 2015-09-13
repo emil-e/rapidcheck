@@ -70,12 +70,6 @@ Seq<T> cycle(Seq<T> seq);
 template <typename T, typename U>
 Seq<T> cast(Seq<U> seq);
 
-/// Returns a `Seq` of possible combinations of elements from s1 and s2.
-/// E.g. s1=1,2,3 and s2=4,5 generates a `Seq` containing the elements
-/// (1,4), (1,5), (2,4), (2,5), (3,4), (3,5)
-template <typename T, typename U>
-Seq<std::pair<T, U>> combinations(Seq<T> s1, Seq<U> s2);
-
 } // namespace seq
 } // namespace rc
 

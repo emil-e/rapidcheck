@@ -383,14 +383,5 @@ Seq<T> cast(Seq<U> seq) {
                   [](U &&x) { return static_cast<T>(std::move(x)); });
 }
 
-template <typename T, typename U>
-Seq<std::pair<T, U>> combinations(Seq<T> s1, Seq<U> s2) {
-  return seq::mapcat(s1, [s2](const T& t1){
-    return seq::map(s2, [t1](const T& t2) {
-      return std::make_pair(t1,t2);
-    });
-  });
-}
-
 } // namespace seq
 } // namespace rc
