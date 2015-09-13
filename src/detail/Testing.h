@@ -45,15 +45,16 @@ SearchResult searchProperty(const Property &property,
 
 /// Shrinks the given case description shrinkable.
 ///
-/// @param shrinkable  The shrinkable to shrink.
-/// @param listener    A test listener to report progress to.
+/// @param shrinkable   The shrinkable to shrink.
+/// @param listener     A test listener to report progress to.
+/// @param shrinkTries  Number of times each shrink shall be tested.
 ///
 /// @return A pair of the final shrink as well as the number of shrinks that
 /// were accepted.
 std::pair<Shrinkable<CaseDescription>, int>
 shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
                TestListener &listener,
-               const TestParams &params);
+               int shrinkTries);
 
 } // namespace detail
 } // namespace rc

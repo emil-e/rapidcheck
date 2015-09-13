@@ -23,6 +23,21 @@ int sizeFor(const TestParams &params, std::size_t i) {
   }
 }
 
+bool isFailure(const Maybe<Shrinkable<CaseDescription>> &shrink,
+               TestListener &listener,
+               int shrinkTries) {
+  for (int i = 0; i < shrinkTries; i++) {
+    auto caseDescription = shrink->value();
+    bool accept = caseDescription.result.type == CaseResult::Type::Failure;
+    listener.onShrinkTried(caseDescription, accept);
+    if (accept) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 } // namespace
 
 SearchResult searchProperty(const Property &property,
@@ -81,24 +96,17 @@ SearchResult searchProperty(const Property &property,
 std::pair<Shrinkable<CaseDescription>, int>
 shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
                TestListener &listener,
-               const TestParams &params) {
+               int shrinkTries) {
   int numShrinks = 0;
-  int shrinkTries = params.shrinkTries;
   Shrinkable<CaseDescription> best = shrinkable;
   bool failed = false;
 
   auto shrinks = shrinkable.shrinks();
   while (auto shrink = shrinks.next()) {
-    for (int i = 0; i < shrinkTries; i++) {
-      auto caseDescription = shrink->value();
-      bool accept = caseDescription.result.type == CaseResult::Type::Failure;
-      listener.onShrinkTried(caseDescription, accept);
-      if (accept) {
-        best = std::move(*shrink);
-        shrinks = best.shrinks();
-        numShrinks++;
-        break;
-      }
+    if (isFailure(shrink, listener, shrinkTries)) {
+      best = std::move(*shrink);
+      shrinks = best.shrinks();
+      numShrinks++;
     }
   }
 

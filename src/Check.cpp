@@ -29,7 +29,7 @@ TestResult doCheckProperty(const Property &property,
     // Shrink it unless shrinking is disabled
     const auto shrinkResult = params.disableShrinking
         ? std::make_pair(*searchResult.failure, 0)
-        : shrinkTestCase(*searchResult.failure, listener, params);
+        : shrinkTestCase(*searchResult.failure, listener, params.shrinkTries);
 
     // Give the developer a chance to set a breakpoint before the final minimal
     // test case is run
