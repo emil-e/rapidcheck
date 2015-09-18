@@ -76,22 +76,17 @@ private:
 
   ParallelCommandSequence generateInitialParallel(const Random &random,
                                                   int size) const {
-    auto r1 = random;
-    auto r2 = r1.split();
-    int prefixSz, leftSz, rightSz;
-    std::tie(prefixSz, leftSz, rightSz) = parallelCommandDistribution(size);
+    auto r = random;
+    int prefixCount, leftCount, rightCount;
+    std::tie(prefixCount, leftCount, rightCount) =
+        parallelCommandDistribution(r.split(), size);
 
-    std::size_t prefixCount = (r1.next() % (prefixSz + 1));
-    std::size_t leftCount = (r1.next() % (leftSz + 1));
-    std::size_t rightCount = (r1.next() % (rightSz + 1));
-
-    auto prefix =
-      generateInitial(m_initialState, r2.split(), prefixSz, prefixCount);
+    auto prefix = generateInitial(m_initialState, r.split(), size, prefixCount);
 
     return ParallelCommandSequence(
         prefix,
-        generateInitial(prefix.postState(), r2.split(), leftSz, leftCount),
-        generateInitial(prefix.postState(), r2.split(), rightSz, rightCount));
+        generateInitial(prefix.postState(), r.split(), size, leftCount),
+        generateInitial(prefix.postState(), r.split(), size, rightCount));
   }
 
   CommandSequence generateInitial(const Model &initialState,
@@ -282,13 +277,20 @@ private:
   /// Calculates the maximum number of commands to generate for each
   /// subsequence. Returns a three tuple with the number of commands for
   /// {prefix, left, right}
-  static std::tuple<int, int, int> parallelCommandDistribution(int cmdCount) {
-    if (cmdCount < 12) {
-      // If there are fewer than 12 commands, make all parallel
-      return std::make_tuple(0, cmdCount / 2, cmdCount - cmdCount / 2);
+  static std::tuple<int, int, int>
+  parallelCommandDistribution(const Random &random, int count) {
+    auto r = random;
+    if (count <= 12) {
+      // Put all commands in the parallel branches
+      std::size_t left = (r.next() % (count / 2 + 1));
+      std::size_t right = (r.next() % (count / 2 + 1));
+      return std::make_tuple(0, left, right);
     } else {
-      // If there are more than 12 commands, make the 12 last ones parallel
-      return std::make_tuple(cmdCount - 12, 6, 6);
+      // Put at most 12 commands in the parallel branches
+      std::size_t prefix = r.next() % (count - 12);
+      std::size_t left = r.next() % 6;
+      std::size_t right = r.next() % 6;
+      return std::make_tuple(prefix, left, right);
     }
   }
 
