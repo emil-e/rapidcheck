@@ -92,16 +92,16 @@ struct FromContainerCopyTests {
 };
 
 TEST_CASE("seq::fromContainer") {
-  meta::forEachType<FromContainerTests,
-                    RC_ORDERED_CONTAINERS(std::string),
-                    RC_STRING_TYPES,
-                    std::array<std::string, 100>>();
+  forEachType<FromContainerTests,
+              RC_ORDERED_CONTAINERS(std::string),
+              RC_STRING_TYPES,
+              std::array<std::string, 100>>();
 
   // TODO Weirdly arbitrary to run this for a category called
   // RC_SEQUENCE_CONTAINERS
-  meta::forEachType<FromContainerCopyTests,
-                    RC_SEQUENCE_CONTAINERS(Logger),
-                    std::array<Logger, 100>>();
+  forEachType<FromContainerCopyTests,
+              RC_SEQUENCE_CONTAINERS(Logger),
+              std::array<Logger, 100>>();
 }
 
 TEST_CASE("seq::fromIteratorRange") {

@@ -74,8 +74,8 @@ struct UniqueByProperties {
 
 TEST_CASE("gen::uniqueBy") {
   using Pair = std::pair<int, int>;
-  meta::forEachType<UniqueByProperties<UniqueByFactory>,
-                    RC_SEQUENCE_CONTAINERS(Pair)>();
+  forEachType<UniqueByProperties<UniqueByFactory>,
+              RC_SEQUENCE_CONTAINERS(Pair)>();
 }
 
 namespace {
@@ -122,15 +122,14 @@ struct UniqueProperties {
 } // namespace
 
 TEST_CASE("gen::unique") {
-  meta::forEachType<GenericProperties<UniqueFactory>,
-                    RC_SEQUENCE_CONTAINERS(int),
-                    std::basic_string<int>>();
-  meta::forEachType<ParamsProperties<UniqueFactory>,
-                    RC_SEQUENCE_CONTAINERS(GenParams)>();
-  meta::forEachType<UniqueProperties<UniqueFactory>,
-                    RC_SEQUENCE_CONTAINERS(int)>();
+  forEachType<GenericProperties<UniqueFactory>,
+              RC_SEQUENCE_CONTAINERS(int),
+              std::basic_string<int>>();
+  forEachType<ParamsProperties<UniqueFactory>,
+              RC_SEQUENCE_CONTAINERS(GenParams)>();
+  forEachType<UniqueProperties<UniqueFactory>, RC_SEQUENCE_CONTAINERS(int)>();
 
-  meta::forEachType<RetrialProperties<UniqueFactory>,
-                    RC_SEQUENCE_CONTAINERS(int),
-                    std::basic_string<int>>();
+  forEachType<RetrialProperties<UniqueFactory>,
+              RC_SEQUENCE_CONTAINERS(int),
+              std::basic_string<int>>();
 }

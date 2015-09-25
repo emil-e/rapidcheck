@@ -19,7 +19,6 @@ using namespace rc::test;
 
 namespace {
 
-
 template <typename T>
 typename std::make_unsigned<T>::type absoluteInt(T x, std::true_type) {
   return (x < 0) ? -x : x;
@@ -169,14 +168,14 @@ struct SignedProperties {
 } // namespace
 
 TEST_CASE("arbitrary integers") {
-  meta::forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
-  meta::forEachType<NumericProperties, RC_INTEGRAL_TYPES>();
-  meta::forEachType<SignedProperties, RC_SIGNED_INTEGRAL_TYPES>();
+  forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
+  forEachType<NumericProperties, RC_INTEGRAL_TYPES>();
+  forEachType<SignedProperties, RC_SIGNED_INTEGRAL_TYPES>();
 }
 
 TEST_CASE("arbitrary reals") {
-  meta::forEachType<NumericProperties, RC_REAL_TYPES>();
-  meta::forEachType<SignedProperties, RC_REAL_TYPES>();
+  forEachType<NumericProperties, RC_REAL_TYPES>();
+  forEachType<SignedProperties, RC_REAL_TYPES>();
 }
 
 namespace {
@@ -223,19 +222,19 @@ struct InRangeProperties {
                        RC_FAIL("Did not throw GenerationFailure");
                      });
 
-    templatedProp<T>(
-        "first shrink is min",
-        [](const GenParams &params) {
-          // TODO range generator
-          const auto range = *genRange;
-          const auto shrinkable = gen::inRange<T>(range.first, range.second)(
-              params.random, params.size);
-          if (shrinkable.value() != range.first) {
-            const auto firstShrink = shrinkable.shrinks().next();
-            RC_ASSERT(firstShrink);
-            RC_ASSERT(firstShrink->value() == range.first);
-          }
-        });
+    templatedProp<T>("first shrink is min",
+                     [](const GenParams &params) {
+                       // TODO range generator
+                       const auto range = *genRange;
+                       const auto shrinkable =
+                           gen::inRange<T>(range.first, range.second)(
+                               params.random, params.size);
+                       if (shrinkable.value() != range.first) {
+                         const auto firstShrink = shrinkable.shrinks().next();
+                         RC_ASSERT(firstShrink);
+                         RC_ASSERT(firstShrink->value() == range.first);
+                       }
+                     });
 
     templatedProp<T>(
         "when size == kNominalSize, generates all values in range",
@@ -288,5 +287,5 @@ struct InRangeProperties {
 } // namespace
 
 TEST_CASE("gen::inRange") {
-  meta::forEachType<InRangeProperties, RC_INTEGRAL_TYPES>();
+  forEachType<InRangeProperties, RC_INTEGRAL_TYPES>();
 }

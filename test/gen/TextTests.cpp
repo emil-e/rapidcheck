@@ -87,5 +87,5 @@ struct StringProperties {
 };
 
 TEST_CASE("gen::string") {
-  meta::forEachType<StringProperties, std::string, std::wstring>();
+  forEachType<StringProperties, std::string, std::wstring>();
 }

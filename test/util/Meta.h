@@ -1,7 +1,7 @@
 #pragma once
 
 namespace rc {
-namespace meta {
+namespace test {
 
 /// Instantiates and executes the static member function `exec()` in the type
 /// `MetaFunction` once for each type in `Types`. Useful for writing generic
@@ -11,5 +11,14 @@ void forEachType() {
   auto dummy = {(MetaFunction::template exec<Types>(), 0)...};
 }
 
-} // namespace meta
+template <typename T, typename Testable>
+void templatedProp(const std::string &description, Testable testable) {
+  prop(description + " (" + detail::typeToString<T>() + ")", testable);
+}
+
+#define TEMPLATED_SECTION(tparam, description)                                 \
+  SECTION(std::string(description) + " (" + detail::typeToString<tparam>() +   \
+          ")")
+
+} // namespace test
 } // namespace rc

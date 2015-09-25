@@ -73,10 +73,9 @@ TEST_CASE("gen::elementOf") {
   prop("all elements are eventually generated",
        [](const GenParams &params) {
          const auto elements = *gen::nonEmpty<std::vector<int>>();
-         tryUntilAll(
-             std::set<int>(begin(elements), end(elements)),
-             gen::elementOf(elements),
-             params);
+         tryUntilAll(std::set<int>(begin(elements), end(elements)),
+                     gen::elementOf(elements),
+                     params);
        });
 
   SECTION("throws GenerationFailure on empty container") {
@@ -85,10 +84,10 @@ TEST_CASE("gen::elementOf") {
     REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
   }
 
-  meta::forEachType<ElementOfContainerProperties,
-                    RC_GENERIC_CONTAINERS(int),
-                    std::array<int, 5>,
-                    std::string>();
+  forEachType<ElementOfContainerProperties,
+              RC_GENERIC_CONTAINERS(int),
+              std::array<int, 5>,
+              std::string>();
 }
 
 TEST_CASE("gen::element") {
@@ -134,12 +133,12 @@ TEST_CASE("gen::weightedElement") {
              params);
        });
 
-  prop("zero weighted elements are never generated",
-       [](const GenParams &params) {
-         const auto gen =
-             gen::weightedElement<int>({{1, 10}, {0, 20}, {3, 30}});
-         RC_ASSERT(gen(params.random, params.size).value() != 20);
-       });
+  prop(
+      "zero weighted elements are never generated",
+      [](const GenParams &params) {
+        const auto gen = gen::weightedElement<int>({{1, 10}, {0, 20}, {3, 30}});
+        RC_ASSERT(gen(params.random, params.size).value() != 20);
+      });
 
   SECTION("throws GenerationFailure if weights sum to zero") {
     const auto gen = gen::weightedElement<int>({{0, 1}, {0, 2}, {0, 3}});
@@ -182,10 +181,9 @@ TEST_CASE("gen::sizedElementOf") {
     prop("all elements are eventually generated",
          [](const Random &random) {
            const auto elements = *gen::nonEmpty<std::vector<int>>();
-           tryUntilAll(
-             std::set<int>(begin(elements), end(elements)),
-             gen::sizedElementOf(elements),
-             GenParams(random, kNominalSize));
+           tryUntilAll(std::set<int>(begin(elements), end(elements)),
+                       gen::sizedElementOf(elements),
+                       GenParams(random, kNominalSize));
          });
   }
 
@@ -228,10 +226,10 @@ TEST_CASE("gen::sizedElementOf") {
     REQUIRE_THROWS_AS(shrinkable.value(), GenerationFailure);
   }
 
-  meta::forEachType<SizedElementOfContainerProperties,
-                    RC_GENERIC_CONTAINERS(int),
-                    std::array<int, 5>,
-                    std::string>();
+  forEachType<SizedElementOfContainerProperties,
+              RC_GENERIC_CONTAINERS(int),
+              std::array<int, 5>,
+              std::string>();
 }
 
 TEST_CASE("gen::sizedElement") {

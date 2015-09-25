@@ -174,7 +174,7 @@ TEST_CASE("Random") {
          RC_ASSERT(error < 0.01);
        });
 
-  meta::forEachType<AssociativeProperties,
-                    std::map<Random, int>,
-                    std::unordered_map<Random, int>>();
+  forEachType<AssociativeProperties,
+              std::map<Random, int>,
+              std::unordered_map<Random, int>>();
 }

@@ -4,15 +4,6 @@
 
 namespace rc {
 
-template <typename T, typename Testable>
-void templatedProp(const std::string &description, Testable testable) {
-  prop(description + " (" + detail::typeToString<T>() + ")", testable);
-}
-
-#define TEMPLATED_SECTION(tparam, description)                                 \
-  SECTION(std::string(description) + " (" + detail::typeToString<tparam>() +   \
-          ")")
-
 /// So that we in templated tests can compare map pairs with their non-const-key
 /// equivalents.
 template <typename T1, typename T2>
