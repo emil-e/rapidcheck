@@ -11,6 +11,7 @@
 #include "util/TypeListMacros.h"
 
 using namespace rc;
+using namespace rc::test;
 
 namespace {
 
@@ -82,7 +83,7 @@ struct RemoveChunksProperties {
 } // namespace
 
 TEST_CASE("shrink::removeChunks") {
-  meta::forEachType<RemoveChunksProperties, std::vector<char>, std::string>();
+  forEachType<RemoveChunksProperties, std::vector<char>, std::string>();
 }
 
 namespace {
@@ -114,7 +115,7 @@ struct EachElementProperties {
 } // namespace
 
 TEST_CASE("shrink::eachElement") {
-  meta::forEachType<EachElementProperties, std::vector<char>, std::string>();
+  forEachType<EachElementProperties, std::vector<char>, std::string>();
 }
 
 namespace {
@@ -155,7 +156,7 @@ struct ShrinkTowardsProperties {
 } // namespace
 
 TEST_CASE("shrink::towards") {
-  meta::forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
+  forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
 }
 
 namespace {
@@ -206,8 +207,8 @@ struct SignedIntegralProperties {
 } // namespace
 
 TEST_CASE("shrink::integral") {
-  meta::forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
-  meta::forEachType<SignedIntegralProperties, RC_SIGNED_INTEGRAL_TYPES>();
+  forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
+  forEachType<SignedIntegralProperties, RC_SIGNED_INTEGRAL_TYPES>();
 }
 
 namespace {
@@ -244,9 +245,7 @@ struct RealProperties {
 
 } // namespace
 
-TEST_CASE("shrink::real") {
-  meta::forEachType<RealProperties, RC_REAL_TYPES>();
-}
+TEST_CASE("shrink::real") { forEachType<RealProperties, RC_REAL_TYPES>(); }
 
 TEST_CASE("shrink::bool") {
   SECTION("shrinks 'true' to 'false'") {
@@ -282,5 +281,5 @@ struct CharacterProperties {
 };
 
 TEST_CASE("shrink::character") {
-  meta::forEachType<CharacterProperties, char, wchar_t>();
+  forEachType<CharacterProperties, char, wchar_t>();
 }

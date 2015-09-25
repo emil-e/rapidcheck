@@ -139,7 +139,7 @@ struct NonZeroProperties {
 } // namespace
 
 TEST_CASE("gen::nonZero") {
-  meta::forEachType<NonZeroProperties, RC_NUMERIC_TYPES>();
+  forEachType<NonZeroProperties, RC_NUMERIC_TYPES>();
 }
 
 namespace {
@@ -163,7 +163,7 @@ struct PositiveProperties {
 } // namespace
 
 TEST_CASE("gen::positive") {
-  meta::forEachType<PositiveProperties, RC_NUMERIC_TYPES>();
+  forEachType<PositiveProperties, RC_NUMERIC_TYPES>();
 }
 
 namespace {
@@ -187,7 +187,7 @@ struct NegativeProperties {
 } // namespace
 
 TEST_CASE("gen::negative") {
-  meta::forEachType<NegativeProperties, RC_SIGNED_TYPES>();
+  forEachType<NegativeProperties, RC_SIGNED_TYPES>();
 }
 
 namespace {
@@ -211,5 +211,5 @@ struct NonNegativeProperties {
 } // namespace
 
 TEST_CASE("gen::nonNegative") {
-  meta::forEachType<NonNegativeProperties, RC_NUMERIC_TYPES>();
+  forEachType<NonNegativeProperties, RC_NUMERIC_TYPES>();
 }

@@ -32,13 +32,13 @@ struct DurationProperties {
 TEST_CASE("arbitrary duration") {
   prop("equivalent",
        [] {
-         meta::forEachType<DurationProperties,
-                           std::chrono::nanoseconds,
-                           std::chrono::microseconds,
-                           std::chrono::milliseconds,
-                           std::chrono::seconds,
-                           std::chrono::minutes,
-                           std::chrono::hours>();
+         forEachType<DurationProperties,
+                     std::chrono::nanoseconds,
+                     std::chrono::microseconds,
+                     std::chrono::milliseconds,
+                     std::chrono::seconds,
+                     std::chrono::minutes,
+                     std::chrono::hours>();
        });
 }
 
