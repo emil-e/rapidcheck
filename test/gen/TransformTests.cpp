@@ -52,7 +52,7 @@ TEST_CASE("gen::map") {
         const auto gen =
             gen::map(gen::arbitrary<unsigned int>(),
                      [](unsigned int x) { return std::to_string(x); });
-        const auto n = *gen::inRange(2, 7);
+        const auto n = *gen::inRange<std::size_t>(2, 7);
         std::string expected(n, '0');
         expected[0] = '1';
         const auto result =

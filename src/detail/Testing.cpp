@@ -4,7 +4,7 @@ namespace rc {
 namespace detail {
 namespace {
 
-int sizeFor(const TestParams &params, std::size_t i) {
+int sizeFor(const TestParams &params, int i) {
   // We want sizes to be evenly spread, even when maxSuccess is not an even
   // multiple of the number of sizes (i.e. maxSize + 1). Another thing is that
   // we always want to ensure that the maximum size is actually used.

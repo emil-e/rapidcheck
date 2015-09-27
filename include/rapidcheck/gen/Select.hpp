@@ -53,7 +53,8 @@ public:
     if (containerSize == 0) {
       throw GenerationFailure("Cannot pick element from empty container.");
     }
-    const auto i = Random(random).next() % containerSize;
+    const auto i =
+        static_cast<std::size_t>(Random(random).next() % containerSize);
     return shrinkable::just(*(start + i));
   }
 
@@ -96,13 +97,11 @@ public:
       throw GenerationFailure("Cannot pick element from empty container.");
     }
 
-    const std::size_t max =
-        detail::scaleInteger(m_container.size() - 1, size) + 1;
-    const std::size_t i = Random(random).next() % max;
+    const auto max = detail::scaleInteger(m_container.size() - 1, size) + 1;
     const auto container = m_container;
     return shrinkable::map(
         shrinkable::shrinkRecur(
-            i,
+            static_cast<std::size_t>(Random(random).next() % max),
             [](std::size_t x) { return shrink::towards<std::size_t>(x, 0); }),
         [=](std::size_t x) { return container[x]; });
   }
@@ -120,7 +119,7 @@ public:
 
   Shrinkable<T> operator()(const Random &random, int size) const {
     Random r(random);
-    const auto i = r.split().next() % m_gens.size();
+    const auto i = static_cast<std::size_t>(r.split().next() % m_gens.size());
     return m_gens[i](r, size);
   }
 
