@@ -33,7 +33,7 @@ TEST_CASE("Maybe") {
     }
   }
 
-  SECTION("value move constructor") {
+  SECTION("value copy constructor") {
     Maybe<Logger> maybe(foo);
 
     SECTION("initializes object") { REQUIRE(maybe); }
