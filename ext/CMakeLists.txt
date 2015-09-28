@@ -12,7 +12,7 @@ if (RC_ENABLE_GMOCK AND RC_ENABLE_TESTS)
 
   # On Windows, gmock/gtest defaults to static CRT which is not compatible
   # with the way RapidCheck is currently built
-  set(gtest_force_shared_crt ON)
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   add_subdirectory(gmock)
 endif()
 

@@ -153,20 +153,21 @@ TEST_CASE("Random") {
   prop("has uniform distribution",
        [] {
          Random random = *trulyArbitraryRandom();
-         std::array<uint64_t, 16> bins;
-         static constexpr uint64_t kBinSize =
-             (std::numeric_limits<uint64_t>::max() / 16) + 1;
+         std::array<std::uint64_t, 16> bins;
+         static constexpr std::uint64_t kBinSize =
+             (std::numeric_limits<std::uint64_t>::max() / 16) + 1;
          bins.fill(0);
          static constexpr std::size_t nSamples = 200000;
          for (std::size_t i = 0; i < nSamples; i++) {
-           bins[random.next() / kBinSize]++;
+           const auto bin = static_cast<std::size_t>(random.next() / kBinSize);
+           bins[bin]++;
          }
 
          double ideal = nSamples / static_cast<double>(bins.size());
          double error = std::accumulate(begin(bins),
                                         end(bins),
                                         0.0,
-                                        [=](double error, uint64_t x) {
+                                        [=](double error, std::uint64_t x) {
                                           double diff = 1.0 - (x / ideal);
                                           return error + (diff * diff);
                                         });

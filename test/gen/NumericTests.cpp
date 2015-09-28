@@ -76,12 +76,13 @@ struct IntegralProperties {
 
             static constexpr std::size_t nSamples = 10000;
             for (std::size_t i = 0; i < nSamples; i++) {
-              UInt value = gen::arbitrary<T>()(random.split()).value();
-              bins[value / kBinSize]++;
+              const auto value = static_cast<UInt>(
+                  gen::arbitrary<T>()(random.split()).value());
+              bins[static_cast<std::size_t>(value / kBinSize)]++;
             }
 
-            double ideal = nSamples / static_cast<double>(bins.size());
-            double error = std::accumulate(begin(bins),
+            const auto ideal = nSamples / static_cast<double>(bins.size());
+            const auto error = std::accumulate(begin(bins),
                                            end(bins),
                                            0.0,
                                            [=](double error, uint64_t x) {
@@ -246,10 +247,10 @@ struct InRangeProperties {
 
           const auto gen = gen::inRange<T>(min, min + size);
           auto r = random;
-          std::vector<int> counts(size, 0);
+          std::vector<int> counts(static_cast<std::size_t>(size), 0);
           for (std::size_t i = 0; i < 2000000; i++) {
             const auto x = gen(r.split(), kNominalSize).value();
-            counts[x - min]++;
+            counts[static_cast<std::size_t>(x - min)]++;
             const auto done =
                 std::find(begin(counts), end(counts), 0) == end(counts);
             if (done) {

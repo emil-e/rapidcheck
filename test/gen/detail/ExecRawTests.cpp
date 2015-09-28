@@ -22,7 +22,7 @@ Gen<std::pair<std::vector<int>, Recipe>> testExecGen() {
   return execRaw([=](const FixedCountdown<N> &n) {
     std::vector<int> values;
     values.push_back(n.value);
-    while (values.size() < (n.value + 1)) {
+    while (values.size() < static_cast<std::size_t>(n.value + 1)) {
       values.push_back(*genFixedCountdown(N));
     }
     return values;
@@ -76,7 +76,7 @@ TEST_CASE("execRaw") {
         auto accepted = shrinkable.value().first;
         auto acceptedShrinkable = shrinkable;
         auto shrinks = shrinkable.shrinks();
-        auto i = 0;
+        auto i = std::size_t(0);
         auto x = 5;
         for (bool accept : path) {
           if (i >= accepted.size()) {
@@ -114,14 +114,15 @@ TEST_CASE("execRaw") {
         const auto i = *gen::inRange<int>(0, 5);
         const auto shrink = *seq::at(shrinkable.shrinks(), i);
         const auto value = shrink.value().first;
-        const auto maxShrinks = std::accumulate(begin(value), end(value), 0);
+        const auto maxShrinks =
+            std::accumulate(begin(value), end(value), std::size_t(0));
         RC_ASSERT(seq::length(shrink.shrinks()) <= maxShrinks);
       });
 
   prop("passes on the correct size",
        [] {
          const auto expectedSize = *gen::nonNegative<int>();
-         const auto n = *gen::inRange<int>(1, 10);
+         const auto n = *gen::inRange<std::size_t>(1, 10);
          const auto shrinkable = execRaw([=](const PassedSize &sz) {
            *genFixedCountdown(3); // Force some shrinks
            std::vector<int> sizes;
@@ -150,7 +151,7 @@ TEST_CASE("execRaw") {
 
   prop("passed generators are unique",
        [](const Random &initial) {
-         const auto n = *gen::inRange<int>(1, 10);
+         const auto n = *gen::inRange<std::size_t>(1, 10);
          const auto randoms = execRaw([=](const PassedRandom &rnd) {
            std::set<Random> randoms;
            randoms.insert(rnd.value);
@@ -165,7 +166,7 @@ TEST_CASE("execRaw") {
 
   prop("passed randoms do not change with shrinking",
        [](const Random &initial) {
-         const auto n = *gen::inRange<int>(1, 10);
+         const auto n = *gen::inRange<std::size_t>(1, 10);
          const auto shrinkable = execRaw([=](const PassedRandom &rnd) {
            std::vector<Random> randoms;
            randoms.push_back(rnd.value);

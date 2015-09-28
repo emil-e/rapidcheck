@@ -87,7 +87,7 @@ struct BuggyGet : public BagCommand {
   }
 
   void run(const Model &s0, Sut &sut) const override {
-    RC_ASSERT(sut.items.size() < 2);
+    RC_ASSERT(sut.items.size() < 2U);
     RC_ASSERT(sut.items[index] == s0.items[index]);
   }
 
