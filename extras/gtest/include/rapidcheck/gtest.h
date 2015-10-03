@@ -48,7 +48,7 @@ void checkGTest(Testable &&testable) {
     void rapidCheck_fixtureTearDown() { TearDown(); }                          \
   };                                                                           \
                                                                                \
-  TEST_F(Fixture, Name) {                                                      \
+  TEST(Fixture##_RapidCheck, Name) {                                           \
     ::rc::detail::checkGTest(                                                  \
         &rc::detail::ExecFixture<                                              \
             RapidCheckPropImpl_##Fixture##_##Name>::exec);                     \

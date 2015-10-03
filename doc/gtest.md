@@ -33,5 +33,7 @@ RC_GTEST_PROP(MyTestCase, inRangeValueIsInRange, ()) {
 ### `RC_GTEST_FIXTURE_PROP(Fixture, Name, (args...))` ###
 Analogous to the Google Test `TEST_F` macro, defines a RapidCheck property as a Google Test fixture based test. `Fixture` names the test fixture class. The fixture will be reinstantiated for every test case that is run. Otherwise, this macro works the same as `RC_GTEST_PROP`.
 
+Since this macro is implemented in terms of Google Test's `TEST` macro and Google Test does not allow mixing of `TEST` and `TEST_F` for the same test case, test cases, a property tied to a fixture named `Fixture` will be registered under a test case named `Fixed_RapidCheck`. This is usually not a big issue but is something to be aware of, in particular when filtering Google Test case names from the command line.
+
 ## Assertions ##
 RapidCheck will treat any exception as a property failure so you should be able to use any assertion mechanism that signals failures as exceptions. However, Google Test assertions are not implemented using exceptions which means that you should avoid them and use RapidCheck assertions such as `RC_ASSERT` in your RapidCheck properties instead.
