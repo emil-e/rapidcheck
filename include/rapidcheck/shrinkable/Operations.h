@@ -20,6 +20,18 @@ std::pair<T, int> findLocalMin(const Shrinkable<T> &shrinkable, Predicate pred);
 template <typename T>
 Seq<T> immediateShrinks(const Shrinkable<T> &shrinkable);
 
+/// Follows the given path in a shrinkable tree and retuns the `Shrinkable` at
+/// the end of it. The path is a vector of integers where each integer is the
+/// index of the shrink to walk. For example `[3, 4]` denotes taking the third
+/// shrink and then the fourth shrink of that. `[]` denotes the shrinkable that
+/// was passed in.
+///
+/// @return The shrinkable at the end of the path or `Nothing` if the path is
+///         not valid for the given shrinkable tree.
+template <typename T>
+Maybe<Shrinkable<T>> walkPath(const Shrinkable<T> &shrinkable,
+                              const std::vector<std::size_t> &path);
+
 } // namespace shrinkable
 } // namespace rc
 

@@ -41,5 +41,20 @@ Seq<T> immediateShrinks(const Shrinkable<T> &shrinkable) {
                   [](const Shrinkable<T> &shrink) { return shrink.value(); });
 }
 
+template <typename T>
+Maybe<Shrinkable<T>> walkPath(const Shrinkable<T> &shrinkable,
+                              const std::vector<std::size_t> &path) {
+  auto current = shrinkable;
+  for (const auto i : path) {
+    auto s = seq::at(current.shrinks(), i);
+    if (!s) {
+      return Nothing;
+    }
+    current = std::move(*s);
+  }
+
+  return current;
+}
+
 } // namespace shrinkable
 } // namespace rc
