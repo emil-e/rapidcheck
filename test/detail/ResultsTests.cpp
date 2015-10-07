@@ -63,7 +63,7 @@ TEST_CASE("FailureResult") {
     propConformsToEquals<FailureResult>();
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, numSuccess);
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, description);
-    PROP_REPLACE_MEMBER_INEQUAL(FailureResult, numShrinks);
+    PROP_REPLACE_MEMBER_INEQUAL(FailureResult, shrinkPath);
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, counterExample);
   }
 
@@ -75,9 +75,9 @@ TEST_CASE("FailureResult") {
            RC_ASSERT(
                messageContains(result, std::to_string(result.numSuccess + 1)));
            RC_ASSERT(messageContains(result, result.description));
-           RC_ASSERT(
-               (result.numShrinks == 0) ||
-               messageContains(result, std::to_string(result.numShrinks)));
+           RC_ASSERT(result.shrinkPath.empty() ||
+                     messageContains(result,
+                                     std::to_string(result.shrinkPath.size())));
            for (const auto &item : result.counterExample) {
              messageContains(result, item.first);
              messageContains(result, item.second);

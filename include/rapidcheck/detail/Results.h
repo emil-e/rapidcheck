@@ -58,8 +58,8 @@ struct FailureResult {
   int numSuccess;
   /// A description of the failure.
   std::string description;
-  /// The number of shrinks performed.
-  int numShrinks;
+  /// The shrink path that resulted in the minimal test case.
+  std::vector<std::size_t> shrinkPath;
   /// The counterexample.
   Example counterExample;
 };

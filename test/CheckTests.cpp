@@ -20,7 +20,7 @@ TestListenerAdapter dummyListener;
 } // namespace
 
 TEST_CASE("checkTestable") {
-  prop("returns the correct number of shrinks on a failing case",
+  prop("returns the correct shrink path on a failing case",
        [](TestParams params) {
          RC_PRE(params.maxSuccess > 0);
          params.disableShrinking = false;
@@ -37,8 +37,10 @@ TEST_CASE("checkTestable") {
 
          FailureResult failure;
          RC_ASSERT(results.match(failure));
-         RC_ASSERT(failure.numShrinks ==
-                   ((values.first / 2) + (values.second / 2)));
+         const auto numShrinks = (values.first / 2) + (values.second / 2);
+         // Every shrink should be the second shrink, thus fill with 1
+         const auto expected = std::vector<std::size_t>(numShrinks, 1);
+         RC_ASSERT(failure.shrinkPath == expected);
        });
 
   prop("returns a correct counter-example",

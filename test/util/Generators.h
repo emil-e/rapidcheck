@@ -67,7 +67,9 @@ struct Arbitrary<detail::FailureResult> {
     return gen::build<detail::FailureResult>(
         gen::set(&detail::FailureResult::numSuccess, gen::positive<int>()),
         gen::set(&detail::FailureResult::description),
-        gen::set(&detail::FailureResult::numShrinks, gen::positive<int>()),
+        gen::set(&detail::FailureResult::shrinkPath,
+                 gen::container<std::vector<std::size_t>>(
+                     gen::inRange<std::size_t>(0, 200))),
         gen::set(&detail::FailureResult::counterExample));
   }
 };

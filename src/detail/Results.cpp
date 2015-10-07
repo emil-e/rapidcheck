@@ -41,7 +41,7 @@ std::ostream &operator<<(std::ostream &os,
 
 bool operator==(const FailureResult &r1, const FailureResult &r2) {
   return (r1.numSuccess == r2.numSuccess) &&
-      (r1.description == r2.description) && (r1.numShrinks == r2.numShrinks) &&
+      (r1.description == r2.description) && (r1.shrinkPath == r2.shrinkPath) &&
       (r1.counterExample == r2.counterExample);
 }
 
@@ -53,7 +53,7 @@ std::ostream &operator<<(std::ostream &os,
                          const detail::FailureResult &result) {
   os << "numSuccess=" << result.numSuccess << ", description='"
      << result.description << "'"
-     << ", numShrinks=" << result.numShrinks << ", counterExample=";
+     << ", shrinkPath=" << toString(result.shrinkPath) << ", counterExample=";
   show(result.counterExample, os);
   return os;
 }
@@ -108,9 +108,9 @@ void printResultMessage(const SuccessResult &result, std::ostream &os) {
 void printResultMessage(const FailureResult &result, std::ostream &os) {
   os << "Falsifiable after " << (result.numSuccess + 1);
   os << " tests";
-  if (result.numShrinks > 0) {
-    os << " and " << result.numShrinks << " shrink";
-    if (result.numShrinks > 1) {
+  if (!result.shrinkPath.empty()) {
+    os << " and " << result.shrinkPath.size() << " shrink";
+    if (result.shrinkPath.size() > 1) {
       os << 's';
     }
   }

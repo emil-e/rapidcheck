@@ -40,7 +40,7 @@ TestResult doCheckProperty(const Property &property,
     FailureResult failure;
     failure.numSuccess = searchResult.numSuccess;
     failure.description = std::move(caseDescription.result.description);
-    failure.numShrinks = shrinkResult.second.size();
+    failure.shrinkPath = shrinkResult.second;
     failure.counterExample = caseDescription.example();
     return failure;
   }
