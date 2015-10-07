@@ -48,9 +48,8 @@ SearchResult searchProperty(const Property &property,
 /// @param shrinkable  The shrinkable to shrink.
 /// @param listener    A test listener to report progress to.
 ///
-/// @return A pair of the final shrink as well as the number of shrinks that
-/// were accepted.
-std::pair<Shrinkable<CaseDescription>, int>
+/// @return A pair of the final shrink as well as the path leading there.
+std::pair<Shrinkable<CaseDescription>, std::vector<std::size_t>>
 shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
                TestListener &listener);
 

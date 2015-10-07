@@ -259,7 +259,7 @@ TEST_CASE("shrinkTestCase") {
                    std::to_string(target));
        });
 
-  prop("returns the number of successful shrinks",
+  prop("the path length is the number of successful shrinks",
        [] {
          const auto start = *gen::suchThat(gen::inRange<int>(0, 100),
                                            [](int x) { return (x % 2) == 0; });
@@ -267,7 +267,21 @@ TEST_CASE("shrinkTestCase") {
 
          TestListenerAdapter listener;
          const auto result = shrinkTestCase(shrinkable, listener);
-         RC_ASSERT(result.second == start / 2);
+         RC_ASSERT(result.second.size() == start / 2);
+       });
+
+  prop("walking the path gives the same result",
+       [] {
+         const auto start = *gen::suchThat(gen::inRange<int>(0, 100),
+                                           [](int x) { return (x % 2) == 0; });
+         const auto shrinkable = countdownEven(start);
+
+         TestListenerAdapter listener;
+         const auto shrinkResult = shrinkTestCase(shrinkable, listener);
+         const auto walkResult =
+             shrinkable::walkPath(shrinkable, shrinkResult.second);
+         RC_ASSERT(walkResult);
+         RC_ASSERT(shrinkResult.first.value() == walkResult->value());
        });
 
   prop("calls onShrinkTried for each shrink tried",

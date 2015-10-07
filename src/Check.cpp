@@ -28,7 +28,7 @@ TestResult doCheckProperty(const Property &property,
   } else {
     // Shrink it unless shrinking is disabled
     const auto shrinkResult = params.disableShrinking
-        ? std::make_pair(*searchResult.failure, 0)
+        ? std::make_pair(*searchResult.failure, std::vector<std::size_t>())
         : shrinkTestCase(*searchResult.failure, listener);
 
     // Give the developer a chance to set a breakpoint before the final minimal
@@ -40,7 +40,7 @@ TestResult doCheckProperty(const Property &property,
     FailureResult failure;
     failure.numSuccess = searchResult.numSuccess;
     failure.description = std::move(caseDescription.result.description);
-    failure.numShrinks = shrinkResult.second;
+    failure.numShrinks = shrinkResult.second.size();
     failure.counterExample = caseDescription.example();
     return failure;
   }

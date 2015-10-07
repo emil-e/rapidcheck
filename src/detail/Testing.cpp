@@ -78,13 +78,14 @@ SearchResult searchProperty(const Property &property,
   return searchResult;
 }
 
-std::pair<Shrinkable<CaseDescription>, int>
+std::pair<Shrinkable<CaseDescription>, std::vector<std::size_t>>
 shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
                TestListener &listener) {
-  int numShrinks = 0;
+  std::vector<std::size_t> path;
   Shrinkable<CaseDescription> best = shrinkable;
 
   auto shrinks = shrinkable.shrinks();
+  std::size_t i = 0;
   while (auto shrink = shrinks.next()) {
     auto caseDescription = shrink->value();
     bool accept = caseDescription.result.type == CaseResult::Type::Failure;
@@ -92,11 +93,14 @@ shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
     if (accept) {
       best = std::move(*shrink);
       shrinks = best.shrinks();
-      numShrinks++;
+      path.push_back(i);
+      i = 0;
+    } else {
+      i++;
     }
   }
 
-  return std::make_pair(best, numShrinks);
+  return std::make_pair(std::move(best), std::move(path));
 }
 
 } // namespace detail
