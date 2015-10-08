@@ -37,14 +37,13 @@ SearchResult searchProperty(const Property &property,
   const auto maxDiscard = params.maxDiscardRatio * params.maxSuccess;
 
   auto recentDiscards = 0;
-
+  auto r = Random(params.seed);
   while (searchResult.numSuccess < params.maxSuccess) {
     const auto size =
         sizeFor(params, searchResult.numSuccess) + (recentDiscards / 10);
-    const auto seed =
-        avalanche(params.seed + searchResult.numSuccess + recentDiscards);
+    const auto random = r.split();
 
-    auto shrinkable = property(Random(seed), size);
+    auto shrinkable = property(random, size);
     auto caseDescription = shrinkable.value();
     listener.onTestCaseFinished(caseDescription);
     const auto &result = caseDescription.result;
@@ -52,7 +51,8 @@ SearchResult searchProperty(const Property &property,
     switch (result.type) {
     case CaseResult::Type::Failure:
       searchResult.type = SearchResult::Type::Failure;
-      searchResult.failure = std::move(shrinkable);
+      searchResult.failure =
+          SearchResult::Failure(std::move(shrinkable), size, random);
       return searchResult;
 
     case CaseResult::Type::Discard:
@@ -60,7 +60,8 @@ SearchResult searchProperty(const Property &property,
       recentDiscards++;
       if (searchResult.numDiscarded > maxDiscard) {
         searchResult.type = SearchResult::Type::GaveUp;
-        searchResult.failure = std::move(shrinkable);
+        searchResult.failure =
+            SearchResult::Failure(std::move(shrinkable), size, random);
         return searchResult;
       }
       break;

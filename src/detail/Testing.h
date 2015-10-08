@@ -15,6 +15,23 @@ namespace detail {
 struct SearchResult {
   enum class Type { Success, Failure, GaveUp };
 
+  /// Represents information about a failure.
+  struct Failure {
+    Failure(Shrinkable<CaseDescription> shr, int sz, const Random &rnd)
+        : shrinkable(shr)
+        , size(sz)
+        , random(rnd) {}
+
+    /// The shrinkable of the failing test case.
+    Shrinkable<CaseDescription> shrinkable;
+
+    /// The size at which the property failed.
+    int size;
+
+    /// The Random state which produced the failure.
+    Random random;
+  };
+
   /// The type of the result.
   Type type;
 
@@ -27,9 +44,8 @@ struct SearchResult {
   /// The tags of successful test cases.
   std::vector<Tags> tags;
 
-  /// The shrinkable of the failing case for failures and the final case for
-  /// give-ups.
-  Maybe<Shrinkable<CaseDescription>> failure;
+  /// On Failure or GiveUp, contains failure information.
+  Maybe<Failure> failure;
 };
 
 /// Searches for a failure in the given property.

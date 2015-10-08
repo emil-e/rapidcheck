@@ -22,14 +22,15 @@ TestResult doCheckProperty(const Property &property,
   } else if (searchResult.type == SearchResult::Type::GaveUp) {
     GaveUpResult gaveUp;
     gaveUp.numSuccess = searchResult.numSuccess;
-    gaveUp.description =
-        std::move(searchResult.failure->value().result.description);
+    const auto &shrinkable = searchResult.failure->shrinkable;
+    gaveUp.description = std::move(shrinkable.value().result.description);
     return gaveUp;
   } else {
     // Shrink it unless shrinking is disabled
+    const auto &shrinkable = searchResult.failure->shrinkable;
     const auto shrinkResult = params.disableShrinking
-        ? std::make_pair(*searchResult.failure, std::vector<std::size_t>())
-        : shrinkTestCase(*searchResult.failure, listener);
+        ? std::make_pair(shrinkable, std::vector<std::size_t>())
+        : shrinkTestCase(shrinkable, listener);
 
     // Give the developer a chance to set a breakpoint before the final minimal
     // test case is run

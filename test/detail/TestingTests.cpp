@@ -60,18 +60,23 @@ TEST_CASE("searchProperty") {
   prop("returns correct information about failing case",
        [](const TestParams &params, const std::string &description) {
          RC_PRE(params.maxSuccess > 0);
-         auto caseIndex = 0;
+         int size = 0;
+         int caseIndex = 0;
          const auto targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
          const auto result = searchTestable([&] {
+           size = *genSize();
            if (caseIndex >= targetSuccess) {
              return CaseResult(CaseResult::Type::Failure, description);
            }
            caseIndex++;
            return CaseResult(CaseResult::Type::Success);
          }, params);
+
          RC_ASSERT(result.type == SearchResult::Type::Failure);
          RC_ASSERT(result.failure);
-         RC_ASSERT(result.failure->value().result.description == description);
+         RC_ASSERT(result.failure->size == size);
+         RC_ASSERT(result.failure->shrinkable.value().result.description ==
+                   description);
        });
 
   prop("gives up if too many test cases are discarded",
@@ -79,9 +84,11 @@ TEST_CASE("searchProperty") {
          RC_PRE(params.maxSuccess > 0);
          const auto maxDiscards = params.maxSuccess * params.maxDiscardRatio;
          const auto targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
+         int size = 0;
          int numTests = 0;
          const auto result = searchTestable([&] {
            numTests++;
+           size = *genSize();
            if (numTests > targetSuccess) {
              return CaseResult(CaseResult::Type::Discard, description);
            }
@@ -90,7 +97,9 @@ TEST_CASE("searchProperty") {
 
          RC_ASSERT(result.type == SearchResult::Type::GaveUp);
          RC_ASSERT(result.failure);
-         RC_ASSERT(result.failure->value().result.description == description);
+         RC_ASSERT(result.failure->size == size);
+         RC_ASSERT(result.failure->shrinkable.value().result.description ==
+                   description);
        });
 
   prop("does not give up if not enough tests are discarded",
@@ -117,7 +126,7 @@ TEST_CASE("searchProperty") {
          RC_ASSERT(usedMax == params.maxSize);
        });
 
-  prop("maxSuccess > maxSize, all sizes will be used",
+  prop("if maxSuccess > maxSize, all sizes will be used",
        [] {
          TestParams params;
          params.maxSize = *gen::inRange(0, 100);
@@ -219,6 +228,27 @@ TEST_CASE("searchProperty") {
          }, params, listener);
 
          RC_ASSERT(descriptions == expected);
+       });
+
+  prop("the failure information reproduces identical shrinkables",
+       [](TestParams params) {
+         const auto max = *gen::inRange<int>(0, 2000);
+         const auto property = toProperty([=](int a, int b) {
+           if ((a > max) || (b > max)) {
+             throw std::to_string(a) + " " + std::to_string(b);
+           }
+         });
+
+         params.maxSuccess = 2000;
+         params.maxSize = kNominalSize;
+
+         TestListenerAdapter listener;
+         const auto result = searchProperty(property, params, listener);
+         RC_ASSERT(result.failure);
+
+         const auto shrinkable =
+             property(result.failure->random, result.failure->size);
+         RC_ASSERT(result.failure->shrinkable.value() == shrinkable.value());
        });
 }
 
