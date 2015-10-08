@@ -69,5 +69,14 @@ std::pair<Shrinkable<CaseDescription>, std::vector<std::size_t>>
 shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
                TestListener &listener);
 
+/// Combined search and shrink. Returns a test result.
+///
+/// @param property  The property to test.
+/// @param params    The test parameters.
+/// @param listener  A test listener to report progress to.
+TestResult testProperty(const Property &property,
+                        const TestParams &params,
+                        TestListener &listener);
+
 } // namespace detail
 } // namespace rc
