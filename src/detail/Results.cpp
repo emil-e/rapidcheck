@@ -87,6 +87,22 @@ std::ostream &operator<<(std::ostream &os, const detail::GaveUpResult &result) {
   return os;
 }
 
+Error::Error(std::string desc)
+    : description(std::move(desc)) {}
+
+std::ostream &operator<<(std::ostream &os, const detail::Error &result) {
+  os << "description='" << result.description << "'";
+  return os;
+}
+
+bool operator==(const Error &lhs, const Error &rhs) {
+  return lhs.description == rhs.description;
+}
+
+bool operator!=(const Error &lhs, const Error &rhs) {
+  return !(lhs == rhs);
+}
+
 void printDistribution(const SuccessResult &result, std::ostream &os) {
   using Entry = std::pair<Tags, int>;
   std::vector<Entry> entries(begin(result.distribution),
@@ -147,10 +163,16 @@ void printResultMessage(const GaveUpResult &result, std::ostream &os) {
   os << result.description;
 }
 
+void printResultMessage(const Error &result, std::ostream &os) {
+  os << "Failure: " << result.description << std::endl;
+  os << std::endl;
+}
+
 void printResultMessage(const TestResult &result, std::ostream &os) {
   SuccessResult success;
   FailureResult failure;
   GaveUpResult gaveUp;
+  Error error;
 
   // TODO Make Variant cooler!
   if (result.match(success)) {
@@ -159,6 +181,8 @@ void printResultMessage(const TestResult &result, std::ostream &os) {
     printResultMessage(failure, os);
   } else if (result.match(gaveUp)) {
     printResultMessage(gaveUp, os);
+  } else if (result.match(error)) {
+    printResultMessage(error, os);
   }
 }
 

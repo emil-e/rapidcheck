@@ -105,3 +105,19 @@ TEST_CASE("GaveUpResult") {
          });
   }
 }
+
+TEST_CASE("Error") {
+  SECTION("operator==/operator!=") {
+    propConformsToEquals<Error>();
+    PROP_REPLACE_MEMBER_INEQUAL(Error, description);
+  }
+
+  SECTION("operator<<") { propConformsToOutputOperator<Error>(); }
+
+  SECTION("printResultMessage") {
+    prop("message contains relevant parts of result",
+         [](const Error &result) {
+           RC_ASSERT(messageContains(result, result.description));
+         });
+  }
+}

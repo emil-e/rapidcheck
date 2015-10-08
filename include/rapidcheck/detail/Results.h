@@ -94,8 +94,21 @@ std::ostream &operator<<(std::ostream &os, const detail::GaveUpResult &result);
 bool operator==(const GaveUpResult &r1, const GaveUpResult &r2);
 bool operator!=(const GaveUpResult &r1, const GaveUpResult &r2);
 
+/// Indicates that the testing process itself failed.
+struct Error {
+  Error() = default;
+  Error(std::string desc);
+
+  /// A description of the error.
+  std::string description;
+};
+
+std::ostream &operator<<(std::ostream &os, const detail::Error &result);
+bool operator==(const Error &lhs, const Error &rhs);
+bool operator!=(const Error &lhs, const Error &rhs);
+
 /// Describes the circumstances around the result of a test.
-using TestResult = Variant<SuccessResult, FailureResult, GaveUpResult>;
+using TestResult = Variant<SuccessResult, FailureResult, GaveUpResult, Error>;
 
 /// Prints a human readable error message describing the given success result to
 /// the specified stream.

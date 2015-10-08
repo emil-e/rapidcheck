@@ -96,6 +96,13 @@ struct Arbitrary<detail::GaveUpResult> {
 };
 
 template <>
+struct Arbitrary<detail::Error> {
+  static Gen<detail::Error> arbitrary() {
+    return gen::build<detail::Error>(gen::set(&detail::Error::description));
+  }
+};
+
+template <>
 struct Arbitrary<detail::CaseDescription> {
   static Gen<detail::CaseDescription> arbitrary() {
     return gen::build<detail::CaseDescription>(
