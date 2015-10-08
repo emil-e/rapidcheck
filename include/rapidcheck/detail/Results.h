@@ -3,7 +3,8 @@
 #include <vector>
 #include <map>
 
-#include "Variant.h"
+#include "rapidcheck/Random.h"
+#include "rapidcheck/detail/Variant.h"
 
 namespace rc {
 namespace detail {
@@ -38,7 +39,20 @@ std::ostream &operator<<(std::ostream &os, CaseResult::Type type);
 std::ostream &operator<<(std::ostream &os, const CaseResult &result);
 bool operator==(const CaseResult &r1, const CaseResult &r2);
 bool operator!=(const CaseResult &r1, const CaseResult &r2);
-bool operator<(const CaseResult &r1, const CaseResult &r2);
+
+/// Contains all that is required to reproduce a failing test case.
+struct Reproduce {
+  /// The Random to generate the shrinkable with.
+  Random random;
+  /// The size to generate the shrinkable with.
+  int size;
+  /// The shrink path to follow.
+  std::vector<std::size_t> shrinkPath;
+};
+
+std::ostream &operator<<(std::ostream &os, const detail::Reproduce &r);
+bool operator==(const Reproduce &lhs, const Reproduce &rhs);
+bool operator!=(const Reproduce &lhs, const Reproduce &rhs);
 
 /// Indicates a successful property.
 struct SuccessResult {
@@ -58,8 +72,8 @@ struct FailureResult {
   int numSuccess;
   /// A description of the failure.
   std::string description;
-  /// The shrink path that resulted in the minimal test case.
-  std::vector<std::size_t> shrinkPath;
+  /// The information required to reproduce the failure.
+  Reproduce reproduce;
   /// The counterexample.
   Example counterExample;
 };

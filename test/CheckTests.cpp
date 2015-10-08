@@ -40,7 +40,7 @@ TEST_CASE("checkTestable") {
          const auto numShrinks = (values.first / 2) + (values.second / 2);
          // Every shrink should be the second shrink, thus fill with 1
          const auto expected = std::vector<std::size_t>(numShrinks, 1);
-         RC_ASSERT(failure.shrinkPath == expected);
+         RC_ASSERT(failure.reproduce.shrinkPath == expected);
        });
 
   prop("returns a correct counter-example",

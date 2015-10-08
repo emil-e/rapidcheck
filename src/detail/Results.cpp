@@ -23,6 +23,21 @@ bool operator!=(const CaseResult &r1, const CaseResult &r2) {
   return !(r1 == r2);
 }
 
+std::ostream &operator<<(std::ostream &os, const detail::Reproduce &r) {
+  os << "random={" << r.random << "}, size=" << r.size
+     << ", shrinkPath=" << toString(r.shrinkPath);
+  return os;
+}
+
+bool operator==(const Reproduce &lhs, const Reproduce &rhs) {
+  return (lhs.random == rhs.random) && (lhs.size == rhs.size) &&
+      (lhs.shrinkPath == rhs.shrinkPath);
+}
+
+bool operator!=(const Reproduce &lhs, const Reproduce &rhs) {
+  return !(lhs == rhs);
+}
+
 bool operator==(const SuccessResult &r1, const SuccessResult &r2) {
   return (r1.numSuccess == r2.numSuccess) &&
       (r1.distribution == r2.distribution);
@@ -41,7 +56,7 @@ std::ostream &operator<<(std::ostream &os,
 
 bool operator==(const FailureResult &r1, const FailureResult &r2) {
   return (r1.numSuccess == r2.numSuccess) &&
-      (r1.description == r2.description) && (r1.shrinkPath == r2.shrinkPath) &&
+      (r1.description == r2.description) && (r1.reproduce == r2.reproduce) &&
       (r1.counterExample == r2.counterExample);
 }
 
@@ -53,7 +68,7 @@ std::ostream &operator<<(std::ostream &os,
                          const detail::FailureResult &result) {
   os << "numSuccess=" << result.numSuccess << ", description='"
      << result.description << "'"
-     << ", shrinkPath=" << toString(result.shrinkPath) << ", counterExample=";
+     << ", reproduce={" << result.reproduce << "}, counterExample=";
   show(result.counterExample, os);
   return os;
 }
@@ -108,9 +123,9 @@ void printResultMessage(const SuccessResult &result, std::ostream &os) {
 void printResultMessage(const FailureResult &result, std::ostream &os) {
   os << "Falsifiable after " << (result.numSuccess + 1);
   os << " tests";
-  if (!result.shrinkPath.empty()) {
-    os << " and " << result.shrinkPath.size() << " shrink";
-    if (result.shrinkPath.size() > 1) {
+  if (!result.reproduce.shrinkPath.empty()) {
+    os << " and " << result.reproduce.shrinkPath.size() << " shrink";
+    if (result.reproduce.shrinkPath.size() > 1) {
       os << 's';
     }
   }

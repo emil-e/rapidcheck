@@ -7,6 +7,8 @@
 #include "rapidcheck/Maybe.h"
 #include "rapidcheck/seq/Create.h"
 
+#include "util/ArbitraryRandom.h"
+
 namespace rc {
 
 template <>
@@ -50,6 +52,18 @@ struct Arbitrary<detail::CaseResult> {
 };
 
 template <>
+struct Arbitrary<detail::Reproduce> {
+  static Gen<detail::Reproduce> arbitrary() {
+    return gen::build<detail::Reproduce>(
+        gen::set(&detail::Reproduce::random),
+        gen::set(&detail::Reproduce::size, gen::inRange<int>(0, 200)),
+        gen::set(&detail::Reproduce::shrinkPath,
+                 gen::container<std::vector<std::size_t>>(
+                     gen::inRange<std::size_t>(0, 200))));
+  }
+};
+
+template <>
 struct Arbitrary<detail::SuccessResult> {
   static Gen<detail::SuccessResult> arbitrary() {
     return gen::build<detail::SuccessResult>(
@@ -67,9 +81,7 @@ struct Arbitrary<detail::FailureResult> {
     return gen::build<detail::FailureResult>(
         gen::set(&detail::FailureResult::numSuccess, gen::positive<int>()),
         gen::set(&detail::FailureResult::description),
-        gen::set(&detail::FailureResult::shrinkPath,
-                 gen::container<std::vector<std::size_t>>(
-                     gen::inRange<std::size_t>(0, 200))),
+        gen::set(&detail::FailureResult::reproduce),
         gen::set(&detail::FailureResult::counterExample));
   }
 };
