@@ -13,19 +13,26 @@ using namespace rc;
 using namespace rc::test;
 using namespace rc::detail;
 
+namespace {
+
+TestListenerAdapter dummyListener;
+
+} // namespace
+
 template <typename Testable>
-SearchResult searchTestable(Testable &&testable, const TestParams &params) {
-  TestListenerAdapter listener;
+SearchResult searchTestable(Testable &&testable,
+                            const TestParams &params,
+                            TestListener &listener = dummyListener) {
   return searchProperty(
       toProperty(std::forward<Testable>(testable)), params, listener);
 }
 
 template <typename Testable>
-SearchResult searchTestable(Testable &&testable,
-                            const TestParams &params,
-                            TestListener &listener) {
-  return searchProperty(
-      toProperty(std::forward<Testable>(testable)), params, listener);
+TestResult testTestable(Testable &&testable,
+                        const TestParams &params,
+                        TestListener &listener = dummyListener) {
+  return testProperty(
+      toProperty(std::forward<Testable>(testable)), params, dummyListener);
 }
 
 TEST_CASE("searchProperty") {
@@ -242,8 +249,7 @@ TEST_CASE("searchProperty") {
          params.maxSuccess = 2000;
          params.maxSize = kNominalSize;
 
-         TestListenerAdapter listener;
-         const auto result = searchProperty(property, params, listener);
+         const auto result = searchProperty(property, params, dummyListener);
          RC_ASSERT(result.failure);
 
          const auto shrinkable =
@@ -281,8 +287,7 @@ TEST_CASE("shrinkTestCase") {
                                return desc;
                              });
 
-         TestListenerAdapter listener;
-         const auto result = shrinkTestCase(shrinkable, listener);
+         const auto result = shrinkTestCase(shrinkable, dummyListener);
          RC_ASSERT(result.first.value().result.type ==
                    CaseResult::Type::Failure);
          RC_ASSERT(result.first.value().result.description ==
@@ -295,8 +300,7 @@ TEST_CASE("shrinkTestCase") {
                                            [](int x) { return (x % 2) == 0; });
          const auto shrinkable = countdownEven(start);
 
-         TestListenerAdapter listener;
-         const auto result = shrinkTestCase(shrinkable, listener);
+         const auto result = shrinkTestCase(shrinkable, dummyListener);
          RC_ASSERT(result.second.size() == start / 2);
        });
 
@@ -306,8 +310,7 @@ TEST_CASE("shrinkTestCase") {
                                            [](int x) { return (x % 2) == 0; });
          const auto shrinkable = countdownEven(start);
 
-         TestListenerAdapter listener;
-         const auto shrinkResult = shrinkTestCase(shrinkable, listener);
+         const auto shrinkResult = shrinkTestCase(shrinkable, dummyListener);
          const auto walkResult =
              shrinkable::walkPath(shrinkable, shrinkResult.second);
          RC_ASSERT(walkResult);
@@ -329,5 +332,178 @@ TEST_CASE("shrinkTestCase") {
                acceptedBalance += accepted ? 1 : -1;
              };
          const auto result = shrinkTestCase(shrinkable, listener);
+       });
+}
+
+TEST_CASE("testProperty") {
+  prop("returns the correct shrink path on a failing case",
+       [](TestParams params) {
+         RC_PRE(params.maxSuccess > 0);
+         params.disableShrinking = false;
+         const auto evenInteger =
+             gen::scale(0.25,
+                        gen::suchThat(gen::positive<int>(),
+                                      [](int x) { return (x % 2) == 0; }));
+         const auto values = *gen::pair(evenInteger, evenInteger);
+         const auto results = testTestable([&] {
+           const auto v1 = *genFixedCountdown(values.first);
+           const auto v2 = *genFixedCountdown(values.second);
+           return ((v1 % 2) != 0) || ((v2 % 2) != 0);
+         }, params, dummyListener);
+
+         FailureResult failure;
+         RC_ASSERT(results.match(failure));
+         const auto numShrinks = (values.first / 2) + (values.second / 2);
+         // Every shrink should be the second shrink, thus fill with 1
+         const auto expected = std::vector<std::size_t>(numShrinks, 1);
+         RC_ASSERT(failure.reproduce.shrinkPath == expected);
+       });
+
+  prop("returns a correct counter-example",
+       [](const TestParams &params, std::vector<int> values) {
+         RC_PRE(params.maxSuccess > 0);
+         const auto results =
+             testTestable([&](FixedCountdown<0>, FixedCountdown<0>) {
+               for (auto value : values) {
+                 *gen::just(value);
+               }
+               return false;
+             }, params, dummyListener);
+
+         Example expected;
+         expected.reserve(values.size() + 1);
+         std::tuple<FixedCountdown<0>, FixedCountdown<0>> expectedArgs(
+             FixedCountdown<0>{}, FixedCountdown<0>{});
+         expected.push_back(std::make_pair(
+             typeToString<decltype(expectedArgs)>(), toString(expectedArgs)));
+         std::transform(begin(values),
+                        end(values),
+                        std::back_inserter(expected),
+                        [](int x) {
+                          return std::make_pair(typeToString<int>(),
+                                                toString(x));
+                        });
+
+         FailureResult failure;
+         RC_ASSERT(results.match(failure));
+         RC_ASSERT(failure.counterExample == expected);
+       });
+
+  prop("counter-example is not affected by nested tests",
+       [](const TestParams &params1, const TestParams &params2) {
+         RC_PRE(params1.maxSuccess > 0);
+         const auto results = testTestable([&] {
+           *gen::just<std::string>("foo");
+           auto innerResults = testTestable([&] {
+             *gen::just<std::string>("bar");
+             *gen::just<std::string>("baz");
+           }, params2, dummyListener);
+
+           return false;
+         }, params1, dummyListener);
+
+         FailureResult failure;
+         RC_ASSERT(results.match(failure));
+         Example expected{
+             {typeToString<std::string>(), toString(std::string("foo"))}};
+         RC_ASSERT(failure.counterExample == expected);
+       });
+
+  prop("on failure, description contains message",
+       [](const TestParams &params, const std::string &description) {
+         RC_PRE(params.maxSuccess > 0);
+         const auto results = testTestable(
+             [&] { RC_FAIL(description); }, params, dummyListener);
+
+         FailureResult failure;
+         RC_ASSERT(results.match(failure));
+         RC_ASSERT(failure.description.find(description) != std::string::npos);
+       });
+
+  prop("on giving up, description contains message",
+       [](const TestParams &params, const std::string &description) {
+         RC_PRE(params.maxSuccess > 0);
+         const auto results = testTestable(
+             [&] { RC_DISCARD(description); }, params, dummyListener);
+
+         GaveUpResult gaveUp;
+         RC_ASSERT(results.match(gaveUp));
+         RC_ASSERT(gaveUp.description.find(description) != std::string::npos);
+       });
+
+  prop("running the same test with the same TestParams yields identical runs",
+       [](const TestParams &params) {
+         std::vector<std::vector<int>> values;
+         const auto property = [&] {
+           const auto x = *gen::arbitrary<std::vector<int>>();
+           values.push_back(x);
+           auto result = std::find(begin(x), end(x), 50);
+           return result == end(x);
+         };
+
+         const auto results1 = testTestable(property, params, dummyListener);
+         auto values1 = std::move(values);
+
+         values = std::vector<std::vector<int>>();
+         const auto results2 = testTestable(property, params, dummyListener);
+         auto values2 = std::move(values);
+
+         RC_ASSERT(results1 == results2);
+         RC_ASSERT(values1 == values2);
+       });
+
+  prop("correctly reports test case distribution",
+       [] {
+         auto allTags =
+             *gen::container<std::vector<std::vector<std::string>>>(
+                 gen::scale(0.1, gen::arbitrary<std::vector<std::string>>()));
+         TestParams params;
+         params.maxSize = *gen::inRange(0, 200);
+         params.maxSuccess = static_cast<int>(allTags.size());
+
+         auto i = 0;
+         const auto property = [&] {
+           const auto &tags = allTags[i++];
+           for (const auto &tag : tags) {
+             ImplicitParam<param::CurrentPropertyContext>::value()->addTag(tag);
+           }
+         };
+         const auto result = testTestable(property, params, dummyListener);
+
+         Distribution expected;
+         for (auto &tags : allTags) {
+           if (!tags.empty()) {
+             expected[tags]++;
+           }
+         }
+
+         SuccessResult success;
+         RC_ASSERT(result.match(success));
+         RC_ASSERT(success.distribution == expected);
+       });
+
+  prop("does not include untagged cases in distribution",
+       [](const TestParams &params) {
+         const auto result = testTestable([] {}, params, dummyListener);
+         SuccessResult success;
+         RC_ASSERT(result.match(success));
+         RC_ASSERT(success.distribution.empty());
+       });
+
+  prop("does not shrink result if disableShrinking is set",
+       [](TestParams params) {
+         RC_PRE(params.maxSuccess > 0);
+
+         params.disableShrinking = true;
+         const auto result = testTestable([] {
+           *Gen<int>([](const Random &, int) {
+             return shrinkable::just(1337, seq::just(shrinkable::just(0)));
+           });
+           RC_FAIL("oh noes");
+         }, params, dummyListener);
+
+         FailureResult failure;
+         RC_ASSERT(result.match(failure));
+         RC_ASSERT(failure.counterExample.front().second == "1337");
        });
 }
