@@ -78,5 +78,9 @@ TestResult testProperty(const Property &property,
                         const TestParams &params,
                         TestListener &listener);
 
+/// Reproduces a test result for the given property using a `Reproduce` value.
+TestResult reproduceProperty(const Property &property,
+                             const Reproduce &reproduce);
+
 } // namespace detail
 } // namespace rc

@@ -507,3 +507,49 @@ TEST_CASE("testProperty") {
          RC_ASSERT(failure.counterExample.front().second == "1337");
        });
 }
+
+TEST_CASE("reproduceProperty") {
+  prop("reproduces result from testProperty",
+       [](TestParams params) {
+         const auto max = *gen::inRange<int>(0, 2000);
+         const auto property = toProperty([=](int a, int b) {
+           if ((a > max) || (b > max)) {
+             throw std::to_string(a) + " " + std::to_string(b);
+           }
+         });
+
+         params.maxSuccess = 2000;
+         params.maxSize = kNominalSize;
+
+         const auto result = testProperty(property, params, dummyListener);
+         FailureResult failure;
+         RC_ASSERT(result.match(failure));
+
+         const auto reproduced = reproduceProperty(property, failure.reproduce);
+         FailureResult reproducedFailure;
+         RC_ASSERT(reproduced.match(reproducedFailure));
+
+         RC_ASSERT(failure.description == reproducedFailure.description);
+         RC_ASSERT(failure.reproduce == reproducedFailure.reproduce);
+         RC_ASSERT(failure.counterExample == reproducedFailure.counterExample);
+       });
+
+  SECTION("returns error if reproduced result is not a failure") {
+    const auto property = toProperty([] {});
+    Reproduce repro;
+    repro.size = 0;
+    const auto result = reproduceProperty(property, repro);
+    Error error;
+    REQUIRE(result.match(error));
+  }
+
+  SECTION("returns error if shrink path is not valid") {
+    const auto property = toProperty([] { return false; });
+    Reproduce repro;
+    repro.size = 0;
+    repro.shrinkPath.push_back(100);
+    const auto result = reproduceProperty(property, repro);
+    Error error;
+    REQUIRE(result.match(error));
+  }
+}

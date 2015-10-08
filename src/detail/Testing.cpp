@@ -1,6 +1,7 @@
 #include "Testing.h"
 
 #include "rapidcheck/BeforeMinimalTestCase.h"
+#include "rapidcheck/shrinkable/Operations.h"
 
 namespace rc {
 namespace detail {
@@ -157,6 +158,32 @@ TestResult testProperty(const Property &property,
   TestResult result = doTestProperty(property, params, listener);
   listener.onTestFinished(result);
   return result;
+}
+
+TestResult reproduceProperty(const Property &property,
+                             const Reproduce &reproduce) {
+  const auto shrinkable = property(reproduce.random, reproduce.size);
+  const auto minShrinkable =
+      shrinkable::walkPath(shrinkable, reproduce.shrinkPath);
+  if (!minShrinkable) {
+    return Error("Unable to reproduce minimum value");
+  }
+
+  // Give the developer a chance to set a breakpoint before the final minimal
+  // test case is run
+  beforeMinimalTestCase();
+  // ...and here we actually run it
+  auto desc = minShrinkable->value();
+  if (desc.result.type != CaseResult::Type::Failure) {
+    return Error("Reproduced value is not a failure");
+  }
+
+  FailureResult failure;
+  failure.numSuccess = 0;
+  failure.description = std::move(desc.result.description);
+  failure.reproduce = reproduce;
+  failure.counterExample = desc.example();
+  return failure;
 }
 
 } // namespace detail
