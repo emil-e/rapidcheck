@@ -27,6 +27,7 @@ add_library(rapidcheck
   src/Show.cpp
   src/detail/Any.cpp
   src/detail/Assertions.cpp
+  src/detail/Base64.cpp
   src/detail/Configuration.cpp
   src/detail/FrequencyMap.cpp
   src/detail/ImplicitParam.cpp

@@ -21,6 +21,7 @@ add_executable(rapidcheck_tests
   ShrinkableTests.cpp
   detail/AnyTests.cpp
   detail/ApplyTupleTests.cpp
+  detail/Base64Tests.cpp
   detail/BitStreamTests.cpp
   detail/CaptureTests.cpp
   detail/ConfigurationTests.cpp
