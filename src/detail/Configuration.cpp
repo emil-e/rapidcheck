@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "MapParser.h"
+#include "ParseException.h"
 #include "rapidcheck/detail/Platform.h"
 
 namespace rc {

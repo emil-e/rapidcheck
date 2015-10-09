@@ -32,6 +32,7 @@ add_library(rapidcheck
   src/detail/ImplicitParam.cpp
   src/detail/LogTestListener.cpp
   src/detail/MapParser.cpp
+  src/detail/ParseException.cpp
   src/detail/Platform.cpp
   src/detail/Property.cpp
   src/detail/PropertyContext.cpp

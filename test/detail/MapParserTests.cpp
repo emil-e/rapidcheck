@@ -2,6 +2,7 @@
 #include <rapidcheck/catch.h>
 
 #include "detail/MapParser.h"
+#include "detail/ParseException.h"
 
 using namespace rc;
 using namespace rc::detail;
