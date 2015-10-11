@@ -29,6 +29,31 @@ Iterator serializeCompact(T value, Iterator output);
 template <typename T, typename Iterator>
 Iterator deserializeCompact(Iterator begin, Iterator end, T &output);
 
+/// Serializes the given range of integers to the given output iterator. The
+/// output is serialized using `serializeCompact` with a prefix length also
+/// serialized the same way.
+///
+/// @param begin   The start of the range to serialize.
+/// @param end     The end of the range to serialize.
+/// @param output  The output iterator to serialize to.
+///
+/// @return An iterator past the end of the output.
+template <typename InputIterator, typename OutputIterator>
+OutputIterator
+serializeCompact(InputIterator begin, InputIterator end, OutputIterator output);
+
+/// Deserializes a range of integers as serialized by the range version of
+/// `serializeCompact`.
+///
+/// @param begin  The start of the data to deserialize.
+/// @param begin  The end of the data to deserialize.
+///
+/// @return A pair of iterators pointing past the end of the consumed data and
+///         past the end of the output data, respectively.
+template <typename T, typename InputIterator, typename OutputIterator>
+std::pair<InputIterator, OutputIterator> deserializeCompact(
+    InputIterator begin, InputIterator end, OutputIterator output);
+
 } // namespace detail
 } // namespace rc
 
