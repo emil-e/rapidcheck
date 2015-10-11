@@ -65,6 +65,58 @@ TEST_CASE("deserialize(integers)") {
   forEachType<DeserializeIntegersProperties, RC_INTEGRAL_TYPES>();
 }
 
+TEST_CASE("serializeN") {
+  prop("returns an iterator past the written data",
+       [](const std::vector<std::uint32_t> &values) {
+         std::vector<std::uint8_t> data(values.size() * 4, 0);
+         const auto it = serializeN(begin(values), values.size(), begin(data));
+         RC_ASSERT(it == end(data));
+       });
+}
+
+namespace {
+
+struct NonDeserializable {};
+
+template <typename Iterator>
+Iterator deserialize(Iterator begin, Iterator end, NonDeserializable &output) {
+  return begin;
+}
+
+} // namespace
+
+TEST_CASE("deserializeN") {
+  prop("deserializes output of serialize",
+       [](const std::vector<std::uint32_t> &values) {
+         std::vector<std::uint8_t> data(values.size() * 4, 0);
+         serializeN(begin(values), values.size(), begin(data));
+
+         std::vector<std::uint32_t> output(values.size(), 0);
+         deserializeN<std::uint32_t>(
+             begin(data), end(data), values.size(), begin(output));
+         RC_ASSERT(output == values);
+       });
+
+  prop("returns an iterator past the end of the consumed data",
+       [](const std::vector<std::uint32_t> &values) {
+         std::vector<std::uint8_t> data(values.size() * 4, 0);
+         serializeN(begin(values), values.size(), begin(data));
+
+         std::vector<std::uint32_t> output(values.size(), 0);
+         const auto it = deserializeN<std::uint32_t>(
+             begin(data), end(data), values.size(), begin(output));
+         RC_ASSERT(it == end(data));
+       });
+
+  prop("returns begin if data has unexpected end",
+       [](const std::vector<std::uint8_t> &data, std::size_t n) {
+         std::vector<NonDeserializable> output;
+         const auto it = deserializeN<NonDeserializable>(
+             begin(data), end(data), n, std::back_inserter(output));
+         RC_ASSERT(it == begin(data));
+       });
+}
+
 struct SerializeCompactProperties {
   template <typename T>
   static void exec() {

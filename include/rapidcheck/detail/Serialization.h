@@ -26,6 +26,27 @@ template <typename T,
           typename = typename std::enable_if<std::is_integral<T>::value>::type>
 Iterator deserialize(Iterator begin, Iterator end, T &out);
 
+/// Serializes `n` number of elements from the `in` without storing the length.
+/// Thus to deserialize, the exact number of elements must be known beforehand.
+///
+/// @param in   The input iterator.
+/// @param n    The number of elements to serialize.
+/// @param out  The output iterator.
+template <typename InputIterator, typename OutputIterator>
+OutputIterator serializeN(InputIterator in, std::size_t n, OutputIterator out);
+
+/// Deserializes `n` number of elements of type `T`.
+///
+/// @param begin  The start of the input range.
+/// @param end    The end of the input range.
+/// @param n      The number of elements to deserialize.
+/// @param out    The output iterator.
+template <typename T, typename InputIterator, typename OutputIterator>
+InputIterator deserializeN(InputIterator begin,
+                           InputIterator end,
+                           std::size_t n,
+                           OutputIterator out);
+
 /// Serializes the given integer value in a compact form where only as many
 /// bits
 /// as needed are used.

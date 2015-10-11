@@ -39,6 +39,40 @@ Iterator deserialize(Iterator begin, Iterator end, T &out) {
   return it;
 }
 
+template <typename InputIterator, typename OutputIterator>
+OutputIterator serializeN(InputIterator in, std::size_t n, OutputIterator out) {
+  auto oit = out;
+  auto iit = in;
+  for (std::size_t i = 0; i < n; i++) {
+    oit = serialize(*iit, oit);
+    iit++;
+  }
+
+  return oit;
+}
+
+template <typename T, typename InputIterator, typename OutputIterator>
+InputIterator deserializeN(InputIterator begin,
+                           InputIterator end,
+                           std::size_t n,
+                           OutputIterator out) {
+  auto iit = begin;
+  auto oit = out;
+  for (std::size_t i = 0; i < n; i++) {
+    T value;
+    auto next = deserialize(iit, end, value);
+    if (next == iit) {
+      return begin;
+    }
+
+    *oit = std::move(value);
+    oit++;
+    iit = next;
+  }
+
+  return iit;
+}
+
 template <typename T, typename Iterator>
 Iterator serializeCompact(T value, Iterator output) {
   static_assert(std::is_integral<T>::value, "T must be integral");
