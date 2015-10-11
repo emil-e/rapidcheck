@@ -10,6 +10,61 @@ using namespace rc;
 using namespace rc::detail;
 using namespace rc::test;
 
+struct SerializeIntegersProperties {
+  template <typename T>
+  static void exec() {
+    templatedProp<T>("returns an iterator past the written data",
+                     [](T value) {
+                       std::vector<std::uint8_t> data(9, 0xFF);
+                       const auto it = serialize(value, begin(data));
+                       RC_ASSERT(*it == 0xFF);
+                     });
+  }
+};
+
+TEST_CASE("serialize(integers)") {
+  forEachType<SerializeIntegersProperties, RC_INTEGRAL_TYPES>();
+}
+
+struct DeserializeIntegersProperties {
+  template <typename T>
+  static void exec() {
+    templatedProp<T>("deserializes output of serialize",
+                     [](T value) {
+                       std::vector<std::uint8_t> data;
+                       serialize(value, std::back_inserter(data));
+                       T output;
+                       deserialize(begin(data), end(data), output);
+                       RC_ASSERT(output == value);
+                     });
+
+    templatedProp<T>(
+        "returns an iterator past the end of the deserialized data",
+        [](T value) {
+          std::vector<std::uint8_t> data(11, 0);
+          const auto it = serialize(value, begin(data));
+          T output;
+          const auto iit = deserialize(begin(data), end(data), output);
+          RC_ASSERT(iit == it);
+        });
+
+    templatedProp<T>("returns begin if data has unexpected end",
+                     [](T value) {
+                       std::vector<std::uint8_t> data;
+                       serialize(value, std::back_inserter(data));
+                       data.erase(end(data) - 1);
+                       T output;
+                       const auto iit =
+                           deserialize(begin(data), end(data), output);
+                       RC_ASSERT(iit == begin(data));
+                     });
+  }
+};
+
+TEST_CASE("deserialize(integers)") {
+  forEachType<DeserializeIntegersProperties, RC_INTEGRAL_TYPES>();
+}
+
 struct SerializeCompactProperties {
   template <typename T>
   static void exec() {

@@ -3,12 +3,39 @@
 namespace rc {
 namespace detail {
 
-/// Serializes the given integer value in a compact form where only as many bits
+/// Serializes the given integer value in little-endian format.
+///
+/// @param value   The value to serialize.
+/// @param output  An output iterator to write bytes to.
+///
+/// @return An iterator pointing to after the written data.
+template <typename T,
+          typename Iterator,
+          typename = typename std::enable_if<std::is_integral<T>::value>::type>
+Iterator serialize(T value, Iterator output);
+
+/// Deserializes integers as serialized by `serialize`.
+///
+/// @param begin  An iterator pointing to the start of the data range.
+/// @param end    An iterator pointing to the end of the data range.
+/// @param out    A reference to store the output in.
+///
+/// @return An iterator pointing to after the written data.
+template <typename T,
+          typename Iterator,
+          typename = typename std::enable_if<std::is_integral<T>::value>::type>
+Iterator deserialize(Iterator begin, Iterator end, T &out);
+
+/// Serializes the given integer value in a compact form where only as many
+/// bits
 /// as needed are used.
 ///
-/// This is done by using only seven bits in each byte. When high bit is set, it
-/// indicates that there are more bytes to read. This format is only useful if
-/// the number of bits required is usually low. If the higher bits are usually
+/// This is done by using only seven bits in each byte. When high bit is
+/// set, it
+/// indicates that there are more bytes to read. This format is only useful
+/// if
+/// the number of bits required is usually low. If the higher bits are
+/// usually
 /// set, it will lead to inefficient storage.
 ///
 /// @param value   The value to serialize.

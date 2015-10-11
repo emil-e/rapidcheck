@@ -3,6 +3,42 @@
 namespace rc {
 namespace detail {
 
+template <typename T, typename Iterator, typename>
+Iterator serialize(T value, Iterator output) {
+  using UInt = typename std::make_unsigned<T>::type;
+  constexpr auto nbytes = std::numeric_limits<UInt>::digits / 8;
+
+  auto uvalue = static_cast<UInt>(value);
+  auto it = output;
+  for (std::size_t i = 0; i < nbytes; i++) {
+    *it = static_cast<std::uint8_t>(uvalue);
+    it++;
+    uvalue = uvalue >> 8;
+  }
+
+  return it;
+}
+
+template <typename T, typename Iterator, typename>
+Iterator deserialize(Iterator begin, Iterator end, T &out) {
+  using UInt = typename std::make_unsigned<T>::type;
+  constexpr auto nbytes = std::numeric_limits<UInt>::digits / 8;
+
+  UInt uvalue = 0;
+  auto it = begin;
+  for (std::size_t i = 0; i < nbytes; i++) {
+    if (it == end) {
+      return begin;
+    }
+
+    uvalue |= static_cast<UInt>(*it & 0xFF) << (i * 8);
+    it++;
+  }
+
+  out = static_cast<T>(uvalue);
+  return it;
+}
+
 template <typename T, typename Iterator>
 Iterator serializeCompact(T value, Iterator output) {
   static_assert(std::is_integral<T>::value, "T must be integral");
