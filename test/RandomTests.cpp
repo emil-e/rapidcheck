@@ -10,6 +10,7 @@
 #include "util/Meta.h"
 
 using namespace rc;
+using namespace rc::detail;
 using namespace rc::test;
 
 namespace {
@@ -178,4 +179,35 @@ TEST_CASE("Random") {
   forEachType<AssociativeProperties,
               std::map<Random, int>,
               std::unordered_map<Random, int>>();
+
+  SECTION("serialize") {
+    prop("returns an iterator pointing past the written data",
+         [](const Random &random) {
+           std::vector<std::uint8_t> data;
+           // First serialize to expand the vector to the required size
+           serialize(random, std::back_inserter(data));
+           // Then again to get a comparable iterator
+           const auto it = serialize(random, begin(data));
+           RC_ASSERT(it == end(data));
+         });
+  }
+
+  SECTION("deserialize") {
+    prop("deserializes what was serialized",
+         [](const Random &random) {
+           std::vector<std::uint8_t> data;
+           serialize(random, std::back_inserter(data));
+           Random output;
+           const auto it = deserialize(begin(data), end(data), output);
+           RC_ASSERT(output == random);
+           RC_ASSERT(it == end(data));
+         });
+
+    SECTION("throws SerializationException on failure") {
+      std::vector<std::uint8_t> data;
+      Random output;
+      REQUIRE_THROWS_AS(deserialize(begin(data), end(data), output),
+                        SerializationException);
+    }
+  }
 }
