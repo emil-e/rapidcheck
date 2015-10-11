@@ -28,7 +28,7 @@ Iterator deserialize(Iterator begin, Iterator end, T &out) {
   auto it = begin;
   for (std::size_t i = 0; i < nbytes; i++) {
     if (it == end) {
-      return begin;
+      throw SerializationException("Unexpected end of input");
     }
 
     uvalue |= static_cast<UInt>(*it & 0xFF) << (i * 8);
@@ -60,14 +60,9 @@ InputIterator deserializeN(InputIterator begin,
   auto oit = out;
   for (std::size_t i = 0; i < n; i++) {
     T value;
-    auto next = deserialize(iit, end, value);
-    if (next == iit) {
-      return begin;
-    }
-
+    iit = deserialize(iit, end, value);
     *oit = std::move(value);
     oit++;
-    iit = next;
   }
 
   return iit;
@@ -106,7 +101,7 @@ Iterator deserializeCompact(Iterator begin, Iterator end, T &output) {
     }
   }
 
-  return begin;
+  throw SerializationException("Unexpected end of input");
 }
 
 template <typename InputIterator, typename OutputIterator>
@@ -124,22 +119,14 @@ serializeCompact(InputIterator begin, InputIterator end, OutputIterator output) 
 template <typename T, typename InputIterator, typename OutputIterator>
 std::pair<InputIterator, OutputIterator> deserializeCompact(
     InputIterator begin, InputIterator end, OutputIterator output) {
-  auto lenResult = deserializeCompact<std::uint64_t>(begin, end);
-  if (lenResult.second == begin) {
-    return std::make_pair(begin, output);
-  }
-
-  const auto numElements = lenResult.first;
-  auto iit = lenResult.second;
+  std::uint64_t numElements;
+  auto iit = deserializeCompact(begin, end, numElements);
   auto oit = output;
   for (std::uint64_t i = 0; i < numElements; i++) {
-    const auto p = deserializeCompact<T>(iit, end);
-    if (p.second == iit) {
-      return std::make_pair(begin, oit);
-    }
-    *oit = p.first;
+    T value;
+    iit = deserializeCompact(iit, end, value);
+    *oit = value;
     oit++;
-    iit = p.second;
   }
 
   return std::make_pair(iit, oit);

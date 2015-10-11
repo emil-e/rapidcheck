@@ -48,15 +48,19 @@ struct DeserializeIntegersProperties {
           RC_ASSERT(iit == it);
         });
 
-    templatedProp<T>("returns begin if data has unexpected end",
+    templatedProp<T>("throws SerializationException if data has unexpected end",
                      [](T value) {
                        std::vector<std::uint8_t> data;
                        serialize(value, std::back_inserter(data));
                        data.erase(end(data) - 1);
                        T output;
-                       const auto iit =
-                           deserialize(begin(data), end(data), output);
-                       RC_ASSERT(iit == begin(data));
+                       try {
+                         // TODO RC_ASSERT_THROWS
+                         deserialize(begin(data), end(data), output);
+                       } catch (const SerializationException &e) {
+                         RC_SUCCEED("Threw SerializationException");
+                       }
+                       RC_FAIL("Threw wrong or no exception");
                      });
   }
 };
@@ -107,14 +111,6 @@ TEST_CASE("deserializeN") {
              begin(data), end(data), values.size(), begin(output));
          RC_ASSERT(it == end(data));
        });
-
-  prop("returns begin if data has unexpected end",
-       [](const std::vector<std::uint8_t> &data, std::size_t n) {
-         std::vector<NonDeserializable> output;
-         const auto it = deserializeN<NonDeserializable>(
-             begin(data), end(data), n, std::back_inserter(output));
-         RC_ASSERT(it == begin(data));
-       });
 }
 
 struct SerializeCompactProperties {
@@ -155,15 +151,18 @@ struct DeserializeCompactProperties {
           RC_ASSERT(rit == it);
         });
 
-    templatedProp<T>("returns begin if data has unexpected end",
+    templatedProp<T>("throws SerializationException if data has unexpected end",
                      [](T value) {
                        std::vector<std::uint8_t> data;
                        serializeCompact(value, std::back_inserter(data));
                        data.erase(end(data) - 1);
                        T output;
-                       const auto it =
-                           deserializeCompact(begin(data), end(data), output);
-                       RC_ASSERT(it == begin(data));
+                       try {
+                         deserializeCompact(begin(data), end(data), output);
+                       } catch (const SerializationException &e) {
+                         RC_SUCCEED("Threw SerializationException");
+                       }
+                       RC_FAIL("Threw wrong or no exception");
                      });
   }
 };
@@ -233,42 +232,44 @@ struct DeserializeCompactRangeProperties {
           RC_ASSERT(result.second == end(output));
         });
 
-    templatedProp<T>("returns begin if data has too few elements",
-                     [](const std::vector<T> &values) {
-                       std::vector<std::uint8_t> data;
-                       serializeCompact(begin(values),
-                                        end(values),
-                                        std::back_inserter(data));
+    templatedProp<T>(
+        "throws SerializationException if data has too few elements",
+        [](const std::vector<T> &values) {
+          std::vector<std::uint8_t> data;
+          serializeCompact(
+              begin(values), end(values), std::back_inserter(data));
 
-                       // Read the length prefix
-                       const auto lengthResult =
-                           deserializeCompact<std::uint64_t>(begin(data),
-                                                             end(data));
-                       // Erase it
-                       data.erase(begin(data), lengthResult.second);
-                       // Replace it
-                       const auto newLength = lengthResult.first +
-                           *gen::inRange<std::uint64_t>(1, 100);
-                       serializeCompact(newLength,
-                                        std::inserter(data, begin(data)));
+          // Read the length prefix
+          std::uint32_t length;
+          const auto it = deserializeCompact(begin(data), end(data), length);
+          // Erase it
+          data.erase(begin(data), it);
+          // Replace it
+          const auto newLength = length + *gen::inRange<std::uint64_t>(1, 100);
+          serializeCompact(newLength, std::inserter(data, begin(data)));
 
-                       // Now it should fail
-                       std::vector<T> output;
-                       const auto result = deserializeCompact<T>(
-                           begin(data), end(data), std::back_inserter(output));
-                       RC_ASSERT(result.first == begin(data));
-                     });
+          // Now it should fail
+          std::vector<T> output;
+          try {
+            deserializeCompact<T>(
+                begin(data), end(data), std::back_inserter(output));
+          } catch (const SerializationException &e) {
+            RC_SUCCEED("Threw SerializationException");
+          }
+          RC_FAIL("Threw wrong or no exception");
+        });
   }
 };
 
 TEST_CASE("deserializeCompact(range)") {
   forEachType<DeserializeCompactRangeProperties, RC_INTEGRAL_TYPES>();
 
-  SECTION("returns begin if length prefix is invalid") {
+  SECTION("throws SerializationException if length prefix is invalid") {
     std::vector<std::uint8_t> data(1, 0x80);
     std::vector<std::uint64_t> output;
-    const auto result = deserializeCompact<std::uint64_t>(
-        begin(data), end(data), std::back_inserter(output));
-    RC_ASSERT(result.first == begin(data));
+    REQUIRE_THROWS_AS(deserializeCompact<std::uint64_t>(
+                          begin(data), end(data), std::back_inserter(output)),
+                      SerializationException);
+    ;
   }
 }

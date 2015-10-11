@@ -1,7 +1,26 @@
 #pragma once
 
+#include <stdexcept>
+#include <string>
+
 namespace rc {
 namespace detail {
+
+class SerializationException : public std::exception {
+public:
+  /// C-tor.
+  ///
+  /// @param msg  A message describing the serialization error.
+  SerializationException(const std::string &msg);
+
+  /// Returns the message.
+  std::string message() const;
+
+  const char *what() const noexcept override;
+
+private:
+  std::string m_msg;
+};
 
 /// Serializes the given integer value in little-endian format.
 ///
@@ -20,7 +39,8 @@ Iterator serialize(T value, Iterator output);
 /// @param end    An iterator pointing to the end of the data range.
 /// @param out    A reference to store the output in.
 ///
-/// @return An iterator pointing to after the written data.
+/// @return An iterator pointing to after the consumed data.
+/// @throws SerializationException  On deserialization failure.
 template <typename T,
           typename Iterator,
           typename = typename std::enable_if<std::is_integral<T>::value>::type>
@@ -41,6 +61,9 @@ OutputIterator serializeN(InputIterator in, std::size_t n, OutputIterator out);
 /// @param end    The end of the input range.
 /// @param n      The number of elements to deserialize.
 /// @param out    The output iterator.
+///
+/// @return Iterator past the consumed data.
+/// @throws SerializationException  On deserialization failure.
 template <typename T, typename InputIterator, typename OutputIterator>
 InputIterator deserializeN(InputIterator begin,
                            InputIterator end,
@@ -72,8 +95,8 @@ Iterator serializeCompact(T value, Iterator output);
 /// @param end     The end iterator of the data to deserialize.
 /// @param output  Reference to store the output into.
 ///
-/// @return Iterator pointing to the rest of the data that was not consumed or
-///         `begin` on deserialization error.
+/// @return Iterator pointing to the rest of the data that was not consumed.
+/// @throws SerializationException  On deserialization failure.
 template <typename T, typename Iterator>
 Iterator deserializeCompact(Iterator begin, Iterator end, T &output);
 
@@ -98,6 +121,7 @@ serializeCompact(InputIterator begin, InputIterator end, OutputIterator output);
 ///
 /// @return A pair of iterators pointing past the end of the consumed data and
 ///         past the end of the output data, respectively.
+/// @throws SerializationException  On deserialization failure.
 template <typename T, typename InputIterator, typename OutputIterator>
 std::pair<InputIterator, OutputIterator> deserializeCompact(
     InputIterator begin, InputIterator end, OutputIterator output);
