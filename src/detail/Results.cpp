@@ -8,12 +8,39 @@
 namespace rc {
 namespace detail {
 
+//
+// CaseResult
+//
+
 CaseResult::CaseResult()
     : type(CaseResult::Type::Failure) {}
 
 CaseResult::CaseResult(Type t, std::string desc)
     : type(t)
     , description(desc) {}
+
+std::ostream &operator<<(std::ostream &os, CaseResult::Type type) {
+  switch (type) {
+  case CaseResult::Type::Success:
+    os << "Success";
+    break;
+
+  case CaseResult::Type::Failure:
+    os << "Failure";
+    break;
+
+  case CaseResult::Type::Discard:
+    os << "Discard";
+    break;
+  }
+
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const CaseResult &result) {
+  os << result.type << ": " << result.description;
+  return os;
+}
 
 bool operator==(const CaseResult &r1, const CaseResult &r2) {
   return (r1.type == r2.type) && (r1.description == r2.description);
@@ -22,6 +49,10 @@ bool operator==(const CaseResult &r1, const CaseResult &r2) {
 bool operator!=(const CaseResult &r1, const CaseResult &r2) {
   return !(r1 == r2);
 }
+
+//
+// Reproduce
+//
 
 std::ostream &operator<<(std::ostream &os, const detail::Reproduce &r) {
   os << "random={" << r.random << "}, size=" << r.size
@@ -38,6 +69,10 @@ bool operator!=(const Reproduce &lhs, const Reproduce &rhs) {
   return !(lhs == rhs);
 }
 
+//
+// SuccessResult
+//
+
 bool operator==(const SuccessResult &r1, const SuccessResult &r2) {
   return (r1.numSuccess == r2.numSuccess) &&
       (r1.distribution == r2.distribution);
@@ -52,55 +87,6 @@ std::ostream &operator<<(std::ostream &os,
   os << "numSuccess=" << result.numSuccess << ", distribution=";
   show(result.distribution, os);
   return os;
-}
-
-bool operator==(const FailureResult &r1, const FailureResult &r2) {
-  return (r1.numSuccess == r2.numSuccess) &&
-      (r1.description == r2.description) && (r1.reproduce == r2.reproduce) &&
-      (r1.counterExample == r2.counterExample);
-}
-
-bool operator!=(const FailureResult &r1, const FailureResult &r2) {
-  return !(r1 == r2);
-}
-
-std::ostream &operator<<(std::ostream &os,
-                         const detail::FailureResult &result) {
-  os << "numSuccess=" << result.numSuccess << ", description='"
-     << result.description << "'"
-     << ", reproduce={" << result.reproduce << "}, counterExample=";
-  show(result.counterExample, os);
-  return os;
-}
-
-bool operator==(const GaveUpResult &r1, const GaveUpResult &r2) {
-  return (r1.numSuccess == r2.numSuccess) && (r1.description == r2.description);
-}
-
-bool operator!=(const GaveUpResult &r1, const GaveUpResult &r2) {
-  return !(r1 == r2);
-}
-
-std::ostream &operator<<(std::ostream &os, const detail::GaveUpResult &result) {
-  os << "numSuccess=" << result.numSuccess << ", description='"
-     << result.description << "'";
-  return os;
-}
-
-Error::Error(std::string desc)
-    : description(std::move(desc)) {}
-
-std::ostream &operator<<(std::ostream &os, const detail::Error &result) {
-  os << "description='" << result.description << "'";
-  return os;
-}
-
-bool operator==(const Error &lhs, const Error &rhs) {
-  return lhs.description == rhs.description;
-}
-
-bool operator!=(const Error &lhs, const Error &rhs) {
-  return !(lhs == rhs);
 }
 
 void printDistribution(const SuccessResult &result, std::ostream &os) {
@@ -136,6 +122,29 @@ void printResultMessage(const SuccessResult &result, std::ostream &os) {
   }
 }
 
+//
+// FailureResult
+//
+
+bool operator==(const FailureResult &r1, const FailureResult &r2) {
+  return (r1.numSuccess == r2.numSuccess) &&
+      (r1.description == r2.description) && (r1.reproduce == r2.reproduce) &&
+      (r1.counterExample == r2.counterExample);
+}
+
+bool operator!=(const FailureResult &r1, const FailureResult &r2) {
+  return !(r1 == r2);
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const detail::FailureResult &result) {
+  os << "numSuccess=" << result.numSuccess << ", description='"
+     << result.description << "'"
+     << ", reproduce={" << result.reproduce << "}, counterExample=";
+  show(result.counterExample, os);
+  return os;
+}
+
 void printResultMessage(const FailureResult &result, std::ostream &os) {
   os << "Falsifiable after " << (result.numSuccess + 1);
   os << " tests";
@@ -157,16 +166,58 @@ void printResultMessage(const FailureResult &result, std::ostream &os) {
   os << result.description;
 }
 
+//
+// GaveUpResult
+//
+
+bool operator==(const GaveUpResult &r1, const GaveUpResult &r2) {
+  return (r1.numSuccess == r2.numSuccess) && (r1.description == r2.description);
+}
+
+bool operator!=(const GaveUpResult &r1, const GaveUpResult &r2) {
+  return !(r1 == r2);
+}
+
+std::ostream &operator<<(std::ostream &os, const detail::GaveUpResult &result) {
+  os << "numSuccess=" << result.numSuccess << ", description='"
+     << result.description << "'";
+  return os;
+}
+
 void printResultMessage(const GaveUpResult &result, std::ostream &os) {
   os << "Gave up after " << result.numSuccess << " tests" << std::endl;
   os << std::endl;
   os << result.description;
 }
 
+//
+// Error
+//
+
+Error::Error(std::string desc)
+    : description(std::move(desc)) {}
+
+std::ostream &operator<<(std::ostream &os, const detail::Error &result) {
+  os << "description='" << result.description << "'";
+  return os;
+}
+
+bool operator==(const Error &lhs, const Error &rhs) {
+  return lhs.description == rhs.description;
+}
+
+bool operator!=(const Error &lhs, const Error &rhs) {
+  return !(lhs == rhs);
+}
+
 void printResultMessage(const Error &result, std::ostream &os) {
   os << "Failure: " << result.description << std::endl;
   os << std::endl;
 }
+
+//
+// TestResult
+//
 
 void printResultMessage(const TestResult &result, std::ostream &os) {
   SuccessResult success;
@@ -184,29 +235,6 @@ void printResultMessage(const TestResult &result, std::ostream &os) {
   } else if (result.match(error)) {
     printResultMessage(error, os);
   }
-}
-
-std::ostream &operator<<(std::ostream &os, CaseResult::Type type) {
-  switch (type) {
-  case CaseResult::Type::Success:
-    os << "Success";
-    break;
-
-  case CaseResult::Type::Failure:
-    os << "Failure";
-    break;
-
-  case CaseResult::Type::Discard:
-    os << "Discard";
-    break;
-  }
-
-  return os;
-}
-
-std::ostream &operator<<(std::ostream &os, const CaseResult &result) {
-  os << result.type << ": " << result.description;
-  return os;
 }
 
 } // namespace detail
