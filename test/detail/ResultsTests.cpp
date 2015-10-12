@@ -58,6 +58,18 @@ TEST_CASE("SuccessResult") {
   }
 }
 
+
+TEST_CASE("Reproduce") {
+  SECTION("operator==/operator!=") {
+    propConformsToEquals<Reproduce>();
+    PROP_REPLACE_MEMBER_INEQUAL(Reproduce, random);
+    PROP_REPLACE_MEMBER_INEQUAL(Reproduce, size);
+    PROP_REPLACE_MEMBER_INEQUAL(Reproduce, shrinkPath);
+  }
+
+  SECTION("operator<<") { propConformsToOutputOperator<Reproduce>(); }
+}
+
 TEST_CASE("FailureResult") {
   SECTION("operator==/operator!=") {
     propConformsToEquals<FailureResult>();
