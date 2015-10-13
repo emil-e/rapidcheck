@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/Meta.h"
+
 namespace rc {
 namespace test {
 

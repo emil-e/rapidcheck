@@ -5,8 +5,10 @@
 
 #include "util/Generators.h"
 #include "util/TemplateProps.h"
+#include "util/Serialization.h"
 
 using namespace rc;
+using namespace rc::test;
 using namespace rc::detail;
 
 namespace {
@@ -68,6 +70,10 @@ TEST_CASE("Reproduce") {
   }
 
   SECTION("operator<<") { propConformsToOutputOperator<Reproduce>(); }
+
+  SECTION("serialization") {
+    SerializationProperties::exec<Reproduce>();
+  }
 }
 
 TEST_CASE("FailureResult") {

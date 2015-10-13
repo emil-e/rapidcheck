@@ -54,6 +54,11 @@ std::ostream &operator<<(std::ostream &os, const detail::Reproduce &r);
 bool operator==(const Reproduce &lhs, const Reproduce &rhs);
 bool operator!=(const Reproduce &lhs, const Reproduce &rhs);
 
+template <typename Iterator>
+Iterator serialize(const Reproduce &value, Iterator output);
+template <typename Iterator>
+Iterator deserialize(Iterator begin, Iterator end, Reproduce &out);
+
 /// Indicates a successful property.
 struct SuccessResult {
   /// The number of successful tests run.
@@ -128,3 +133,5 @@ void printResultMessage(const TestResult &result, std::ostream &os);
 
 } // namespace detail
 } // namespace rc
+
+#include "Results.hpp"
