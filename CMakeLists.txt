@@ -39,6 +39,7 @@ add_library(rapidcheck
   src/detail/PropertyContext.cpp
   src/detail/Results.cpp
   src/detail/Serialization.cpp
+  src/detail/TestMetadata.cpp
   src/detail/TestParams.cpp
   src/detail/Testing.cpp
   src/gen/Numeric.cpp

@@ -6,6 +6,7 @@
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/Maybe.h"
 #include "rapidcheck/seq/Create.h"
+#include "rapidcheck/detail/TestMetadata.h"
 
 #include "util/ArbitraryRandom.h"
 
@@ -114,6 +115,15 @@ struct Arbitrary<detail::CaseDescription> {
                          -> std::function<detail::Example()> {
                            return fn::constant(std::move(example));
                          })));
+  }
+};
+
+template <>
+struct Arbitrary<detail::TestMetadata> {
+  static Gen<detail::TestMetadata> arbitrary() {
+    return gen::build<detail::TestMetadata>(
+        gen::set(&detail::TestMetadata::id),
+        gen::set(&detail::TestMetadata::description));
   }
 };
 
