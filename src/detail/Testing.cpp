@@ -153,10 +153,11 @@ TestResult doTestProperty(const Property &property,
 } // namespace
 
 TestResult testProperty(const Property &property,
+                        const TestMetadata &metadata,
                         const TestParams &params,
                         TestListener &listener) {
   TestResult result = doTestProperty(property, params, listener);
-  listener.onTestFinished(result);
+  listener.onTestFinished(metadata, result);
   return result;
 }
 

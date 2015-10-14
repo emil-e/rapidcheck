@@ -76,7 +76,7 @@ TEST_CASE("LogTestListener") {
     SECTION("never prints anything") {
       listener.onTestCaseFinished(desc);
       listener.onShrinkTried(desc, true);
-      listener.onTestFinished(SuccessResult());
+      listener.onTestFinished(TestMetadata(), SuccessResult());
     }
   }
 }

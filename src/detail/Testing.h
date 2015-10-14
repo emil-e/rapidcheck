@@ -72,9 +72,11 @@ shrinkTestCase(const Shrinkable<CaseDescription> &shrinkable,
 /// Combined search and shrink. Returns a test result.
 ///
 /// @param property  The property to test.
+/// @param metadata  Metadata about the test.
 /// @param params    The test parameters.
 /// @param listener  A test listener to report progress to.
 TestResult testProperty(const Property &property,
+                        const TestMetadata &metadata,
                         const TestParams &params,
                         TestListener &listener);
 

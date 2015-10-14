@@ -15,13 +15,14 @@ using namespace rc::detail;
 
 TEST_CASE("checkTestable") {
   prop("calls onTestFinished with the test results once",
-       [](const TestParams &params, int limit) {
-         Maybe<TestResult> callbackResult;
+       [](const TestMetadata &metadata, const TestParams &params, int limit) {
+         Maybe<std::tuple<TestMetadata, TestResult>> callbackParams;
          MockTestListener listener;
-         listener.onTestFinishedCallback = [&](const TestResult &result) {
-           RC_ASSERT(!callbackResult);
-           callbackResult.init(result);
-         };
+         listener.onTestFinishedCallback =
+             [&](const TestMetadata &metadata, const TestResult &result) {
+               RC_ASSERT(!callbackParams);
+               callbackParams.init(metadata, result);
+             };
 
          const auto result = checkTestable([&] {
            const auto x = *gen::arbitrary<int>();
@@ -29,9 +30,10 @@ TEST_CASE("checkTestable") {
              RC_DISCARD("");
            }
            RC_ASSERT(x < limit);
-         }, params, listener);
+         }, metadata, params, listener);
 
-         RC_ASSERT(callbackResult);
-         RC_ASSERT(*callbackResult == result);
+         RC_ASSERT(callbackParams);
+         RC_ASSERT(std::get<0>(*callbackParams) == metadata);
+         RC_ASSERT(std::get<1>(*callbackParams) == result);
        });
 }

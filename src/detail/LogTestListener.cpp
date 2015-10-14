@@ -44,7 +44,8 @@ void LogTestListener::onShrinkTried(const CaseDescription &shrink,
   }
 }
 
-void LogTestListener::onTestFinished(const TestResult &result) {
+void LogTestListener::onTestFinished(const TestMetadata &metadata,
+                                     const TestResult &result) {
   if (m_verboseShrinking || m_verboseProgress) {
     m_out << std::endl;
   }

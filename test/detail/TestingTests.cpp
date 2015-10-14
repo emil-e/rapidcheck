@@ -31,8 +31,10 @@ template <typename Testable>
 TestResult testTestable(Testable &&testable,
                         const TestParams &params,
                         TestListener &listener = dummyListener) {
-  return testProperty(
-      toProperty(std::forward<Testable>(testable)), params, dummyListener);
+  return testProperty(toProperty(std::forward<Testable>(testable)),
+                      TestMetadata(),
+                      params,
+                      dummyListener);
 }
 
 TEST_CASE("searchProperty") {
@@ -510,7 +512,7 @@ TEST_CASE("testProperty") {
 
 TEST_CASE("reproduceProperty") {
   prop("reproduces result from testProperty",
-       [](TestParams params) {
+       [](const TestMetadata &metadata, TestParams params) {
          const auto max = *gen::inRange<int>(0, 2000);
          const auto property = toProperty([=](int a, int b) {
            if ((a > max) || (b > max)) {
@@ -521,7 +523,8 @@ TEST_CASE("reproduceProperty") {
          params.maxSuccess = 2000;
          params.maxSize = kNominalSize;
 
-         const auto result = testProperty(property, params, dummyListener);
+         const auto result =
+             testProperty(property, metadata, params, dummyListener);
          FailureResult failure;
          RC_ASSERT(result.match(failure));
 

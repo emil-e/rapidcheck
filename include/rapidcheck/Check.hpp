@@ -11,8 +11,12 @@ namespace rc {
 namespace detail {
 
 TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata,
                          const TestParams &params,
                          TestListener &listener);
+
+TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata);
 
 // Uses defaults from configuration
 TestResult checkProperty(const Property &property);
@@ -42,7 +46,11 @@ bool check(const std::string &description, Testable &&testable) {
     std::cerr << std::endl << "- " << description << std::endl;
   }
 
-  const auto result = detail::checkTestable(std::forward<Testable>(testable));
+  TestMetadata metadata;
+  metadata.id = description;
+  metadata.description = description;
+  const auto result =
+      detail::checkTestable(std::forward<Testable>(testable), metadata);
 
   printResultMessage(result, std::cerr);
   std::cerr << std::endl;

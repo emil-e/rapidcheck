@@ -20,9 +20,10 @@ struct MockTestListener : public rc::detail::TestListener {
     }
   }
 
-  void onTestFinished(const rc::detail::TestResult &result) override {
+  void onTestFinished(const rc::detail::TestMetadata &metadata,
+                      const rc::detail::TestResult &result) override {
     if (onTestFinishedCallback) {
-      onTestFinishedCallback(result);
+      onTestFinishedCallback(metadata, result);
     }
   }
 
@@ -30,7 +31,8 @@ struct MockTestListener : public rc::detail::TestListener {
       onTestCaseFinishedCallback;
   std::function<void(const rc::detail::CaseDescription &, bool)>
       onShrinkTriedCallback;
-  std::function<void(const rc::detail::TestResult &)> onTestFinishedCallback;
+  std::function<void(const rc::detail::TestMetadata &,
+                     const rc::detail::TestResult &)> onTestFinishedCallback;
 };
 
 } // namespace test
