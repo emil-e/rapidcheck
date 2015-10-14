@@ -40,7 +40,7 @@ bool check(const std::string &description, Testable &&testable) {
 
   // Force loading of the configuration so that message comes _before_ the
   // description
-  ImplicitParam<param::CurrentConfiguration>::value();
+  configuration();
 
   if (!description.empty()) {
     std::cerr << std::endl << "- " << description << std::endl;

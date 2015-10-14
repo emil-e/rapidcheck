@@ -198,8 +198,8 @@ Configuration loadConfiguration() {
 
 } // namespace
 
-const Configuration &defaultConfiguration() {
-  static Configuration config = loadConfiguration();
+const Configuration &configuration() {
+  static const Configuration config = loadConfiguration();
   return config;
 }
 

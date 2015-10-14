@@ -15,7 +15,7 @@ TestResult checkProperty(const Property &property,
 
 TestResult checkProperty(const Property &property,
                          const TestMetadata &metadata) {
-  const auto config = ImplicitParam<param::CurrentConfiguration>::value();
+  const auto &config = configuration();
   LogTestListener listener(
       std::cerr, config.verboseProgress, config.verboseShrinking);
   return testProperty(property, metadata, config.testParams, listener);

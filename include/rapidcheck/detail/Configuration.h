@@ -48,18 +48,8 @@ std::string configToString(const Configuration &config);
 /// keys that differ from the default configuration.
 std::string configToMinimalString(const Configuration &config);
 
-/// Returns the default configuration.
-const Configuration &defaultConfiguration();
-
-namespace param {
-
-/// ImplicitParam containing the current configuration.
-struct CurrentConfiguration {
-  using ValueType = Configuration;
-  static Configuration defaultValue() { return defaultConfiguration(); }
-};
-
-} // namespace param
+/// Returns the global configuration.
+const Configuration &configuration();
 
 } // namespace detail
 } // namespace rc
