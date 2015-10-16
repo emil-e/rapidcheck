@@ -6,6 +6,17 @@
 namespace rc {
 namespace detail {
 
+namespace {
+
+TestListener &defaultTestListener() {
+  const auto &config = configuration();
+  static LogTestListener listener(
+      std::cerr, config.verboseProgress, config.verboseShrinking);
+  return listener;
+}
+
+} // namespace
+
 TestResult checkProperty(const Property &property,
                          const TestMetadata &metadata,
                          const TestParams &params,
@@ -14,11 +25,14 @@ TestResult checkProperty(const Property &property,
 }
 
 TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata,
+                         const TestParams &params) {
+  return checkProperty(property, metadata, params, defaultTestListener());
+}
+
+TestResult checkProperty(const Property &property,
                          const TestMetadata &metadata) {
-  const auto &config = configuration();
-  LogTestListener listener(
-      std::cerr, config.verboseProgress, config.verboseShrinking);
-  return testProperty(property, metadata, config.testParams, listener);
+  return checkProperty(property, metadata, configuration().testParams);
 }
 
 TestResult checkProperty(const Property &property) {

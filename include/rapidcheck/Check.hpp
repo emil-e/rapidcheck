@@ -16,6 +16,10 @@ TestResult checkProperty(const Property &property,
                          TestListener &listener);
 
 TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata,
+                         const TestParams &params);
+
+TestResult checkProperty(const Property &property,
                          const TestMetadata &metadata);
 
 // Uses defaults from configuration
