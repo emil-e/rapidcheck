@@ -7,11 +7,12 @@ namespace test {
 
 struct SerializationProperties {
   template <typename T>
-  static void exec() {
+  static void exec(const Gen<T> &gen = gen::arbitrary<T>()) {
     using namespace rc::detail;
 
     templatedProp<T>("returns an iterator past the written data",
-                     [](T value) {
+                     [&] {
+                       const auto value = *gen;
                        std::vector<std::uint8_t> data;
                        serialize(value, std::back_inserter(data));
                        const auto it = serialize(value, begin(data));
@@ -19,7 +20,8 @@ struct SerializationProperties {
                      });
 
     templatedProp<T>("deserializes output of serialize",
-                     [](T value) {
+                     [&] {
+                       const auto value = *gen;
                        std::vector<std::uint8_t> data;
                        serialize(value, std::back_inserter(data));
                        T output;
@@ -29,7 +31,8 @@ struct SerializationProperties {
 
     templatedProp<T>(
         "returns an iterator past the end of the deserialized data",
-        [](T value) {
+        [&] {
+          const auto value = *gen;
           std::vector<std::uint8_t> data;
           serialize(value, std::back_inserter(data));
           T output;

@@ -56,7 +56,7 @@ template <>
 struct Arbitrary<detail::Reproduce> {
   static Gen<detail::Reproduce> arbitrary() {
     return gen::build<detail::Reproduce>(
-        gen::set(&detail::Reproduce::random),
+        gen::set(&detail::Reproduce::random, test::trulyArbitraryRandom()),
         gen::set(&detail::Reproduce::size, gen::inRange<int>(0, 200)),
         gen::set(&detail::Reproduce::shrinkPath,
                  gen::container<std::vector<std::size_t>>(

@@ -182,6 +182,6 @@ TEST_CASE("Random") {
               std::unordered_map<Random, int>>();
 
   SECTION("serialization") {
-    SerializationProperties::exec<Random>();
+    SerializationProperties::exec<Random>(trulyArbitraryRandom());
   }
 }
