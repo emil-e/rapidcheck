@@ -1,6 +1,6 @@
 #include <catch.hpp>
 
-#include "rapidcheck/detail/LogTestListener.h"
+#include "detail/LogTestListener.h"
 
 using namespace rc;
 using namespace rc::detail;

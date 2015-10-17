@@ -1,6 +1,6 @@
 #include "rapidcheck/Check.h"
 
-#include "rapidcheck/detail/LogTestListener.h"
+#include "detail/LogTestListener.h"
 #include "detail/Testing.h"
 
 namespace rc {

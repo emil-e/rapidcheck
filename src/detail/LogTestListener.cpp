@@ -1,4 +1,4 @@
-#include "rapidcheck/detail/LogTestListener.h"
+#include "LogTestListener.h"
 
 #include "rapidcheck/detail/Property.h"
 
