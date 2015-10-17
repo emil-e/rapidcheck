@@ -148,4 +148,12 @@ struct Arbitrary<Shrinkable<T>> {
   }
 };
 
+template <typename... Ts>
+struct Arbitrary<detail::Variant<Ts...>> {
+  static Gen<detail::Variant<Ts...>> arbitrary() {
+    return gen::oneOf(
+        gen::cast<detail::Variant<Ts...>>(gen::arbitrary<Ts>())...);
+  };
+};
+
 } // namespace rc
