@@ -29,6 +29,7 @@ add_executable(rapidcheck_tests
   detail/ImplicitParamTests.cpp
   detail/LogTestListenerTests.cpp
   detail/MapParserTests.cpp
+  detail/MulticastTestListenerTests.cpp
   detail/PropertyTests.cpp
   detail/ResultsTests.cpp
   detail/SerializationTests.cpp
