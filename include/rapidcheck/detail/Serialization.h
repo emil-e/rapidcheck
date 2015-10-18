@@ -35,6 +35,14 @@ template <typename T,
           typename = typename std::enable_if<std::is_integral<T>::value>::type>
 Iterator deserialize(Iterator begin, Iterator end, T &out);
 
+/// Serializes an `std::string`.
+template <typename Iterator>
+Iterator serialize(const std::string &value, Iterator output);
+
+/// Deserializes an `std::string`.
+template <typename Iterator>
+Iterator deserialize(Iterator begin, Iterator end, std::string &output);
+
 /// Serializes `n` number of elements from `in` without storing the length.
 /// Thus to deserialize, the exact number of elements must be known beforehand.
 template <typename InputIterator, typename OutputIterator>

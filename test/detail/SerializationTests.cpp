@@ -15,6 +15,27 @@ TEST_CASE("serialization(integers)") {
   forEachType<SerializationProperties, RC_INTEGRAL_TYPES>();
 }
 
+TEST_CASE("serialization(std::string)") {
+  SerializationProperties::exec<std::string>();
+
+  SECTION("deserialize") {
+    prop("throws SerializationException on too short input",
+         [](const std::string &str) {
+           std::vector<std::uint8_t> data;
+           serialize(str, std::back_inserter(data));
+           data.erase(end(data) - 1);
+           std::string output;
+           try {
+             // TODO RC_ASSERT_THROWS_AS
+             deserialize(begin(data), end(data), output);
+           } catch (const SerializationException &e) {
+             RC_SUCCEED("Threw SerializationException");
+           }
+           RC_FAIL("Threw incorrect or not exception");
+         });
+  }
+}
+
 TEST_CASE("serializeN") {
   prop("returns an iterator past the written data",
        [](const std::vector<std::uint32_t> &values) {

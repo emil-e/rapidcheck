@@ -39,6 +39,33 @@ Iterator deserialize(Iterator begin, Iterator end, T &out) {
   return it;
 }
 
+template <typename Iterator>
+Iterator serialize(const std::string &value, Iterator output) {
+  auto oit = output;
+  oit = serializeCompact(value.size(), oit);
+  return std::copy(begin(value), end(value), oit);
+}
+
+template <typename Iterator>
+Iterator deserialize(Iterator begin, Iterator end, std::string &output) {
+  auto iit = begin;
+  std::size_t len;
+  iit = deserializeCompact(iit, end, len);
+
+  output.clear();
+  output.reserve(len);
+  while (output.size() < len) {
+    if (iit == end) {
+      throw SerializationException("Unexpected end of input");
+    }
+
+    output.push_back(*iit);
+    iit++;
+  }
+
+  return iit;
+}
+
 template <typename InputIterator, typename OutputIterator>
 OutputIterator serializeN(InputIterator in, std::size_t n, OutputIterator out) {
   auto oit = out;
