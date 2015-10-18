@@ -29,6 +29,7 @@ add_library(rapidcheck
   src/detail/Assertions.cpp
   src/detail/Base64.cpp
   src/detail/Configuration.cpp
+  src/detail/DefaultTestListener.cpp
   src/detail/FrequencyMap.cpp
   src/detail/ImplicitParam.cpp
   src/detail/LogTestListener.cpp
