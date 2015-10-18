@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 
 namespace rc {
 namespace detail {
@@ -42,6 +43,45 @@ Iterator serialize(const std::string &value, Iterator output);
 /// Deserializes an `std::string`.
 template <typename Iterator>
 Iterator deserialize(Iterator begin, Iterator end, std::string &output);
+
+/// Serializes an `std::pair`.
+template <typename T1, typename T2, typename Iterator>
+Iterator serialize(const std::pair<T1, T2> &value, Iterator output);
+
+/// Deserializes an `std::pair`.
+template <typename T1, typename T2, typename Iterator>
+Iterator deserialize(Iterator begin, Iterator end, std::pair<T1, T2> &output);
+
+/// Serializes an `std::map`-like container.
+template <typename Map, typename Iterator>
+Iterator serializeMap(const Map &value, Iterator output);
+
+/// Deserializes an `std::map`-like container.
+template <typename Map, typename Iterator>
+Iterator deserializeMap(Iterator begin, Iterator end, Map &output);
+
+/// Serializes an `std::unordered_map`.
+template <typename Key,
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator,
+          typename Iterator>
+Iterator
+serialize(const std::unordered_map<Key, T, Hash, KeyEqual, Allocator> &value,
+          Iterator output);
+
+/// Deserializes an `std::unordered_map`.
+template <typename Key,
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator,
+          typename Iterator>
+Iterator
+deserialize(Iterator begin,
+            Iterator end,
+            std::unordered_map<Key, T, Hash, KeyEqual, Allocator> &output);
 
 /// Serializes `n` number of elements from `in` without storing the length.
 /// Thus to deserialize, the exact number of elements must be known beforehand.

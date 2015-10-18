@@ -36,6 +36,18 @@ TEST_CASE("serialization(std::string)") {
   }
 }
 
+TEST_CASE("serialization(std::pair)") {
+  forEachType<SerializationProperties,
+              std::pair<std::string, std::string>,
+              std::pair<std::uint64_t, std::string>>();
+}
+
+TEST_CASE("serialization(std::unordered_map)") {
+  forEachType<SerializationProperties,
+              std::unordered_map<std::string, std::string>,
+              std::unordered_map<std::uint64_t, std::string>>();
+}
+
 TEST_CASE("serializeN") {
   prop("returns an iterator past the written data",
        [](const std::vector<std::uint32_t> &values) {

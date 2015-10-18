@@ -65,6 +65,74 @@ Iterator deserialize(Iterator begin, Iterator end, std::string &output) {
 
   return iit;
 }
+template <typename T1, typename T2, typename Iterator>
+Iterator serialize(const std::pair<T1, T2> &value, Iterator output) {
+  auto oit = output;
+  oit = serialize(value.first, oit);
+  oit = serialize(value.second, oit);
+  return oit;
+}
+
+template <typename T1, typename T2, typename Iterator>
+Iterator deserialize(Iterator begin, Iterator end, std::pair<T1, T2> &output) {
+  auto iit = begin;
+  iit = deserialize(iit, end, output.first);
+  iit = deserialize(iit, end, output.second);
+  return iit;
+}
+
+template <typename Map, typename Iterator>
+Iterator serializeMap(const Map &value, Iterator output) {
+  auto oit = output;
+  oit = serializeCompact(value.size(), oit);
+  for (const auto &p : value) {
+    oit = serialize(p, oit);
+  }
+
+  return oit;
+}
+
+template <typename Map, typename Iterator>
+Iterator deserializeMap(Iterator begin, Iterator end, Map &output) {
+  auto iit = begin;
+  std::size_t len;
+  iit = deserializeCompact(iit, end, len);
+  output.clear();
+  while (output.size() < len) {
+    using Key = typename Map::key_type;
+    using Value = typename Map::mapped_type;
+    std::pair<Key, Value> element;
+    iit = deserialize(iit, end, element);
+    output.insert(std::move(element));
+  }
+
+  return iit;
+}
+
+template <typename Key,
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator,
+          typename Iterator>
+Iterator
+serialize(const std::unordered_map<Key, T, Hash, KeyEqual, Allocator> &value,
+          Iterator output) {
+  return serializeMap(value, output);
+}
+
+template <typename Key,
+          typename T,
+          typename Hash,
+          typename KeyEqual,
+          typename Allocator,
+          typename Iterator>
+Iterator
+deserialize(Iterator begin,
+            Iterator end,
+            std::unordered_map<Key, T, Hash, KeyEqual, Allocator> &output) {
+  return deserializeMap(begin, end, output);
+}
 
 template <typename InputIterator, typename OutputIterator>
 OutputIterator serializeN(InputIterator in, std::size_t n, OutputIterator out) {
