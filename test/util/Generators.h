@@ -28,9 +28,10 @@ template <>
 struct Arbitrary<detail::Configuration> {
   static Gen<detail::Configuration> arbitrary() {
     return gen::build<detail::Configuration>(
-      gen::set(&detail::Configuration::testParams),
-      gen::set(&detail::Configuration::verboseProgress),
-      gen::set(&detail::Configuration::verboseShrinking));
+        gen::set(&detail::Configuration::testParams),
+        gen::set(&detail::Configuration::verboseProgress),
+        gen::set(&detail::Configuration::verboseShrinking),
+        gen::set(&detail::Configuration::reproduce));
   }
 };
 

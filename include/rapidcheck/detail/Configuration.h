@@ -5,6 +5,7 @@
 #include <string>
 
 #include "rapidcheck/detail/TestParams.h"
+#include "rapidcheck/detail/Results.h"
 
 namespace rc {
 namespace detail {
@@ -19,6 +20,10 @@ struct Configuration {
 
   /// Enable/disable verbose printing during shrinking.
   bool verboseShrinking = false;
+
+  /// Any test failures to reproduce. Mapping from test ID to `Reproduce`
+  /// structre.
+  std::unordered_map<std::string, Reproduce> reproduce;
 };
 
 std::ostream &operator<<(std::ostream &os, const Configuration &config);
