@@ -9,7 +9,13 @@ namespace detail {
 
 template <typename Testable>
 void checkGTest(Testable &&testable) {
-  const auto result = checkTestable(std::forward<Testable>(testable));
+  const auto testInfo = ::testing::UnitTest::GetInstance()->current_test_info();
+  TestMetadata metadata;
+  metadata.id = std::string(testInfo->test_case_name()) + "/" +
+      std::string(testInfo->name());
+  metadata.description = std::string(testInfo->name());
+
+  const auto result = checkTestable(std::forward<Testable>(testable), metadata);
 
   if (result.template is<SuccessResult>()) {
     const auto success = result.template get<SuccessResult>();
@@ -49,9 +55,8 @@ void checkGTest(Testable &&testable) {
   };                                                                           \
                                                                                \
   TEST(Fixture##_RapidCheck, Name) {                                           \
-    ::rc::detail::checkGTest(                                                  \
-        &rc::detail::ExecFixture<                                              \
-            RapidCheckPropImpl_##Fixture##_##Name>::exec);                     \
+    ::rc::detail::checkGTest(&rc::detail::ExecFixture<                         \
+                             RapidCheckPropImpl_##Fixture##_##Name>::exec);    \
   }                                                                            \
                                                                                \
   void RapidCheckPropImpl_##Fixture##_##Name::operator() ArgList
