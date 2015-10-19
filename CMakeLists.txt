@@ -39,6 +39,7 @@ add_library(rapidcheck
   src/detail/Platform.cpp
   src/detail/Property.cpp
   src/detail/PropertyContext.cpp
+  src/detail/ReproduceListener.cpp
   src/detail/Results.cpp
   src/detail/Serialization.cpp
   src/detail/StringSerialization.cpp
