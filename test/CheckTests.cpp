@@ -96,6 +96,7 @@ TEST_CASE("checkTestable") {
            }
          };
 
+         // Find a failure
          params.maxSuccess = 2000;
          params.maxSize = kNominalSize;
          const auto result =
@@ -108,16 +109,19 @@ TEST_CASE("checkTestable") {
          FailureResult failure;
          RC_ASSERT(result.match(failure));
 
+         // Then reproduce it
          std::unordered_map<std::string, Reproduce> reproMap{
              {metadata.id, failure.reproduce}};
          const auto reproduced =
              checkTestable(testable, metadata, params, dummyListener, reproMap);
+
+         // Should be the same
          FailureResult reproducedFailure;
          RC_ASSERT(reproduced.match(reproducedFailure));
-
          RC_ASSERT(failure.description == reproducedFailure.description);
          RC_ASSERT(failure.reproduce == reproducedFailure.reproduce);
          RC_ASSERT(failure.counterExample == reproducedFailure.counterExample);
+         // ...except for number of successful tests run, should be none
          RC_ASSERT(reproducedFailure.numSuccess == 0);
        });
 }
