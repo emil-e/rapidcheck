@@ -124,4 +124,53 @@ TEST_CASE("checkTestable") {
          // ...except for number of successful tests run, should be none
          RC_ASSERT(reproducedFailure.numSuccess == 0);
        });
+
+  prop("reproduces result from failure without shrinking if shrinking disabled",
+       [](const TestMetadata &metadata, TestParams params) {
+         RC_PRE(!metadata.id.empty());
+         const auto max = *gen::inRange<int>(0, 2000);
+         const auto property = toProperty([=](int a, int b) {
+           if ((a > max) || (b > max)) {
+             throw std::to_string(a) + " " + std::to_string(b);
+           }
+         });
+
+         // First find ourselves a failure
+         params.maxSuccess = 2000;
+         params.maxSize = kNominalSize;
+         const auto result =
+             checkProperty(property,
+                           metadata,
+                           params,
+                           dummyListener,
+                           std::unordered_map<std::string, Reproduce>());
+
+         FailureResult failure;
+         RC_ASSERT(result.match(failure));
+
+         // Then we reproduce it
+         std::unordered_map<std::string, Reproduce> reproMap{
+             {metadata.id, failure.reproduce}};
+         auto noshrinkParams = params;
+         noshrinkParams.disableShrinking = true;
+         const auto reproduced = checkProperty(
+             property, metadata, noshrinkParams, dummyListener, reproMap);
+
+         // Here we invoke the property directly to have the unshrunk version to
+         // assert against
+         auto noshrinkDesc =
+             property(failure.reproduce.random, failure.reproduce.size).value();
+
+         FailureResult reproducedFailure;
+         RC_ASSERT(reproduced.match(reproducedFailure));
+         RC_ASSERT(reproducedFailure.description ==
+                   noshrinkDesc.result.description);
+         RC_ASSERT(reproducedFailure.reproduce.random ==
+                   failure.reproduce.random);
+         RC_ASSERT(reproducedFailure.reproduce.size ==
+                   failure.reproduce.size);
+         RC_ASSERT(reproducedFailure.reproduce.shrinkPath.empty());
+         RC_ASSERT(reproducedFailure.counterExample == noshrinkDesc.example());
+         RC_ASSERT(reproducedFailure.numSuccess == 0);
+       });
 }

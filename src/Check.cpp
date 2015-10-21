@@ -22,7 +22,11 @@ checkProperty(const Property &property,
     success.numSuccess = 0;
     return success;
   } else {
-    return reproduceProperty(property, it->second);
+    auto reproduce = it->second;
+    if (params.disableShrinking) {
+      reproduce.shrinkPath.clear();
+    }
+    return reproduceProperty(property, reproduce);
   }
 }
 
