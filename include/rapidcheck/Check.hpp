@@ -10,6 +10,13 @@
 namespace rc {
 namespace detail {
 
+TestResult
+checkProperty(const Property &property,
+              const TestMetadata &metadata,
+              const TestParams &params,
+              TestListener &listener,
+              const std::unordered_map<std::string, Reproduce> &reproduceMap);
+
 TestResult checkProperty(const Property &property,
                          const TestMetadata &metadata,
                          const TestParams &params,
