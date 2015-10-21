@@ -535,6 +535,7 @@ TEST_CASE("reproduceProperty") {
          RC_ASSERT(failure.description == reproducedFailure.description);
          RC_ASSERT(failure.reproduce == reproducedFailure.reproduce);
          RC_ASSERT(failure.counterExample == reproducedFailure.counterExample);
+         RC_ASSERT(reproducedFailure.numSuccess == 0);
        });
 
   SECTION("returns error if reproduced result is not a failure") {
