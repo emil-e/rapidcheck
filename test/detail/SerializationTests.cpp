@@ -28,7 +28,7 @@ TEST_CASE("serialization(std::string)") {
            try {
              // TODO RC_ASSERT_THROWS_AS
              deserialize(begin(data), end(data), output);
-           } catch (const SerializationException &e) {
+           } catch (const SerializationException &) {
              RC_SUCCEED("Threw SerializationException");
            }
            RC_FAIL("Threw incorrect or not exception");
@@ -232,7 +232,7 @@ struct DeserializeCompactRangeProperties {
           try {
             deserializeCompact<T>(
                 begin(data), end(data), std::back_inserter(output));
-          } catch (const SerializationException &e) {
+          } catch (const SerializationException &) {
             RC_SUCCEED("Threw SerializationException");
           }
           RC_FAIL("Threw wrong or no exception");

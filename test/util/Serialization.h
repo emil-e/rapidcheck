@@ -47,7 +47,7 @@ struct SerializationProperties {
                        try {
                          // TODO RC_ASSERT_THROWS
                          deserialize(begin(data), end(data), output);
-                       } catch (const SerializationException &e) {
+                       } catch (const SerializationException &) {
                          RC_SUCCEED("Threw SerializationException");
                        }
                        RC_FAIL("Threw wrong or no exception");

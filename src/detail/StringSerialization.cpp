@@ -19,7 +19,7 @@ stringToReproduceMap(const std::string &str) {
   std::unordered_map<std::string, Reproduce> reproduceMap;
   try {
     deserialize(begin(data), end(data), reproduceMap);
-  } catch (const SerializationException &e) {
+  } catch (const SerializationException &) {
     throw ParseException(0, "Invalid format");
   }
 

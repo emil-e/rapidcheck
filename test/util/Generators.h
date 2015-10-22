@@ -149,11 +149,12 @@ struct Arbitrary<Shrinkable<T>> {
   }
 };
 
-template <typename... Ts>
-struct Arbitrary<detail::Variant<Ts...>> {
-  static Gen<detail::Variant<Ts...>> arbitrary() {
+template <typename T, typename... Ts>
+struct Arbitrary<detail::Variant<T, Ts...>> {
+  static Gen<detail::Variant<T, Ts...>> arbitrary() {
     return gen::oneOf(
-        gen::cast<detail::Variant<Ts...>>(gen::arbitrary<Ts>())...);
+        gen::cast<detail::Variant<T, Ts...>>(gen::arbitrary<T>()),
+        gen::cast<detail::Variant<T, Ts...>>(gen::arbitrary<Ts>())...);
   };
 };
 

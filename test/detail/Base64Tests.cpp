@@ -22,7 +22,7 @@ TEST_CASE("base64") {
          try {
            // TODO RC_ASSERT_THROWS
            base64Decode(data);
-         } catch (const ParseException &e) {
+         } catch (const ParseException &) {
            RC_SUCCEED("Threw ParseException");
          }
          RC_FAIL("Never threw");
@@ -42,7 +42,7 @@ TEST_CASE("base64") {
          try {
            // TODO RC_ASSERT_THROWS
            base64Decode(data);
-         } catch (const ParseException &e) {
+         } catch (const ParseException &) {
            RC_SUCCEED("Threw ParseException");
          }
          RC_FAIL("Never threw");

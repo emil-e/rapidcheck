@@ -52,7 +52,7 @@ void fromString(const std::string &str,
   try {
     out = stringToReproduceMap(str);
     ok = true;
-  } catch (const ParseException &e) {
+  } catch (const ParseException &) {
     ok = false;
   }
 }

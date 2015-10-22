@@ -1,5 +1,7 @@
 #include "Serialization.h"
 
+#include <limits>
+
 namespace rc {
 namespace detail {
 
