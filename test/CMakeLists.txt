@@ -34,7 +34,10 @@ add_executable(rapidcheck_tests
   detail/PropertyTests.cpp
   detail/ReproduceListenerTests.cpp
   detail/ResultsTests.cpp
-  detail/SerializationTests.cpp
+  detail/SerializationTests/CompactIntegers.cpp
+  detail/SerializationTests/CompactRanges.cpp
+  detail/SerializationTests/Integers.cpp
+  detail/SerializationTests/Misc.cpp
   detail/ShowTypeTests.cpp
   detail/StringSerializationTests.cpp
   detail/TestMetadataTests.cpp
