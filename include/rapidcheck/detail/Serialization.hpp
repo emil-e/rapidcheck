@@ -10,12 +10,11 @@ Iterator serialize(T value, Iterator output) {
   using UInt = typename std::make_unsigned<T>::type;
   constexpr auto nbytes = std::numeric_limits<UInt>::digits / 8;
 
-  auto uvalue = static_cast<UInt>(value);
+  const auto uvalue = static_cast<UInt>(value);
   auto it = output;
   for (std::size_t i = 0; i < nbytes; i++) {
-    *it = static_cast<std::uint8_t>(uvalue);
+    *it = static_cast<std::uint8_t>(uvalue >> (i * 8));
     it++;
-    uvalue = uvalue >> 8;
   }
 
   return it;

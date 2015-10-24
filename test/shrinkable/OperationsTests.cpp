@@ -119,9 +119,10 @@ TEST_CASE("shrinkable::walkPath") {
        [] {
          const auto limit = *gen::inRange<std::size_t>(0, 100);
          const auto shrinkable = shrinkable::shrinkRecur(
-             0, [=](int x) { return seq::range<std::size_t>(0, limit); });
+             std::size_t(0),
+             [=](std::size_t x) { return seq::range<std::size_t>(0, limit); });
          auto path = *gen::container<std::vector<std::size_t>>(
-                         gen::inRange<std::size_t>(0, limit));
+             gen::inRange<std::size_t>(0, limit));
 
          const auto result = shrinkable::walkPath(shrinkable, path);
          RC_ASSERT(result);
@@ -131,9 +132,10 @@ TEST_CASE("shrinkable::walkPath") {
        [] {
          const auto limit = *gen::inRange<std::size_t>(0, 100);
          const auto shrinkable = shrinkable::shrinkRecur(
-             0, [=](int x) { return seq::range<std::size_t>(0, limit); });
+             std::size_t(0),
+             [=](std::size_t x) { return seq::range<std::size_t>(0, limit); });
          auto path = *gen::container<std::vector<std::size_t>>(
-                         gen::inRange<std::size_t>(0, limit));
+             gen::inRange<std::size_t>(0, limit));
          const auto i = *gen::inRange<std::size_t>(0, path.size() + 1);
          path.insert(begin(path) + i, limit);
          const auto result = shrinkable::walkPath(shrinkable, path);
