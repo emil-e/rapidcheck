@@ -236,7 +236,7 @@ Shrinkable<CaseDescription> countdownEven(int start) {
 
 TEST_CASE("shrinkTestCase") {
   prop("returns the minimum shrinkable",
-       [] (int shrinkTries){
+       [] {
          const auto target = *gen::positive<int>();
          const auto shrinkable =
              shrinkable::map(shrinkable::shrinkRecur(
@@ -252,6 +252,7 @@ TEST_CASE("shrinkTestCase") {
                              });
 
          TestListenerAdapter listener;
+         const auto shrinkTries = 1;
          const auto result = shrinkTestCase(shrinkable, listener, shrinkTries);
          RC_ASSERT(result.first.value().result.type ==
                    CaseResult::Type::Failure);
@@ -260,18 +261,19 @@ TEST_CASE("shrinkTestCase") {
        });
 
   prop("returns the number of successful shrinks",
-       [] (int shrinkTries){
+       [] (){
          const auto start = *gen::suchThat(gen::inRange<int>(0, 100),
                                            [](int x) { return (x % 2) == 0; });
          const auto shrinkable = countdownEven(start);
 
          TestListenerAdapter listener;
+         const auto shrinkTries = 1;
          const auto result = shrinkTestCase(shrinkable, listener, shrinkTries);
          RC_ASSERT(result.second == start / 2);
        });
 
   prop("calls onShrinkTried for each shrink tried",
-       [] (int shrinkTries){
+       [] (){
          const auto start = *gen::suchThat(gen::inRange<int>(0, 100),
                                            [](int x) { return (x % 2) == 0; });
          const auto shrinkable = countdownEven(start);
@@ -284,6 +286,7 @@ TEST_CASE("shrinkTestCase") {
                RC_ASSERT(((x % 2) == 0) == accepted);
                acceptedBalance += accepted ? 1 : -1;
              };
+         const auto shrinkTries = 1;
          const auto result = shrinkTestCase(shrinkable, listener, shrinkTries);
        });
 }
