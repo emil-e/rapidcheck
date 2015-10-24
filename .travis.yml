@@ -1,4 +1,5 @@
 language: cpp
+sudo: false
 
 compiler:
   - gcc
@@ -8,39 +9,27 @@ env:
   - CMAKE_BUILD_TYPE=Debug
   - CMAKE_BUILD_TYPE=Release
 
-before_install:
-  # CMake 3.x
-  - sudo dpkg -r cmake cmake-data
-  - sudo add-apt-repository -y ppa:dcthomp/smtk
-
-  # gcc-4.9
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-
-  # clang 3.4
-  - if [ "$CC" == "clang" ]; then sudo add-apt-repository -y ppa:h-rayflood/llvm; fi
-
-  - sudo apt-get update -qq
+addons:
+  apt:
+    sources:
+    # CMake 3.x
+    - george-edison55-precise-backports
+    # gcc-4.9
+    - ubuntu-toolchain-r-test
+    # clang 3.4
+    - llvm-toolchain-precise
+    packages:
+    - cmake
+    - cmake-data
+    - ninja-build
+    - g++-4.9
+    - clang-3.4
 
 install:
-  # CMake and ninja
-  - sudo apt-get install ninja-build cmake
-  - cmake --version
-  - ninja --version
-
-  # g++-4.9, also needed for Clang since we need a newer version of libstc++
-  - sudo apt-get install -qq g++-4.9
-
-  # Also use it if that's what we're going for
+  # Use GCC 4.9
   - if [ "$CC" = "gcc" ]; then
       export CC=gcc-4.9 &&
       export CXX="g++-4.9";
-    fi
-
-  # clang 3.4
-  - if [ "$CC" == "clang" ]; then
-      sudo apt-get install --allow-unauthenticated -qq clang-3.4 &&
-      export CC=clang-3.4 &&
-      export CXX=clang++-3.4;
     fi
 
 script:
