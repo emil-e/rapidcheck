@@ -56,11 +56,12 @@ namespace {
 
 class MockPropertyContext : public PropertyContext {
 public:
-  bool reportResult(const CaseResult &result) {
+  bool reportResult(const CaseResult &result) override {
     lastResult = result;
     return true;
   }
-  void addTag(std::string str) {}
+  std::ostream &logStream() override { return std::cerr; }
+  void addTag(std::string str) override {}
 
   CaseResult lastResult;
 };
