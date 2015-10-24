@@ -14,22 +14,28 @@ addons:
     sources:
     # CMake 3.x
     - george-edison55-precise-backports
-    # gcc-4.9
+    # GCC 4.9
     - ubuntu-toolchain-r-test
-    # clang 3.4
-    - llvm-toolchain-precise
+    # Clang 3.5
+    - llvm-toolchain-precise-3.5
     packages:
     - cmake
     - cmake-data
     - ninja-build
     - g++-4.9
-    - clang-3.4
+    - clang-3.5
 
 install:
   # Use GCC 4.9
   - if [ "$CC" = "gcc" ]; then
       export CC=gcc-4.9 &&
       export CXX="g++-4.9";
+    fi
+
+  # Use Clang 3.5
+  - if [ "$CC" == "clang" ]; then
+      export CC=clang-3.5 &&
+      export CXX=clang++-3.5;
     fi
 
 script:

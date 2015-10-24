@@ -17,7 +17,7 @@ Let's throw together a list of features:
 - Integration with popular testing frameworks such as Boost Test, Google Test and Google Mock
 
 ## Prerequisites and installation ##
-RapidCheck makes extensive use of C++11 and thus requires a compliant compiler. RapidCheck continuous integration builds using Clang 3.4, GCC 4.9 and Visual Studio 2015 so any later versions should also work. 
+RapidCheck makes extensive use of C++11 and thus requires a compliant compiler. RapidCheck continuous integration builds using Clang 3.5, GCC 4.9 and Visual Studio 2015 so any later versions should also work. 
 
 RapidCheck uses CMake and is built like any other CMake project. If your own project uses CMake you can simply have RapidCheck as a subdirectory and add the following to your `CMakeLists.txt`:
 
