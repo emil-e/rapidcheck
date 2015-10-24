@@ -17,12 +17,14 @@ public:
   AdapterContext();
 
   bool reportResult(const CaseResult &result) override;
+  std::ostream &logStream() override;
   void addTag(std::string str) override;
   TaggedResult result() const;
 
 private:
   CaseResult::Type m_resultType;
   std::vector<std::string> m_messages;
+  std::ostringstream m_logStream;
   Tags m_tags;
 };
 

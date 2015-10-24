@@ -47,6 +47,10 @@ bool AdapterContext::reportResult(const CaseResult &result) {
   return true;
 }
 
+std::ostream &AdapterContext::logStream() {
+  return m_logStream;
+}
+
 void AdapterContext::addTag(std::string str) {
   m_tags.push_back(std::move(str));
 }
@@ -59,6 +63,12 @@ TaggedResult AdapterContext::result() const {
       result.result.description += "\n\n";
     }
     result.result.description += std::move(*it);
+  }
+
+  const auto log = m_logStream.str();
+  if (!log.empty()) {
+    result.result.description += "\n\nLog:\n";
+    result.result.description += log;
   }
 
   result.tags = std::move(m_tags);

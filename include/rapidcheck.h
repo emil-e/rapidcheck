@@ -33,4 +33,5 @@
 #include "rapidcheck/Assertions.h"
 #include "rapidcheck/Check.h"
 #include "rapidcheck/Classify.h"
+#include "rapidcheck/Log.h"
 #include "rapidcheck/Show.h"

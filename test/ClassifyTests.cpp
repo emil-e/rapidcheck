@@ -6,6 +6,7 @@ using namespace rc::detail;
 
 struct TagCollector : public PropertyContext {
   bool reportResult(const CaseResult &) override { return false; }
+  std::ostream &logStream() override { RC_FAIL("Shouldn't be called"); }
   void addTag(std::string str) override { tags.push_back(std::move(str)); }
 
   std::vector<std::string> tags;
