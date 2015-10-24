@@ -51,6 +51,14 @@ void reportAll(const std::vector<CaseResult> &results) {
   }
 }
 
+void logAll(const std::vector<std::string> &log) {
+  auto &logStream =
+      ImplicitParam<param::CurrentPropertyContext>::value()->logStream();
+  for (const auto &message : log) {
+    logStream << message;
+  }
+}
+
 Gen<CaseResult> genResultOfType(std::initializer_list<CaseResult::Type> types) {
   return gen::build<CaseResult>(
       gen::set(&CaseResult::type,
@@ -99,6 +107,19 @@ TEST_CASE("PropertyAdapter") {
            RC_ASSERT(descriptionContains(result, failureResult.description));
          }
        });
+
+  prop("result description contains all logged messages",
+       [](const std::vector<std::string> &messages) {
+         const auto result = makeAdapter([=] { logAll(messages); })();
+         for (const auto &message : messages) {
+           RC_ASSERT(descriptionContains(result, message));
+         }
+       });
+
+  SECTION("does not include log when nothing was logged") {
+    const auto result = makeAdapter([=] {})();
+    REQUIRE(!descriptionContains(result, "Log:"));
+  }
 
   prop("returns CaseResult as is",
        [](const CaseResult &result) {

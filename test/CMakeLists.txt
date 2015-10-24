@@ -13,6 +13,7 @@ add_executable(rapidcheck_tests
   CheckTests.cpp
   ClassifyTests.cpp
   GenTests.cpp
+  LogTests.cpp
   MaybeTests.cpp
   RandomTests.cpp
   SeqTests.cpp
