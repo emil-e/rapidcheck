@@ -15,7 +15,8 @@ public:
                            bool verboseShrinking = false);
   void onTestCaseFinished(const CaseDescription &description) override;
   void onShrinkTried(const CaseDescription &shrink, bool accepted) override;
-  void onTestFinished(const TestResult &result) override;
+  void onTestFinished(const TestMetadata &metadata,
+                      const TestResult &result) override;
 
 private:
   bool m_verboseProgress;

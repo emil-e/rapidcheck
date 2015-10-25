@@ -1,66 +1,56 @@
 #include "rapidcheck/Check.h"
 
-#include "rapidcheck/detail/LogTestListener.h"
-#include "rapidcheck/BeforeMinimalTestCase.h"
+#include "detail/DefaultTestListener.h"
 #include "detail/Testing.h"
 
 namespace rc {
 namespace detail {
-namespace {
 
-TestResult doCheckProperty(const Property &property,
-                           const TestParams &params,
-                           TestListener &listener) {
-  const auto searchResult = searchProperty(property, params, listener);
-  if (searchResult.type == SearchResult::Type::Success) {
+TestResult
+checkProperty(const Property &property,
+              const TestMetadata &metadata,
+              const TestParams &params,
+              TestListener &listener,
+              const std::unordered_map<std::string, Reproduce> &reproduceMap) {
+  if (reproduceMap.empty()) {
+    return testProperty(property, metadata, params, listener);
+  }
+
+  const auto it = reproduceMap.find(metadata.id);
+  if (metadata.id.empty() || (it == end(reproduceMap))) {
     SuccessResult success;
-    success.numSuccess = searchResult.numSuccess;
-    for (const auto &tags : searchResult.tags) {
-      success.distribution[tags]++;
-    }
+    success.numSuccess = 0;
     return success;
-  } else if (searchResult.type == SearchResult::Type::GaveUp) {
-    GaveUpResult gaveUp;
-    gaveUp.numSuccess = searchResult.numSuccess;
-    gaveUp.description =
-        std::move(searchResult.failure->value().result.description);
-    return gaveUp;
   } else {
-    // Shrink it unless shrinking is disabled
-    const auto shrinkResult = params.disableShrinking
-        ? std::make_pair(*searchResult.failure, 0)
-        : shrinkTestCase(*searchResult.failure, listener);
-
-    // Give the developer a chance to set a breakpoint before the final minimal
-    // test case is run
-    beforeMinimalTestCase();
-    // ...and here we actually run it
-    const auto caseDescription = shrinkResult.first.value();
-
-    FailureResult failure;
-    failure.numSuccess = searchResult.numSuccess;
-    failure.description = std::move(caseDescription.result.description);
-    failure.numShrinks = shrinkResult.second;
-    failure.counterExample = caseDescription.example();
-    return failure;
+    auto reproduce = it->second;
+    if (params.disableShrinking) {
+      reproduce.shrinkPath.clear();
+    }
+    return reproduceProperty(property, reproduce);
   }
 }
 
-} // namespace
-
 TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata,
                          const TestParams &params,
                          TestListener &listener) {
-  TestResult result = doCheckProperty(property, params, listener);
-  listener.onTestFinished(result);
-  return result;
+  return checkProperty(
+      property, metadata, params, listener, configuration().reproduce);
+}
+
+TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata,
+                         const TestParams &params) {
+  return checkProperty(property, metadata, params, globalTestListener());
+}
+
+TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata) {
+  return checkProperty(property, metadata, configuration().testParams);
 }
 
 TestResult checkProperty(const Property &property) {
-  const auto config = ImplicitParam<param::CurrentConfiguration>::value();
-  LogTestListener listener(
-      std::cerr, config.verboseProgress, config.verboseShrinking);
-  return checkProperty(property, config.testParams, listener);
+  return checkProperty(property, TestMetadata());
 }
 
 } // namespace detail

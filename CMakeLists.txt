@@ -27,15 +27,23 @@ add_library(rapidcheck
   src/Show.cpp
   src/detail/Any.cpp
   src/detail/Assertions.cpp
+  src/detail/Base64.cpp
   src/detail/Configuration.cpp
+  src/detail/DefaultTestListener.cpp
   src/detail/FrequencyMap.cpp
   src/detail/ImplicitParam.cpp
   src/detail/LogTestListener.cpp
   src/detail/MapParser.cpp
+  src/detail/MulticastTestListener.cpp
+  src/detail/ParseException.cpp
   src/detail/Platform.cpp
   src/detail/Property.cpp
   src/detail/PropertyContext.cpp
+  src/detail/ReproduceListener.cpp
   src/detail/Results.cpp
+  src/detail/Serialization.cpp
+  src/detail/StringSerialization.cpp
+  src/detail/TestMetadata.cpp
   src/detail/TestParams.cpp
   src/detail/Testing.cpp
   src/gen/Numeric.cpp

@@ -76,8 +76,9 @@ TaggedResult AdapterContext::result() const {
 }
 
 bool operator==(const CaseDescription &lhs, const CaseDescription &rhs) {
-  return (lhs.result == rhs.result) && (lhs.tags == rhs.tags) &&
-      (lhs.example() == rhs.example());
+  const bool equalExample = (!lhs.example && !rhs.example) ||
+      (lhs.example && rhs.example && (lhs.example() == rhs.example()));
+  return (lhs.result == rhs.result) && (lhs.tags == rhs.tags) && equalExample;
 }
 
 bool operator!=(const CaseDescription &lhs, const CaseDescription &rhs) {
@@ -85,8 +86,11 @@ bool operator!=(const CaseDescription &lhs, const CaseDescription &rhs) {
 }
 
 std::ostream &operator<<(std::ostream &os, const CaseDescription &desc) {
-  os << "{result='" << desc.result << "', tags=" << toString(desc.tags)
-     << ", example=" << toString(desc.example()) << "}";
+  os << "{result='" << desc.result << "', tags=" << toString(desc.tags);
+  if (desc.example) {
+    os << ", example=" << toString(desc.example());
+  }
+  os << "}";
   return os;
 }
 

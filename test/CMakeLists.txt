@@ -21,16 +21,26 @@ add_executable(rapidcheck_tests
   ShrinkableTests.cpp
   detail/AnyTests.cpp
   detail/ApplyTupleTests.cpp
+  detail/Base64Tests.cpp
   detail/BitStreamTests.cpp
   detail/CaptureTests.cpp
   detail/ConfigurationTests.cpp
+  detail/DefaultTestListenerTests.cpp
   detail/FrequencyMapTests.cpp
   detail/ImplicitParamTests.cpp
   detail/LogTestListenerTests.cpp
   detail/MapParserTests.cpp
+  detail/MulticastTestListenerTests.cpp
   detail/PropertyTests.cpp
+  detail/ReproduceListenerTests.cpp
   detail/ResultsTests.cpp
+  detail/SerializationTests/CompactIntegers.cpp
+  detail/SerializationTests/CompactRanges.cpp
+  detail/SerializationTests/Integers.cpp
+  detail/SerializationTests/Misc.cpp
   detail/ShowTypeTests.cpp
+  detail/StringSerializationTests.cpp
+  detail/TestMetadataTests.cpp
   detail/TestParamsTests.cpp
   detail/TestingTests.cpp
   detail/VariantTests.cpp

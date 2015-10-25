@@ -8,8 +8,10 @@
 #include "util/ArbitraryRandom.h"
 #include "util/Util.h"
 #include "util/Meta.h"
+#include "util/Serialization.h"
 
 using namespace rc;
+using namespace rc::detail;
 using namespace rc::test;
 
 namespace {
@@ -178,4 +180,8 @@ TEST_CASE("Random") {
   forEachType<AssociativeProperties,
               std::map<Random, int>,
               std::unordered_map<Random, int>>();
+
+  SECTION("serialization") {
+    SerializationProperties::exec<Random>(trulyArbitraryRandom());
+  }
 }

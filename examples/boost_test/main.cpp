@@ -2,6 +2,8 @@
 #include <boost/test/included/unit_test.hpp>
 #include <rapidcheck/boost_test.h>
 
+BOOST_AUTO_TEST_SUITE(RapidCheckExample)
+
 // Should succeed:
 RC_BOOST_PROP(copyOfStringIsIdenticalToOriginal, (const std::string &str)) {
   RC_CLASSIFY(str.empty());
@@ -50,3 +52,5 @@ BOOST_FIXTURE_TEST_CASE(incrementIncrementsByOne, MyFixture) {
   increment();
   BOOST_REQUIRE_EQUAL(1, counter);
 }
+
+BOOST_AUTO_TEST_SUITE_END()

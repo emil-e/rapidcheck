@@ -24,3 +24,4 @@ The following settings are provided:
 - `verbose_shrinking` - If set to `1`, enables verbose feedback during shrinking. For each shrink that is tried, a character will be printed. Default is `0`. Legend:
   - `.` - Unsuccessful shrink
   - `!` - Successful shrink
+- `reproduce` - Opaque string that encodes the information necessary to reproduce minimal failures for properties. Since this string is opaque, it can only be obtained from a failed RapidCheck run. Refer to the [debugging documentation](debugging.md) for more information.

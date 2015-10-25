@@ -5,6 +5,7 @@
 #include <string>
 
 #include "rapidcheck/detail/TestParams.h"
+#include "rapidcheck/detail/Results.h"
 
 namespace rc {
 namespace detail {
@@ -19,6 +20,10 @@ struct Configuration {
 
   /// Enable/disable verbose printing during shrinking.
   bool verboseShrinking = false;
+
+  /// Any test failures to reproduce. Mapping from test ID to `Reproduce`
+  /// structre.
+  std::unordered_map<std::string, Reproduce> reproduce;
 };
 
 std::ostream &operator<<(std::ostream &os, const Configuration &config);
@@ -48,18 +53,8 @@ std::string configToString(const Configuration &config);
 /// keys that differ from the default configuration.
 std::string configToMinimalString(const Configuration &config);
 
-/// Returns the default configuration.
-const Configuration &defaultConfiguration();
-
-namespace param {
-
-/// ImplicitParam containing the current configuration.
-struct CurrentConfiguration {
-  using ValueType = Configuration;
-  static Configuration defaultValue() { return defaultConfiguration(); }
-};
-
-} // namespace param
+/// Returns the global configuration.
+const Configuration &configuration();
 
 } // namespace detail
 } // namespace rc
