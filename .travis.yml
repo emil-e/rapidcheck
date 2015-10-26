@@ -9,6 +9,11 @@ env:
   - CMAKE_BUILD_TYPE=Debug
   - CMAKE_BUILD_TYPE=Release
 
+matrix:
+  include:
+    - compiler: clang
+      env: CMAKE_BUILD_TYPE=Debug CFLAGS="-O0 --coverage" CXXFLAGS="-O0 --coverage" REPORT_COVERAGE=1
+
 addons:
   apt:
     sources:
@@ -24,6 +29,11 @@ addons:
     - ninja-build
     - g++-4.9
     - clang-3.5
+
+before_install:
+  - if [ -n "$REPORT_COVERAGE" ]; then
+      pip install --user cpp-coveralls;
+    fi
 
 install:
   # Use GCC 4.9
@@ -43,3 +53,6 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DRC_ENABLE_TESTS=ON -DRC_ENABLE_EXAMPLES=ON -DRC_ENABLE_GTEST=ON -DRC_ENABLE_GMOCK=ON -DRC_ENABLE_BOOST=ON -DRC_ENABLE_BOOST_TEST=ON -G Ninja ..
   - ninja -j1 # Don't run out of memory, please
   - ctest --output-on-failure
+  - if [ -n "$REPORT_COVERAGE" ]; then
+      coveralls -b . -r .. -e examples -e test -e ext -E ".*CompilerId.*" -E ".*feature_tests.*";
+    fi
