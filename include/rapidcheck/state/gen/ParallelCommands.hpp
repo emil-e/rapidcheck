@@ -314,7 +314,7 @@ parallelCommands(const typename Cmd::Model &initialState,
 template <typename Cmd>
 struct ShowType<state::ParallelCommands<Cmd>> {
   static void showType(std::ostream &os) {
-    os << "Parallel command sequence ";
+    os << "Parallel command sequence of ";
     detail::showType<Cmd>(os);
   }
 };

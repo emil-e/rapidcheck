@@ -2,6 +2,7 @@
 
 #include "rapidcheck/detail/Utility.h"
 #include "rapidcheck/detail/ShowType.h"
+#include "rapidcheck/detail/Results.h"
 
 namespace rc {
 namespace state {
@@ -16,7 +17,13 @@ void Command<Model, Sut>::run(const Model &s0, Sut &sut) const {
 
 template <typename Model, typename Sut>
 std::function<void(const Model&)> Command<Model, Sut>::run(Sut &sut) const {
-  return [](const Model& model){};
+  auto ss = std::stringstream();
+  ss << "Command \"";
+  this->show(ss);
+  ss << "\" does not implement run function";
+
+  throw ::rc::detail::CaseResult(::rc::detail::CaseResult::Type::Failure,
+                                 ss.str());
 }
 
 template <typename Model, typename Sut>

@@ -21,12 +21,10 @@ TEST_CASE("Command") {
   }
 
   SECTION("run") {
-    prop("default implementation does not modify SUT",
+    prop("default implementation fails",
          [](const StringVec &state, const StringVec &sut) {
-           const auto pre = sut;
            auto post = sut;
-           StringVecCmd().run(state, post);
-           RC_ASSERT(pre == post);
+           RC_ASSERT_THROWS(StringVecCmd().run(state, post), CaseResult);
          });
   }
 

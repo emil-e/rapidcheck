@@ -49,9 +49,13 @@ struct PreNeverHolds : public StringVecCmd {
   void apply(StringVec &s0) const override {
     RC_DISCARD("Preconditions never hold");
   }
+
+  void run(const StringVec &s0, StringVec &sut) const override {}
 };
 
-struct SomeCommand : StringVecCmd {};
+struct SomeCommand : StringVecCmd {
+  void run(const StringVec &s0, StringVec &sut) const override {}
+};
 
 } // namespace test
 } // namespace rc

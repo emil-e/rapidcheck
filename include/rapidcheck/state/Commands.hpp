@@ -269,12 +269,20 @@ void runAllParallel(const ParallelCommands<Cmd> &commands,
 
 template <typename Cmd>
 void showValue(const ParallelCommands<Cmd> &sequence, std::ostream &os) {
-  os << "Sequential prefix:" << std::endl;
-  show(sequence.prefix, os);
-  os << "Left branch:" << std::endl;
-  show(sequence.left, os);
-  os << "Right branch:" << std::endl;
-  show(sequence.right, os);
+  if (sequence.prefix.size() > 0) {
+    os << "Sequential prefix:" << std::endl;
+    show(sequence.prefix, os);
+  }
+  if (sequence.left.size() > 0) {
+    os << std::endl;
+    os << "Left branch:" << std::endl;
+    show(sequence.left, os);
+  }
+  if (sequence.right.size() > 0) {
+    os << std::endl;
+    os << "Right branch:" << std::endl;
+    show(sequence.right, os);
+  }
 }
 
 } // namespace state
