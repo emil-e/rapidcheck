@@ -39,14 +39,14 @@ protected:
     // ...as does TearDown
   }
 
-  int counter;
+  std::size_t counter;
 };
 
 // ...and use them like this:
 RC_GTEST_FIXTURE_PROP(MyFixture,
                       shouldInstantiateFixtureOnEachRun,
                       (const std::vector<int> &ints)) {
-  for (const auto x : ints) {
+  for (std::size_t i = 0; i < ints.size(); i++) {
     increment();
   }
 
@@ -55,9 +55,9 @@ RC_GTEST_FIXTURE_PROP(MyFixture,
 
 // A normal Google test can use the same fixture:
 TEST_F(MyFixture, incrementIncrementsByOne) {
-  ASSERT_EQ(0, counter);
+  ASSERT_EQ(0U, counter);
   increment();
-  ASSERT_EQ(1, counter);
+  ASSERT_EQ(1U, counter);
 }
 
 int main(int argc, char **argv) {

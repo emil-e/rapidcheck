@@ -49,7 +49,7 @@ struct RemoveChunksProperties {
                                     [&](T &&c) {
                                       auto diff(
                                           setDifference<char>(c, elements));
-                                      RC_ASSERT(diff.size() == 0);
+                                      RC_ASSERT(diff.size() == 0U);
                                     });
                      });
 
@@ -140,7 +140,7 @@ struct ShrinkTowardsProperties {
                        RC_ASSERT(fin);
                        T diff =
                            (value > target) ? (value - *fin) : (*fin - value);
-                       RC_ASSERT(diff == 1);
+                       RC_ASSERT(diff == T(1));
                      });
 
     templatedProp<T>(
@@ -167,7 +167,7 @@ struct IntegralProperties {
     templatedProp<T>("always tries zero first",
                      [] {
                        T value = *gen::nonZero<T>();
-                       RC_ASSERT(*shrink::integral<T>(value).next() == 0);
+                       RC_ASSERT(*shrink::integral<T>(value).next() == T(0));
                      });
 
     TEMPLATED_SECTION(T, "zero has no shrinks") {
@@ -195,7 +195,7 @@ struct SignedIntegralProperties {
     templatedProp<T>("always tries zero first",
                      [] {
                        T value = *gen::nonZero<T>();
-                       RC_ASSERT(*shrink::integral<T>(value).next() == 0);
+                       RC_ASSERT(*shrink::integral<T>(value).next() == T(0));
                      });
 
     TEMPLATED_SECTION(T, "zero has no shrinks") {

@@ -124,7 +124,7 @@ TestResult doTestProperty(const Property &property,
     GaveUpResult gaveUp;
     gaveUp.numSuccess = searchResult.numSuccess;
     const auto &shrinkable = searchResult.failure->shrinkable;
-    gaveUp.description = std::move(shrinkable.value().result.description);
+    gaveUp.description = shrinkable.value().result.description;
     return gaveUp;
   } else {
     // Shrink it unless shrinking is disabled

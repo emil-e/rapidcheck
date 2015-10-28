@@ -106,7 +106,7 @@ CaseResult toCaseResult(std::string value) {
 }
 
 CaseResult toCaseResult(CaseResult caseResult) {
-  return std::move(caseResult);
+  return caseResult;
 }
 
 namespace {

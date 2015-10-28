@@ -29,7 +29,6 @@ struct Inc : public state::Command<CounterModel, Counter> {
   void apply(CounterModel &s0) const override { s0.value++; }
 
   void run(const CounterModel &s0, Counter &counter) const override {
-    auto prev = counter.get();
     counter.inc();
     RC_ASSERT(counter.get() == (s0.value + 1));
   }
@@ -42,7 +41,6 @@ struct Dec : public state::Command<CounterModel, Counter> {
   }
 
   void run(const CounterModel &state, Counter &counter) const override {
-    auto prev = counter.get();
     counter.dec();
     RC_ASSERT(counter.get() == (state.value - 1));
   }

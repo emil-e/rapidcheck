@@ -216,7 +216,7 @@ TEST_CASE("execRaw") {
 
   SECTION("works with non-copyable types") {
     const auto shrinkable =
-        execRaw([=](NonCopyable nc) { return std::move(nc); })(Random(), 0);
+        execRaw([=](NonCopyable nc) { return nc; })(Random(), 0);
     REQUIRE(isArbitraryPredictable(shrinkable.value().first));
   }
 

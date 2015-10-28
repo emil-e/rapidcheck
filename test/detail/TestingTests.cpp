@@ -303,7 +303,7 @@ TEST_CASE("shrinkTestCase") {
          const auto shrinkable = countdownEven(start);
 
          const auto result = shrinkTestCase(shrinkable, dummyListener);
-         RC_ASSERT(result.second.size() == start / 2);
+         RC_ASSERT(result.second.size() == std::size_t(start / 2));
        });
 
   prop("walking the path gives the same result",

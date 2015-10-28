@@ -62,7 +62,7 @@ std::vector<std::uint8_t> base64Decode(const std::string &data) {
   const auto size = data.size();
   const auto outputSize = (size * 3) / 4;
   std::vector<std::uint8_t> output;
-  output.reserve(size);
+  output.reserve(outputSize);
 
   for (std::size_t i = 0; i < size; i += 4) {
     int nbits = 0;

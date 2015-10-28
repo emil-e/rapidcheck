@@ -14,7 +14,8 @@ bool all(const Shrinkable<T> &shrinkable, Predicate predicate);
 /// the minimum value and the number of acceptable values encountered on the way
 /// there.
 template <typename Predicate, typename T>
-std::pair<T, int> findLocalMin(const Shrinkable<T> &shrinkable, Predicate pred);
+std::pair<T, std::size_t> findLocalMin(const Shrinkable<T> &shrinkable,
+                                       Predicate pred);
 
 /// Returns a `Seq` of the immediate shrink values.
 template <typename T>
