@@ -31,6 +31,46 @@
                                  "RC_ASSERT_"                                  \
                                  "FALSE")
 
+/// Fails the current test case unless the provided expression throws an
+/// exception of any type
+#define RC_ASSERT_THROWS(expression)                                           \
+  do {                                                                         \
+    try {                                                                      \
+      expression;                                                              \
+    } catch (...) {                                                            \
+      break;                                                                   \
+    }                                                                          \
+    throw ::rc::detail::CaseResult(                                            \
+        ::rc::detail::CaseResult::Type::Failure,                               \
+        ::rc::detail::makeUnthrownExceptionMessage(                            \
+            __FILE__, __LINE__, "RC_ASSERT_THROWS(" #expression ")"));         \
+  } while (false)
+
+/// Fails the current test case unless the given expression throws an
+/// exception that matches the given exception type
+#define RC_ASSERT_THROWS_AS(expression, ExceptionType)                         \
+  do {                                                                         \
+    try {                                                                      \
+      expression;                                                              \
+    } catch (const ExceptionType &) {                                          \
+      break;                                                                   \
+    } catch (...) {                                                            \
+      throw ::rc::detail::CaseResult(::rc::detail::CaseResult::Type::Failure,  \
+                                     ::rc::detail::makeWrongExceptionMessage(  \
+                                         __FILE__,                             \
+                                         __LINE__,                             \
+                                         "RC_ASSERT_THROWS_AS(" #expression    \
+                                         ", " #ExceptionType ")",              \
+                                         #ExceptionType));                     \
+    }                                                                          \
+    throw ::rc::detail::CaseResult(::rc::detail::CaseResult::Type::Failure,    \
+                                   ::rc::detail::makeUnthrownExceptionMessage( \
+                                       __FILE__,                               \
+                                       __LINE__,                               \
+                                       "RC_ASSERT_THROWS_AS(" #expression      \
+                                       ", " #ExceptionType ")"));              \
+  } while (false)
+
 /// Unconditionally fails the current test case with the given message.
 #define RC_FAIL(msg) RC__UNCONDITIONAL_RESULT(Failure, (msg))
 

@@ -47,6 +47,38 @@ TEST_CASE("makeExpressionMessage") {
   }
 }
 
+TEST_CASE("makeUnthrownExceptionMessage") {
+  SECTION("message contains assertion") {
+    REQUIRE(
+        stringContains(makeUnthrownExceptionMessage("", 0, "ASSERT_IT(foo)"),
+                       "ASSERT_IT(foo)"));
+  }
+
+  SECTION("message contains file and line") {
+    REQUIRE(stringContains(makeUnthrownExceptionMessage("foo.cpp", 1337, ""),
+                           "foo.cpp:1337"));
+  }
+}
+
+TEST_CASE("makeWrongExceptionMessage") {
+  SECTION("message contains assertion") {
+    REQUIRE(
+        stringContains(makeWrongExceptionMessage("", 0, "ASSERT_IT(foo)", ""),
+                       "ASSERT_IT(foo)"));
+  }
+
+  SECTION("message contains expected exception") {
+    REQUIRE(
+        stringContains(makeWrongExceptionMessage("", 0, "", "std::exception"),
+                       "std::exception"));
+  }
+
+  SECTION("message contains file and line") {
+    REQUIRE(stringContains(makeWrongExceptionMessage("foo.cpp", 1337, "", ""),
+                           "foo.cpp:1337"));
+  }
+}
+
 TEST_CASE("doAssert") {
   SECTION("does nothing if expression equals expected result") {
     doAssert(
@@ -82,6 +114,54 @@ TEST_CASE("assertions") {
         REQUIRE(result.type == CaseResult::Type::Failure);
         REQUIRE(descriptionContains(result, "0 == 100"));
         REQUIRE(descriptionContains(result, "RC_ASSERT(x++ == 100)"));
+      }
+    }
+  }
+
+  SECTION("RC_ASSERT_THROWS") {
+    SECTION("does not throw if expression throws") {
+      RC_ASSERT_THROWS(throw 0);
+    }
+
+    SECTION("throws Failure with relevant info when expression does not throw") {
+      try {
+        RC_ASSERT_THROWS(x++);
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Failure);
+        REQUIRE(descriptionContains(result, "RC_ASSERT_THROWS(x++)"));
+      }
+    }
+  }
+
+  SECTION("RC_ASSERT_THROWS_AS") {
+    SECTION(
+        "does not throw if expression throws exception matching given type") {
+      // Intentionally different but matching types
+      RC_ASSERT_THROWS_AS(throw std::runtime_error("foo"), std::exception);
+    }
+
+    SECTION(
+        "throws Failure with releveant info if expression throws exception "
+        "that does not match the provided type") {
+      try {
+        RC_ASSERT_THROWS_AS(throw x++, CaseResult);
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Failure);
+        REQUIRE(descriptionContains(result, "RC_ASSERT_THROWS_AS(throw x++, CaseResult)"));
+        REQUIRE(descriptionContains(result, "did not match CaseResult"));
+      }
+    }
+
+    SECTION(
+        "throws Failure with relevant info when expression does not throw") {
+      try {
+        RC_ASSERT_THROWS_AS(x++, int);
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Failure);
+        REQUIRE(descriptionContains(result, "RC_ASSERT_THROWS_AS(x++, int)"));
       }
     }
   }

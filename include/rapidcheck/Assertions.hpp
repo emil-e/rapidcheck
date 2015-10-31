@@ -12,6 +12,15 @@ std::string makeExpressionMessage(const std::string &file,
                                   const std::string &assertion,
                                   const std::string &expansion);
 
+std::string makeUnthrownExceptionMessage(const std::string &file,
+                                         int line,
+                                         const std::string &assertion);
+
+std::string makeWrongExceptionMessage(const std::string &file,
+                                      int line,
+                                      const std::string &assertion,
+                                      const std::string &expected);
+
 template <typename Expression>
 void doAssert(const Expression &expression,
               bool expectedResult,
