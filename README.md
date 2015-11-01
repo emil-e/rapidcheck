@@ -34,7 +34,6 @@ A common first example is testing a reversal function. For such a function, doub
 
 #include <vector>
 #include <algorithm>
-#include <set>
 
 int main() {
   rc::check("double reversal yields the original value",
