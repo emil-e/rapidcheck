@@ -18,15 +18,20 @@ bool descriptionContains(const CaseResult &result, const std::string &substr) {
 
 } // namespace
 
-TEST_CASE("makeDescriptionMessage") {
-  SECTION("message contains description") {
-    REQUIRE(stringContains(makeDescriptionMessage("", 0, "foo bar baz"),
-                           "foo bar baz"));
+TEST_CASE("makeMessage") {
+  SECTION("message contains assertion") {
+    REQUIRE(stringContains(makeMessage("", 0, "ASSERT_IT(foo)", ""),
+                           "ASSERT_IT(foo)"));
+  }
+
+  SECTION("message contains extra") {
+    REQUIRE(
+        stringContains(makeMessage("", 0, "", "foo bar baz"), "foo bar baz"));
   }
 
   SECTION("message contains file and line") {
-    REQUIRE(stringContains(makeDescriptionMessage("foo.cpp", 1337, ""),
-                           "foo.cpp:1337"));
+    REQUIRE(
+        stringContains(makeMessage("foo.cpp", 1337, "", ""), "foo.cpp:1337"));
   }
 }
 
@@ -190,7 +195,7 @@ TEST_CASE("assertions") {
         FAIL("Never threw");
       } catch (const CaseResult &result) {
         REQUIRE(result.type == CaseResult::Type::Failure);
-        REQUIRE(descriptionContains(result, "foo bar baz"));
+        REQUIRE(descriptionContains(result, "RC_FAIL(\"foo bar baz\")"));
       }
     }
   }
@@ -219,7 +224,7 @@ TEST_CASE("assertions") {
         FAIL("Never threw");
       } catch (const CaseResult &result) {
         REQUIRE(result.type == CaseResult::Type::Success);
-        REQUIRE(descriptionContains(result, "foo bar baz"));
+        REQUIRE(descriptionContains(result, "RC_SUCCEED(\"foo bar baz\")"));
       }
     }
   }
@@ -246,7 +251,7 @@ TEST_CASE("assertions") {
         FAIL("Never threw");
       } catch (const CaseResult &result) {
         REQUIRE(result.type == CaseResult::Type::Discard);
-        REQUIRE(descriptionContains(result, "foo bar baz"));
+        REQUIRE(descriptionContains(result, "RC_DISCARD(\"foo bar baz\")"));
       }
     }
   }

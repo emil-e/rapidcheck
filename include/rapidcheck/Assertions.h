@@ -12,11 +12,12 @@
            __LINE__,                                                           \
            name "(" #expression ")")
 
-#define RC_INTERNAL_UNCONDITIONAL_RESULT(ResultType, description)              \
+#define RC_INTERNAL_UNCONDITIONAL_RESULT(ResultType, name, msg)                \
   do {                                                                         \
-    throw ::rc::detail::CaseResult(::rc::detail::CaseResult::Type::ResultType, \
-                                   ::rc::detail::makeDescriptionMessage(       \
-                                       __FILE__, __LINE__, (description)));    \
+    throw ::rc::detail::CaseResult(                                            \
+        ::rc::detail::CaseResult::Type::ResultType,                            \
+        ::rc::detail::makeMessage(                                             \
+            __FILE__, __LINE__, name "(" #msg ")", (msg)));                    \
   } while (false)
 
 /// Fails the current test case unless the given condition is `true`.
@@ -72,20 +73,22 @@
   } while (false)
 
 /// Unconditionally fails the current test case with the given message.
-#define RC_FAIL(msg) RC_INTERNAL_UNCONDITIONAL_RESULT(Failure, (msg))
+#define RC_FAIL(msg) RC_INTERNAL_UNCONDITIONAL_RESULT(Failure, "RC_FAIL", msg)
 
 /// Succeed if the given condition is true.
 #define RC_SUCCEED_IF(expression)                                              \
   RC_INTERNAL_CONDITIONAL_RESULT(Success, expression, false, "RC_SUCCEED_IF")
 
 /// Unconditionally succeed with the given message.
-#define RC_SUCCEED(msg) RC_INTERNAL_UNCONDITIONAL_RESULT(Success, (msg))
+#define RC_SUCCEED(msg)                                                        \
+  RC_INTERNAL_UNCONDITIONAL_RESULT(Success, "RC_SUCCEED", msg)
 
 /// Discards the current test case if the given condition is false.
 #define RC_PRE(expression)                                                     \
   RC_INTERNAL_CONDITIONAL_RESULT(Discard, expression, true, "RC_PRE", !)
 
 /// Discards the current test case with the given description.
-#define RC_DISCARD(msg) RC_INTERNAL_UNCONDITIONAL_RESULT(Discard, (msg))
+#define RC_DISCARD(msg)                                                        \
+  RC_INTERNAL_UNCONDITIONAL_RESULT(Discard, "RC_DISCARD", msg)
 
 #include "Assertions.hpp"

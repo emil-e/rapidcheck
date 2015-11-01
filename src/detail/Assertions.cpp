@@ -3,41 +3,37 @@
 namespace rc {
 namespace detail {
 
-std::string makeDescriptionMessage(const std::string &file,
-                                   int line,
-                                   const std::string &description) {
-  return file + ":" + std::to_string(line) + ":\n" + description;
+std::string makeMessage(const std::string &file,
+                        int line,
+                        const std::string &assertion,
+                        const std::string &extra) {
+  return file + ":" + std::to_string(line) + ":\n" + assertion +
+      "\n"
+      "\n" +
+      extra;
 }
 
 std::string makeExpressionMessage(const std::string &file,
                                   int line,
                                   const std::string &assertion,
                                   const std::string &expansion) {
-  return makeDescriptionMessage(file, line, assertion) +
-      "\n"
-      "\n"
-      "Expands to:\n" +
-      expansion;
+  return makeMessage(file, line, assertion, "Expands to:\n" + expansion);
 }
 
 std::string makeUnthrownExceptionMessage(const std::string &file,
                                          int line,
                                          const std::string &assertion) {
-  return makeDescriptionMessage(file, line, assertion) +
-      "\n"
-      "\n"
-      "No exception was thrown.";
+  return makeMessage(file, line, assertion, "No exception was thrown.");
 }
 
 std::string makeWrongExceptionMessage(const std::string &file,
                                       int line,
                                       const std::string &assertion,
                                       const std::string &expected) {
-  return makeDescriptionMessage(file, line, assertion) +
-      "\n"
-      "\n"
-      "Thrown exception did not match " +
-      expected + ".";
+  return makeMessage(file,
+                     line,
+                     assertion,
+                     "Thrown exception did not match " + expected + ".");
 }
 
 } // namespace detail
