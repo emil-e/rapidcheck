@@ -7,10 +7,15 @@ std::string makeMessage(const std::string &file,
                         int line,
                         const std::string &assertion,
                         const std::string &extra) {
-  return file + ":" + std::to_string(line) + ":\n" + assertion +
-      "\n"
-      "\n" +
-      extra;
+  auto msg = file + ":" + std::to_string(line) + ":\n" + assertion;
+  if (!extra.empty()) {
+    msg +=
+        "\n"
+        "\n" +
+        extra;
+  }
+
+  return msg;
 }
 
 std::string makeExpressionMessage(const std::string &file,

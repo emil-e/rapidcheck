@@ -6,7 +6,7 @@ namespace detail {
 std::string makeMessage(const std::string &file,
                         int line,
                         const std::string &assertion,
-                        const std::string &extra);
+                        const std::string &extra = "");
 
 std::string makeExpressionMessage(const std::string &file,
                                   int line,
