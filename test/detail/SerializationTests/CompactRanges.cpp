@@ -78,13 +78,10 @@ struct DeserializeCompactRangeProperties {
 
           // Now it should fail
           std::vector<T> output;
-          try {
-            deserializeCompact<T>(
-                begin(data), end(data), std::back_inserter(output));
-          } catch (const SerializationException &) {
-            RC_SUCCEED("Threw SerializationException");
-          }
-          RC_FAIL("Threw wrong or no exception");
+          RC_ASSERT_THROWS_AS(deserializeCompact<T>(begin(data),
+                                                    end(data),
+                                                    std::back_inserter(output)),
+                              SerializationException);
         });
   }
 };

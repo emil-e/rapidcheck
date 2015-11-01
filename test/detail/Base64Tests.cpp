@@ -19,13 +19,8 @@ TEST_CASE("base64") {
          const auto size = (n * 4) + 1;
          const auto data =
              *gen::container<std::string>(size, gen::arbitrary<char>());
-         try {
-           // TODO RC_ASSERT_THROWS
-           base64Decode(data);
-         } catch (const ParseException &) {
-           RC_SUCCEED("Threw ParseException");
-         }
-         RC_FAIL("Never threw");
+
+         RC_ASSERT_THROWS_AS(base64Decode(data), ParseException);
        });
 
   prop("throws error on decode with invalid characters",
@@ -39,12 +34,6 @@ TEST_CASE("base64") {
          const auto pos = *gen::inRange<std::size_t>(0, data.size() + 1);
          data.insert(begin(data) + pos, invalid);
 
-         try {
-           // TODO RC_ASSERT_THROWS
-           base64Decode(data);
-         } catch (const ParseException &) {
-           RC_SUCCEED("Threw ParseException");
-         }
-         RC_FAIL("Never threw");
+         RC_ASSERT_THROWS_AS(base64Decode(data), ParseException);
        });
 }

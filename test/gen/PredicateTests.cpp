@@ -39,12 +39,7 @@ TEST_CASE("gen::suchThat") {
        [](const GenParams &params) {
          const auto gen = gen::suchThat(gen::just<int>(0), fn::constant(false));
          const auto shrinkable = gen(params.random, params.size);
-         try {
-           shrinkable.value();
-         } catch (const GenerationFailure &) {
-           RC_SUCCEED("Threw GenerationFailure");
-         }
-         RC_FAIL("Didn't throw GenerationFailure");
+         RC_ASSERT_THROWS_AS(shrinkable.value(), GenerationFailure);
        });
 
   prop("passes the passed size to the underlying generator on the first try",

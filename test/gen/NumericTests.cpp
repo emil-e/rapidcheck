@@ -214,13 +214,8 @@ struct InRangeProperties {
                        const auto gen =
                            gen::inRange<T>(std::max(a, b), std::min(a, b));
                        const auto shrinkable = gen(params.random, params.size);
-                       try {
-                         shrinkable.value();
-                       } catch (const GenerationFailure &) {
-                         // TODO RC_ASSERT_THROWS
-                         RC_SUCCEED("Threw GenerationFailure");
-                       }
-                       RC_FAIL("Did not throw GenerationFailure");
+                       RC_ASSERT_THROWS_AS(shrinkable.value(),
+                                           GenerationFailure);
                      });
 
     templatedProp<T>("first shrink is min",

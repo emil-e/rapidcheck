@@ -55,12 +55,10 @@ struct DeserializeCompactProperties {
                        serializeCompact(value, std::back_inserter(data));
                        data.erase(end(data) - 1);
                        T output;
-                       try {
-                         deserializeCompact(begin(data), end(data), output);
-                       } catch (const SerializationException &) {
-                         RC_SUCCEED("Threw SerializationException");
-                       }
-                       RC_FAIL("Threw wrong or no exception");
+
+                       RC_ASSERT_THROWS_AS(
+                           deserializeCompact(begin(data), end(data), output),
+                           SerializationException);
                      });
   }
 };

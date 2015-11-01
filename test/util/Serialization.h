@@ -44,13 +44,9 @@ struct SerializationProperties {
                      [] {
                        std::vector<std::uint8_t> data;
                        T output;
-                       try {
-                         // TODO RC_ASSERT_THROWS
-                         deserialize(begin(data), end(data), output);
-                       } catch (const SerializationException &) {
-                         RC_SUCCEED("Threw SerializationException");
-                       }
-                       RC_FAIL("Threw wrong or no exception");
+                       RC_ASSERT_THROWS_AS(
+                           deserialize(begin(data), end(data), output),
+                           SerializationException);
                      });
   }
 };
