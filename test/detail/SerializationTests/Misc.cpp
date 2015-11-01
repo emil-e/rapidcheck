@@ -20,14 +20,10 @@ TEST_CASE("serialization(std::string)") {
            std::vector<std::uint8_t> data;
            serialize(str, std::back_inserter(data));
            data.erase(end(data) - 1);
+
            std::string output;
-           try {
-             // TODO RC_ASSERT_THROWS_AS
-             deserialize(begin(data), end(data), output);
-           } catch (const SerializationException &) {
-             RC_SUCCEED("Threw SerializationException");
-           }
-           RC_FAIL("Threw incorrect or not exception");
+           RC_ASSERT_THROWS_AS(deserialize(begin(data), end(data), output),
+                               SerializationException);
          });
   }
 }

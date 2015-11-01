@@ -104,15 +104,7 @@ TEST_CASE("gen::container(std::size_t)") {
          const auto gen =
              gen::container<std::array<int, 3>>(count, gen::arbitrary<int>());
          const auto shrinkable = gen(params.random, params.size);
-         try {
-           shrinkable.value();
-         } catch (const GenerationFailure &) {
-           RC_SUCCEED("Threw GenerationFailure");
-         } catch (const std::exception &e) {
-           std::cout << e.what() << std::endl;
-           RC_FAIL("Threw other exception");
-         }
-         RC_FAIL("Did not throw GenerationFailure");
+         RC_ASSERT_THROWS_AS(shrinkable.value(), GenerationFailure);
        });
 
   // TODO shrink tests?

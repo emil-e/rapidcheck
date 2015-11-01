@@ -18,15 +18,25 @@ bool descriptionContains(const CaseResult &result, const std::string &substr) {
 
 } // namespace
 
-TEST_CASE("makeDescriptionMessage") {
-  SECTION("message contains description") {
-    REQUIRE(stringContains(makeDescriptionMessage("", 0, "foo bar baz"),
-                           "foo bar baz"));
+TEST_CASE("makeMessage") {
+  SECTION("message contains assertion") {
+    REQUIRE(stringContains(makeMessage("", 0, "ASSERT_IT(foo)", ""),
+                           "ASSERT_IT(foo)"));
+  }
+
+  SECTION("message contains extra") {
+    REQUIRE(
+        stringContains(makeMessage("", 0, "", "foo bar baz"), "foo bar baz"));
+  }
+
+  SECTION("message is only two lines if extra is empty") {
+    const auto msg = makeMessage("foo.cpp", 0, "foo", "");
+    REQUIRE(std::count(begin(msg), end(msg), '\n') == 1);
   }
 
   SECTION("message contains file and line") {
-    REQUIRE(stringContains(makeDescriptionMessage("foo.cpp", 1337, ""),
-                           "foo.cpp:1337"));
+    REQUIRE(
+        stringContains(makeMessage("foo.cpp", 1337, "", ""), "foo.cpp:1337"));
   }
 }
 
@@ -43,6 +53,38 @@ TEST_CASE("makeExpressionMessage") {
 
   SECTION("message contains file and line") {
     REQUIRE(stringContains(makeExpressionMessage("foo.cpp", 1337, "", ""),
+                           "foo.cpp:1337"));
+  }
+}
+
+TEST_CASE("makeUnthrownExceptionMessage") {
+  SECTION("message contains assertion") {
+    REQUIRE(
+        stringContains(makeUnthrownExceptionMessage("", 0, "ASSERT_IT(foo)"),
+                       "ASSERT_IT(foo)"));
+  }
+
+  SECTION("message contains file and line") {
+    REQUIRE(stringContains(makeUnthrownExceptionMessage("foo.cpp", 1337, ""),
+                           "foo.cpp:1337"));
+  }
+}
+
+TEST_CASE("makeWrongExceptionMessage") {
+  SECTION("message contains assertion") {
+    REQUIRE(
+        stringContains(makeWrongExceptionMessage("", 0, "ASSERT_IT(foo)", ""),
+                       "ASSERT_IT(foo)"));
+  }
+
+  SECTION("message contains expected exception") {
+    REQUIRE(
+        stringContains(makeWrongExceptionMessage("", 0, "", "std::exception"),
+                       "std::exception"));
+  }
+
+  SECTION("message contains file and line") {
+    REQUIRE(stringContains(makeWrongExceptionMessage("foo.cpp", 1337, "", ""),
                            "foo.cpp:1337"));
   }
 }
@@ -86,6 +128,54 @@ TEST_CASE("assertions") {
     }
   }
 
+  SECTION("RC_ASSERT_THROWS") {
+    SECTION("does not throw if expression throws") {
+      RC_ASSERT_THROWS(throw 0);
+    }
+
+    SECTION("throws Failure with relevant info when expression does not throw") {
+      try {
+        RC_ASSERT_THROWS(x++);
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Failure);
+        REQUIRE(descriptionContains(result, "RC_ASSERT_THROWS(x++)"));
+      }
+    }
+  }
+
+  SECTION("RC_ASSERT_THROWS_AS") {
+    SECTION(
+        "does not throw if expression throws exception matching given type") {
+      // Intentionally different but matching types
+      RC_ASSERT_THROWS_AS(throw std::runtime_error("foo"), std::exception);
+    }
+
+    SECTION(
+        "throws Failure with releveant info if expression throws exception "
+        "that does not match the provided type") {
+      try {
+        RC_ASSERT_THROWS_AS(throw x++, CaseResult);
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Failure);
+        REQUIRE(descriptionContains(result, "RC_ASSERT_THROWS_AS(throw x++, CaseResult)"));
+        REQUIRE(descriptionContains(result, "did not match CaseResult"));
+      }
+    }
+
+    SECTION(
+        "throws Failure with relevant info when expression does not throw") {
+      try {
+        RC_ASSERT_THROWS_AS(x++, int);
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Failure);
+        REQUIRE(descriptionContains(result, "RC_ASSERT_THROWS_AS(x++, int)"));
+      }
+    }
+  }
+
   SECTION("RC_ASSERT_FALSE") {
     SECTION("does not throw if expression is false") {
       RC_ASSERT_FALSE(100 == 101);
@@ -110,7 +200,28 @@ TEST_CASE("assertions") {
         FAIL("Never threw");
       } catch (const CaseResult &result) {
         REQUIRE(result.type == CaseResult::Type::Failure);
-        REQUIRE(descriptionContains(result, "foo bar baz"));
+        REQUIRE(descriptionContains(result, "RC_FAIL(\"foo bar baz\")"));
+      }
+    }
+
+    SECTION("throws Failure with macro name only if no message") {
+      try {
+        RC_FAIL();
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Failure);
+        REQUIRE(descriptionContains(result, "RC_FAIL()"));
+      }
+    }
+
+    SECTION("message is only two lines if no arguments") {
+      try {
+        RC_FAIL();
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(std::count(begin(result.description),
+                           end(result.description),
+                           '\n') == 1);
       }
     }
   }
@@ -139,7 +250,28 @@ TEST_CASE("assertions") {
         FAIL("Never threw");
       } catch (const CaseResult &result) {
         REQUIRE(result.type == CaseResult::Type::Success);
-        REQUIRE(descriptionContains(result, "foo bar baz"));
+        REQUIRE(descriptionContains(result, "RC_SUCCEED(\"foo bar baz\")"));
+      }
+    }
+
+    SECTION("throws Success with macro name only if no message") {
+      try {
+        RC_SUCCEED();
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Success);
+        REQUIRE(descriptionContains(result, "RC_SUCCEED()"));
+      }
+    }
+
+    SECTION("message is only two lines if no arguments") {
+      try {
+        RC_SUCCEED();
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(std::count(begin(result.description),
+                           end(result.description),
+                           '\n') == 1);
       }
     }
   }
@@ -166,7 +298,28 @@ TEST_CASE("assertions") {
         FAIL("Never threw");
       } catch (const CaseResult &result) {
         REQUIRE(result.type == CaseResult::Type::Discard);
-        REQUIRE(descriptionContains(result, "foo bar baz"));
+        REQUIRE(descriptionContains(result, "RC_DISCARD(\"foo bar baz\")"));
+      }
+    }
+
+    SECTION("throws Discard with macro name only if no message") {
+      try {
+        RC_DISCARD();
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(result.type == CaseResult::Type::Discard);
+        REQUIRE(descriptionContains(result, "RC_DISCARD()"));
+      }
+    }
+
+    SECTION("message is only two lines if no arguments") {
+      try {
+        RC_DISCARD();
+        FAIL("Never threw");
+      } catch (const CaseResult &result) {
+        REQUIRE(std::count(begin(result.description),
+                           end(result.description),
+                           '\n') == 1);
       }
     }
   }

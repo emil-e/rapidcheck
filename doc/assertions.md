@@ -40,6 +40,12 @@ Fails the test case if `expression` evaluates to `false`.
 ### `RC_ASSERT_FALSE(expression)` ###
 Fails the test case if `expression` evaluates to `true`. Use this instead of `RC_ASSERT(!(...))` since RapidCheck cannot capture the expression in that case.
 
+### `RC_ASSERT_THROWS(expression)` ###
+Fails the test case if `expression` does not throw an exception.
+
+### `RC_ASSERT_THROWS_AS(expression, ExceptionType)` ###
+Fails the test case if `expression` does not throw an exception that matches `ExceptionType`.
+
 ### `RC_FAIL(msg)` ###
 Unconditionally fails the test case with `msg` as message.
 
