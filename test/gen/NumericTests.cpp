@@ -114,7 +114,7 @@ struct IntegralProperties {
           const auto shrinkable = gen::arbitrary<T>()(random, size);
           T start = shrinkable.value();
           T target;
-          std::pair<T, int> result;
+          std::pair<T, std::size_t> result;
           if (start < 0) {
             target = *gen::inRange<T>(start, 1);
             result = shrinkable::findLocalMin(shrinkable,

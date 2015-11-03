@@ -175,7 +175,7 @@ TEST_CASE("state integration tests") {
             s0, &state::gen::execOneOf<Open, Close, Add, Del, BuggyGet>);
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
-        RC_ASSERT(cmdStrings.size() == 4);
+        RC_ASSERT(cmdStrings.size() == 4U);
         RC_ASSERT(cmdStrings[0] == "Open");
         RC_ASSERT(cmdStrings[1] == "Add(0)");
         RC_ASSERT(cmdStrings[2] == "Add(0)");

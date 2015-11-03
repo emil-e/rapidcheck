@@ -12,10 +12,21 @@ struct Showable {};
 
 void showValue(Showable x, std::ostream &os) { os << "showValue(Showable)"; };
 
+// This is intentonally not used, that's part of the test. We ensure below that
+// showValue is selected over operator<<
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunneeded-internal-declaration"
+#endif // __clang__
+
 std::ostream &operator<<(std::ostream &os, Showable) {
   os << "<< Showable";
   return os;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
 
 struct Ostreamable {};
 

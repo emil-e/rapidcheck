@@ -107,7 +107,7 @@ TEST_CASE("BitStream") {
            auto source = makeSource(seq::repeat(x));
            auto stream = bitStreamOf(source);
            int n = *gen::inRange(0, 64);
-           RC_ASSERT((stream.next<uint64_t>(n) & ~bitMask<uint64_t>(n)) == 0);
+           RC_ASSERT((stream.next<uint64_t>(n) & ~bitMask<uint64_t>(n)) == 0U);
          });
 
     prop("does not return more bits than requested (signed)",

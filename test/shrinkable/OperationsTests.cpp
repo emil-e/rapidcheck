@@ -47,7 +47,7 @@ TEST_CASE("shrinkable::findLocalMin") {
        [] {
          auto result =
              shrinkable::findLocalMin(shrinkable::just(0), fn::constant(true));
-         RC_ASSERT(result.second == 0);
+         RC_ASSERT(result.second == 0U);
        });
 
   prop(

@@ -41,5 +41,5 @@ TEST_CASE("scaleInteger") {
        });
 
   prop("yields 0 for 0",
-       [](uint64_t x) { RC_ASSERT(gen::detail::scaleInteger(x, 0) == 0); });
+       [](uint64_t x) { RC_ASSERT(gen::detail::scaleInteger(x, 0) == 0U); });
 }

@@ -30,6 +30,13 @@ void verifyExpression(const Expression &expression,
 
 namespace rc {
 
+// We're intentionally leaving out parenthesis for testing capture of multiple
+// operators here so suppress GCC warnings for that:
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
+#endif // __GNUC__
+
 TEST_CASE("RC_INTERNAL_CAPTURE") {
   SECTION("*") { VERIFY_EXPRESSION(2 * 3 * 4, "2 * 3 * 4"); }
 
@@ -100,5 +107,9 @@ TEST_CASE("RC_INTERNAL_CAPTURE") {
     VERIFY_EXPRESSION(2 % 3 == 5 == true, "2 % 3 == 5 == true");
   }
 }
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif // __GNUC__
 
 } // namespace rc

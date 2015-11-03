@@ -50,13 +50,6 @@ bool equalsAsInt(Shrinkable<Any> lhs, Shrinkable<Any> rhs) {
   return mapToInt(std::move(lhs)) == mapToInt(std::move(rhs));
 }
 
-bool equalIngredients(const Recipe &lhs, const Recipe &rhs) {
-  return std::equal(lhs.ingredients.begin(),
-                    lhs.ingredients.end(),
-                    rhs.ingredients.begin(),
-                    equalsAsInt);
-}
-
 } // namespace
 
 TEST_CASE("shrinkRecipe") {

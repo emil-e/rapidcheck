@@ -86,7 +86,6 @@ struct MapProperties {
         " greater than a certain value",
         [](const Random &random) {
           int size = *gen::inRange<int>(0, 50);
-          using Pair = std::pair<const int, int>;
 
           const auto gen =
               gen::container<T>(gen::arbitrary<int>(), gen::arbitrary<int>());
@@ -124,7 +123,6 @@ struct MultiMapProperties {
         " greater than a certain value",
         [](const Random &random) {
           int size = *gen::inRange<int>(0, 50);
-          using Pair = std::pair<const int, int>;
 
           const auto gen =
               gen::container<T>(gen::arbitrary<int>(), gen::arbitrary<int>());

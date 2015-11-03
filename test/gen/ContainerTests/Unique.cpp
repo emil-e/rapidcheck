@@ -27,22 +27,23 @@ template <typename Factory>
 struct UniqueByProperties {
   template <typename T>
   static void exec() {
-    templatedProp<T>("generated values are unique by key",
-                     [](const GenParams &params) {
-                       const auto gen = Factory::template makeGen<T>(
-                           gen::arbitrary<std::pair<int, int>>());
-                       onAnyPath(gen(params.random, params.size),
-                                 [](const Shrinkable<T> &value,
-                                    const Shrinkable<T> &shrink) {
-                                   const auto v = value.value();
-                                   std::set<int> s;
-                                   for (const auto &x : v) {
-                                     s.insert(x.first);
-                                   }
-                                   RC_ASSERT(s.size() ==
-                                             std::distance(begin(v), end(v)));
-                                 });
-                     });
+    templatedProp<T>(
+        "generated values are unique by key",
+        [](const GenParams &params) {
+          const auto gen = Factory::template makeGen<T>(
+              gen::arbitrary<std::pair<int, int>>());
+          onAnyPath(
+              gen(params.random, params.size),
+              [](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
+                const auto v = value.value();
+                std::set<int> s;
+                for (const auto &x : v) {
+                  s.insert(x.first);
+                }
+                RC_ASSERT(s.size() ==
+                          std::size_t(std::distance(begin(v), end(v))));
+              });
+        });
 
     templatedProp<T>(
         "finds minimum where at least two elements must have keys than a "
@@ -93,7 +94,8 @@ struct UniqueProperties {
               [](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
                 const auto v = value.value();
                 std::set<int> s(begin(v), end(v));
-                RC_ASSERT(s.size() == std::distance(begin(v), end(v)));
+                RC_ASSERT(s.size() ==
+                          std::size_t(std::distance(begin(v), end(v))));
               });
         });
 

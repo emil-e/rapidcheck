@@ -149,8 +149,7 @@ TEST_CASE("state::gen::commands") {
              s0,
              [](const IntVec &vec) {
                auto cmd = std::make_shared<const CountCmd>(vec.back() + 1);
-               return gen::just(
-                   std::move(std::static_pointer_cast<const IntVecCmd>(cmd)));
+               return gen::just(std::static_pointer_cast<const IntVecCmd>(cmd));
              });
 
          onAnyPath(gen(params.random, params.size),
@@ -185,7 +184,7 @@ TEST_CASE("state::gen::commands") {
 
                                       });
 
-        RC_ASSERT(result.size() == 1);
+        RC_ASSERT(result.size() == 1U);
         std::ostringstream os;
         result.front()->show(os);
         RC_ASSERT(os.str().find("AlwaysFail") != std::string::npos);

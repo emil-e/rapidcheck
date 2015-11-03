@@ -32,14 +32,14 @@ protected:
 
   void increment() { counter++; }
 
-  int counter;
+  std::size_t counter;
 };
 
 // ...and use them like this:
 RC_BOOST_FIXTURE_PROP(shouldInstantiateFixtureOnEachRun,
                       MyFixture,
                       (const std::vector<int> &ints)) {
-  for (const auto x : ints) {
+  for (std::size_t i = 0; i < ints.size(); i++) {
     increment();
   }
 
@@ -48,9 +48,9 @@ RC_BOOST_FIXTURE_PROP(shouldInstantiateFixtureOnEachRun,
 
 // A normal Boost test can use the same fixture:
 BOOST_FIXTURE_TEST_CASE(incrementIncrementsByOne, MyFixture) {
-  BOOST_REQUIRE_EQUAL(0, counter);
+  BOOST_REQUIRE_EQUAL(0U, counter);
   increment();
-  BOOST_REQUIRE_EQUAL(1, counter);
+  BOOST_REQUIRE_EQUAL(1U, counter);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

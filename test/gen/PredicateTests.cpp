@@ -125,7 +125,7 @@ struct NonZeroProperties {
                        onAnyPath(shrinkable,
                                  [](const Shrinkable<T> &value,
                                     const Shrinkable<T> &shrink) {
-                                   RC_ASSERT(value.value() != 0);
+                                   RC_ASSERT(value.value() != T(0));
                                  });
                      });
   }

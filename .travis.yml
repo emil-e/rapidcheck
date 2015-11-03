@@ -1,56 +1,81 @@
 language: cpp
 sudo: false
 
-compiler:
-  - gcc
-  - clang
-
-env:
-  - CMAKE_BUILD_TYPE=Debug
-  - CMAKE_BUILD_TYPE=Release
-
 matrix:
   include:
-    - compiler: clang
-      env: CMAKE_BUILD_TYPE=Debug CFLAGS="-O0 --coverage" CXXFLAGS="-O0 --coverage" REPORT_COVERAGE=1
-
-addons:
-  apt:
-    sources:
-    # CMake 3.x
-    - george-edison55-precise-backports
-    # GCC 4.9
-    - ubuntu-toolchain-r-test
     # Clang 3.5
-    - llvm-toolchain-precise-3.5
-    packages:
-    - cmake
-    - cmake-data
-    - ninja-build
-    - g++-4.9
-    - clang-3.5
+    - addons: &clang35
+        apt:
+          sources:
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.5
+          packages:
+            - cmake
+            - cmake-data
+            - ninja-build
+            - g++-4.9
+            - clang-3.5
+      compiler: clang
+      env: COMPILER_VERSION=3.5 BUILD_TYPE=Debug
+
+    - addons: *clang35
+      compiler: clang
+      env: COMPILER_VERSION=3.5 BUILD_TYPE=Release
+
+    # Clang 3.7
+    - addons: &clang37
+        apt:
+          sources:
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - cmake
+            - cmake-data
+            - ninja-build
+            - g++-4.9
+            - clang-3.7
+      compiler: clang
+      env: COMPILER_VERSION=3.7 BUILD_TYPE=Debug
+
+    - addons: *clang37
+      compiler: clang
+      env: COMPILER_VERSION=3.7 BUILD_TYPE=Release
+
+    # GCC 4.9
+    - addons: &gcc49
+        apt:
+          sources:
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - cmake-data
+            - ninja-build
+            - g++-4.9
+      compiler: gcc
+      env: COMPILER_VERSION=4.9 BUILD_TYPE=Debug
+
+    - addons: *gcc49
+      compiler: gcc
+      env: COMPILER_VERSION=4.9 BUILD_TYPE=Release
+
+    # Coverage with Clang 3.7
+    - addons: *clang37
+      compiler: clang
+      env: COMPILER_VERSION=3.7 BUILD_TYPE=Debug CFLAGS="-O0 --coverage" CXXFLAGS="-O0 --coverage" REPORT_COVERAGE=1
 
 before_install:
   - if [ -n "$REPORT_COVERAGE" ]; then
       pip install --user cpp-coveralls;
     fi
 
-install:
-  # Use GCC 4.9
-  - if [ "$CC" = "gcc" ]; then
-      export CC=gcc-4.9 &&
-      export CXX="g++-4.9";
-    fi
-
-  # Use Clang 3.5
-  - if [ "$CC" == "clang" ]; then
-      export CC=clang-3.5 &&
-      export CXX=clang++-3.5;
-    fi
-
 script:
   - mkdir build && cd build
-  - cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DRC_ENABLE_TESTS=ON -DRC_ENABLE_EXAMPLES=ON -DRC_ENABLE_GTEST=ON -DRC_ENABLE_GMOCK=ON -DRC_ENABLE_BOOST=ON -DRC_ENABLE_BOOST_TEST=ON -G Ninja ..
+  - export CC="${CC}-${COMPILER_VERSION}"
+  - export CXX="${CXX}-${COMPILER_VERSION}"
+  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DRC_ENABLE_TESTS=ON -DRC_ENABLE_EXAMPLES=ON -DRC_ENABLE_GTEST=ON -DRC_ENABLE_GMOCK=ON -DRC_ENABLE_BOOST=ON -DRC_ENABLE_BOOST_TEST=ON -G Ninja ..
   - ninja -j1 # Don't run out of memory, please
   - ctest --output-on-failure
   - if [ -n "$REPORT_COVERAGE" ]; then

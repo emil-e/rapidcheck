@@ -110,6 +110,7 @@ public:
     auto dummy = {(std::get<Indexes>(m_lenses).set(
                        deref(obj), std::move(std::get<Indexes + 1>(tuple))),
                    0)...};
+    (void)dummy; // Silence warning
 
     return std::move(obj);
   }

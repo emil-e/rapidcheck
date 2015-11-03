@@ -32,7 +32,7 @@ TEST_CASE("gen::exec") {
 
   SECTION("works with non-copyable types") {
     auto shrinkable =
-        gen::exec([=](NonCopyable nc) { return std::move(nc); })(Random(), 0);
+        gen::exec([=](NonCopyable nc) { return nc; })(Random(), 0);
     REQUIRE(isArbitraryPredictable(shrinkable.value()));
   }
 
