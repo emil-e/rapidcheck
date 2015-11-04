@@ -38,8 +38,8 @@ execOneOf(const typename Cmd::Model &state) {
   using CmdSP = std::shared_ptr<const typename Cmd::CommandType>;
   using State = typename Cmd::Model;
   using MakeFunc = CmdSP (*)(const State &);
-  MakeFunc makeFuncs[] = {&detail::MakeCommand<Cmd>::make,
-                          &detail::MakeCommand<Cmds>::make...};
+  static const MakeFunc makeFuncs[] = {&detail::MakeCommand<Cmd>::make,
+                                       &detail::MakeCommand<Cmds>::make...};
 
   return [=](const Random &random, int size) {
     auto r = random;

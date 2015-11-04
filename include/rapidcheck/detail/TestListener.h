@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/detail/TestMetadata.h"
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/Property.h"
 
@@ -11,7 +12,6 @@ class TestListener {
 public:
   /// Called when a test case has finished.
   ///
-  /// @param testCase     The test case that was run.
   /// @param description  The case description.
   virtual void onTestCaseFinished(const CaseDescription &description) = 0;
 
@@ -23,8 +23,10 @@ public:
 
   /// Called when the entire test has finished.
   ///
-  /// @param result  The result of the test.
-  virtual void onTestFinished(const TestResult &result) = 0;
+  /// @param metadata  Metadata for the test that was run.
+  /// @param result    The result of the test.
+  virtual void onTestFinished(const TestMetadata &metadata,
+                              const TestResult &result) = 0;
 
   virtual ~TestListener() = default;
 };

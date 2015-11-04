@@ -5,8 +5,10 @@
 
 #include "util/Generators.h"
 #include "util/TemplateProps.h"
+#include "util/Serialization.h"
 
 using namespace rc;
+using namespace rc::test;
 using namespace rc::detail;
 
 namespace {
@@ -58,12 +60,28 @@ TEST_CASE("SuccessResult") {
   }
 }
 
+
+TEST_CASE("Reproduce") {
+  SECTION("operator==/operator!=") {
+    propConformsToEquals<Reproduce>();
+    PROP_REPLACE_MEMBER_INEQUAL(Reproduce, random);
+    PROP_REPLACE_MEMBER_INEQUAL(Reproduce, size);
+    PROP_REPLACE_MEMBER_INEQUAL(Reproduce, shrinkPath);
+  }
+
+  SECTION("operator<<") { propConformsToOutputOperator<Reproduce>(); }
+
+  SECTION("serialization") {
+    SerializationProperties::exec<Reproduce>();
+  }
+}
+
 TEST_CASE("FailureResult") {
   SECTION("operator==/operator!=") {
     propConformsToEquals<FailureResult>();
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, numSuccess);
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, description);
-    PROP_REPLACE_MEMBER_INEQUAL(FailureResult, numShrinks);
+    PROP_REPLACE_MEMBER_INEQUAL(FailureResult, reproduce);
     PROP_REPLACE_MEMBER_INEQUAL(FailureResult, counterExample);
   }
 
@@ -76,8 +94,9 @@ TEST_CASE("FailureResult") {
                messageContains(result, std::to_string(result.numSuccess + 1)));
            RC_ASSERT(messageContains(result, result.description));
            RC_ASSERT(
-               (result.numShrinks == 0) ||
-               messageContains(result, std::to_string(result.numShrinks)));
+               result.reproduce.shrinkPath.empty() ||
+               messageContains(
+                   result, std::to_string(result.reproduce.shrinkPath.size())));
            for (const auto &item : result.counterExample) {
              messageContains(result, item.first);
              messageContains(result, item.second);
@@ -100,6 +119,22 @@ TEST_CASE("GaveUpResult") {
          [](const GaveUpResult &result) {
            RC_ASSERT(
                messageContains(result, std::to_string(result.numSuccess)));
+           RC_ASSERT(messageContains(result, result.description));
+         });
+  }
+}
+
+TEST_CASE("Error") {
+  SECTION("operator==/operator!=") {
+    propConformsToEquals<Error>();
+    PROP_REPLACE_MEMBER_INEQUAL(Error, description);
+  }
+
+  SECTION("operator<<") { propConformsToOutputOperator<Error>(); }
+
+  SECTION("printResultMessage") {
+    prop("message contains relevant parts of result",
+         [](const Error &result) {
            RC_ASSERT(messageContains(result, result.description));
          });
   }

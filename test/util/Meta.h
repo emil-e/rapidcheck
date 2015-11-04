@@ -1,31 +1,24 @@
 #pragma once
 
 namespace rc {
-namespace meta {
-
-template <typename MetaFunction, typename... Types>
-struct ForEachType;
-
-template <typename MetaFunction>
-struct ForEachType<MetaFunction> {
-  static void exec() {}
-};
-
-template <typename MetaFunction, typename Type, typename... Types>
-struct ForEachType<MetaFunction, Type, Types...> {
-  static void exec() {
-    MetaFunction::template exec<Type>();
-    ForEachType<MetaFunction, Types...>::exec();
-  }
-};
+namespace test {
 
 /// Instantiates and executes the static member function `exec()` in the type
 /// `MetaFunction` once for each type in `Types`. Useful for writing generic
 /// tests.
 template <typename MetaFunction, typename... Types>
 void forEachType() {
-  ForEachType<MetaFunction, Types...>::exec();
+  auto dummy = {(MetaFunction::template exec<Types>(), 0)...};
 }
 
-} // namespace meta
+template <typename T, typename Testable>
+void templatedProp(const std::string &description, Testable testable) {
+  prop(description + " (" + detail::typeToString<T>() + ")", testable);
+}
+
+#define TEMPLATED_SECTION(tparam, description)                                 \
+  SECTION(std::string(description) + " (" + detail::typeToString<tparam>() +   \
+          ")")
+
+} // namespace test
 } // namespace rc

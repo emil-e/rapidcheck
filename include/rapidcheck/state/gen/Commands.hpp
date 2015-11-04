@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "rapidcheck/Random.h"
 #include "rapidcheck/GenerationFailure.h"
 #include "rapidcheck/shrinkable/Transform.h"
@@ -91,7 +93,7 @@ private:
           throw;
         }
         // What to do?
-      } catch (const GenerationFailure &failure) {
+      } catch (const GenerationFailure &) {
         // What to do?
       }
     }

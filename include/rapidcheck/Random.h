@@ -14,6 +14,12 @@ class Random {
   friend bool operator<(const Random &lhs, const Random &rhs);
   friend std::ostream &operator<<(std::ostream &os, const Random &random);
 
+  template <typename Iterator>
+  friend Iterator serialize(const Random &random, Iterator output);
+
+  template <typename Iterator>
+  friend Iterator deserialize(Iterator begin, Iterator end, Random &output);
+
 public:
   /// Key type
   using Key = std::array<uint64_t, 4>;
@@ -74,3 +80,5 @@ struct hash<rc::Random> {
 };
 
 } // namespace std
+
+#include "Random.hpp"

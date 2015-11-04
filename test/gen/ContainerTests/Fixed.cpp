@@ -79,25 +79,24 @@ struct ParamsFixedProperties {
 } // namespace
 
 TEST_CASE("gen::container(std::size_t)") {
-  meta::forEachType<GenericFixedProperties<ContainerFactory>,
-                    RC_SEQUENCE_CONTAINERS(int),
-                    RC_SET_CONTAINERS(int),
-                    std::basic_string<int>>();
-  meta::forEachType<GenericFixedProperties<MapFactory>,
-                    RC_MAP_CONTAINERS(int)>();
+  forEachType<GenericFixedProperties<ContainerFactory>,
+              RC_SEQUENCE_CONTAINERS(int),
+              RC_SET_CONTAINERS(int),
+              std::basic_string<int>>();
+  forEachType<GenericFixedProperties<MapFactory>, RC_MAP_CONTAINERS(int)>();
 
-  meta::forEachType<ParamsFixedProperties<ContainerFactory>,
-                    RC_SEQUENCE_CONTAINERS(GenParams),
-                    RC_SET_CONTAINERS(GenParams)>();
-  meta::forEachType<ParamsFixedProperties<MapFactory>,
-                    RC_MAP_CONTAINERS(GenParams)>();
+  forEachType<ParamsFixedProperties<ContainerFactory>,
+              RC_SEQUENCE_CONTAINERS(GenParams),
+              RC_SET_CONTAINERS(GenParams)>();
+  forEachType<ParamsFixedProperties<MapFactory>,
+              RC_MAP_CONTAINERS(GenParams)>();
 
-  meta::forEachType<RetrialProperties<FixedMapFactory<2, 15>>,
-                    std::map<int, int>,
-                    std::unordered_map<int, int>>();
-  meta::forEachType<RetrialProperties<FixedContainerFactory<2, 15>>,
-                    std::set<int>,
-                    std::unordered_set<int>>();
+  forEachType<RetrialProperties<FixedMapFactory<2, 15>>,
+              std::map<int, int>,
+              std::unordered_map<int, int>>();
+  forEachType<RetrialProperties<FixedContainerFactory<2, 15>>,
+              std::set<int>,
+              std::unordered_set<int>>();
 
   prop("throws GenerationFailure for std::array if count != N",
        [](const GenParams &params) {
@@ -105,15 +104,7 @@ TEST_CASE("gen::container(std::size_t)") {
          const auto gen =
              gen::container<std::array<int, 3>>(count, gen::arbitrary<int>());
          const auto shrinkable = gen(params.random, params.size);
-         try {
-           shrinkable.value();
-         } catch (const GenerationFailure &e) {
-           RC_SUCCEED("Threw GenerationFailure");
-         } catch (const std::exception &e) {
-           std::cout << e.what() << std::endl;
-           RC_FAIL("Threw other exception");
-         }
-         RC_FAIL("Did not throw GenerationFailure");
+         RC_ASSERT_THROWS_AS(shrinkable.value(), GenerationFailure);
        });
 
   // TODO shrink tests?

@@ -39,12 +39,7 @@ TEST_CASE("gen::suchThat") {
        [](const GenParams &params) {
          const auto gen = gen::suchThat(gen::just<int>(0), fn::constant(false));
          const auto shrinkable = gen(params.random, params.size);
-         try {
-           shrinkable.value();
-         } catch (const GenerationFailure &e) {
-           RC_SUCCEED("Threw GenerationFailure");
-         }
-         RC_FAIL("Didn't throw GenerationFailure");
+         RC_ASSERT_THROWS_AS(shrinkable.value(), GenerationFailure);
        });
 
   prop("passes the passed size to the underlying generator on the first try",
@@ -130,7 +125,7 @@ struct NonZeroProperties {
                        onAnyPath(shrinkable,
                                  [](const Shrinkable<T> &value,
                                     const Shrinkable<T> &shrink) {
-                                   RC_ASSERT(value.value() != 0);
+                                   RC_ASSERT(value.value() != T(0));
                                  });
                      });
   }
@@ -139,7 +134,7 @@ struct NonZeroProperties {
 } // namespace
 
 TEST_CASE("gen::nonZero") {
-  meta::forEachType<NonZeroProperties, RC_NUMERIC_TYPES>();
+  forEachType<NonZeroProperties, RC_NUMERIC_TYPES>();
 }
 
 namespace {
@@ -154,7 +149,7 @@ struct PositiveProperties {
                        onAnyPath(shrinkable,
                                  [](const Shrinkable<T> &value,
                                     const Shrinkable<T> &shrink) {
-                                   RC_ASSERT(value.value() > 0);
+                                   RC_ASSERT(value.value() > T(0));
                                  });
                      });
   }
@@ -163,7 +158,7 @@ struct PositiveProperties {
 } // namespace
 
 TEST_CASE("gen::positive") {
-  meta::forEachType<PositiveProperties, RC_NUMERIC_TYPES>();
+  forEachType<PositiveProperties, RC_NUMERIC_TYPES>();
 }
 
 namespace {
@@ -187,7 +182,7 @@ struct NegativeProperties {
 } // namespace
 
 TEST_CASE("gen::negative") {
-  meta::forEachType<NegativeProperties, RC_SIGNED_TYPES>();
+  forEachType<NegativeProperties, RC_SIGNED_TYPES>();
 }
 
 namespace {
@@ -202,7 +197,7 @@ struct NonNegativeProperties {
                        onAnyPath(shrinkable,
                                  [](const Shrinkable<T> &value,
                                     const Shrinkable<T> &shrink) {
-                                   RC_ASSERT(value.value() >= 0);
+                                   RC_ASSERT(value.value() >= T(0));
                                  });
                      });
   }
@@ -211,5 +206,5 @@ struct NonNegativeProperties {
 } // namespace
 
 TEST_CASE("gen::nonNegative") {
-  meta::forEachType<NonNegativeProperties, RC_NUMERIC_TYPES>();
+  forEachType<NonNegativeProperties, RC_NUMERIC_TYPES>();
 }

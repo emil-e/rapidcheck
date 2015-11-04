@@ -27,22 +27,23 @@ template <typename Factory>
 struct UniqueByProperties {
   template <typename T>
   static void exec() {
-    templatedProp<T>("generated values are unique by key",
-                     [](const GenParams &params) {
-                       const auto gen = Factory::template makeGen<T>(
-                           gen::arbitrary<std::pair<int, int>>());
-                       onAnyPath(gen(params.random, params.size),
-                                 [](const Shrinkable<T> &value,
-                                    const Shrinkable<T> &shrink) {
-                                   const auto v = value.value();
-                                   std::set<int> s;
-                                   for (const auto &x : v) {
-                                     s.insert(x.first);
-                                   }
-                                   RC_ASSERT(s.size() ==
-                                             std::distance(begin(v), end(v)));
-                                 });
-                     });
+    templatedProp<T>(
+        "generated values are unique by key",
+        [](const GenParams &params) {
+          const auto gen = Factory::template makeGen<T>(
+              gen::arbitrary<std::pair<int, int>>());
+          onAnyPath(
+              gen(params.random, params.size),
+              [](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
+                const auto v = value.value();
+                std::set<int> s;
+                for (const auto &x : v) {
+                  s.insert(x.first);
+                }
+                RC_ASSERT(s.size() ==
+                          std::size_t(std::distance(begin(v), end(v))));
+              });
+        });
 
     templatedProp<T>(
         "finds minimum where at least two elements must have keys than a "
@@ -74,8 +75,8 @@ struct UniqueByProperties {
 
 TEST_CASE("gen::uniqueBy") {
   using Pair = std::pair<int, int>;
-  meta::forEachType<UniqueByProperties<UniqueByFactory>,
-                    RC_SEQUENCE_CONTAINERS(Pair)>();
+  forEachType<UniqueByProperties<UniqueByFactory>,
+              RC_SEQUENCE_CONTAINERS(Pair)>();
 }
 
 namespace {
@@ -93,7 +94,8 @@ struct UniqueProperties {
               [](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
                 const auto v = value.value();
                 std::set<int> s(begin(v), end(v));
-                RC_ASSERT(s.size() == std::distance(begin(v), end(v)));
+                RC_ASSERT(s.size() ==
+                          std::size_t(std::distance(begin(v), end(v))));
               });
         });
 
@@ -122,15 +124,14 @@ struct UniqueProperties {
 } // namespace
 
 TEST_CASE("gen::unique") {
-  meta::forEachType<GenericProperties<UniqueFactory>,
-                    RC_SEQUENCE_CONTAINERS(int),
-                    std::basic_string<int>>();
-  meta::forEachType<ParamsProperties<UniqueFactory>,
-                    RC_SEQUENCE_CONTAINERS(GenParams)>();
-  meta::forEachType<UniqueProperties<UniqueFactory>,
-                    RC_SEQUENCE_CONTAINERS(int)>();
+  forEachType<GenericProperties<UniqueFactory>,
+              RC_SEQUENCE_CONTAINERS(int),
+              std::basic_string<int>>();
+  forEachType<ParamsProperties<UniqueFactory>,
+              RC_SEQUENCE_CONTAINERS(GenParams)>();
+  forEachType<UniqueProperties<UniqueFactory>, RC_SEQUENCE_CONTAINERS(int)>();
 
-  meta::forEachType<RetrialProperties<UniqueFactory>,
-                    RC_SEQUENCE_CONTAINERS(int),
-                    std::basic_string<int>>();
+  forEachType<RetrialProperties<UniqueFactory>,
+              RC_SEQUENCE_CONTAINERS(int),
+              std::basic_string<int>>();
 }

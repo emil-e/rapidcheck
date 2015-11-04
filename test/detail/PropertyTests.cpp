@@ -29,9 +29,31 @@ TEST_CASE("CaseDescription") {
            RC_ASSERT(!(original == other));
            RC_ASSERT(!(other == original));
          });
+
+    SECTION("equal if neither has example") {
+      CaseDescription a;
+      CaseDescription b;
+      REQUIRE(a == b);
+    }
+
+    SECTION("inequal if one has example but not the other") {
+      CaseDescription a;
+      CaseDescription b;
+      b.example = [] { return Example(); };
+      REQUIRE_FALSE(a == b);
+    }
   }
 
-  SECTION("operator<<") { propConformsToOutputOperator<CaseDescription>(); }
+  SECTION("operator<<") {
+    propConformsToOutputOperator<CaseDescription>();
+
+    SECTION("prints description without example") {
+      std::ostringstream os;
+      CaseDescription desc;
+      os << desc;
+      REQUIRE(os.str().find("example=") == std::string::npos);
+    }
+  }
 }
 
 namespace {
@@ -48,6 +70,14 @@ bool descriptionContains(const TaggedResult &result, const std::string &str) {
 void reportAll(const std::vector<CaseResult> &results) {
   for (const auto &result : results) {
     ImplicitParam<param::CurrentPropertyContext>::value()->reportResult(result);
+  }
+}
+
+void logAll(const std::vector<std::string> &log) {
+  auto &logStream =
+      ImplicitParam<param::CurrentPropertyContext>::value()->logStream();
+  for (const auto &message : log) {
+    logStream << message;
   }
 }
 
@@ -99,6 +129,19 @@ TEST_CASE("PropertyAdapter") {
            RC_ASSERT(descriptionContains(result, failureResult.description));
          }
        });
+
+  prop("result description contains all logged messages",
+       [](const std::vector<std::string> &messages) {
+         const auto result = makeAdapter([=] { logAll(messages); })();
+         for (const auto &message : messages) {
+           RC_ASSERT(descriptionContains(result, message));
+         }
+       });
+
+  SECTION("does not include log when nothing was logged") {
+    const auto result = makeAdapter([=] {})();
+    REQUIRE(!descriptionContains(result, "Log:"));
+  }
 
   prop("returns CaseResult as is",
        [](const CaseResult &result) {

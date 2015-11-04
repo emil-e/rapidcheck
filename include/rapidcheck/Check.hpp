@@ -10,9 +10,24 @@
 namespace rc {
 namespace detail {
 
+TestResult
+checkProperty(const Property &property,
+              const TestMetadata &metadata,
+              const TestParams &params,
+              TestListener &listener,
+              const std::unordered_map<std::string, Reproduce> &reproduceMap);
+
 TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata,
                          const TestParams &params,
                          TestListener &listener);
+
+TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata,
+                         const TestParams &params);
+
+TestResult checkProperty(const Property &property,
+                         const TestMetadata &metadata);
 
 // Uses defaults from configuration
 TestResult checkProperty(const Property &property);
@@ -36,13 +51,17 @@ bool check(const std::string &description, Testable &&testable) {
 
   // Force loading of the configuration so that message comes _before_ the
   // description
-  ImplicitParam<param::CurrentConfiguration>::value();
+  configuration();
 
   if (!description.empty()) {
     std::cerr << std::endl << "- " << description << std::endl;
   }
 
-  const auto result = detail::checkTestable(std::forward<Testable>(testable));
+  TestMetadata metadata;
+  metadata.id = description;
+  metadata.description = description;
+  const auto result =
+      detail::checkTestable(std::forward<Testable>(testable), metadata);
 
   printResultMessage(result, std::cerr);
   std::cerr << std::endl;

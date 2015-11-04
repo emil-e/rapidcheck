@@ -1,6 +1,6 @@
 #include <catch.hpp>
 
-#include "rapidcheck/detail/LogTestListener.h"
+#include "detail/LogTestListener.h"
 
 using namespace rc;
 using namespace rc::detail;
@@ -76,7 +76,7 @@ TEST_CASE("LogTestListener") {
     SECTION("never prints anything") {
       listener.onTestCaseFinished(desc);
       listener.onShrinkTried(desc, true);
-      listener.onTestFinished(SuccessResult());
+      listener.onTestFinished(TestMetadata(), SuccessResult());
     }
   }
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rapidcheck/detail/Utility.h"
+#include "rapidcheck/detail/Platform.h"
 #include "rapidcheck/detail/ShowType.h"
 #include "rapidcheck/detail/Results.h"
 

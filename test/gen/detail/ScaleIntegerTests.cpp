@@ -6,8 +6,8 @@ using namespace rc;
 TEST_CASE("scaleInteger") {
   prop("for uint32_t, equal to naive way",
        [] {
-         const uint64_t x = *gen::arbitrary<uint32_t>();
-         const uint64_t size = *gen::nonNegative<int>();
+         const auto x = *gen::arbitrary<uint32_t>();
+         const auto size = *gen::nonNegative<int>();
          RC_ASSERT(gen::detail::scaleInteger(x, size) ==
                    ((x * std::min<uint64_t>(kNominalSize, size) +
                      (kNominalSize / 2)) /
@@ -41,5 +41,5 @@ TEST_CASE("scaleInteger") {
        });
 
   prop("yields 0 for 0",
-       [](uint64_t x) { RC_ASSERT(gen::detail::scaleInteger(x, 0) == 0); });
+       [](uint64_t x) { RC_ASSERT(gen::detail::scaleInteger(x, 0) == 0U); });
 }

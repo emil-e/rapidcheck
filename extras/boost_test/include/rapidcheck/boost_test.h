@@ -9,12 +9,17 @@ namespace detail {
 
 template <typename Testable>
 void checkBoostTest(const std::string &description, Testable &&testable) {
-  const auto result = checkTestable(std::forward<Testable>(testable));
+  const auto &testCase = boost::unit_test::framework::current_test_case();
+  TestMetadata metadata;
+  metadata.id = testCase.full_name();
+  metadata.description = testCase.p_name;
+
+  const auto result = checkTestable(std::forward<Testable>(testable), metadata);
 
   if (result.template is<SuccessResult>()) {
     const auto success = result.template get<SuccessResult>();
     if (!success.distribution.empty()) {
-      std::cout << "- " << description << std::endl;
+      std::cout << "- " << metadata.description << std::endl;
       printResultMessage(result, std::cout);
       std::cout << std::endl;
     }

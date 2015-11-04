@@ -1,5 +1,8 @@
 #pragma once
 
+#include <type_traits>
+#include <iostream>
+
 #include "rapidcheck/Nothing.h"
 
 namespace rc {

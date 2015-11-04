@@ -86,7 +86,6 @@ struct MapProperties {
         " greater than a certain value",
         [](const Random &random) {
           int size = *gen::inRange<int>(0, 50);
-          using Pair = std::pair<const int, int>;
 
           const auto gen =
               gen::container<T>(gen::arbitrary<int>(), gen::arbitrary<int>());
@@ -124,7 +123,6 @@ struct MultiMapProperties {
         " greater than a certain value",
         [](const Random &random) {
           int size = *gen::inRange<int>(0, 50);
-          using Pair = std::pair<const int, int>;
 
           const auto gen =
               gen::container<T>(gen::arbitrary<int>(), gen::arbitrary<int>());
@@ -175,46 +173,45 @@ struct ArbitraryProperties {
 } // namespace
 
 TEST_CASE("gen::container") {
-  meta::forEachType<GenericProperties<ContainerFactory>,
-                    RC_SEQUENCE_CONTAINERS(int),
-                    RC_SET_CONTAINERS(int),
-                    std::basic_string<int>>();
-  meta::forEachType<GenericProperties<MapFactory>, RC_MAP_CONTAINERS(int)>();
+  forEachType<GenericProperties<ContainerFactory>,
+              RC_SEQUENCE_CONTAINERS(int),
+              RC_SET_CONTAINERS(int),
+              std::basic_string<int>>();
+  forEachType<GenericProperties<MapFactory>, RC_MAP_CONTAINERS(int)>();
 
-  meta::forEachType<ParamsProperties<ContainerFactory>,
-                    RC_SEQUENCE_CONTAINERS(GenParams),
-                    RC_SET_CONTAINERS(GenParams)>();
-  meta::forEachType<ParamsProperties<MapFactory>,
-                    RC_MAP_CONTAINERS(GenParams)>();
+  forEachType<ParamsProperties<ContainerFactory>,
+              RC_SEQUENCE_CONTAINERS(GenParams),
+              RC_SET_CONTAINERS(GenParams)>();
+  forEachType<ParamsProperties<MapFactory>, RC_MAP_CONTAINERS(GenParams)>();
 
-  meta::forEachType<SequenceProperties,
-                    RC_SEQUENCE_CONTAINERS(int),
-                    std::basic_string<int>>();
+  forEachType<SequenceProperties,
+              RC_SEQUENCE_CONTAINERS(int),
+              std::basic_string<int>>();
 
-  meta::forEachType<SetProperties, std::set<int>, std::unordered_set<int>>();
+  forEachType<SetProperties, std::set<int>, std::unordered_set<int>>();
 
-  meta::forEachType<MultiSetProperties,
-                    std::multiset<int>,
-                    std::unordered_multiset<int>>();
+  forEachType<MultiSetProperties,
+              std::multiset<int>,
+              std::unordered_multiset<int>>();
 
-  meta::forEachType<MapProperties,
-                    std::map<int, int>,
-                    std::unordered_map<int, int>>();
+  forEachType<MapProperties,
+              std::map<int, int>,
+              std::unordered_map<int, int>>();
 
-  meta::forEachType<MultiMapProperties,
-                    std::multimap<int, int>,
-                    std::unordered_multimap<int, int>>();
+  forEachType<MultiMapProperties,
+              std::multimap<int, int>,
+              std::unordered_multimap<int, int>>();
 
-  meta::forEachType<ArbitraryProperties,
-                    RC_GENERIC_CONTAINERS(Predictable),
-                    RC_GENERIC_CONTAINERS(NonCopyable),
-                    std::array<Predictable, 5>,
-                    std::array<NonCopyable, 5>>();
+  forEachType<ArbitraryProperties,
+              RC_GENERIC_CONTAINERS(Predictable),
+              RC_GENERIC_CONTAINERS(NonCopyable),
+              std::array<Predictable, 5>,
+              std::array<NonCopyable, 5>>();
 
-  meta::forEachType<RetrialProperties<MapFactory>,
-                    std::map<int, int>,
-                    std::unordered_map<int, int>>();
-  meta::forEachType<RetrialProperties<ContainerFactory>,
-                    std::set<int>,
-                    std::unordered_set<int>>();
+  forEachType<RetrialProperties<MapFactory>,
+              std::map<int, int>,
+              std::unordered_map<int, int>>();
+  forEachType<RetrialProperties<ContainerFactory>,
+              std::set<int>,
+              std::unordered_set<int>>();
 }

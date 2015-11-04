@@ -47,6 +47,10 @@ bool AdapterContext::reportResult(const CaseResult &result) {
   return true;
 }
 
+std::ostream &AdapterContext::logStream() {
+  return m_logStream;
+}
+
 void AdapterContext::addTag(std::string str) {
   m_tags.push_back(std::move(str));
 }
@@ -61,13 +65,20 @@ TaggedResult AdapterContext::result() const {
     result.result.description += std::move(*it);
   }
 
+  const auto log = m_logStream.str();
+  if (!log.empty()) {
+    result.result.description += "\n\nLog:\n";
+    result.result.description += log;
+  }
+
   result.tags = std::move(m_tags);
   return result;
 }
 
 bool operator==(const CaseDescription &lhs, const CaseDescription &rhs) {
-  return (lhs.result == rhs.result) && (lhs.tags == rhs.tags) &&
-      (lhs.example() == rhs.example());
+  const bool equalExample = (!lhs.example && !rhs.example) ||
+      (lhs.example && rhs.example && (lhs.example() == rhs.example()));
+  return (lhs.result == rhs.result) && (lhs.tags == rhs.tags) && equalExample;
 }
 
 bool operator!=(const CaseDescription &lhs, const CaseDescription &rhs) {
@@ -75,8 +86,11 @@ bool operator!=(const CaseDescription &lhs, const CaseDescription &rhs) {
 }
 
 std::ostream &operator<<(std::ostream &os, const CaseDescription &desc) {
-  os << "{result='" << desc.result << "', tags=" << toString(desc.tags)
-     << ", example=" << toString(desc.example) << "}";
+  os << "{result='" << desc.result << "', tags=" << toString(desc.tags);
+  if (desc.example) {
+    os << ", example=" << toString(desc.example());
+  }
+  os << "}";
   return os;
 }
 
@@ -92,7 +106,7 @@ CaseResult toCaseResult(std::string value) {
 }
 
 CaseResult toCaseResult(CaseResult caseResult) {
-  return std::move(caseResult);
+  return caseResult;
 }
 
 namespace {

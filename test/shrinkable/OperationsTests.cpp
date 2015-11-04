@@ -47,7 +47,7 @@ TEST_CASE("shrinkable::findLocalMin") {
        [] {
          auto result =
              shrinkable::findLocalMin(shrinkable::just(0), fn::constant(true));
-         RC_ASSERT(result.second == 0);
+         RC_ASSERT(result.second == 0U);
        });
 
   prop(
@@ -92,4 +92,53 @@ TEST_CASE("shrinkable::immediateShrinks") {
             shrinkable::just(x, seq::map(seq, &shrinkable::just<int>));
         RC_ASSERT(shrinkable::immediateShrinks(shrinkable) == seq);
       });
+}
+
+TEST_CASE("shrinkable::walkPath") {
+  prop("returns the shrinkable at the end of the path",
+       [] {
+         const auto path = *gen::container<std::vector<std::size_t>>(
+                               gen::inRange<std::size_t>(0, 100));
+         const auto shrinkable =
+             shrinkable::shrinkRecur(std::vector<std::size_t>(),
+                                     [](const std::vector<std::size_t> &path) {
+                                       return seq::map(seq::index(),
+                                                       [=](std::size_t i) {
+                                                         auto p = path;
+                                                         p.push_back(i);
+                                                         return p;
+                                                       });
+                                     });
+
+         const auto result = shrinkable::walkPath(shrinkable, path);
+         RC_ASSERT(result);
+         RC_ASSERT(result->value() == path);
+       });
+
+  prop("returns something if path never goes outside tree",
+       [] {
+         const auto limit = *gen::inRange<std::size_t>(0, 100);
+         const auto shrinkable = shrinkable::shrinkRecur(
+             std::size_t(0),
+             [=](std::size_t x) { return seq::range<std::size_t>(0, limit); });
+         auto path = *gen::container<std::vector<std::size_t>>(
+             gen::inRange<std::size_t>(0, limit));
+
+         const auto result = shrinkable::walkPath(shrinkable, path);
+         RC_ASSERT(result);
+       });
+
+  prop("returns Nothing if path ever goes outside tree",
+       [] {
+         const auto limit = *gen::inRange<std::size_t>(0, 100);
+         const auto shrinkable = shrinkable::shrinkRecur(
+             std::size_t(0),
+             [=](std::size_t x) { return seq::range<std::size_t>(0, limit); });
+         auto path = *gen::container<std::vector<std::size_t>>(
+             gen::inRange<std::size_t>(0, limit));
+         const auto i = *gen::inRange<std::size_t>(0, path.size() + 1);
+         path.insert(begin(path) + i, limit);
+         const auto result = shrinkable::walkPath(shrinkable, path);
+         RC_ASSERT(!result);
+       });
 }

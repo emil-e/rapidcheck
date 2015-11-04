@@ -254,7 +254,7 @@ TEST_CASE("gen::build") {
 
          std::unordered_set<Random> randoms{
              value.a, value.b, value.c, value.d, value.e};
-         RC_ASSERT(randoms.size() == 5);
+         RC_ASSERT(randoms.size() == 5U);
        });
 
   SECTION("works with std::unique_ptr") {
@@ -332,9 +332,9 @@ TEST_CASE("gen::build") {
         gen::set(&Mixed::setCD,
                  gen::just(std::make_tuple(static_cast<short>(3), "4"))));
     const auto value = gen(Random(), 0).value();
-    RC_ASSERT(value.a == 1);
-    RC_ASSERT(value.b == 2);
-    RC_ASSERT(value.c == 3);
+    RC_ASSERT(value.a == 1U);
+    RC_ASSERT(value.b == 2U);
+    RC_ASSERT(value.c == 3U);
     RC_ASSERT(value.d == "4");
   }
 }

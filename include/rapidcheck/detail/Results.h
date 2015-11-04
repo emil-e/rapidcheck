@@ -3,7 +3,8 @@
 #include <vector>
 #include <map>
 
-#include "Variant.h"
+#include "rapidcheck/Random.h"
+#include "rapidcheck/detail/Variant.h"
 
 namespace rc {
 namespace detail {
@@ -38,7 +39,25 @@ std::ostream &operator<<(std::ostream &os, CaseResult::Type type);
 std::ostream &operator<<(std::ostream &os, const CaseResult &result);
 bool operator==(const CaseResult &r1, const CaseResult &r2);
 bool operator!=(const CaseResult &r1, const CaseResult &r2);
-bool operator<(const CaseResult &r1, const CaseResult &r2);
+
+/// Contains all that is required to reproduce a failing test case.
+struct Reproduce {
+  /// The Random to generate the shrinkable with.
+  Random random;
+  /// The size to generate the shrinkable with.
+  int size;
+  /// The shrink path to follow.
+  std::vector<std::size_t> shrinkPath;
+};
+
+std::ostream &operator<<(std::ostream &os, const detail::Reproduce &r);
+bool operator==(const Reproduce &lhs, const Reproduce &rhs);
+bool operator!=(const Reproduce &lhs, const Reproduce &rhs);
+
+template <typename Iterator>
+Iterator serialize(const Reproduce &value, Iterator output);
+template <typename Iterator>
+Iterator deserialize(Iterator begin, Iterator end, Reproduce &out);
 
 /// Indicates a successful property.
 struct SuccessResult {
@@ -58,8 +77,8 @@ struct FailureResult {
   int numSuccess;
   /// A description of the failure.
   std::string description;
-  /// The number of shrinks performed.
-  int numShrinks;
+  /// The information required to reproduce the failure.
+  Reproduce reproduce;
   /// The counterexample.
   Example counterExample;
 };
@@ -80,8 +99,21 @@ std::ostream &operator<<(std::ostream &os, const detail::GaveUpResult &result);
 bool operator==(const GaveUpResult &r1, const GaveUpResult &r2);
 bool operator!=(const GaveUpResult &r1, const GaveUpResult &r2);
 
+/// Indicates that the testing process itself failed.
+struct Error {
+  Error() = default;
+  Error(std::string desc);
+
+  /// A description of the error.
+  std::string description;
+};
+
+std::ostream &operator<<(std::ostream &os, const detail::Error &result);
+bool operator==(const Error &lhs, const Error &rhs);
+bool operator!=(const Error &lhs, const Error &rhs);
+
 /// Describes the circumstances around the result of a test.
-using TestResult = Variant<SuccessResult, FailureResult, GaveUpResult>;
+using TestResult = Variant<SuccessResult, FailureResult, GaveUpResult, Error>;
 
 /// Prints a human readable error message describing the given success result to
 /// the specified stream.
@@ -101,3 +133,5 @@ void printResultMessage(const TestResult &result, std::ostream &os);
 
 } // namespace detail
 } // namespace rc
+
+#include "Results.hpp"

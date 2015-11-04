@@ -11,6 +11,7 @@
 #include "util/TypeListMacros.h"
 
 using namespace rc;
+using namespace rc::test;
 
 namespace {
 
@@ -48,7 +49,7 @@ struct RemoveChunksProperties {
                                     [&](T &&c) {
                                       auto diff(
                                           setDifference<char>(c, elements));
-                                      RC_ASSERT(diff.size() == 0);
+                                      RC_ASSERT(diff.size() == 0U);
                                     });
                      });
 
@@ -56,9 +57,9 @@ struct RemoveChunksProperties {
         "every removal of consecutive elements is a possible shrink",
         [] {
           const auto elements = *fewNonEmptyValues;
-          const auto size = elements.size();
-          const auto a = *gen::inRange<int>(0, size + 1);
-          const auto b = *gen::distinctFrom(gen::inRange<int>(0, size + 1), a);
+          const auto size = int(elements.size());
+          const auto a = *gen::inRange(0, size + 1);
+          const auto b = *gen::distinctFrom(gen::inRange(0, size + 1), a);
           const auto left = std::min(a, b);
           const auto right = std::max(a, b);
 
@@ -82,7 +83,7 @@ struct RemoveChunksProperties {
 } // namespace
 
 TEST_CASE("shrink::removeChunks") {
-  meta::forEachType<RemoveChunksProperties, std::vector<char>, std::string>();
+  forEachType<RemoveChunksProperties, std::vector<char>, std::string>();
 }
 
 namespace {
@@ -114,7 +115,7 @@ struct EachElementProperties {
 } // namespace
 
 TEST_CASE("shrink::eachElement") {
-  meta::forEachType<EachElementProperties, std::vector<char>, std::string>();
+  forEachType<EachElementProperties, std::vector<char>, std::string>();
 }
 
 namespace {
@@ -139,7 +140,7 @@ struct ShrinkTowardsProperties {
                        RC_ASSERT(fin);
                        T diff =
                            (value > target) ? (value - *fin) : (*fin - value);
-                       RC_ASSERT(diff == 1);
+                       RC_ASSERT(diff == T(1));
                      });
 
     templatedProp<T>(
@@ -155,7 +156,7 @@ struct ShrinkTowardsProperties {
 } // namespace
 
 TEST_CASE("shrink::towards") {
-  meta::forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
+  forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
 }
 
 namespace {
@@ -166,7 +167,7 @@ struct IntegralProperties {
     templatedProp<T>("always tries zero first",
                      [] {
                        T value = *gen::nonZero<T>();
-                       RC_ASSERT(*shrink::integral<T>(value).next() == 0);
+                       RC_ASSERT(*shrink::integral<T>(value).next() == T(0));
                      });
 
     TEMPLATED_SECTION(T, "zero has no shrinks") {
@@ -194,7 +195,7 @@ struct SignedIntegralProperties {
     templatedProp<T>("always tries zero first",
                      [] {
                        T value = *gen::nonZero<T>();
-                       RC_ASSERT(*shrink::integral<T>(value).next() == 0);
+                       RC_ASSERT(*shrink::integral<T>(value).next() == T(0));
                      });
 
     TEMPLATED_SECTION(T, "zero has no shrinks") {
@@ -206,8 +207,8 @@ struct SignedIntegralProperties {
 } // namespace
 
 TEST_CASE("shrink::integral") {
-  meta::forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
-  meta::forEachType<SignedIntegralProperties, RC_SIGNED_INTEGRAL_TYPES>();
+  forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
+  forEachType<SignedIntegralProperties, RC_SIGNED_INTEGRAL_TYPES>();
 }
 
 namespace {
@@ -244,9 +245,7 @@ struct RealProperties {
 
 } // namespace
 
-TEST_CASE("shrink::real") {
-  meta::forEachType<RealProperties, RC_REAL_TYPES>();
-}
+TEST_CASE("shrink::real") { forEachType<RealProperties, RC_REAL_TYPES>(); }
 
 TEST_CASE("shrink::bool") {
   SECTION("shrinks 'true' to 'false'") {
@@ -282,5 +281,5 @@ struct CharacterProperties {
 };
 
 TEST_CASE("shrink::character") {
-  meta::forEachType<CharacterProperties, char, wchar_t>();
+  forEachType<CharacterProperties, char, wchar_t>();
 }

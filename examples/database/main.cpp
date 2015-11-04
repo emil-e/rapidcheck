@@ -73,7 +73,7 @@ struct Get : public DbCommand {
   void apply(DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
-    RC_PRE(s0.data.count(username) > 0);
+    RC_PRE(s0.data.count(username) > 0U);
   }
 
   void run(const DatabaseModel &s0, Database &db) const override {

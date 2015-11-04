@@ -45,7 +45,7 @@ TEST_CASE("BitStream") {
 
     prop("requests the correct number of bits",
          [=] {
-           auto source = makeSource(seq::repeat<char>(0xAB));
+           auto source = makeSource(seq::repeat('\xAB'));
            auto stream = bitStreamOf(source);
 
            const auto sizes = *bitSizes;
@@ -67,7 +67,7 @@ TEST_CASE("BitStream") {
            auto source = makeSource(seq::repeat(x));
            auto stream = bitStreamOf(source);
 
-           auto sizes = *gen::suchThat(bitSizes,
+           const auto sizes = *gen::suchThat(bitSizes,
                                        [](const std::vector<int> &x) {
                                          return std::accumulate(
                                                     begin(x), end(x), 0) >= 64;
@@ -79,8 +79,8 @@ TEST_CASE("BitStream") {
              if (n == 0) {
                break;
              }
-             uint64_t r = std::min(n, size);
-             uint64_t bits = stream.next<uint64_t>(r);
+             const auto r = std::min(n, size);
+             const auto bits = stream.next<uint64_t>(r);
              value |= (bits << (64ULL - n));
              n -= r;
            }
@@ -107,16 +107,16 @@ TEST_CASE("BitStream") {
            auto source = makeSource(seq::repeat(x));
            auto stream = bitStreamOf(source);
            int n = *gen::inRange(0, 64);
-           RC_ASSERT((stream.next<uint64_t>(n) & ~bitMask<uint64_t>(n)) == 0);
+           RC_ASSERT((stream.next<uint64_t>(n) & ~bitMask<uint64_t>(n)) == 0U);
          });
 
     prop("does not return more bits than requested (signed)",
          [=](uint64_t x) {
            auto source = makeSource(seq::repeat(x));
            auto stream = bitStreamOf(source);
-           int64_t n = *gen::inRange(0LL, 64LL);
-           bool sign = (x & (1LL << (n - 1LL))) != 0;
-           int64_t mask = ~bitMask<int64_t>(n);
+           const auto n = *gen::inRange(0, 64);
+           const bool sign = (x & (1LL << (n - 1LL))) != 0;
+           const auto mask = ~bitMask<int64_t>(n);
            if (sign) {
              RC_ASSERT((stream.next<int64_t>(n) & mask) == mask);
            } else {
@@ -142,7 +142,7 @@ TEST_CASE("BitStream") {
   SECTION("nextWithSize") {
     prop("requests full number of bits for kNominalSize",
          [=] {
-           auto source = makeSource(seq::repeat<char>(0xAB));
+           auto source = makeSource(seq::repeat('\xAB'));
            auto stream = bitStreamOf(source);
 
            int n = *gen::inRange(0, 100);
@@ -155,7 +155,7 @@ TEST_CASE("BitStream") {
 
     prop("requests half number of bits for kNominalSize / 2",
          [=] {
-           auto source = makeSource(seq::repeat<char>(0xAB));
+           auto source = makeSource(seq::repeat('\xAB'));
            auto stream = bitStreamOf(source);
 
            int n = *gen::suchThat(gen::inRange(0, 100),
@@ -170,7 +170,7 @@ TEST_CASE("BitStream") {
 
     prop("requests no bits for size 0",
          [=] {
-           auto source = makeSource(seq::repeat<char>(0xAB));
+           auto source = makeSource(seq::repeat('\xAB'));
            auto stream = bitStreamOf(source);
 
            int n = *gen::inRange(0, 100);

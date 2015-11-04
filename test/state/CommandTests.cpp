@@ -24,7 +24,7 @@ TEST_CASE("Command") {
     prop("default implementation fails",
          [](const StringVec &state, const StringVec &sut) {
            auto post = sut;
-           RC_ASSERT_THROWS(StringVecCmd().run(state, post), CaseResult);
+           RC_ASSERT_THROWS_AS(StringVecCmd().run(state, post), CaseResult);
          });
   }
 

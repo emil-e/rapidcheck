@@ -124,7 +124,7 @@ struct ModifyB : public ImplicitCommand {
 struct PopA : public ImplicitCommand {
   void apply(ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
-    RC_PRE(s0.top().bindingsA.size() > 1);
+    RC_PRE(s0.top().bindingsA.size() > 1U);
     s0.top().bindingsA.pop();
   }
 
@@ -141,7 +141,7 @@ struct PopA : public ImplicitCommand {
 struct PopB : public ImplicitCommand {
   void apply(ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
-    RC_PRE(s0.top().bindingsB.size() > 1);
+    RC_PRE(s0.top().bindingsB.size() > 1U);
     s0.top().bindingsB.pop();
   }
 
@@ -158,7 +158,7 @@ struct PopB : public ImplicitCommand {
 struct PopScope : public ImplicitCommand {
   void apply(ImplicitParamModel &s0) const override {
     // Never pop last scope
-    RC_PRE(s0.size() > 1);
+    RC_PRE(s0.size() > 1U);
     s0.pop();
   }
 

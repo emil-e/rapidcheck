@@ -19,10 +19,20 @@ using namespace rc::test;
 
 namespace {
 
+template <typename T>
+typename std::make_unsigned<T>::type absoluteInt(T x, std::true_type) {
+  return (x < 0) ? -x : x;
+}
+
+template <typename T>
+T absoluteInt(T x, std::false_type) {
+  return x;
+}
+
 template <typename T,
           typename = typename std::enable_if<std::is_integral<T>::value>::type>
 typename std::make_unsigned<T>::type absolute(T x) {
-  return (x < 0) ? -x : x;
+  return absoluteInt(x, std::is_signed<T>());
 }
 
 template <
@@ -60,21 +70,22 @@ struct IntegralProperties {
             using UInt = typename std::make_unsigned<T>::type;
 
             std::array<uint64_t, 8> bins;
-            constexpr UInt kBinSize =
-                std::numeric_limits<UInt>::max() / bins.size();
+            constexpr auto kBinSize =
+                (std::numeric_limits<UInt>::max() / bins.size()) + 1;
             bins.fill(0);
 
             static constexpr std::size_t nSamples = 10000;
             for (std::size_t i = 0; i < nSamples; i++) {
-              UInt value = gen::arbitrary<T>()(random.split()).value();
-              bins[value / kBinSize]++;
+              const auto value = static_cast<UInt>(
+                  gen::arbitrary<T>()(random.split()).value());
+              bins[static_cast<std::size_t>(value / kBinSize)]++;
             }
 
-            double ideal = nSamples / static_cast<double>(bins.size());
-            double error = std::accumulate(begin(bins),
+            const auto ideal = nSamples / static_cast<double>(bins.size());
+            const auto error = std::accumulate(begin(bins),
                                            end(bins),
                                            0.0,
-                                           [=](double error, double x) {
+                                           [=](double error, uint64_t x) {
                                              double diff = 1.0 - (x / ideal);
                                              return error + (diff * diff);
                                            });
@@ -103,7 +114,7 @@ struct IntegralProperties {
           const auto shrinkable = gen::arbitrary<T>()(random, size);
           T start = shrinkable.value();
           T target;
-          std::pair<T, int> result;
+          std::pair<T, std::size_t> result;
           if (start < 0) {
             target = *gen::inRange<T>(start, 1);
             result = shrinkable::findLocalMin(shrinkable,
@@ -158,14 +169,14 @@ struct SignedProperties {
 } // namespace
 
 TEST_CASE("arbitrary integers") {
-  meta::forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
-  meta::forEachType<NumericProperties, RC_INTEGRAL_TYPES>();
-  meta::forEachType<SignedProperties, RC_SIGNED_INTEGRAL_TYPES>();
+  forEachType<IntegralProperties, RC_INTEGRAL_TYPES>();
+  forEachType<NumericProperties, RC_INTEGRAL_TYPES>();
+  forEachType<SignedProperties, RC_SIGNED_INTEGRAL_TYPES>();
 }
 
 TEST_CASE("arbitrary reals") {
-  meta::forEachType<NumericProperties, RC_REAL_TYPES>();
-  meta::forEachType<SignedProperties, RC_REAL_TYPES>();
+  forEachType<NumericProperties, RC_REAL_TYPES>();
+  forEachType<SignedProperties, RC_REAL_TYPES>();
 }
 
 namespace {
@@ -203,28 +214,23 @@ struct InRangeProperties {
                        const auto gen =
                            gen::inRange<T>(std::max(a, b), std::min(a, b));
                        const auto shrinkable = gen(params.random, params.size);
-                       try {
-                         shrinkable.value();
-                       } catch (const GenerationFailure &e) {
-                         // TODO RC_ASSERT_THROWS
-                         RC_SUCCEED("Threw GenerationFailure");
-                       }
-                       RC_FAIL("Did not throw GenerationFailure");
+                       RC_ASSERT_THROWS_AS(shrinkable.value(),
+                                           GenerationFailure);
                      });
 
-    templatedProp<T>(
-        "first shrink is min",
-        [](const GenParams &params) {
-          // TODO range generator
-          const auto range = *genRange;
-          const auto shrinkable = gen::inRange<T>(range.first, range.second)(
-              params.random, params.size);
-          if (shrinkable.value() != range.first) {
-            const auto firstShrink = shrinkable.shrinks().next();
-            RC_ASSERT(firstShrink);
-            RC_ASSERT(firstShrink->value() == range.first);
-          }
-        });
+    templatedProp<T>("first shrink is min",
+                     [](const GenParams &params) {
+                       // TODO range generator
+                       const auto range = *genRange;
+                       const auto shrinkable =
+                           gen::inRange<T>(range.first, range.second)(
+                               params.random, params.size);
+                       if (shrinkable.value() != range.first) {
+                         const auto firstShrink = shrinkable.shrinks().next();
+                         RC_ASSERT(firstShrink);
+                         RC_ASSERT(firstShrink->value() == range.first);
+                       }
+                     });
 
     templatedProp<T>(
         "when size == kNominalSize, generates all values in range",
@@ -236,10 +242,10 @@ struct InRangeProperties {
 
           const auto gen = gen::inRange<T>(min, min + size);
           auto r = random;
-          std::vector<int> counts(size, 0);
+          std::vector<int> counts(static_cast<std::size_t>(size), 0);
           for (std::size_t i = 0; i < 2000000; i++) {
             const auto x = gen(r.split(), kNominalSize).value();
-            counts[x - min]++;
+            counts[static_cast<std::size_t>(x - min)]++;
             const auto done =
                 std::find(begin(counts), end(counts), 0) == end(counts);
             if (done) {
@@ -277,5 +283,5 @@ struct InRangeProperties {
 } // namespace
 
 TEST_CASE("gen::inRange") {
-  meta::forEachType<InRangeProperties, RC_INTEGRAL_TYPES>();
+  forEachType<InRangeProperties, RC_INTEGRAL_TYPES>();
 }

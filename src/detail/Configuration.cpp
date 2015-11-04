@@ -6,6 +6,9 @@
 #include <iostream>
 
 #include "MapParser.h"
+#include "ParseException.h"
+#include "StringSerialization.h"
+#include "rapidcheck/detail/Platform.h"
 
 namespace rc {
 namespace detail {
@@ -18,7 +21,8 @@ std::ostream &operator<<(std::ostream &os, const Configuration &config) {
 bool operator==(const Configuration &c1, const Configuration &c2) {
   return (c1.testParams == c2.testParams) &&
       (c1.verboseProgress == c2.verboseProgress) &&
-      (c1.verboseShrinking == c2.verboseShrinking);
+      (c1.verboseShrinking == c2.verboseShrinking) &&
+      (c1.reproduce == c2.reproduce);
 }
 
 bool operator!=(const Configuration &c1, const Configuration &c2) {
@@ -41,6 +45,18 @@ void fromString(const std::string &str, T &out, bool &ok) {
   ok = !in.fail();
 }
 
+template <typename T>
+void fromString(const std::string &str,
+                std::unordered_map<std::string, Reproduce> &out,
+                bool &ok) {
+  try {
+    out = stringToReproduceMap(str);
+    ok = true;
+  } catch (const ParseException &) {
+    ok = false;
+  }
+}
+
 // Returns false only on invalid format, not on missing key
 template <typename T, typename Validator>
 bool loadParam(const std::map<std::string, std::string> &map,
@@ -48,7 +64,7 @@ bool loadParam(const std::map<std::string, std::string> &map,
                T &dest,
                std::string failMsg,
                const Validator &validate) {
-  auto it = map.find(key);
+  const auto it = map.find(key);
   if (it == end(map)) {
     return false;
   }
@@ -130,6 +146,12 @@ Configuration configFromMap(const std::map<std::string, std::string> &map,
             "'verbose_shrinking' must be either '1' or '0'",
             anything<bool>);
 
+  loadParam(map,
+            "reproduce",
+            config.reproduce,
+            "'reproduce' string has invalid format",
+            anything<decltype(config.reproduce)>);
+
   return config;
 }
 
@@ -142,7 +164,8 @@ std::map<std::string, std::string> mapFromConfig(const Configuration &config) {
       {"noshrink", config.testParams.disableShrinking ? "1" : "0"},
       {"shrink_tries", std::to_string(config.testParams.shrinkTries)},
       {"verbose_progress", std::to_string(config.verboseProgress)},
-      {"verbose_shrinking", std::to_string(config.verboseShrinking)}};
+      {"verbose_shrinking", std::to_string(config.verboseShrinking)},
+      {"reproduce", reproduceMapToString(config.reproduce)}};
 }
 
 std::map<std::string, std::string>
@@ -190,10 +213,10 @@ Configuration loadConfiguration() {
   std::random_device device;
   config.testParams.seed = (static_cast<uint64_t>(device()) << 32) | device();
 
-  auto params = std::getenv("RC_PARAMS");
-  if (params != nullptr) {
+  const auto params = getEnvValue("RC_PARAMS");
+  if (params) {
     try {
-      config = configFromString(params, config);
+      config = configFromString(*params, config);
     } catch (const ConfigurationException &e) {
       std::cerr << "Error parsing configuration: " << e.what() << std::endl;
       std::exit(1);
@@ -208,8 +231,8 @@ Configuration loadConfiguration() {
 
 } // namespace
 
-const Configuration &defaultConfiguration() {
-  static Configuration config = loadConfiguration();
+const Configuration &configuration() {
+  static const Configuration config = loadConfiguration();
   return config;
 }
 

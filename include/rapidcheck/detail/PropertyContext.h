@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 
 #include "rapidcheck/detail/Results.h"
 
@@ -18,6 +19,9 @@ public:
   /// @return `true` if the result was handled and reported, `false` it it was
   ///         ignored
   virtual bool reportResult(const CaseResult &result) = 0;
+
+  /// Returns a stream to which additional information can be logged.
+  virtual std::ostream &logStream() = 0;
 
   /// Adds a tag to the current scope.
   virtual void addTag(std::string str) = 0;

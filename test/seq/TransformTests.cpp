@@ -6,7 +6,7 @@
 #include "rapidcheck/seq/Operations.h"
 
 #include "util/SeqUtils.h"
-#include "util/CopyGuard.h"
+#include "util/Logger.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -29,14 +29,11 @@ TEST_CASE("seq::drop") {
          assertEqualCopies(seq::drop(n, seq::fromContainer(elements)));
        });
 
-  prop("does not copy items",
-       [](std::vector<CopyGuard> elements) {
-         std::size_t n =
-             *gen::inRange<std::size_t>(0, (elements.size() + 1) * 2);
-         auto seq = seq::drop(n, seq::fromContainer(std::move(elements)));
-         while (seq.next()) {
-         }
-       });
+  SECTION("does not copy items") {
+    auto seq = seq::drop(2, seq::just(Logger(), Logger(), Logger(), Logger()));
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+  }
 
   SECTION("sanity check") {
     REQUIRE(seq::drop(2, seq::just(1, 2, 3)) == seq::just(3));
@@ -62,15 +59,11 @@ TEST_CASE("seq::take") {
          assertEqualCopies(seq::take(n, seq::fromContainer(elements)));
        });
 
-  prop("does not copy items",
-       [](std::vector<CopyGuard> elements) {
-         std::size_t n =
-             *gen::inRange<std::size_t>(0, (elements.size() + 1) * 2);
-         std::size_t start = std::min(elements.size(), n);
-         auto seq = seq::take(n, seq::fromContainer(std::move(elements)));
-         while (seq.next()) {
-         }
-       });
+  SECTION("does not copy items") {
+    auto seq = seq::take(2, seq::just(Logger(), Logger(), Logger(), Logger()));
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+  }
 
   SECTION("sanity check") {
     REQUIRE(seq::take(2, seq::just(1, 2, 3)) == seq::just(1, 2));
@@ -93,14 +86,13 @@ TEST_CASE("seq::dropWhile") {
          assertEqualCopies(seq::dropWhile(seq::fromContainer(elements), pred));
        });
 
-  prop("does not copy items",
-       [](std::vector<CopyGuard> elements, int limit) {
-         const auto pred = [=](const CopyGuard &x) { return x < limit; };
-         auto seq =
-             seq::dropWhile(seq::fromContainer(std::move(elements)), pred);
-         while (seq.next()) {
-         }
-       });
+  SECTION("does not copy items") {
+    const auto pred = [=](const Logger &x) { return x.id == "drop"; };
+    auto seq = seq::dropWhile(
+        seq::just(Logger("drop"), Logger("drop"), Logger(), Logger()), pred);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+  }
 
   SECTION("sanity check") {
     auto seq = seq::dropWhile(seq::just(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
@@ -126,14 +118,13 @@ TEST_CASE("seq::takeWhile") {
          assertEqualCopies(seq::takeWhile(seq::fromContainer(elements), pred));
        });
 
-  prop("does not copy items",
-       [](std::vector<CopyGuard> elements, int limit) {
-         const auto pred = [=](const CopyGuard &x) { return x < limit; };
-         auto seq =
-             seq::takeWhile(seq::fromContainer(std::move(elements)), pred);
-         while (seq.next()) {
-         }
-       });
+  SECTION("does not copy items") {
+    const auto pred = [=](const Logger &x) { return x.id == "take"; };
+    auto seq = seq::takeWhile(
+        seq::just(Logger("take"), Logger("take"), Logger(), Logger()), pred);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+  }
 
   SECTION("sanity check") {
     auto seq = seq::takeWhile(seq::just(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
@@ -162,14 +153,12 @@ TEST_CASE("seq::map") {
          assertEqualCopies(mapSeq);
        });
 
-  prop("does not copy elements",
-       [](std::vector<CopyGuard> elements) {
-         const auto mapper = [](CopyGuard &&x) { return std::move(x); };
-         auto mapSeq =
-             seq::map(seq::fromContainer(std::move(elements)), mapper);
-         while (mapSeq.next()) {
-         }
-       });
+  SECTION("does not copy elements") {
+    const auto mapper = [](Logger &&x) { return std::move(x); };
+    auto seq = seq::map(seq::just(Logger(), Logger()), mapper);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+  }
 }
 
 TEST_CASE("seq::zipWith") {
@@ -242,17 +231,18 @@ TEST_CASE("seq::zipWith") {
          assertEqualCopies(zipSeq);
        });
 
-  prop("does not copy elements",
-       [](std::vector<CopyGuard> e1, std::vector<CopyGuard> e2) {
-         const auto zipper = [](CopyGuard &&a, CopyGuard &&b) {
-           return std::make_pair(std::move(a), std::move(b));
-         };
-         auto zipSeq = seq::zipWith(zipper,
-                                    seq::fromContainer(std::move(e1)),
-                                    seq::fromContainer(std::move(e2)));
-         while (zipSeq.next()) {
-         }
-       });
+  SECTION("does not copy elements") {
+    const auto zipper = [](Logger &&a, Logger &&b) {
+      return std::make_pair(std::move(a), std::move(b));
+    };
+    auto seq = seq::zipWith(zipper,
+                            seq::just(Logger(), Logger(), Logger()),
+                            seq::just(Logger(), Logger(), Logger()));
+    while (const auto p = seq.next()) {
+      REQUIRE(p->first.numberOf("copy") == 0);
+      REQUIRE(p->second.numberOf("copy") == 0);
+    }
+  }
 }
 
 TEST_CASE("seq::filter") {
@@ -282,13 +272,13 @@ TEST_CASE("seq::filter") {
          assertEqualCopies(seq::filter(seq::fromContainer(elements), pred));
        });
 
-  prop("does not copy elements",
-       [](std::vector<CopyGuard> elements, int limit) {
-         const auto pred = [=](const CopyGuard &x) { return x.value < limit; };
-         auto seq = seq::filter(seq::fromContainer(std::move(elements)), pred);
-         while (seq.next()) {
-         }
-       });
+  SECTION("does not copy elements") {
+    const auto pred = [=](const Logger &x) { return x.id != "*"; };
+    auto seq = seq::filter(
+        seq::just(Logger(), Logger("*"), Logger(), Logger("*")), pred);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+  }
 }
 
 TEST_CASE("seq::join") {
@@ -323,21 +313,13 @@ TEST_CASE("seq::join") {
          assertEqualCopies(seq::join(seqs));
        });
 
-  prop("does not copy elements",
-       [] {
-         static const auto subguardgen =
-             gen::scale(0.25, gen::arbitrary<std::vector<CopyGuard>>());
-         static const auto guardgen =
-             gen::container<std::vector<std::vector<CopyGuard>>>(subguardgen);
-         auto vectors = *guardgen;
-         auto seqs = seq::map(seq::fromContainer(std::move(vectors)),
-                              [](std::vector<CopyGuard> &&vec) {
-                                return seq::fromContainer(std::move(vec));
-                              });
-         auto seq = seq::join(std::move(seqs));
-         while (seq.next()) {
-         }
-       });
+  SECTION("does not copy elements") {
+    auto seq = seq::join(seq::just(seq::just(Logger(), Logger()),
+                                   seq::just(Logger(), Logger())));
+    while (const auto value = seq.next()) {
+      REQUIRE(value->numberOf("copy") == 0);
+    }
+  }
 }
 
 TEST_CASE("seq::concat") {
@@ -365,16 +347,14 @@ TEST_CASE("seq::concat") {
                                        seq::fromContainer(c)));
        });
 
-  prop("does not copy elements",
-       [](std::vector<CopyGuard> a,
-          std::vector<CopyGuard> b,
-          std::vector<CopyGuard> c) {
-         auto seq = seq::concat(seq::fromContainer(std::move(a)),
-                                seq::fromContainer(std::move(b)),
-                                seq::fromContainer(std::move(c)));
-         while (seq.next()) {
-         }
-       });
+  SECTION("does not copy elements") {
+    auto seq = seq::concat(seq::just(Logger(), Logger()),
+                           seq::just(Logger(), Logger()),
+                           seq::just(Logger(), Logger()));
+    while (const auto value = seq.next()) {
+      REQUIRE(value->numberOf("copy") == 0);
+    }
+  }
 }
 
 TEST_CASE("seq::mapcat") {
@@ -395,16 +375,15 @@ TEST_CASE("seq::mapcat") {
          assertEqualCopies(seq::mapcat(seq, mapper));
        });
 
-  prop("does not copy elements",
-       [](std::vector<CopyGuard> elements) {
-         auto seq = seq::fromContainer(std::move(elements));
-         const auto mapper = [](CopyGuard &&a) {
-           return seq::just(std::move(a), CopyGuard(1337));
-         };
-         auto mapSeq = seq::mapcat(std::move(seq), mapper);
-         while (mapSeq.next()) {
-         }
-       });
+  SECTION("does not copy elements") {
+    auto seq = seq::just(Logger(), Logger());
+    const auto mapper =
+        [](Logger &&a) { return seq::just(std::move(a), Logger("extra")); };
+    auto mapSeq = seq::mapcat(std::move(seq), mapper);
+    while (const auto value = mapSeq.next()) {
+      REQUIRE(value->numberOf("copy") == 0);
+    }
+  }
 }
 
 TEST_CASE("seq::mapMaybe") {
@@ -436,15 +415,15 @@ TEST_CASE("seq::mapMaybe") {
              seq::mapMaybe(seq, [=](int x) -> Maybe<int> { return x * x; }));
        });
 
-  prop("does not copy elements",
-       [](std::vector<CopyGuard> elements) {
-         auto seq = seq::fromContainer(std::move(elements));
-         auto maybeSeq = seq::mapMaybe(
-             std::move(seq),
-             [=](CopyGuard x) -> Maybe<CopyGuard> { return std::move(x); });
-         while (maybeSeq.next()) {
-         }
-       });
+  SECTION("does not copy elements") {
+    auto seq = seq::just(Logger(), Logger(), Logger());
+    auto maybeSeq =
+        seq::mapMaybe(std::move(seq),
+                      [=](Logger x) -> Maybe<Logger> { return std::move(x); });
+    while (const auto value = maybeSeq.next()) {
+      REQUIRE(value->numberOf("copy") == 0);
+    }
+  }
 }
 
 TEST_CASE("seq::cycle") {
@@ -461,11 +440,11 @@ TEST_CASE("seq::cycle") {
          }
        });
 
-  prop("does not copy Seq on construction",
-       [] {
-         auto elements = *gen::nonEmpty<std::vector<CopyGuard>>();
-         auto seq = seq::cycle(seq::fromContainer(std::move(elements)));
-       });
+  SECTION("does not copy Seq on construction") {
+    auto seq = seq::cycle(seq::just(Logger(), Logger()));
+    REQUIRE(seq.next()->numberOf("copy") <= 1);
+    REQUIRE(seq.next()->numberOf("copy") <= 1);
+  }
 
   prop("copies are equal",
        [] {
@@ -487,11 +466,9 @@ TEST_CASE("seq::cast") {
          assertEqualCopies(seq::cast<int>(seq::fromContainer(elements)));
        });
 
-  prop("does not copy elements",
-       [](std::vector<CopyGuard> elements) {
-         auto seq =
-             seq::cast<CopyGuard>(seq::fromContainer(std::move(elements)));
-         while (seq.next()) {
-         }
-       });
+  SECTION("does not copy elements") {
+    auto seq = seq::cast<Logger>(seq::just(Logger(), Logger()));
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+  }
 }

@@ -39,7 +39,8 @@ struct StringProperties {
                      [](const GenParams &params) {
                        const auto gen = gen::string<T>();
                        const auto shrinkable = gen(params.random, params.size);
-                       RC_ASSERT(shrinkable.value().size() <= params.size);
+                       RC_ASSERT(shrinkable.value().size() <=
+                                 static_cast<std::size_t>(params.size));
                      });
 
     templatedProp<T>(
@@ -87,5 +88,5 @@ struct StringProperties {
 };
 
 TEST_CASE("gen::string") {
-  meta::forEachType<StringProperties, std::string, std::wstring>();
+  forEachType<StringProperties, std::string, std::wstring>();
 }

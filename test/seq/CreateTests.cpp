@@ -4,11 +4,11 @@
 #include "rapidcheck/seq/Create.h"
 #include "rapidcheck/seq/Transform.h"
 
-#include "util/CopyGuard.h"
 #include "util/Meta.h"
 #include "util/Util.h"
 #include "util/TypeListMacros.h"
 #include "util/SeqUtils.h"
+#include "util/Logger.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -29,16 +29,18 @@ TEST_CASE("seq::repeat") {
          assertEqualCopies(seq::take(200, seq::repeat(value)));
        });
 
-  prop("does not copy value on construction",
-       [](CopyGuard guard) { auto seq = seq::repeat(std::move(guard)); });
+  SECTION("does not copy value on construction") {
+    auto seq = seq::repeat(Logger());
+    REQUIRE(seq.next()->numberOf("copy") <= 1);
+  }
 }
 
 TEST_CASE("seq::just") {
   SECTION("does not copy values") {
-    auto seq = seq::just(CopyGuard(), CopyGuard(), CopyGuard());
-    seq.next();
-    seq.next();
-    seq.next();
+    auto seq = seq::just(Logger(), Logger(), Logger());
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
+    REQUIRE(seq.next()->numberOf("copy") == 0);
   }
 
   prop("returns the passed in objects",
@@ -80,35 +82,35 @@ struct FromContainerTests {
 struct FromContainerCopyTests {
   template <typename T>
   static void exec() {
-    templatedProp<T>("does not copy elements",
-                     [](T elements) {
-                       auto seq = seq::fromContainer(std::move(elements));
-                       while (seq.next()) {
-                       }
-                     });
+    TEMPLATED_SECTION(T, "does not copy elements") {
+      auto seq = seq::fromContainer(T{Logger(), Logger(), Logger()});
+      while (const auto value = seq.next()) {
+        REQUIRE(value->numberOf("copy") <= 1);
+      }
+    }
   }
 };
 
 TEST_CASE("seq::fromContainer") {
-  meta::forEachType<FromContainerTests,
-                    RC_ORDERED_CONTAINERS(std::string),
-                    RC_STRING_TYPES,
-                    std::array<std::string, 100>>();
+  forEachType<FromContainerTests,
+              RC_ORDERED_CONTAINERS(std::string),
+              RC_STRING_TYPES,
+              std::array<std::string, 100>>();
 
   // TODO Weirdly arbitrary to run this for a category called
   // RC_SEQUENCE_CONTAINERS
-  meta::forEachType<FromContainerCopyTests,
-                    RC_SEQUENCE_CONTAINERS(CopyGuard),
-                    std::array<CopyGuard, 100>>();
+  forEachType<FromContainerCopyTests,
+              RC_SEQUENCE_CONTAINERS(Logger),
+              std::array<Logger, 100>>();
 }
 
 TEST_CASE("seq::fromIteratorRange") {
   prop("creates a sequence that returns the values in the range",
        [](const std::vector<int> &elements) {
-         const int r1 = *gen::inRange<int>(0, elements.size() + 1);
-         const int r2 = *gen::inRange<int>(0, elements.size() + 1);
-         const int start = std::min(r1, r2);
-         const int end = std::max(r1, r2);
+         const auto r1 = *gen::inRange<std::size_t>(0, elements.size() + 1);
+         const auto r2 = *gen::inRange<std::size_t>(0, elements.size() + 1);
+         const auto start = std::min(r1, r2);
+         const auto end = std::max(r1, r2);
          const auto startIt = elements.begin() + start;
          const auto endIt = elements.begin() + end;
          std::vector<int> subElements(startIt, endIt);
