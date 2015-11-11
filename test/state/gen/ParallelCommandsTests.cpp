@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include <rapidcheck/catch.h>
 #include <rapidcheck/state.h>
+#include <rapidcheck/state/gen/ParallelCommands.h>
 
 #include "util/GenUtils.h"
 #include "util/StringVec.h"
@@ -76,9 +77,75 @@ std::set<Random> collectRandoms(const StringVecParCmds &cmds) {
   return randoms;
 }
 
+using IncCmd = state::Command<int, int>;
+using IncParCmd = ParallelCommands<IncCmd>;
+
+struct ParallelizableCmd : state::Command<int, int> {
+  ParallelizableCmd(const int &s0)
+      : counter(s0) {}
+
+  void apply(int &s0) const override { s0++; }
+
+  std::function<void(const int &)> run(int &sut) const override {
+    sut++;
+    return [sut](const int &s0) {};
+  }
+
+  int counter;
+};
+
+struct NonParallalizableCmd : state::Command<int, int> {
+  NonParallalizableCmd(const int &s0)
+      : counter(s0) {}
+
+  void apply(int &s0) const override {
+    RC_PRE(s0 == counter);
+    s0++;
+  }
+
+  std::function<void(const int &)> run(int &sut) const override {
+    sut++;
+    return [sut](const int &s0) {};
+  }
+
+  void show(std::ostream &os) const override { os << "NonParallalizableCmd"; }
+
+  int counter;
+};
+
+bool containsNonParCmd(const Commands<IncCmd> &cmds) {
+  auto it = std::find_if(cmds.begin(),
+                         cmds.end(),
+                         [](const std::shared_ptr<const IncCmd> &cmd) {
+                           return toString(*cmd) ==
+                               std::string("NonParallalizableCmd");
+                         });
+
+  return it != cmds.end();
+}
+
 } // namespace
 
 TEST_CASE("state::gen::parallelcommands") {
+  prop("command sequences are always valid",
+       [](const GenParams &params, const int &s0) {
+         const auto gen = state::gen::parallelCommands<IncCmd>(
+           s0, &state::gen::execOneOf<ParallelizableCmd, NonParallalizableCmd>);
+         onAnyPath(gen(params.random, params.size),
+                   [&](const Shrinkable<IncParCmd> &value,
+                       const Shrinkable<IncParCmd> &shrink) {
+                     // Verify that no command sequence with two non-empty
+                     // branches contains a NonParallelizable command
+                     const auto &left = value.value().left;
+                     const auto &right = value.value().right;
+                     if (!left.empty() && !right.empty()) {
+                       // std::cout << toString(left[0]) << std::endl;
+                       RC_ASSERT(!containsNonParCmd(left) &&
+                                 !containsNonParCmd(right));
+                     }
+                   });
+       });
+
   prop("shrinks are shorter or equal length when compared to original",
        [](const GenParams &params, const StringVec &s0) {
          const auto gen = state::gen::parallelCommands<StringVecCmd>(

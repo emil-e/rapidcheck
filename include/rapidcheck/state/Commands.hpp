@@ -11,47 +11,6 @@ namespace rc {
 namespace state {
 namespace detail {
 
-template <typename Model, typename Cmd>
-void verifyInterleavings(const Commands<Cmd> &left,
-                              const Commands<Cmd> &right,
-                              int leftIndex,
-                              int rightIndex,
-                              const Model &state) {
-  const auto hasLeft = leftIndex < left.size();
-  const auto hasRight = rightIndex < right.size();
-
-  if (hasLeft) {
-    auto currentState = state;
-    const auto& command = left[leftIndex];
-    command->apply(currentState);
-    verifyInterleavings(
-        left, right, leftIndex + 1, rightIndex, currentState);
-  }
-
-  if (hasRight) {
-    auto currentState = state;
-    const auto& command = right[rightIndex];
-    command->apply(currentState);
-    verifyInterleavings(
-        left, right, leftIndex, rightIndex + 1, currentState);
-  }
-}
-
-template <typename Model, typename Cmd>
-void verifyPreconditions(
-  const ParallelCommands<Cmd> &cmds,
-  const Model &state) {
-
-  auto currentState = state;
-
-  // Check prefix
-  applyAll(cmds.prefix, currentState);
-
-  // verify parallel sequences
-  verifyInterleavings(
-    cmds.left, cmds.right, 0, 0, currentState);
-}
-
 
 template <typename Model, typename Cmd>
 struct CommandResult
@@ -234,9 +193,6 @@ template <typename Cmd, typename Model, typename Sut>
 void runAllParallel(const ParallelCommands<Cmd> &commands,
                     const Model &state,
                     Sut &sut) {
-
-  // Verify pre-conditions for all possible interleavings
-  detail::verifyPreconditions(commands, state);
 
   detail::ParallelExecutionResult<Model, Cmd> result;
 

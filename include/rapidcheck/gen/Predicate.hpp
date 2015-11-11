@@ -1,5 +1,8 @@
 #pragma once
 
+#include "rapidcheck/gen/Arbitrary.h"
+#include "rapidcheck/shrinkable/Transform.h"
+
 namespace rc {
 namespace gen {
 namespace detail {

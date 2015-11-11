@@ -2,6 +2,7 @@
 
 #include "rapidcheck/Random.h"
 #include "rapidcheck/GenerationFailure.h"
+#include "rapidcheck/gen/Predicate.h"
 #include "rapidcheck/shrinkable/Transform.h"
 #include "rapidcheck/state/gen/CommandSequence.hpp"
 
@@ -298,14 +299,65 @@ private:
   GenFunc m_genFunc;
 };
 
+template <typename Model, typename Cmd>
+void verifyInterleavings(const Commands<Cmd> &left,
+                              const Commands<Cmd> &right,
+                              int leftIndex,
+                              int rightIndex,
+                              const Model &state) {
+  const auto hasLeft = leftIndex < left.size();
+  const auto hasRight = rightIndex < right.size();
+
+  if (hasLeft) {
+    auto currentState = state;
+    const auto& command = left[leftIndex];
+    command->apply(currentState);
+    verifyInterleavings(
+        left, right, leftIndex + 1, rightIndex, currentState);
+  }
+
+  if (hasRight) {
+    auto currentState = state;
+    const auto& command = right[rightIndex];
+    command->apply(currentState);
+    verifyInterleavings(
+        left, right, leftIndex, rightIndex + 1, currentState);
+  }
+}
+
+template <typename Model, typename Cmd>
+bool isValidSequence(
+  const ParallelCommands<Cmd> &cmds,
+  const Model &state) {
+
+  auto currentState = state;
+
+  try {
+    // Check prefix
+    applyAll(cmds.prefix, currentState);
+    // verify parallel sequences
+    verifyInterleavings(cmds.left, cmds.right, 0, 0, currentState);
+    return true;
+  } catch (const ::rc::detail::CaseResult &) {
+    return false;
+  }
+}
+
 } // detail
 
 template <typename Cmd, typename GenerationFunc>
 Gen<ParallelCommands<Cmd>>
 parallelCommands(const typename Cmd::Model &initialState,
                  GenerationFunc &&genFunc) {
-  return detail::ParallelCommandsGen<Cmd, Decay<GenerationFunc>>(
+
+  auto gen = detail::ParallelCommandsGen<Cmd, Decay<GenerationFunc>>(
       initialState, std::forward<GenerationFunc>(genFunc));
+
+  return ::rc::gen::suchThat<ParallelCommands<Cmd>>(
+      gen,
+      [initialState](const ParallelCommands<Cmd> &commands) {
+        return detail::isValidSequence(commands, initialState);
+      });
 }
 
 } // namespace gen
