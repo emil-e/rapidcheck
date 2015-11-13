@@ -208,7 +208,8 @@ TEST_CASE("state::gen::parallelcommands") {
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<StringVecParCmds> &value,
                        const Shrinkable<StringVecParCmds> &shrink) {
-                     RC_ASSERT(size(value.value()) <= params.size);
+                     RC_ASSERT(static_cast<int>(size(value.value())) <=
+                               params.size);
                    });
        });
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "rapidcheck/Random.h"
 #include "rapidcheck/GenerationFailure.h"
 #include "rapidcheck/gen/Predicate.h"
@@ -29,20 +31,20 @@ public:
   }
 
 private:
-  using CommandSequence = CommandSequence<Cmd, GenFunc>;
-  using CommandEntry = CommandEntry<Cmd, GenFunc>;
+  using CmdSequence = CommandSequence<Cmd, GenFunc>;
+  using CmdEntry = CommandEntry<Cmd, GenFunc>;
 
   struct ParallelCommandSequence {
-    ParallelCommandSequence(CommandSequence prefix,
-                            CommandSequence left,
-                            CommandSequence right)
+    ParallelCommandSequence(CmdSequence prefix,
+                            CmdSequence left,
+                            CmdSequence right)
         : prefix(prefix)
         , left(left)
         , right(right) {}
 
-    CommandSequence prefix;
-    CommandSequence left;
-    CommandSequence right;
+    CmdSequence prefix;
+    CmdSequence left;
+    CmdSequence right;
   };
 
   Shrinkable<ParallelCommands<Cmd>> generateCommands(const Random &random,
@@ -58,7 +60,7 @@ private:
   }
 
   template <typename T>
-  static void copyCommandEntries(const CommandSequence &source,
+  static void copyCommandEntries(const CmdSequence &source,
                                  std::vector<T> &dest) {
     const auto &entries = source.entries;
     dest.reserve(entries.size());
@@ -66,7 +68,7 @@ private:
         begin(entries),
         end(entries),
         std::back_inserter(dest),
-        [](const CommandEntry &entry) { return entry.shrinkable.value(); });
+        [](const CmdEntry &entry) { return entry.shrinkable.value(); });
   }
 
   Shrinkable<ParallelCommandSequence>
@@ -78,7 +80,7 @@ private:
   ParallelCommandSequence generateInitialParallel(const Random &random,
                                                   int size) const {
     auto r = random;
-    int prefixCount, leftCount, rightCount;
+    std::size_t prefixCount, leftCount, rightCount;
     std::tie(prefixCount, leftCount, rightCount) =
         parallelCommandDistribution(r.split(), size);
 
@@ -90,11 +92,11 @@ private:
         generateInitial(prefix.postState(), r.split(), size, rightCount));
   }
 
-  CommandSequence generateInitial(const Model &initialState,
-                                  const Random &random,
-                                  int size,
-                                  std::size_t count) const {
-    CommandSequence sequence(initialState, m_genFunc, size);
+  CmdSequence generateInitial(const Model &initialState,
+                              const Random &random,
+                              int size,
+                              std::size_t count) const {
+    CmdSequence sequence(initialState, m_genFunc, size);
     sequence.entries.reserve(count);
 
     auto *state = &initialState;
@@ -107,8 +109,7 @@ private:
     return sequence;
   }
 
-  CommandEntry
-  nextEntry(const Random &random, int size, const Model &state) const {
+  CmdEntry nextEntry(const Random &random, int size, const Model &state) const {
     using namespace ::rc::detail;
     auto r = random;
     const auto gen = m_genFunc(state);
@@ -120,14 +121,14 @@ private:
         auto postState = state;
         shrinkable.value()->apply(postState);
 
-        return CommandEntry(
+        return CmdEntry(
             std::move(random), std::move(shrinkable), std::move(postState));
       } catch (const CaseResult &result) {
         if (result.type != CaseResult::Type::Discard) {
           throw;
         }
         // What to do?
-      } catch (const GenerationFailure &failure) {
+      } catch (const GenerationFailure &) {
         // What to do?
       }
     }
@@ -175,9 +176,9 @@ private:
 
   /// Move `count` elements from begin of `source` to end of `dest` and
   /// erases the moved elements from source.
-  static void moveElements(std::vector<CommandEntry> &source,
-                           std::vector<CommandEntry> &dest,
-                           int count) {
+  static void moveElements(std::vector<CmdEntry> &source,
+                           std::vector<CmdEntry> &dest,
+                           std::size_t count) {
     auto sourceEndIt = std::next(begin(source), count);
     std::move(begin(source), sourceEndIt, std::back_inserter(dest));
     source.erase(begin(source), sourceEndIt);
@@ -187,7 +188,7 @@ private:
   shrinkPrefix(const ParallelCommandSequence &s) {
     auto individualShrinks =
         seq::map(shrinkIndividual(s.prefix),
-                 [=](const CommandSequence &commands) {
+                 [=](const CmdSequence &commands) {
                    return ParallelCommandSequence(commands, s.left, s.right);
                  });
     return seq::concat(shrinkRemovingPrefix(s), individualShrinks);
@@ -198,7 +199,7 @@ private:
     auto shrunkSeqs =
         seq::concat(shrinkRemoving(s.left), shrinkIndividual(s.left));
     return seq::map(std::move(shrunkSeqs),
-                    [=](const CommandSequence &commands) {
+                    [=](const CmdSequence &commands) {
                       return ParallelCommandSequence(
                           s.prefix, commands, s.right);
                     });
@@ -209,13 +210,13 @@ private:
     auto shrunkSeqs =
         seq::concat(shrinkRemoving(s.right), shrinkIndividual(s.right));
     return seq::map(std::move(shrunkSeqs),
-                    [=](const CommandSequence &commands) {
+                    [=](const CmdSequence &commands) {
                       return ParallelCommandSequence(
                           s.prefix, s.left, commands);
                     });
   }
 
-  static Seq<CommandSequence> shrinkRemoving(const CommandSequence &s) {
+  static Seq<CmdSequence> shrinkRemoving(const CmdSequence &s) {
     auto nonEmptyRanges = seq::subranges(0, s.entries.size());
     return seq::map(std::move(nonEmptyRanges),
                     [=](const std::pair<std::size_t, std::size_t> &r) {
@@ -252,7 +253,7 @@ private:
                     });
   }
 
-  static Seq<CommandSequence> shrinkIndividual(const CommandSequence &s) {
+  static Seq<CmdSequence> shrinkIndividual(const CmdSequence &s) {
     return seq::mapcat(seq::range<std::size_t>(0, s.entries.size()),
                        [=](std::size_t i) {
                          const auto &preState = s.stateAt(i);
@@ -278,7 +279,7 @@ private:
   /// Calculates the maximum number of commands to generate for each
   /// subsequence. Returns a three tuple with the number of commands for
   /// {prefix, left, right}
-  static std::tuple<int, int, int>
+  static std::tuple<std::size_t, std::size_t, std::size_t>
   parallelCommandDistribution(const Random &random, int count) {
     auto r = random;
     if (count <= 12) {
@@ -301,34 +302,30 @@ private:
 
 template <typename Model, typename Cmd>
 void verifyInterleavings(const Commands<Cmd> &left,
-                              const Commands<Cmd> &right,
-                              int leftIndex,
-                              int rightIndex,
-                              const Model &state) {
+                         const Commands<Cmd> &right,
+                         std::size_t leftIndex,
+                         std::size_t rightIndex,
+                         const Model &state) {
   const auto hasLeft = leftIndex < left.size();
   const auto hasRight = rightIndex < right.size();
 
   if (hasLeft) {
     auto currentState = state;
-    const auto& command = left[leftIndex];
+    const auto &command = left[leftIndex];
     command->apply(currentState);
-    verifyInterleavings(
-        left, right, leftIndex + 1, rightIndex, currentState);
+    verifyInterleavings(left, right, leftIndex + 1, rightIndex, currentState);
   }
 
   if (hasRight) {
     auto currentState = state;
-    const auto& command = right[rightIndex];
+    const auto &command = right[rightIndex];
     command->apply(currentState);
-    verifyInterleavings(
-        left, right, leftIndex, rightIndex + 1, currentState);
+    verifyInterleavings(left, right, leftIndex, rightIndex + 1, currentState);
   }
 }
 
 template <typename Model, typename Cmd>
-bool isValidSequence(
-  const ParallelCommands<Cmd> &cmds,
-  const Model &state) {
+bool isValidSequence(const ParallelCommands<Cmd> &cmds, const Model &state) {
 
   auto currentState = state;
 

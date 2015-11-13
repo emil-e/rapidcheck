@@ -17,7 +17,7 @@ void Command<Model, Sut>::run(const Model &s0, Sut &sut) const {
 
 template <typename Model, typename Sut>
 std::function<void(const Model&)> Command<Model, Sut>::run(Sut &sut) const {
-  auto ss = std::stringstream();
+  std::stringstream ss;
   ss << "Command \"";
   this->show(ss);
   ss << "\" does not implement run function";

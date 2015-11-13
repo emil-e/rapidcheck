@@ -88,7 +88,7 @@ struct CommandSequence {
         if (result.type != CaseResult::Type::Discard) {
           throw;
         }
-      } catch (const GenerationFailure &failure) {
+      } catch (const GenerationFailure &) {
         // Just return false below
       }
 

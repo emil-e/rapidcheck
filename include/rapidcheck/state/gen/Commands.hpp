@@ -24,43 +24,42 @@ public:
       : m_initialState(std::forward<ModelArg>(initialState))
       , m_genFunc(std::forward<GenFuncArg>(genFunc)) {}
 
-  Shrinkable<Commands<Cmd>> operator()(const Random &random,
-                                          int size) const {
+  Shrinkable<Commands<Cmd>> operator()(const Random &random, int size) const {
     return generateCommands(random, size);
   }
 
 private:
-  using CommandSequence = CommandSequence<Cmd, GenFunc>;
-  using CommandEntry = CommandEntry<Cmd, GenFunc>;
+  using CmdSequence = CommandSequence<Cmd, GenFunc>;
+  using CmdEntry = CommandEntry<Cmd, GenFunc>;
 
   Shrinkable<Commands<Cmd>> generateCommands(const Random &random,
-                                                int size) const {
+                                             int size) const {
     return shrinkable::map(generateSequence(random, size),
-                           [](const CommandSequence &sequence) {
+                           [](const CmdSequence &sequence) {
                              Commands<Cmd> cmds;
                              const auto &entries = sequence.entries;
                              cmds.reserve(entries.size());
                              std::transform(begin(entries),
                                             end(entries),
                                             std::back_inserter(cmds),
-                                            [](const CommandEntry &entry) {
+                                            [](const CmdEntry &entry) {
                                               return entry.shrinkable.value();
                                             });
                              return cmds;
                            });
   }
 
-  Shrinkable<CommandSequence> generateSequence(const Random &random,
-                                               int size) const {
+  Shrinkable<CmdSequence> generateSequence(const Random &random,
+                                           int size) const {
     Random r(random);
     std::size_t count = (r.split().next() % (size + 1)) + 1;
     return shrinkable::shrinkRecur(generateInitial(random, size, count),
                                    &shrinkSequence);
   }
 
-  CommandSequence
+  CmdSequence
   generateInitial(const Random &random, int size, std::size_t count) const {
-    CommandSequence sequence(m_initialState, m_genFunc, size);
+    CmdSequence sequence(m_initialState, m_genFunc, size);
     sequence.entries.reserve(count);
 
     auto *state = &m_initialState;
@@ -73,8 +72,7 @@ private:
     return sequence;
   }
 
-  CommandEntry
-  nextEntry(const Random &random, int size, const Model &state) const {
+  CmdEntry nextEntry(const Random &random, int size, const Model &state) const {
     using namespace ::rc::detail;
     auto r = random;
     const auto gen = m_genFunc(state);
@@ -86,7 +84,7 @@ private:
         auto postState = state;
         shrinkable.value()->apply(postState);
 
-        return CommandEntry(
+        return CmdEntry(
             std::move(random), std::move(shrinkable), std::move(postState));
       } catch (const CaseResult &result) {
         if (result.type != CaseResult::Type::Discard) {
@@ -102,11 +100,11 @@ private:
     throw GenerationFailure("Failed to generate command after 100 tries.");
   }
 
-  static Seq<CommandSequence> shrinkSequence(const CommandSequence &s) {
+  static Seq<CmdSequence> shrinkSequence(const CmdSequence &s) {
     return seq::concat(shrinkRemoving(s), shrinkIndividual(s));
   }
 
-  static Seq<CommandSequence> shrinkRemoving(const CommandSequence &s) {
+  static Seq<CmdSequence> shrinkRemoving(const CmdSequence &s) {
     auto nonEmptyRanges = seq::subranges(0, s.entries.size());
     return seq::map(std::move(nonEmptyRanges),
                     [=](const std::pair<std::size_t, std::size_t> &r) {
@@ -118,7 +116,7 @@ private:
                     });
   }
 
-  static Seq<CommandSequence> shrinkIndividual(const CommandSequence &s) {
+  static Seq<CmdSequence> shrinkIndividual(const CmdSequence &s) {
     return seq::mapcat(
       seq::range<std::size_t>(0, s.entries.size()),
         [=](std::size_t i) {
