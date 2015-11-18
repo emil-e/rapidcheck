@@ -73,12 +73,15 @@ private:
 
   Shrinkable<ParallelCommandSequence>
   generateParallelSequence(const Random &random, int size) const {
-    return shrinkable::shrinkRecur(generateInitialParallel(random, size),
+    Random r(random);
+    std::size_t count = (r.split().next() % (size + 1)) + 1;
+    return shrinkable::shrinkRecur(generateInitialParallel(random, size, count),
                                    &shrinkSequence);
   }
 
   ParallelCommandSequence generateInitialParallel(const Random &random,
-                                                  int size) const {
+                                                  int size,
+                                                  std::size_t count) const {
     auto r = random;
     std::size_t prefixCount, leftCount, rightCount;
     std::tie(prefixCount, leftCount, rightCount) =
@@ -276,24 +279,21 @@ private:
                        });
   }
 
-  /// Calculates the maximum number of commands to generate for each
+  /// Calculates the number of commands to generate for each
   /// subsequence. Returns a three tuple with the number of commands for
   /// {prefix, left, right}
   static std::tuple<std::size_t, std::size_t, std::size_t>
   parallelCommandDistribution(const Random &random, int count) {
     auto r = random;
-    if (count <= 12) {
-      // Put all commands in the parallel branches
-      std::size_t left = (r.next() % (count / 2 + 1));
-      std::size_t right = (r.next() % (count / 2 + 1));
-      return std::make_tuple(0, left, right);
-    } else {
-      // Put at most 12 commands in the parallel branches
-      std::size_t prefix = r.next() % (count - 12);
-      std::size_t left = r.next() % 6;
-      std::size_t right = r.next() % 6;
-      return std::make_tuple(prefix, left, right);
-    }
+    // At most 12 commands can be parallel (to limit the number of possible
+    // command interleavings)
+    std::size_t maxParallel = std::min(12, count);
+    std::size_t left = (maxParallel == 0) ? 0 : r.next() % maxParallel;
+    std::size_t right =
+        (maxParallel - left == 0) ? 0 : r.next() % (maxParallel - left);
+    std::size_t prefix = count - left - right;
+
+    return std::make_tuple(prefix, left, right);
   }
 
   Model m_initialState;
