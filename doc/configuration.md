@@ -25,3 +25,4 @@ The following settings are provided:
   - `.` - Unsuccessful shrink
   - `!` - Successful shrink
 - `reproduce` - Opaque string that encodes the information necessary to reproduce minimal failures for properties. Since this string is opaque, it can only be obtained from a failed RapidCheck run. Refer to the [debugging documentation](debugging.md) for more information.
+- `shrink_tries` - Number of times each shrink is tested. Defaults to `1`.

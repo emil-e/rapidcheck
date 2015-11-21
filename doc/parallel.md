@@ -52,12 +52,16 @@ Take
 In the example above we can see the base type of the commands in the test```Parallel command sequence of Command<DispenserModel, Dispenser>:```. This is followed by the three sections ```Sequential prefix```, ```Left branch``` and ```Right branch``` which contains the commands that were executed in order to reproduce the bug. The prefix is a sequence of commands that were executed sequentially before any of the commands in the branches were executed. The left and right branches contains commands that were executed in parallel.
 
 ## Tips ##
-### Reproducing races ###
-TBD
-### Be careful when using the Command constructor that takes the Model as an argument ###
-TBD
+### Shrinking parallel tests ###
+Race conditions are often not deterministically reproducible. If this is the case you can easily end up with a failing test that RapidCheck is not able to shrink; the probability of the race condition being triggered when testing each shrink is simply too low. By using the configuration parameter ```shrink_tries``` you can increase the probability of the race condtion being triggered by increasing the number of times each shrink is tested.
+
+### Be careful when using the command constructor that takes the model as an argument ###
+For a sequential test the order in which commands are generated is the same as the order in which the commands will be executed. This is not the case in the parallel case however. The commands in the parallel branches are provided a model that is created by invoking the apply function for each command in the prefix, followed by each preceding command in the branch. This is generally not the same order that the commands will be executed in. In some cases this makes creating commands for parallel tests more challanging, since you cannot assume that the model that is provided to your command constructor reflects the state of the model at the time of the execution of the command.
+
+Note however that this restriction does not apply to the ```apply``` function. Wheras each command is only created once, the apply function is executed once for every possible interleaving (at least conceptually).
+
 ### Why is no assertion failure printed when my parallel test fails? ###
-TBD
+When a parallel test fails because no possible command interleaving was found, this is caused by a lack of successful interleavings. Since the failure is caused by a lack of success rather than a particular failure, there is no failure that can be reported.
 
 ### Why won't RapidCheck detect my race condition? ###
 This may be caused by using a single core processor. RapidCheck is much more likely to detect race conditions if the tests are executed on a multi core CPU.
