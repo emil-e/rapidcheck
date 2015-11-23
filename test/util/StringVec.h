@@ -57,5 +57,39 @@ struct SomeCommand : StringVecCmd {
   void run(const StringVec &s0, StringVec &sut) const override {}
 };
 
+
+struct StringVecPar {
+  StringVecPar(std::vector<std::string> strings,
+               std::shared_ptr<std::mutex> mutex)
+      : strings(strings)
+      , mutex(std::move(mutex)) {}
+
+  std::vector<std::string> strings;
+  std::shared_ptr<std::mutex> mutex;
+};
+
+using StringVecParCmd = state::Command<StringVec, StringVecPar>;
+using StringVecParCmdSP = std::shared_ptr<const StringVecParCmd>;
+
+struct PushBackPar : public StringVecParCmd {
+  std::string value;
+
+  PushBackPar()
+      : value(*gen::arbitrary<std::string>()) {}
+
+  PushBackPar(std::string str)
+      : value(std::move(str)) {}
+
+  void apply(StringVec &s0) const override { s0.push_back(value); }
+
+  std::function<void(const StringVec &)> run(StringVecPar &sut) const override {
+    std::lock_guard<std::mutex> lock(*sut.mutex);
+    sut.strings.push_back(value);
+    return [](const StringVec &) {};
+  }
+
+  void show(std::ostream &os) const override { os << value; }
+};
+
 } // namespace test
 } // namespace rc
