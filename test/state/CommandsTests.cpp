@@ -29,8 +29,9 @@ bool isInterleaved(const It &interleavedBegin,
                    const It &source2Begin,
                    const It &source2End) {
   // Terminate at end of `interleaved`
-  if (interleavedBegin == interleavedEnd)
+  if (interleavedBegin == interleavedEnd) {
     return (source1Begin == source1End) && (source2Begin == source2End);
+  }
 
   // Check whether front element of `interleaved` and either source match
   // and remainders are interleaved
