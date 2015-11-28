@@ -1,3 +1,5 @@
+find_package( Threads )
+
 add_library(rapidcheck_test_utils
   util/ArbitraryRandom.cpp
   util/GenUtils.cpp
@@ -84,7 +86,8 @@ target_link_libraries(rapidcheck_tests
   rapidcheck
   catch
   rapidcheck_catch
-  rapidcheck_test_utils)
+  rapidcheck_test_utils
+  ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(rapidcheck_tests PRIVATE
   .
   ../src)
