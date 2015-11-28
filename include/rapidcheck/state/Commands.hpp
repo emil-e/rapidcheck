@@ -36,8 +36,8 @@ struct ParallelExecutionResult {
 template <typename Model, typename Cmd>
 bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
                           const std::vector<CommandResult<Model, Cmd>> &right,
-                          int leftIndex,
-                          int rightIndex,
+                          std::size_t leftIndex,
+                          std::size_t rightIndex,
                           const Model &state) {
   const auto hasLeft = leftIndex < left.size();
   const auto hasRight = rightIndex < right.size();
