@@ -78,7 +78,7 @@ std::set<Random> collectRandoms(const StringVecParCmds &cmds) {
 }
 
 using IncCmd = state::Command<int, int>;
-using IncParCmd = ParallelCommands<IncCmd>;
+using IncParCmds = ParallelCommands<IncCmd>;
 
 struct ParallelizableCmd : state::Command<int, int> {
   ParallelizableCmd(const int &s0)
@@ -132,14 +132,13 @@ TEST_CASE("state::gen::parallelcommands") {
          const auto gen = state::gen::parallelCommands<IncCmd>(
            s0, &state::gen::execOneOf<ParallelizableCmd, NonParallalizableCmd>);
          onAnyPath(gen(params.random, params.size),
-                   [&](const Shrinkable<IncParCmd> &value,
-                       const Shrinkable<IncParCmd> &shrink) {
+                   [&](const Shrinkable<IncParCmds> &value,
+                       const Shrinkable<IncParCmds> &shrink) {
                      // Verify that no command sequence with two non-empty
                      // branches contains a NonParallelizable command
                      const auto &left = value.value().left;
                      const auto &right = value.value().right;
                      if (!left.empty() && !right.empty()) {
-                       // std::cout << toString(left[0]) << std::endl;
                        RC_ASSERT(!containsNonParCmd(left) &&
                                  !containsNonParCmd(right));
                      }
@@ -147,12 +146,12 @@ TEST_CASE("state::gen::parallelcommands") {
        });
 
   prop("shrinks are shorter or equal length when compared to original",
-       [](const GenParams &params, const StringVec &s0) {
-         const auto gen = state::gen::parallelCommands<StringVecCmd>(
-             s0, &state::gen::execOneOf<PushBack, PopBack>);
+       [](const GenParams &params, const int &s0) {
+         const auto gen = state::gen::parallelCommands<IncCmd>(
+             s0, &state::gen::execOneOf<ParallelizableCmd, NonParallalizableCmd>);
          onAnyPath(gen(params.random, params.size),
-                   [&](const Shrinkable<StringVecParCmds> &value,
-                       const Shrinkable<StringVecParCmds> &shrink) {
+                   [&](const Shrinkable<IncParCmds> &value,
+                       const Shrinkable<IncParCmds> &shrink) {
                      RC_ASSERT(size(value.value()) <= size(value.value()));
                    });
        });
