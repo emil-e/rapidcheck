@@ -20,7 +20,7 @@ public:
   Shrinkable<String> operator()(const Random &random, int size) const {
     auto stream = rc::detail::bitStreamOf(random);
     String str;
-    auto length = stream.next<std::size_t>() % (size + 1);
+    auto length = stream.next<std::size_t>() % static_cast<std::size_t>(size + 1);
     str.reserve(length);
 
     for (std::size_t i = 0; i < length; i++) {
