@@ -12,8 +12,7 @@ public:
 
   Shrinkable<Maybe<T>> operator()(const Random &random, int size) const {
     auto r = random;
-    const auto x = r.split().next() % static_cast<std::size_t>(size + 1);
-    if (x == 0) {
+    if (r.split().next() % static_cast<std::size_t>(size + 1) == 0) {
       return shrinkable::lambda([]{ return Maybe<T>(); });
     }
 
