@@ -22,7 +22,7 @@ struct ShowMultipleTypes;
 
 template <>
 struct ShowMultipleTypes<> {
-  static void showType(std::ostream &os) {}
+  static void showType(std::ostream &) {}
 };
 
 template <typename Type>

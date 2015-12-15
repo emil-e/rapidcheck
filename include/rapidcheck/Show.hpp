@@ -24,7 +24,7 @@ struct TupleHelper;
 
 template <std::size_t I>
 struct TupleHelper<std::tuple<>, I> {
-  static void showTuple(const std::tuple<> &tuple, std::ostream &os) {}
+  static void showTuple(const std::tuple<> &, std::ostream &) {}
 };
 
 template <typename TupleT>
@@ -191,7 +191,7 @@ template <typename T,
           bool = HasShowValue<T>::value,
           bool = IsStreamInsertible<T>::value>
 struct ShowDefault {
-  static void show(const T &value, std::ostream &os) { os << "<\?\?\?>"; }
+  static void show(const T &, std::ostream &os) { os << "<\?\?\?>"; }
 };
 
 template <typename T, bool X>
