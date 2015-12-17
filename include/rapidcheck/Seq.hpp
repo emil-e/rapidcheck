@@ -9,6 +9,12 @@ class Seq<T>::ISeqImpl {
 public:
   virtual Maybe<T> next() = 0;
   virtual std::unique_ptr<ISeqImpl> copy() const = 0;
+
+  ISeqImpl() = default;
+  ISeqImpl(const ISeqImpl&) = default;
+  ISeqImpl& operator=(const ISeqImpl&) = default;
+  ISeqImpl(ISeqImpl&&) = default;
+  ISeqImpl& operator=(ISeqImpl&&) = default;
   virtual ~ISeqImpl() = default;
 };
 
