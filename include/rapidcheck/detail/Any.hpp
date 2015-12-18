@@ -15,7 +15,7 @@ public:
   virtual void *get() = 0;
   virtual std::pair<std::string, std::string> describe() const = 0;
   virtual const std::type_info &typeInfo() const = 0;
-  virtual ~IAnyImpl() = default;
+  virtual ~IAnyImpl();
 };
 
 template <typename T>

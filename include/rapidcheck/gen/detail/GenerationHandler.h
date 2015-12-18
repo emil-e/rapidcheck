@@ -28,7 +28,7 @@ public:
   ///         underlying generator.
   virtual rc::detail::Any onGenerate(const Gen<rc::detail::Any> &gen) = 0;
 
-  virtual ~GenerationHandler() = default;
+  virtual ~GenerationHandler();
 };
 
 namespace param {

@@ -2,6 +2,9 @@
 
 namespace rc {
 namespace detail {
+
+PropertyContext::~PropertyContext() = default;
+
 namespace param {
 namespace {
 

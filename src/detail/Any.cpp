@@ -21,5 +21,7 @@ std::ostream &operator<<(std::ostream &os, const Any &value) {
   return os;
 }
 
+Any::IAnyImpl::~IAnyImpl() = default;
+
 } // namespace detail
 } // namespace rc
