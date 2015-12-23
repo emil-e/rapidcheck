@@ -77,7 +77,7 @@ script:
   - export CXX="${CXX}-${COMPILER_VERSION}"
   - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DRC_ENABLE_TESTS=ON -DRC_ENABLE_EXAMPLES=ON -DRC_ENABLE_GTEST=ON -DRC_ENABLE_GMOCK=ON -DRC_ENABLE_BOOST=ON -DRC_ENABLE_BOOST_TEST=ON -G Ninja ..
   - ninja -j1 # Don't run out of memory, please
-  - travis_wait ctest --output-on-failure
+  - ctest --output-on-failure
   - if [ -n "$REPORT_COVERAGE" ]; then
       coveralls -b . -r .. -e examples -e test -e ext -E ".*CompilerId.*" -E ".*feature_tests.*";
     fi
