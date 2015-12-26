@@ -28,9 +28,18 @@ struct MockGenerationHandler : public GenerationHandler {
   int returnValue;
 };
 
+Gen<int> makeDummyGen() { return fn::constant(shrinkable::just(0)); }
+
 } // namespace
 
 TEST_CASE("Gen") {
+  SECTION("impl constructor") {
+    SECTION("constructs with empty name") {
+      const auto gen = makeDummyGen();
+      REQUIRE(gen.name().empty());
+    }
+  }
+
   SECTION("operator()") {
     prop("passes the arguments to the functor",
          [](const Random &random, int size) {
@@ -100,7 +109,24 @@ TEST_CASE("Gen") {
       REQUIRE(handler.wasCalled);
     }
 
+    SECTION("passed erased self has same name") {
+      REQUIRE(handler.passedGenerator.name() == gen.name());
+    }
+
     SECTION("returns what is returned by onGenerate") { RC_ASSERT(x == 456); }
+  }
+
+  SECTION("as") {
+    SECTION("has implementation identical to original generator") {
+      Gen<std::string> g1(
+          fn::constant(shrinkable::just(std::string("foobar"))));
+      const auto g2 = g1.as("some other name");
+      REQUIRE(g2(Random(), 0) == shrinkable::just(std::string("foobar")));
+    }
+
+    SECTION("returns generator with given name") {
+      REQUIRE(makeDummyGen().as("foobar").name() == "foobar");
+    }
   }
 
   SECTION("copy constructor") {
@@ -115,6 +141,12 @@ TEST_CASE("Gen") {
 
       g1.reset();
       REQUIRE(log.empty());
+    }
+
+    SECTION("copies name") {
+      const auto g1 = makeDummyGen().as("foobar");
+      const auto g2 = g1;
+      REQUIRE(g2.name() == "foobar");
     }
   }
 
@@ -132,6 +164,13 @@ TEST_CASE("Gen") {
 
       g1.reset();
       REQUIRE(log == std::vector<std::string>{"2"});
+    }
+
+    SECTION("copies name") {
+      const auto g1 = makeDummyGen().as("foobar");
+      auto g2 = makeDummyGen();
+      g2 = g1;
+      REQUIRE(g2.name() == "foobar");
     }
 
     SECTION("self assignment leaves value unchanged") {
@@ -154,6 +193,12 @@ TEST_CASE("Gen") {
 
       REQUIRE(log == std::vector<std::string>{"foobar"});
     }
+
+    SECTION("has same name as moved from generator") {
+      const auto g1 = makeDummyGen().as("foobar");
+      const auto g2 = std::move(g1);
+      REQUIRE(g2.name() == "foobar");
+    }
   }
 
   SECTION("move assignment operator") {
@@ -168,6 +213,13 @@ TEST_CASE("Gen") {
       }
 
       REQUIRE(log == (std::vector<std::string>{"2", "1"}));
+    }
+
+    SECTION("has same name as moved from generator") {
+      const auto g1 = makeDummyGen().as("foobar");
+      auto g2 = makeDummyGen();
+      g2 = std::move(g1);
+      REQUIRE(g2.name() == "foobar");
     }
   }
 

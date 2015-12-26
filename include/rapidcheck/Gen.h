@@ -33,6 +33,9 @@ public:
                 !std::is_same<Decay<Impl>, Gen>::value>::type>
   Gen(Impl &&impl);
 
+  /// Returns the name of this generator.
+  std::string name() const;
+
   /// Returns a `Shrinkable` generated used the given parameters.
   ///
   /// @param random  The random generator
@@ -47,6 +50,9 @@ public:
   /// pick a value in an impure context.
   T operator*() const;
 
+  /// Returns a generator identical to this one but with a different name.
+  Gen as(const std::string &name) const;
+
   Gen(const Gen &other) noexcept;
   Gen &operator=(const Gen &rhs) noexcept;
   Gen(Gen &&other) noexcept;
@@ -60,6 +66,7 @@ private:
   class GenImpl;
 
   IGenImpl *m_impl;
+  std::string m_name;
 };
 
 } // namespace rc
