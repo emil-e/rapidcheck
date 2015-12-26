@@ -12,6 +12,8 @@ using namespace rc::test;
 using namespace rc::detail;
 using namespace rc::gen::detail;
 
+namespace {
+
 struct MockGenerationHandler : public GenerationHandler {
   Any onGenerate(const Gen<Any> &gen) override {
     wasCalled = true;
@@ -25,6 +27,8 @@ struct MockGenerationHandler : public GenerationHandler {
   });
   int returnValue;
 };
+
+} // namespace
 
 TEST_CASE("Gen") {
   SECTION("operator()") {
@@ -99,40 +103,79 @@ TEST_CASE("Gen") {
     SECTION("returns what is returned by onGenerate") { RC_ASSERT(x == 456); }
   }
 
-  SECTION("retains implementation object until no copies remain") {
-    std::vector<std::string> log;
-    Maybe<Gen<DestructNotifier>> s1 =
-        gen::just(DestructNotifier("foobar", &log));
-    REQUIRE(log.empty());
+  SECTION("copy constructor") {
+    SECTION("retains other impl") {
+      std::vector<std::string> log;
+      Maybe<Gen<DestructNotifier>> g1 =
+          gen::just(DestructNotifier("foobar", &log));
+      REQUIRE(log.empty());
 
-    Maybe<Gen<DestructNotifier>> s2 = s1;
-    REQUIRE(log.empty());
+      const auto g2 = g1;
+      REQUIRE(log.empty());
 
-    s1.reset();
-    REQUIRE(log.empty());
-
-    s2.reset();
-    REQUIRE(log.size() == 1);
-    REQUIRE(log[0] == "foobar");
-  }
-
-  SECTION("moving steals reference") {
-    std::vector<std::string> log;
-    auto s1 = gen::just(DestructNotifier("foobar", &log));
-
-    {
-      const auto s2 = std::move(s1);
+      g1.reset();
       REQUIRE(log.empty());
     }
-
-    REQUIRE(log.size() == 1);
-    REQUIRE(log[0] == "foobar");
   }
 
-  SECTION("self assignment leaves value unchanged") {
-    const auto shrinkable = shrinkable::just(1337);
-    Gen<int> gen([=](const Random &random, int size) { return shrinkable; });
-    gen = gen;
-    REQUIRE(gen(Random(), 0) == shrinkable);
+  SECTION("copy assignment operator") {
+    SECTION("derefs owned impl and retains rhs impl") {
+      std::vector<std::string> log;
+      Maybe<Gen<DestructNotifier>> g1 =
+          gen::just(DestructNotifier("1", &log));
+      Maybe<Gen<DestructNotifier>> g2 =
+        gen::just(DestructNotifier("2", &log));
+      REQUIRE(log.empty());
+
+      g2 = g1;
+      REQUIRE(log == std::vector<std::string>{"2"});
+
+      g1.reset();
+      REQUIRE(log == std::vector<std::string>{"2"});
+    }
+
+    SECTION("self assignment leaves value unchanged") {
+      const auto shrinkable = shrinkable::just(1337);
+      Gen<int> gen([=](const Random &random, int size) { return shrinkable; });
+      gen = gen;
+      REQUIRE(gen(Random(), 0) == shrinkable);
+    }
+  }
+
+  SECTION("move constructor") {
+    SECTION("steals other impl") {
+      std::vector<std::string> log;
+      auto g1 = gen::just(DestructNotifier("foobar", &log));
+
+      {
+        const auto g2 = std::move(g1);
+        REQUIRE(log.empty());
+      }
+
+      REQUIRE(log == std::vector<std::string>{"foobar"});
+    }
+  }
+
+  SECTION("move assignment operator") {
+    SECTION("derefs owned impl and steals rhs impl") {
+      std::vector<std::string> log;
+      auto g1 = gen::just(DestructNotifier("1", &log));
+
+      {
+        auto g2 = gen::just(DestructNotifier("2", &log));
+        g2 = std::move(g1);
+        REQUIRE(log == std::vector<std::string>{"2"});
+      }
+
+      REQUIRE(log == (std::vector<std::string>{"2", "1"}));
+    }
+  }
+
+  SECTION("destructor") {
+    std::vector<std::string> log;
+
+    { const auto g1 = gen::just(DestructNotifier("foobar", &log)); }
+
+    REQUIRE(log == std::vector<std::string>{"foobar"});
   }
 }
