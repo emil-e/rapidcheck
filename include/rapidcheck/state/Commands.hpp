@@ -15,15 +15,17 @@ namespace detail {
 template <typename Model, typename Cmd>
 struct CommandResult
 {
+  using Verify = typename Cmd::Verify;
+
   CommandResult(const std::shared_ptr<const Cmd>& command,
-                std::function<void(const Model&)>&& verifyFunc)
+                Verify&& verifyFunc)
     : command(command)
     , verifyFunc(std::move(verifyFunc))
   {
   }
 
   std::shared_ptr<const Cmd> command;
-  std::function<void(const Model&)> verifyFunc;
+  Verify verifyFunc;
 };
 
 template <typename Model, typename Cmd>

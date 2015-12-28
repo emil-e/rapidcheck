@@ -86,7 +86,7 @@ struct ParallelizableCmd : state::Command<int, int> {
 
   void apply(int &s0) const override { s0++; }
 
-  std::function<void(const int &)> run(int &sut) const override {
+  Verify run(int &sut) const override {
     sut++;
     return [sut](const int &s0) {};
   }
@@ -103,7 +103,7 @@ struct NonParallalizableCmd : state::Command<int, int> {
     s0++;
   }
 
-  std::function<void(const int &)> run(int &sut) const override {
+  Verify run(int &sut) const override {
     sut++;
     return [sut](const int &s0) {};
   }

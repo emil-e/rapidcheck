@@ -82,7 +82,7 @@ struct PushBackPar : public StringVecParCmd {
 
   void apply(StringVec &s0) const override { s0.push_back(value); }
 
-  std::function<void(const StringVec &)> run(StringVecPar &sut) const override {
+  Verify run(StringVecPar &sut) const override {
     std::lock_guard<std::mutex> lock(*sut.mutex);
     sut.strings.push_back(value);
     return [](const StringVec &) {};

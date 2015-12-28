@@ -14,6 +14,7 @@ public:
   using Model = ModelT;
   using Sut = SutT;
   using CommandType = Command<Model, Sut>;
+  using Verify = std::function<void(const Model&)>;
 
   /// Applies the command to the given model state. Default implementation does
   /// nothing.
@@ -35,7 +36,7 @@ public:
   ///
   /// Use rapidcheck assertion macros in the returned function to check that the 
   /// system behaves properly.
-  virtual std::function<void(const ModelT&)> run(Sut &sut) const;
+  virtual Verify run(Sut &sut) const;
 
   /// Outputs a human readable representation of the command to the given
   /// output stream.
