@@ -12,6 +12,8 @@ The following document is a work in progress and some parts are still missing. T
 - [Reporting distribution](distribution.md)
 - [Configuration](configuration.md)
 - [Debugging failures](debugging.md)
+
+## Stateful testing ##
 - [Stateful testing](state.md)
 - [Parallel testing](parallel.md)
 

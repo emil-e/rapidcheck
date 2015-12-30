@@ -33,10 +33,10 @@ void runAll(const Cmds &commands, const Model &state, Sut &sut);
 template <typename Cmds, typename Model>
 bool isValidSequence(const Cmds &commands, const Model &s0);
 
-/// Runs each command in `commands` starting with the prefix followed by left
-/// and right that are executed in parallel. The execution is then validated by
-/// searching an interleaving of commands that progresses the model in such a
-/// way that matches the output of the executed commands.
+/// Runs each command in `commands` starting with the prefix followed by the
+/// left and right branches that are executed in parallel. The execution is
+/// then validated by searching for an interleaving of commands that progresses
+/// the model in such way that it matches the output of the executed commands.
 template <typename Cmd, typename Model, typename Sut>
 void runAllParallel(const ParallelCommands<Cmd> &commands,
                     const Model &state,
