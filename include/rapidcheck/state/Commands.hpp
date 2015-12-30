@@ -12,7 +12,7 @@ namespace state {
 namespace detail {
 
 
-template <typename Model, typename Cmd>
+template <typename Cmd>
 struct CommandResult
 {
   using Verify = typename Cmd::Verify;
@@ -28,16 +28,16 @@ struct CommandResult
   Verify verifyFunc;
 };
 
-template <typename Model, typename Cmd>
+template <typename Cmd>
 struct ParallelExecutionResult {
-  std::vector<CommandResult<Model, Cmd>> prefix;
-  std::vector<CommandResult<Model, Cmd>> left;
-  std::vector<CommandResult<Model, Cmd>> right;
+  std::vector<CommandResult<Cmd>> prefix;
+  std::vector<CommandResult<Cmd>> left;
+  std::vector<CommandResult<Cmd>> right;
 };
 
 template <typename Model, typename Cmd>
-bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
-                          const std::vector<CommandResult<Model, Cmd>> &right,
+bool hasValidInterleaving(const std::vector<CommandResult<Cmd>> &left,
+                          const std::vector<CommandResult<Cmd>> &right,
                           std::size_t leftIndex,
                           std::size_t rightIndex,
                           const Model &state) {
@@ -86,7 +86,7 @@ bool hasValidInterleaving(const std::vector<CommandResult<Model, Cmd>> &left,
 
 template <typename Model, typename Cmd>
 void verifyExecution(
-    const ParallelExecutionResult<Model, Cmd> &executionResult,
+    const ParallelExecutionResult<Cmd> &executionResult,
     const Model &state) {
   auto currentState = state;
   // Verify prefix.
@@ -169,10 +169,10 @@ struct ParallelCommands {
   Cmds right;
 };
 
-template <typename Cmd, typename Model, typename Sut>
+template <typename Cmd, typename Sut>
 std::thread executeCommandSequenceInNewThread(
     const Commands<Cmd> &commands,
-    std::vector<detail::CommandResult<Model, Cmd>> &results,
+    std::vector<detail::CommandResult<Cmd>> &results,
     Sut &sut,
     rc::detail::Barrier &barrier,
     std::exception_ptr &error) {
@@ -183,7 +183,7 @@ std::thread executeCommandSequenceInNewThread(
       for (const auto &command : commands) {
         auto verifyFunc = command->run(sut);
         results.emplace_back(
-            detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
+            detail::CommandResult<Cmd>(command, std::move(verifyFunc)));
       }
     } catch (...) {
       error = std::current_exception();
@@ -196,13 +196,13 @@ void runAllParallel(const ParallelCommands<Cmd> &commands,
                     const Model &state,
                     Sut &sut) {
 
-  detail::ParallelExecutionResult<Model, Cmd> result;
+  detail::ParallelExecutionResult<Cmd> result;
 
   // Run serial commands
   for (const auto &command : commands.prefix) {
     auto verifyFunc = command->run(sut);
     result.prefix.emplace_back(
-        detail::CommandResult<Model, Cmd>(command, std::move(verifyFunc)));
+        detail::CommandResult<Cmd>(command, std::move(verifyFunc)));
   }
 
   rc::detail::Barrier b(2);
