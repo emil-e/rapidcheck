@@ -26,6 +26,12 @@ TEST_CASE("Command") {
            auto post = sut;
            RC_ASSERT_THROWS_AS(StringVecCmd().run(state, post), CaseResult);
          });
+
+    prop("default implementation of alternative overload fails",
+         [](const StringVec &state, const StringVec &sut) {
+           auto post = sut;
+           RC_ASSERT_THROWS_AS(StringVecCmd().run(post), CaseResult);
+         });
   }
 
   SECTION("nextState") {
