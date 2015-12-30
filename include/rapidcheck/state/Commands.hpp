@@ -51,7 +51,7 @@ bool hasValidInterleaving(const std::vector<CommandResult<Cmd>> &left,
 
   if (hasLeft) {
     try {
-      auto preState = state;
+      const auto& preState = state;
       auto currentState = state;
       auto commandResult = left[leftIndex];
       commandResult.command->apply(currentState);
@@ -67,7 +67,7 @@ bool hasValidInterleaving(const std::vector<CommandResult<Cmd>> &left,
 
   if (hasRight) {
     try {
-      auto preState = state;
+      const auto& preState = state;
       auto currentState = state;
       auto commandResult = right[rightIndex];
       commandResult.command->apply(currentState);
