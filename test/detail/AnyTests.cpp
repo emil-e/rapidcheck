@@ -120,16 +120,41 @@ TEST_CASE("Any") {
     }
   }
 
-  SECTION("describe") {
+  SECTION("showType") {
     SECTION("returns a pair of the typename and value as strings") {
       std::string str("foobar");
-      std::pair<std::string, std::string> desc(typeToString<decltype(str)>(),
-                                               toString(str));
-
       Any any = Any::of(str);
-      auto anyDesc(any.describe());
 
-      REQUIRE(desc == anyDesc);
+      std::ostringstream ss;
+      any.showType(ss);
+
+      REQUIRE(ss.str() == typeToString<decltype(str)>());
+    }
+
+    SECTION("outputs nothing for null Any values") {
+      Any any;
+      std::ostringstream ss;
+      any.showType(ss);
+      REQUIRE(ss.str().empty());
+    }
+  }
+
+  SECTION("showValue") {
+    SECTION("returns a pair of the typename and value as strings") {
+      std::string str("foobar");
+      Any any = Any::of(str);
+
+      std::ostringstream ss;
+      any.showValue(ss);
+
+      REQUIRE(ss.str() == toString(str));
+    }
+
+    SECTION("outputs nothing for null Any values") {
+      Any any;
+      std::ostringstream ss;
+      any.showValue(ss);
+      REQUIRE(ss.str().empty());
     }
   }
 

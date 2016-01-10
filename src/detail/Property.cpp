@@ -116,7 +116,12 @@ describeShrinkable(const Shrinkable<Any> &shrinkable) {
   // TODO I don't know if this is the right approach with counterexamples
   // even...
   try {
-    return shrinkable.value().describe();
+    const auto value = shrinkable.value();
+    std::ostringstream valueString;
+    value.showValue(valueString);
+    std::ostringstream typeString;
+    value.showType(typeString);
+    return {typeString.str(), valueString.str()};
   } catch (const GenerationFailure &e) {
     return {"Generation failed", e.what()};
   } catch (const std::exception &e) {

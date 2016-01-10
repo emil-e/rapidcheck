@@ -7,17 +7,23 @@ Any::Any() noexcept {}
 
 void Any::reset() { m_impl.reset(); }
 
-std::pair<std::string, std::string> Any::describe() const {
-  assert(m_impl);
-  return m_impl ? m_impl->describe()
-                : std::make_pair(std::string(), std::string());
+
+void Any::showType(std::ostream &os) const {
+  if (m_impl) {
+    m_impl->showType(os);
+  }
+}
+
+void Any::showValue(std::ostream &os) const {
+  if (m_impl) {
+    m_impl->showValue(os);
+  }
 }
 
 Any::operator bool() const { return static_cast<bool>(m_impl); }
 
 std::ostream &operator<<(std::ostream &os, const Any &value) {
-  auto desc = value.describe();
-  os << desc.second << " (" << desc.first << ")";
+  value.showValue(os);
   return os;
 }
 
