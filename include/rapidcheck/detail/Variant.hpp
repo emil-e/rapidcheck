@@ -120,7 +120,7 @@ bool Variant<Type, Types...>::operator==(const Variant &rhs) const {
     return false;
   }
 
-  constexpr bool (*const equalsFuncs[])(const void *, const void *) = {
+  static bool (*const equalsFuncs[])(const void *, const void *) = {
       &variantEqualsImpl<Type>, &variantEqualsImpl<Types>...};
 
   return equalsFuncs[m_typeIndex](&m_storage, &rhs.m_storage);
@@ -133,7 +133,7 @@ void variantPrintToImpl(std::ostream &os, const void *storage) {
 
 template <typename Type, typename... Types>
 void Variant<Type, Types...>::printTo(std::ostream &os) const {
-  constexpr void (*printToFuncs[])(std::ostream &, const void *) = {
+  static void (*printToFuncs[])(std::ostream &, const void *) = {
       &variantPrintToImpl<Type>, &variantPrintToImpl<Types>...};
 
   printToFuncs[m_typeIndex](os, &m_storage);
@@ -208,7 +208,7 @@ template <typename Type, typename... Types>
 void Variant<Type, Types...>::copyAssign(std::size_t index,
                                          void *to,
                                          const void *from) {
-  constexpr void (*const copyAssignFuncs[])(void *, const void *) = {
+  static void (*const copyAssignFuncs[])(void *, const void *) = {
       &variantCopyAssign<Type>, &variantCopyAssign<Types>...};
 
   copyAssignFuncs[index](to, from);
@@ -223,7 +223,7 @@ template <typename Type, typename... Types>
 void Variant<Type, Types...>::moveAssign(std::size_t index,
                                          void *to,
                                          void *from) {
-  constexpr void (*const moveAssignFuncs[])(void *, void *) = {
+  static void (*const moveAssignFuncs[])(void *, void *) = {
       &variantMoveAssign<Type>, &variantMoveAssign<Types>...};
 
   moveAssignFuncs[index](to, from);
@@ -238,7 +238,7 @@ template <typename Type, typename... Types>
 void Variant<Type, Types...>::copy(std::size_t index,
                                    void *to,
                                    const void *from) {
-  constexpr void (*const copyFuncs[])(void *, const void *) = {
+  static void (*const copyFuncs[])(void *, const void *) = {
       &variantCopy<Type>, &variantCopy<Types>...};
 
   copyFuncs[index](to, from);
@@ -251,8 +251,8 @@ void variantMove(void *to, void *from) {
 
 template <typename Type, typename... Types>
 void Variant<Type, Types...>::move(std::size_t index, void *to, void *from) {
-  constexpr void (*const moveFuncs[])(void *, void *) = {
-      &variantMove<Type>, &variantMove<Types>...};
+  static void (*const moveFuncs[])(void *, void *) = {&variantMove<Type>,
+                                                      &variantMove<Types>...};
 
   moveFuncs[index](to, from);
 }
@@ -265,8 +265,8 @@ void variantDestroy(void *storage) {
 template <typename Type, typename... Types>
 void Variant<Type, Types...>::destroy(std::size_t index,
                                       void *storage) noexcept {
-  constexpr void (*const destroyFuncs[])(void *) = {&variantDestroy<Type>,
-                                                    &variantDestroy<Types>...};
+  static void (*const destroyFuncs[])(void *) = {&variantDestroy<Type>,
+                                                 &variantDestroy<Types>...};
 
   destroyFuncs[index](storage);
 }
