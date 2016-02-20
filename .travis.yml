@@ -61,16 +61,6 @@ matrix:
       compiler: gcc
       env: COMPILER_VERSION=4.9 BUILD_TYPE=Release
 
-    # Coverage with Clang 3.7
-    - addons: *clang37
-      compiler: clang
-      env: COMPILER_VERSION=3.7 BUILD_TYPE=Debug CFLAGS="-O0 --coverage" CXXFLAGS="-O0 --coverage" REPORT_COVERAGE=1
-
-before_install:
-  - if [ -n "$REPORT_COVERAGE" ]; then
-      pip install --user cpp-coveralls;
-    fi
-
 script:
   - mkdir build && cd build
   - export CC="${CC}-${COMPILER_VERSION}"
@@ -78,6 +68,3 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DRC_ENABLE_TESTS=ON -DRC_ENABLE_EXAMPLES=ON -DRC_ENABLE_GTEST=ON -DRC_ENABLE_GMOCK=ON -DRC_ENABLE_BOOST=ON -DRC_ENABLE_BOOST_TEST=ON -G Ninja ..
   - ninja -j1 # Don't run out of memory, please
   - ctest --output-on-failure
-  - if [ -n "$REPORT_COVERAGE" ]; then
-      coveralls -b . -r .. -e examples -e test -e ext -E ".*CompilerId.*" -E ".*feature_tests.*";
-    fi
