@@ -16,20 +16,26 @@ using Any = rc::detail::Any;
 namespace rc {
 
 template <>
+struct Arbitrary<Recipe::Ingredient> {
+  static Gen<Recipe::Ingredient> arbitrary() {
+    return gen::construct<Recipe::Ingredient>(
+        gen::arbitrary<std::string>(),
+        gen::map<Shrinkable<int>>([](Shrinkable<int> &&s) {
+          return shrinkable::map(std::move(s), &Any::of<int>);
+        }));
+  }
+};
+
+template <>
 struct Arbitrary<Recipe> {
   static Gen<Recipe> arbitrary() {
     return gen::exec([] {
       Recipe recipe;
       recipe.random = *gen::arbitrary<Random>();
       recipe.size = *gen::inRange<int>(0, 200);
-      std::size_t numIngredients = *gen::inRange<std::size_t>(0, 5);
-      recipe.ingredients =
-          *gen::container<Recipe::Ingredients>(
-              numIngredients,
-              gen::map(gen::arbitrary<Shrinkable<int>>(),
-                       [](Shrinkable<int> &&s) {
-                         return shrinkable::map(std::move(s), &Any::of<int>);
-                       }));
+      const auto numIngredients = *gen::inRange<std::size_t>(0, 5);
+      recipe.ingredients = *gen::container<Recipe::Ingredients>(
+          numIngredients, gen::arbitrary<Recipe::Ingredient>());
       recipe.numFixed =
           *gen::inRange<std::size_t>(0, recipe.ingredients.size() + 1);
       return recipe;
@@ -46,8 +52,14 @@ Shrinkable<int> mapToInt(Shrinkable<Any> shrinkable) {
                          [](const Any &x) { return x.get<int>(); });
 }
 
-bool equalsAsInt(Shrinkable<Any> lhs, Shrinkable<Any> rhs) {
+bool equalAsInt(Shrinkable<Any> lhs, Shrinkable<Any> rhs) {
   return mapToInt(std::move(lhs)) == mapToInt(std::move(rhs));
+}
+
+bool equalIntIngredients(const Recipe::Ingredient &lhs,
+                         const Recipe::Ingredient &rhs) {
+  return (lhs.description == rhs.description) &&
+      equalAsInt(lhs.shrinkable, rhs.shrinkable);
 }
 
 } // namespace
@@ -70,7 +82,7 @@ TEST_CASE("shrinkRecipe") {
                                                 recipe.ingredients.begin() +
                                                     recipe.numFixed,
                                                 shrink.ingredients.begin(),
-                                                equalsAsInt);
+                                                equalIntIngredients);
                             }));
        });
 
@@ -78,12 +90,12 @@ TEST_CASE("shrinkRecipe") {
        [](const Recipe &recipe) {
          RC_ASSERT(seq::all(shrinkRecipe(recipe),
                             [&](const Recipe &shrink) {
-                              auto size = shrink.ingredients.size() - 1;
+                              const auto size = shrink.ingredients.size() - 1;
                               return std::equal(recipe.ingredients.begin(),
                                                 recipe.ingredients.begin() +
                                                     size,
                                                 shrink.ingredients.begin(),
-                                                equalsAsInt);
+                                                equalIntIngredients);
                             }));
        });
 
@@ -100,13 +112,25 @@ TEST_CASE("shrinkRecipe") {
        [](const Recipe &recipe) {
          RC_ASSERT(seq::all(shrinkRecipe(recipe),
                             [&](const Recipe &shrink) {
-                              std::size_t i = shrink.ingredients.size() - 1;
-                              auto shrinks = recipe.ingredients[i].shrinks();
-                              return seq::any(std::move(shrinks),
-                                              [&](const Shrinkable<Any> &s) {
-                                                return equalsAsInt(
-                                                    s, shrink.ingredients[i]);
-                                              });
+                              const auto i = shrink.ingredients.size() - 1;
+                              auto shrinks =
+                                  recipe.ingredients[i].shrinks();
+                              return seq::any(
+                                  std::move(shrinks),
+                                  [&](const Shrinkable<Any> &s) {
+                                    return equalAsInt(
+                                        s, shrink.ingredients[i].shrinkable);
+                                  });
+                            }));
+       });
+
+  prop("maintains description of shrunk ingredient",
+       [](const Recipe &recipe) {
+         RC_ASSERT(seq::all(shrinkRecipe(recipe),
+                            [&](const Recipe &shrink) {
+                              const auto i = shrink.ingredients.size() - 1;
+                              return (shrink.ingredients[i].description ==
+                                      recipe.ingredients[i].description);
                             }));
        });
 
@@ -117,31 +141,30 @@ TEST_CASE("shrinkRecipe") {
        });
 
   prop(
-      "for any shrink of a non-fixed value, there is a shrink with that"
-      " shrink",
+      "for any shrink of a non-fixed value, there is a shrink where that value "
+      "has been shrunk",
       [] {
         // We want a recipe where there's actually something to shrink
-        auto recipe = *gen::suchThat<Recipe>([](const Recipe &r) {
+        const auto recipe = *gen::suchThat<Recipe>([](const Recipe &r) {
           return !!shrinkRecipe(r).next();
         });
 
-        std::size_t i =
-            *gen::suchThat(gen::inRange<std::size_t>(recipe.numFixed,
-                                                     recipe.ingredients.size()),
-                           [&](std::size_t x) {
-                             return seq::length(
-                                        recipe.ingredients[x].shrinks()) > 0;
-                           });
+        const auto i = *gen::suchThat(
+            gen::inRange<std::size_t>(recipe.numFixed,
+                                      recipe.ingredients.size()),
+            [&](std::size_t x) {
+              return bool(recipe.ingredients[x].shrinks().next());
+            });
 
-        Seq<Shrinkable<Any>> shrinks = recipe.ingredients[i].shrinks();
-        std::size_t numShrinks = seq::length(shrinks);
-        std::size_t shrinkIndex = *gen::inRange<std::size_t>(0, numShrinks);
-        Shrinkable<Any> expectedShrink = *seq::at(shrinks, shrinkIndex);
+        const auto shrinks = recipe.ingredients[i].shrinks();
+        const auto numShrinks = seq::length(shrinks);
+        const auto shrinkIndex = *gen::inRange<std::size_t>(0, numShrinks);
+        const auto expectedShrink = *seq::at(shrinks, shrinkIndex);
         RC_ASSERT(
             seq::any(shrinkRecipe(recipe),
                      [&](const Recipe &shrink) {
                        return (shrink.ingredients.size() > i) &&
-                           (equalsAsInt(shrink.ingredients[i], expectedShrink));
+                           (equalAsInt(shrink.ingredients[i].shrinkable, expectedShrink));
                      }));
       });
 }

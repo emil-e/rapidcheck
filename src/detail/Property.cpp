@@ -112,16 +112,28 @@ CaseResult toCaseResult(CaseResult caseResult) {
 namespace {
 
 std::pair<std::string, std::string>
-describeShrinkable(const Shrinkable<Any> &shrinkable) {
+tryDescribeIngredientValue(const gen::detail::Recipe::Ingredient &ingredient) {
+  const auto value = ingredient.shrinkable.value();
+
+  std::string description = ingredient.description;
+  if (description.empty()) {
+    std::ostringstream typeString;
+    value.showType(typeString);
+    description = typeString.str();
+  }
+
+  std::ostringstream valueString;
+  value.showValue(valueString);
+
+  return {description, valueString.str()};
+}
+
+std::pair<std::string, std::string>
+describeIngredient(const gen::detail::Recipe::Ingredient &ingredient) {
   // TODO I don't know if this is the right approach with counterexamples
   // even...
   try {
-    const auto value = shrinkable.value();
-    std::ostringstream valueString;
-    value.showValue(valueString);
-    std::ostringstream typeString;
-    value.showType(typeString);
-    return {typeString.str(), valueString.str()};
+    return tryDescribeIngredientValue(ingredient);
   } catch (const GenerationFailure &e) {
     return {"Generation failed", e.what()};
   } catch (const std::exception &e) {
@@ -148,7 +160,7 @@ mapToCaseDescription(Gen<std::pair<TaggedResult, gen::detail::Recipe>> gen) {
                       std::transform(begin(ingredients),
                                      end(ingredients),
                                      std::back_inserter(example),
-                                     &describeShrinkable);
+                                     &describeIngredient);
                       return example;
                     };
 
