@@ -95,3 +95,45 @@ When RapidCheck runs the test cases for a given property, it starts with a zero 
 - With smaller data, the selection of values is (usually) smaller. There are fewer values between -1 and 1 than there are between -1000 and 1000 and there are fewer possible `std:vector<int>` of length 2 than there are of length 100. This means that the chance of collisions and duplicates is higher at smaller sizes, something that may shake out particular categories of bugs.
 
 In some cases, you may need to modify the size for performance reasons or to shift the distribution of generated values. For example, in the final test case, the number of elements in a generated `std::vector` might average 50 elements which means that `std::vector<std::vector<T>>` may contain 50 x 50 elements when concatenated. If `T` is also expensive, this may lead to very slow properties. You can modify the size of a generator using the `rc::gen::resize` and `rc::gen::scale` combinators. In addition, you can use the `rc::gen::withSize` combinator to have even more control.
+
+## Naming ##
+When printing a counterexample, RapidCheck will by default print the type of each value:
+
+```
+std::vector<int>:
+[1, 3, 5, 10, 2]
+
+int:
+1
+
+int:
+4
+```
+
+While it is possible to determine what value in the counterexample corresponds to what value in the code by looking at the position (values are listed in the order they were picked), it can certainly be confusing.
+
+RapidCheck allows you to attach a name to your generators using the `as` method:
+
+```C++
+auto elements = *gen::arbitrary<std::vector<int>>().as("elements");
+
+const auto indexIntoElements =
+    gen::inRange<std::size_t>(0, elements.size()).as("index into elements");
+const auto a = *indexIntoElements;
+const auto b = *indexIntoElements;
+```
+
+`as` returns a generator with the given name that is otherwise identical to the one it was called on. When a counterexample is printed, the type will be replaced with the name of the generator instead:
+
+```
+elements:
+[1, 3, 5, 10, 2]
+
+index into elements:
+1
+
+index into elements:
+4
+```
+
+The name of a generator can be retrieved using `.name()` method.
