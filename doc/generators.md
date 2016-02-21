@@ -71,12 +71,10 @@ namespace rc {
 template<>
 struct Arbitrary<Person> {
   static Gen<Person> arbitrary() {
-    return gen::exec([] {
-      Person person;
-      person.firstName = *gen::arbitrary<std::string>();
-      person.lastName = *gen::arbitrary<std::string>();
-      person.age = *gen::inRange(0, 100);
-      return person;
+    return gen::build<Person>(
+        gen::set(&Person::firstName),
+        gen::set(&Person::lastName),
+        gen::set(&Person::age, gen::inRange(0, 100)));
     });
   }
 };
