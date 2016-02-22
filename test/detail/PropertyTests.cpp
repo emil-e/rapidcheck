@@ -268,31 +268,66 @@ struct Arbitrary<Fixed<N>> {
 TEST_CASE("toProperty") {
   using ShrinkableResult = Shrinkable<CaseDescription>;
 
-  prop("counterexample contains descriptions of picked values",
+  prop("counterexample contains arguments as tuple",
+       [](const GenParams &params) {
+         const auto gen = toProperty([=](Fixed<1>, Fixed<2>, Fixed<3>) {});
+         const auto shrinkable = gen(params.random, params.size);
+         const auto expected =
+             toString(std::make_tuple(Fixed<1>(), Fixed<2>(), Fixed<3>()));
+
+         onAnyPath(shrinkable,
+                   [&](const ShrinkableResult &value,
+                       const ShrinkableResult &shrink) {
+                     RC_ASSERT(value.value().example().front().second ==
+                               expected);
+                   });
+       });
+
+  prop("counterexample contains string versions of picked values",
        [](const GenParams &params) {
          const auto n = *gen::inRange<std::size_t>(0, 10);
-         const auto gen = toProperty([=](Fixed<1>, Fixed<2>, Fixed<3>) {
+         const auto gen = toProperty([=] {
            for (std::size_t i = 0; i < n; i++) {
              *gen::arbitrary<Fixed<1337>>();
            }
          });
          const auto shrinkable = gen(params.random, params.size);
-
-         Example expected;
-         expected.reserve(n + 1);
-         using ArgsTuple = std::tuple<Fixed<1>, Fixed<2>, Fixed<3>>;
-         expected.emplace_back(
-             typeToString<ArgsTuple>(),
-             toString(std::make_tuple(Fixed<1>(), Fixed<2>(), Fixed<3>())));
-         expected.insert(end(expected),
-                         n,
-                         std::make_pair(typeToString<Fixed<1337>>(),
-                                        toString(Fixed<1337>())));
+         const auto expected = toString(Fixed<1337>());
 
          onAnyPath(shrinkable,
                    [&](const ShrinkableResult &value,
                        const ShrinkableResult &shrink) {
-                     RC_ASSERT(value.value().example() == expected);
+                     for (const auto &desc : value.value().example()) {
+                       RC_ASSERT(desc.second == expected);
+                     }
+                   });
+       });
+
+  prop("counterexample contains type of value generator has no name",
+       [](const GenParams &params) {
+         const auto gen = toProperty([] { *gen::arbitrary<int>(); });
+         const auto shrinkable = gen(params.random, params.size);
+         const auto expected = typeToString<int>();
+
+         onAnyPath(shrinkable,
+                   [&](const ShrinkableResult &value,
+                       const ShrinkableResult &shrink) {
+                     RC_ASSERT(value.value().example().front().first ==
+                               expected);
+                   });
+       });
+
+  prop("counterexample contains name of generator if it has one",
+       [](const GenParams &params) {
+         const auto name = *gen::nonEmpty<std::string>();
+         const auto gen = gen::arbitrary<int>().as(name);
+         const auto property = toProperty([=] { *gen; });
+         const auto shrinkable = property(params.random, params.size);
+
+         onAnyPath(shrinkable,
+                   [&](const ShrinkableResult &value,
+                       const ShrinkableResult &shrink) {
+                     RC_ASSERT(value.value().example().front().first == name);
                    });
        });
 
@@ -318,20 +353,13 @@ TEST_CASE("toProperty") {
           }
         });
         const auto shrinkable = gen(params.random, params.size);
-
-        Example expected;
-        expected.reserve(n);
-        expected.insert(end(expected),
-                        n,
-                        std::make_pair(typeToString<Fixed<1337>>(),
-                                       toString(Fixed<1337>())));
-        // TODO better test
-        expected[throwIndex] = {"Generation failed", msg};
+        const std::pair<std::string, std::string> expected("Generation failed",
+                                                           msg);
 
         onAnyPath(
             shrinkable,
             [&](const ShrinkableResult &value, const ShrinkableResult &shrink) {
-              RC_ASSERT(value.value().example() == expected);
+              RC_ASSERT(value.value().example()[throwIndex] == expected);
             });
       });
 

@@ -11,13 +11,13 @@ Seq<Recipe> shrinkRecipe(const Recipe &recipe) {
   using Any = rc::detail::Any;
 
   return seq::mapcat(
-      seq::range<size_t>(recipe.numFixed, recipe.ingredients.size()),
+      seq::range<std::size_t>(recipe.numFixed, recipe.ingredients.size()),
       [=](std::size_t i) {
-        return seq::map(recipe.ingredients[i].shrinks(),
+        return seq::map(recipe.ingredients[i].shrinkable.shrinks(),
                         [=](Shrinkable<Any> &&shrink) {
                           Recipe shrunkRecipe(recipe);
                           const auto it = begin(shrunkRecipe.ingredients) + i;
-                          *it = std::move(shrink);
+                          it->shrinkable = std::move(shrink);
                           shrunkRecipe.ingredients.erase(
                               it + 1, end(shrunkRecipe.ingredients));
                           shrunkRecipe.numFixed = i;

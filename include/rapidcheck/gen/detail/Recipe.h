@@ -11,11 +11,29 @@ namespace gen {
 namespace detail {
 
 /// Describes the recipe for generating a certain value. This consists of vector
-/// `Shrinkable<Any>` which are that sequence of value that were picked and a
-/// number which describes the number of value that have already by exhaustively
-/// shrunk. It also includes the `Random` generator to use and the size.
+/// of "ingredients" which are the shrinkable values picked to produce the value
+/// and descriptions of what those values represent. It also includes the
+/// `Random` generator to use and the size.
 struct Recipe {
-  using Ingredients = std::vector<Shrinkable<rc::detail::Any>>;
+  struct Ingredient {
+    Ingredient(std::string &&d, Shrinkable<rc::detail::Any> &&s)
+        : description(std::move(d))
+        , shrinkable(std::move(s)) {}
+
+    /// A description of the shrinkable value.
+    std::string description;
+
+    // The shrinkable value itself.
+    Shrinkable<rc::detail::Any> shrinkable;
+
+    rc::detail::Any value() const { return shrinkable.value(); }
+
+    Seq<Shrinkable<rc::detail::Any>> shrinks() const {
+      return shrinkable.shrinks();
+    }
+  };
+
+  using Ingredients = std::vector<Ingredient>;
 
   Random random;
   int size = 0;

@@ -31,9 +31,11 @@ public:
   template <typename T>
   T &get();
 
-  /// Returns a pair of the type name and a string representation of the
-  /// value.
-  std::pair<std::string, std::string> describe() const;
+  /// Outputs the name of the type as a string to the given output stream.
+  void showType(std::ostream &os) const;
+
+  /// Outputs a string representation of the value to the given output stream.
+  void showValue(std::ostream &os) const;
 
   /// Returns `true` if this `Any` is non-null.
   explicit operator bool() const;

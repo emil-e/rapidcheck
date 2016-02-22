@@ -13,7 +13,8 @@ namespace detail {
 class Any::IAnyImpl {
 public:
   virtual void *get() = 0;
-  virtual std::pair<std::string, std::string> describe() const = 0;
+  virtual void showType(std::ostream &os) const = 0;
+  virtual void showValue(std::ostream &os) const = 0;
   virtual const std::type_info &typeInfo() const = 0;
   virtual ~IAnyImpl() = default;
 };
@@ -27,9 +28,9 @@ public:
 
   void *get() override { return &m_value; }
 
-  std::pair<std::string, std::string> describe() const override {
-    return {typeToString<T>(), toString(m_value)};
-  }
+  void showType(std::ostream &os) const override { rc::detail::showType<T>(os); }
+
+  void showValue(std::ostream &os) const override { show(m_value, os); }
 
   const std::type_info &typeInfo() const override { return typeid(T); }
 

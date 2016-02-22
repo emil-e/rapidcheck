@@ -58,6 +58,11 @@ Gen<T>::Gen(Impl &&impl)
     : m_impl(new GenImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}
 
 template <typename T>
+std::string Gen<T>::name() const {
+  return m_name;
+}
+
+template <typename T>
 Shrinkable<T> Gen<T>::operator()(const Random &random, int size) const
     noexcept {
   try {
@@ -82,13 +87,20 @@ T Gen<T>::operator*() const {
   using namespace detail;
   using rc::gen::detail::param::CurrentHandler;
   const auto handler = ImplicitParam<CurrentHandler>::value();
-  return std::move(
-      handler->onGenerate(gen::map(*this, &Any::of<T>)).template get<T>());
+  return std::move(handler->onGenerate(gen::map(*this, &Any::of<T>).as(m_name))
+                       .template get<T>());
 }
 
 template <typename T>
-Gen<T>::Gen(const Gen &other) noexcept
-    : m_impl(other.m_impl) {
+Gen<T> Gen<T>::as(const std::string &name) const {
+  auto gen = *this;
+  gen.m_name = name;
+  return gen;
+}
+
+template <typename T>
+Gen<T>::Gen(const Gen &other) noexcept : m_impl(other.m_impl),
+                                         m_name(other.m_name) {
   m_impl->retain();
 }
 
@@ -99,11 +111,13 @@ Gen<T> &Gen<T>::operator=(const Gen &rhs) noexcept {
     m_impl->release();
   }
   m_impl = rhs.m_impl;
+  m_name = rhs.m_name;
   return *this;
 }
 
 template <typename T>
-Gen<T>::Gen(Gen &&other) noexcept : m_impl(other.m_impl) {
+Gen<T>::Gen(Gen &&other) noexcept : m_impl(other.m_impl),
+                                    m_name(std::move(other.m_name)) {
   other.m_impl = nullptr;
 }
 
@@ -114,6 +128,7 @@ Gen<T> &Gen<T>::operator=(Gen &&rhs) noexcept {
   }
   m_impl = rhs.m_impl;
   rhs.m_impl = nullptr;
+  m_name = std::move(rhs.m_name);
   return *this;
 }
 
