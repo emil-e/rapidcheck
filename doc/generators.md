@@ -134,4 +134,4 @@ index into elements:
 4
 ```
 
-The name of a generator can be retrieved using `.name()` method.
+The name of a generator can be retrieved using the `.name()` method.
