@@ -23,19 +23,31 @@ public:
       : m_initialState(std::forward<ModelArg>(initialState))
       , m_genFunc(std::forward<GenFuncArg>(genFunc)) {}
 
-  Shrinkable<Commands<Cmd>> operator()(const Random &random,
-                                          int size) const {
+  Shrinkable<Commands<Cmd>> operator()(const Random &random, int size) const {
     return generateCommands(random, size);
   }
 
 private:
-  struct CommandEntry {
-    CommandEntry(Random &&aRandom, Shrinkable<CmdSP> &&aShrinkable)
-        : random(std::move(aRandom))
-        , shrinkable(std::move(aShrinkable)) {}
+  class CommandEntry {
+  public:
+    CommandEntry(Random &&random, Shrinkable<CmdSP> &&shrinkable)
+        : m_random(std::move(random))
+        , m_shrinkable(std::move(shrinkable))
+        , m_command(m_shrinkable.value()) {}
 
-    Random random;
-    Shrinkable<CmdSP> shrinkable;
+    const Random &random() const { return m_random; }
+    const Shrinkable<CmdSP> &shrinkable() const { return m_shrinkable; }
+    const CmdSP &command() const { return m_command; }
+
+    void setShrinkable(Shrinkable<CmdSP> &&s) {
+      m_shrinkable = std::move(s);
+      m_command = m_shrinkable.value();
+    }
+
+  private:
+    Random m_random;
+    Shrinkable<CmdSP> m_shrinkable;
+    CmdSP m_command;
   };
 
   struct CommandSequence {
@@ -52,7 +64,7 @@ private:
     Model stateAt(std::size_t n) const {
       auto state = initialState;
       for (std::size_t i = 0; i < n; i++) {
-        entries[i].shrinkable.value()->apply(state);
+        entries[i].command()->apply(state);
       }
 
       return state;
@@ -69,23 +81,21 @@ private:
 
     bool repairEntryAt(std::size_t i, Model &state) {
       auto &entry = entries[i];
-      const auto cmd = entry.shrinkable.value();
-      if (!isValidCommand(*cmd, state)) {
+      if (!isValidCommand(*entry.command(), state)) {
         return regenerateEntryAt(i, state);
       }
-      cmd->apply(state);
+      entry.command()->apply(state);
       return true;
     }
 
     bool regenerateEntryAt(std::size_t i, Model &state) {
       try {
         auto &entry = entries[i];
-        entry.shrinkable = genFunc(state)(entry.random, size);
-        const auto cmd = entry.shrinkable.value();
-        if (!isValidCommand(*cmd, state)) {
+        entry.setShrinkable(genFunc(state)(entry.random(), size));
+        if (!isValidCommand(*entry.command(), state)) {
           return false;
         }
-        cmd->apply(state);
+        entry.command()->apply(state);
       } catch (const GenerationFailure &) {
         return false;
       }
@@ -95,7 +105,7 @@ private:
   };
 
   Shrinkable<Commands<Cmd>> generateCommands(const Random &random,
-                                                int size) const {
+                                             int size) const {
     return shrinkable::map(generateSequence(random, size),
                            [](const CommandSequence &sequence) {
                              Commands<Cmd> cmds;
@@ -105,7 +115,7 @@ private:
                                             end(entries),
                                             std::back_inserter(cmds),
                                             [](const CommandEntry &entry) {
-                                              return entry.shrinkable.value();
+                                              return entry.command();
                                             });
                              return cmds;
                            });
@@ -174,26 +184,27 @@ private:
   }
 
   static Seq<CommandSequence> shrinkIndividual(const CommandSequence &s) {
-    return seq::mapcat(seq::range<std::size_t>(0, s.entries.size()),
-                       [=](std::size_t i) {
-                         const auto preState = s.stateAt(i);
-                         auto valid = seq::filter(
-                             s.entries[i].shrinkable.shrinks(),
-                             [=](const Shrinkable<CmdSP> &s) {
-                               return isValidCommand(*s.value(), preState);
-                             });
+    return seq::mapcat(
+        seq::range<std::size_t>(0, s.entries.size()),
+        [=](std::size_t i) {
+          const auto preState = s.stateAt(i);
+          auto valid =
+              seq::filter(s.entries[i].shrinkable().shrinks(),
+                          [=](const Shrinkable<CmdSP> &s) {
+                            return isValidCommand(*s.value(), preState);
+                          });
 
-                         return seq::map(std::move(valid),
-                                         [=](Shrinkable<CmdSP> &&cmd) {
-                                           auto shrunk = s;
-                                           auto &entry = shrunk.entries[i];
+          return seq::map(std::move(valid),
+                          [=](Shrinkable<CmdSP> &&shrink) {
+                            auto shrunk = s;
+                            auto &entry = shrunk.entries[i];
 
-                                           entry.shrinkable = std::move(cmd);
-                                           shrunk.repairEntries();
+                            entry.setShrinkable(std::move(shrink));
+                            shrunk.repairEntries();
 
-                                           return shrunk;
-                                         });
-                       });
+                            return shrunk;
+                          });
+        });
   }
 
   Model m_initialState;
