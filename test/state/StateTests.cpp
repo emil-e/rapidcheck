@@ -4,7 +4,7 @@
 
 #include <typeindex>
 
-#include "util/StringVec.h"
+#include "util/IntVec.h"
 #include "util/GenUtils.h"
 
 using namespace rc;
@@ -13,28 +13,28 @@ using namespace rc::test;
 
 TEST_CASE("state::isValidCommand") {
   SECTION("returns true for valid commands") {
-    REQUIRE(isValidCommand(PushBack("foo"), StringVec()));
+    REQUIRE(isValidCommand(PushBack(1337), IntVec()));
   }
 
   SECTION("returns false for invalid commands") {
-    REQUIRE(!isValidCommand(PopBack(), StringVec()));
+    REQUIRE(!isValidCommand(PopBack(), IntVec()));
   }
 }
 
 namespace {
 
-struct A : public StringVecCmd {};
-struct B : public StringVecCmd {};
-struct C : public StringVecCmd {};
+struct A : public IntVecCmd {};
+struct B : public IntVecCmd {};
+struct C : public IntVecCmd {};
 
-struct DualConstructible : public StringVecCmd {
+struct DualConstructible : public IntVecCmd {
   DualConstructible();
-  DualConstructible(const StringVec &s)
+  DualConstructible(const IntVec &s)
       : state(s) {}
-  StringVec state;
+  IntVec state;
 };
 
-struct AlwaysDiscard : public StringVecCmd {
+struct AlwaysDiscard : public IntVecCmd {
   AlwaysDiscard() { RC_DISCARD("Nope"); }
 };
 
@@ -42,7 +42,7 @@ struct AlwaysDiscard : public StringVecCmd {
 
 TEST_CASE("state::execOneOf") {
   prop("returns one of the commands",
-       [](const GenParams &params, const StringVec &s0) {
+       [](const GenParams &params, const IntVec &s0) {
          const auto cmd =
              state::gen::execOneOf<A, B, C>(s0)(params.random, params.size)
                  .value();
@@ -52,7 +52,7 @@ TEST_CASE("state::execOneOf") {
        });
 
   prop("all commands are eventually returned",
-       [](const GenParams &params, const StringVec &s0) {
+       [](const GenParams &params, const IntVec &s0) {
          auto r = params.random;
          const auto gen = state::gen::execOneOf<A, B, C>(s0);
          std::set<std::type_index> all{typeid(A), typeid(B), typeid(C)};
@@ -66,7 +66,7 @@ TEST_CASE("state::execOneOf") {
        });
 
   prop("uses state constructor if there is one, passing it the state",
-       [](const GenParams &params, const StringVec &s0) {
+       [](const GenParams &params, const IntVec &s0) {
          const auto cmd = state::gen::execOneOf<DualConstructible>(s0)(
                               params.random, params.size)
                               .value();
@@ -76,12 +76,12 @@ TEST_CASE("state::execOneOf") {
 
 TEST_CASE("state::check") {
   prop("if no command fails, check succeeds",
-       [](const StringVec &s0, StringVec sut) {
+       [](const IntVec &s0, IntVec sut) {
          state::check(s0, sut, &state::gen::execOneOf<PushBack>);
        });
 
   prop("if some command fails, check fails",
-       [](const StringVec &s0, StringVec sut) {
+       [](const IntVec &s0, IntVec sut) {
          try {
            state::check(s0, sut, &state::gen::execOneOf<AlwaysFail>);
            RC_FAIL("Check succeeded");
