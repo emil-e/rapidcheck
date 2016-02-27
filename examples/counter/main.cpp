@@ -35,10 +35,9 @@ struct Inc : public state::Command<CounterModel, Counter> {
 };
 
 struct Dec : public state::Command<CounterModel, Counter> {
-  void apply(CounterModel &s0) const override {
-    RC_PRE(s0.value > 0);
-    s0.value--;
-  }
+  void preconditions(const CounterModel &s0) const override { RC_PRE(s0.value > 0); }
+
+  void apply(CounterModel &s0) const override { s0.value--; }
 
   void run(const CounterModel &state, Counter &counter) const override {
     counter.dec();

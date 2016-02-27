@@ -20,8 +20,7 @@ void check(const Model &initialState, Sut &sut, GenFunc &&generationFunc) {
 template <typename Model, typename Sut>
 bool isValidCommand(const Command<Model, Sut> &command, const Model &s0) {
   try {
-    auto s1 = s0;
-    command.apply(s1);
+    command.preconditions(s0);
   } catch (const ::rc::detail::CaseResult &result) {
     if (result.type == ::rc::detail::CaseResult::Type::Discard) {
       return false;

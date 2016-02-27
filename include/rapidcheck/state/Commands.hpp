@@ -8,6 +8,7 @@ namespace state {
 template <typename Cmds, typename Model>
 void applyAll(const Cmds &commands, Model &state) {
   for (const auto &command : commands) {
+    command->preconditions(state);
     command->apply(state);
   }
 }
@@ -17,8 +18,7 @@ void runAll(const Cmds &commands, const Model &state, Sut &sut) {
   Model currentState = state;
   for (const auto &command : commands) {
     auto preState = currentState;
-    // We need to apply first so we trigger any precondition assertions
-    // before running
+    command->preconditions(currentState);
     command->apply(currentState);
     command->run(preState, sut);
   }

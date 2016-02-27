@@ -17,8 +17,11 @@ struct Bag {
 using BagCommand = state::Command<Bag, Bag>;
 
 struct Open : public BagCommand {
-  void apply(Model &s0) const override {
+  void preconditions(const Model &s0) const override {
     RC_PRE(!s0.open);
+  }
+
+  void apply(Model &s0) const override {
     s0.open = true;
   }
 
@@ -28,8 +31,11 @@ struct Open : public BagCommand {
 };
 
 struct Close : public BagCommand {
-  void apply(Model &s0) const override {
+  void preconditions(const Model &s0) const override {
     RC_PRE(s0.open);
+  }
+
+  void apply(Model &s0) const override {
     s0.open = false;
   }
 
@@ -41,8 +47,11 @@ struct Close : public BagCommand {
 struct Add : public BagCommand {
   int item = *gen::inRange<int>(0, 10);
 
-  void apply(Model &s0) const override {
+  void preconditions(const Model &s0) const override {
     RC_PRE(s0.open);
+  }
+
+  void apply(Model &s0) const override {
     s0.items.push_back(item);
   }
 
@@ -60,9 +69,12 @@ struct Del : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  void apply(Model &s0) const override {
+  void preconditions(const Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
+  }
+
+  void apply(Model &s0) const override {
     auto s1 = s0;
     s0.items.erase(begin(s0.items) + index);
   }
@@ -81,7 +93,7 @@ struct BuggyGet : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  void apply(Model &s0) const override {
+  void preconditions(const Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
   }
@@ -101,9 +113,12 @@ struct BuggyDelAll : public BagCommand {
 
   explicit BuggyDelAll(const Bag &s0) { value = *gen::elementOf(s0.items); }
 
-  void apply(Model &s0) const override {
+  void preconditions(const Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(std::find(begin(s0.items), end(s0.items), value) != end(s0.items));
+  }
+
+  void apply(Model &s0) const override {
     s0.items.erase(std::remove(begin(s0.items), end(s0.items), value),
                    end(s0.items));
   }
@@ -120,7 +135,7 @@ struct SneakyBuggyGet : public BagCommand {
 
   explicit SneakyBuggyGet(const Bag &s0) { value = *gen::elementOf(s0.items); }
 
-  void apply(Model &s0) const override {
+  void preconditions(const Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(std::find(begin(s0.items), end(s0.items), value) != end(s0.items));
   }

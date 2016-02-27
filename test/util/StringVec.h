@@ -29,8 +29,11 @@ struct PushBack : public StringVecCmd {
 };
 
 struct PopBack : public StringVecCmd {
-  void apply(StringVec &s0) const override {
+  void preconditions(const StringVec &s0) const override {
     RC_PRE(!s0.empty());
+  }
+
+  void apply(StringVec &s0) const override {
     s0.pop_back();
   }
 
@@ -46,7 +49,7 @@ struct AlwaysFail : public StringVecCmd {
 };
 
 struct PreNeverHolds : public StringVecCmd {
-  void apply(StringVec &s0) const override {
+  void preconditions(const StringVec &s0) const override {
     RC_DISCARD("Preconditions never hold");
   }
 };

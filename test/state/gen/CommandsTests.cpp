@@ -61,10 +61,11 @@ struct CountCmd : public IntVecCmd {
       : value(x) {}
   int value;
 
-  void apply(IntVec &s0) const override {
+  void preconditions(const IntVec &s0) const override {
     RC_PRE(s0.back() == (value - 1));
-    s0.push_back(value);
   }
+
+  void apply(IntVec &s0) const override { s0.push_back(value); }
 
   void run(const IntVec &s0, IntVec &sut) const override {
     sut.push_back(value);

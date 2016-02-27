@@ -56,8 +56,11 @@ struct NewScope : public ImplicitCommand {
 struct BindA : public ImplicitCommand {
   ParamA::ValueType value = *gen::arbitrary<ParamA::ValueType>();
 
-  void apply(ImplicitParamModel &s0) const override {
+  void preconditions(const ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
+  }
+
+  void apply(ImplicitParamModel &s0) const override {
     s0.top().bindingsA.emplace(value);
   }
 
@@ -73,8 +76,11 @@ struct BindA : public ImplicitCommand {
 struct BindB : public ImplicitCommand {
   ParamB::ValueType value = *gen::arbitrary<ParamB::ValueType>();
 
-  void apply(ImplicitParamModel &s0) const override {
+  void preconditions(const ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
+  }
+
+  void apply(ImplicitParamModel &s0) const override {
     s0.top().bindingsB.emplace(value);
   }
 
@@ -90,8 +96,11 @@ struct BindB : public ImplicitCommand {
 struct ModifyA : public ImplicitCommand {
   ParamA::ValueType value = *gen::arbitrary<ParamA::ValueType>();
 
-  void apply(ImplicitParamModel &s0) const override {
+  void preconditions(const ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
+  }
+
+  void apply(ImplicitParamModel &s0) const override {
     s0.top().bindingsA.top() = value;
   }
 
@@ -107,8 +116,11 @@ struct ModifyA : public ImplicitCommand {
 struct ModifyB : public ImplicitCommand {
   ParamB::ValueType value = *gen::arbitrary<ParamB::ValueType>();
 
-  void apply(ImplicitParamModel &s0) const override {
+  void preconditions(const ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
+  }
+
+  void apply(ImplicitParamModel &s0) const override {
     s0.top().bindingsB.top() = value;
   }
 
@@ -122,9 +134,12 @@ struct ModifyB : public ImplicitCommand {
 };
 
 struct PopA : public ImplicitCommand {
-  void apply(ImplicitParamModel &s0) const override {
+  void preconditions(const ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
     RC_PRE(s0.top().bindingsA.size() > 1U);
+  }
+
+  void apply(ImplicitParamModel &s0) const override {
     s0.top().bindingsA.pop();
   }
 
@@ -139,9 +154,12 @@ struct PopA : public ImplicitCommand {
 };
 
 struct PopB : public ImplicitCommand {
-  void apply(ImplicitParamModel &s0) const override {
+  void preconditions(const ImplicitParamModel &s0) const override {
     RC_PRE(!s0.empty());
     RC_PRE(s0.top().bindingsB.size() > 1U);
+  }
+
+  void apply(ImplicitParamModel &s0) const override {
     s0.top().bindingsB.pop();
   }
 
@@ -156,11 +174,12 @@ struct PopB : public ImplicitCommand {
 };
 
 struct PopScope : public ImplicitCommand {
-  void apply(ImplicitParamModel &s0) const override {
+  void preconditions(const ImplicitParamModel &s0) const override {
     // Never pop last scope
     RC_PRE(s0.size() > 1U);
-    s0.pop();
   }
+
+  void apply(ImplicitParamModel &s0) const override { s0.pop(); }
 
   void run(const ImplicitParamModel &s0,
            ImplicitParamSystem &system) const override {

@@ -24,7 +24,7 @@ void applyAll(const Cmds &commands, Model &state);
 template <typename Cmds, typename Model, typename Sut>
 void runAll(const Cmds &commands, const Model &state, Sut &sut);
 
-/// Checks whether command is valid for the given state.
+/// Checks whether the given command sequence is valid for the given state.
 template <typename Cmds, typename Model>
 bool isValidSequence(const Cmds &commands, const Model &s0);
 

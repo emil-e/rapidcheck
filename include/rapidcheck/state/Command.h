@@ -13,11 +13,15 @@ public:
   using Sut = SutT;
   using CommandType = Command<Model, Sut>;
 
+  // Asserts (using `RC_PRE`) that this command is valid for the given model
+  // state.
+  //
+  /// Assert preconditions using `RC_PRE` or `RC_DISCARD`. If preconditions do
+  /// not hold, the command will be discarded and a new one will be generated.
+  virtual void preconditions(const Model &s0) const;
+
   /// Applies the command to the given model state. Default implementation does
   /// nothing.
-  ///
-  /// Assert preconditions using `RC_PRE` or `RC_DISCARD`. If preconditions do
-  /// not hold, command will be discarded and a new one will be generated.
   virtual void apply(Model &s0) const;
 
   /// Applies this command to the given system under test assuming it has the
