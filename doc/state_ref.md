@@ -10,11 +10,16 @@ This function must be used inside a property, it cannot be used standalone.
 ## `Command<Model, Sut>` ##
 Represents an operation in the state testing framework. The `Model` type parameter is the type of the model that models `Sut` which is the actual System Under Test. These can also be accessed through the `Model` and `Sut` member type alises.
 
+#### `virtual void preconditions(const Model &s0) const` ####
+If your command is not valid for all states, you can implement this method to validate preconditions. Preconditions can be asserted using any of the discarding macros such as `RC_PRE` or `RC_DISCARD`. If the command is discarded, RapidCheck will simply try to generate a new one. This method is intended to be overriden but has a default implementation that does nothing which is what you want if your command has no preconditions.
+
+**Note:** It is important to not modify the model in this method. While the argument is `const`, this does not always prevent modification, depending on the type of `Model`. For example, if `Model` is `std::shared_ptr<Something>`, the `const`ness does not help in the slightest.
+
 #### `virtual void apply(Model &s0) const` ####
-Applies this command to the given state. Preconditions can be asserted using any of the discarding macros such as `RC_PRE` or `RC_DISCARD`. Generation failure (such as trying to generate a value from an empty range using `gen::inRange`) will also cause the commands to be discarded. If the command is discarded, RapidCheck will simply try to generate a new one. This method is intended to be overriden but has a default implementation that does nothing, something that can be useful for commands that do not modify state.
+Applies this command to the given state. The effect of this command on the model should be equivalent to this commands effect on the System Under Test. This method is intended to be overriden but has a default implementation that does nothing, something that can be useful for commands that do not modify state.
 
 #### `virtual void run(const Model &s0, Sut &sut) const` ####
-Applies this command to the given System Under Test. The state before this command has been applied is also passed in. If you need the post state, you can get this using the `nextState` convenience method. This is the method in which to place your assertions. This method is intended to be overriden but has a default implementation that does nothing.
+Applies this command to the given System Under Test. The state before this command has been applied is also passed in. If you need the post state, you can get this using the `nextState` convenience method. This is the method in which to place your assertions (`RC_ASSERT` et al.). This method is intended to be overriden but has a default implementation that does nothing.
 
 #### `virtual void show(std::ostream &os) const` ####
 Outputs a string representation of the command to the given output stream. The default implementation outputs the type name (via RTTI) but if your commands has any sort of parameters, you will likely want to override this with a custom implementation.
