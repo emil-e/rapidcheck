@@ -54,6 +54,12 @@ struct PreNeverHolds : public IntVecCmd {
   }
 };
 
+struct DiscardInConstructor : public IntVecCmd {
+  DiscardInConstructor(const IntVec &s0) { RC_DISCARD(); }
+
+  void show(std::ostream &os) const override { os << "DiscardInConstructor"; }
+};
+
 struct SomeCommand : IntVecCmd {};
 
 } // namespace test

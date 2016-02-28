@@ -70,6 +70,11 @@ struct CountCmd : public IntVecCmd {
   void show(std::ostream &os) const override { os << value; }
 };
 
+struct TaggedCountdownCmd : public state::Command<bool, bool> {
+  int countdown = *genCountdown();
+  int tag = *gen::noShrink(gen::arbitrary<int>());
+};
+
 } // namespace
 
 TEST_CASE("state::gen::commands") {
@@ -187,5 +192,92 @@ TEST_CASE("state::gen::commands") {
         RC_ASSERT(os.str().find("AlwaysFail") != std::string::npos);
       });
 
-  // TODO test give up
+  prop(
+      "for every shrink for every command, there exists a shrink of the "
+      "sequence that includes that shrink",
+      [](const GenParams &params) {
+        using CommandType = TaggedCountdownCmd::CommandType;
+        using CommandsType = state::Commands<CommandType>;
+
+        const auto gen = state::gen::commands<CommandType>(
+            false, &state::gen::execOneOf<TaggedCountdownCmd>);
+        const auto shrinkable = gen(params.random, params.size);
+
+        // Pick one of the commands
+        const auto commands = shrinkable.value();
+        const auto cmdIndex = *gen::inRange<std::size_t>(0, commands.size());
+        const auto &command =
+            static_cast<const TaggedCountdownCmd &>(*commands[cmdIndex]);
+
+        // Expect to find a command with the same tag but smaller countdown.
+        const auto expectedCountdown = *gen::inRange(0, command.countdown);
+        RC_ASSERT(seq::any(shrinkable.shrinks(),
+                           [&](const Shrinkable<CommandsType> &shrink) {
+                             for (const auto &cmd : shrink.value()) {
+                               const auto tccmd =
+                                   static_cast<const TaggedCountdownCmd &>(
+                                       *cmd);
+                               if ((tccmd.tag == command.tag) &&
+                                   (tccmd.countdown == expectedCountdown)) {
+                                 return true;
+                               }
+                             }
+
+                             return false;
+                           }));
+      });
+
+  prop(
+      "for every command, there exists a shrink of the sequence that does not "
+      "include that command",
+      [](const GenParams &params) {
+        using CommandType = TaggedCountdownCmd::CommandType;
+        using CommandsType = state::Commands<CommandType>;
+
+        const auto gen = state::gen::commands<CommandType>(
+            false, &state::gen::execOneOf<TaggedCountdownCmd>);
+        const auto shrinkable = gen(params.random, params.size);
+
+        // Pick one of the commands
+        const auto commands = shrinkable.value();
+        const auto cmdIndex = *gen::inRange<std::size_t>(0, commands.size());
+        const auto &command =
+            static_cast<const TaggedCountdownCmd &>(*commands[cmdIndex]);
+
+        // Expect to find a shrink that has no command with that tag.
+        RC_ASSERT(seq::any(shrinkable.shrinks(),
+                           [&](const Shrinkable<CommandsType> &shrink) {
+                             for (const auto &cmd : shrink.value()) {
+                               const auto tag =
+                                   static_cast<const TaggedCountdownCmd &>(*cmd)
+                                       .tag;
+                               if (tag == command.tag) {
+                                 return false;
+                               }
+                             }
+
+                             return true;
+                           }));
+      });
+
+  prop("gives up if unable to generate sequence of enough length",
+       [](const GenParams &params, const IntVec &s0) {
+         const auto gen = state::gen::commands<IntVecCmd>(
+             s0, &state::gen::execOneOf<PreNeverHolds>);
+
+         const auto shrinkable = gen(params.random, params.size);
+         RC_ASSERT_THROWS_AS(shrinkable.value(), GenerationFailure);
+       });
+
+  prop("discards commands that discard in constructor",
+       [](const GenParams &params, const IntVec &s0) {
+         const auto gen = state::gen::commands<IntVecCmd>(
+             s0, &state::gen::execOneOf<DiscardInConstructor, PushBack>);
+         const auto commands = gen(params.random, params.size).value();
+         for (const auto &cmd : commands) {
+           std::ostringstream ss;
+           cmd->show(ss);
+           RC_ASSERT(ss.str() != "DiscardInConstructor");
+         }
+       });
 }
