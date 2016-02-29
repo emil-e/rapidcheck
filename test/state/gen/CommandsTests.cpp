@@ -2,8 +2,9 @@
 #include <rapidcheck/catch.h>
 #include <rapidcheck/state.h>
 
-#include "util/IntVec.h"
 #include "util/GenUtils.h"
+#include "util/IntVec.h"
+#include "util/NonCopyableModel.h"
 #include "util/ShrinkableUtils.h"
 
 using namespace rc;
@@ -279,5 +280,14 @@ TEST_CASE("state::gen::commands") {
            cmd->show(ss);
            RC_ASSERT(ss.str() != "DiscardInConstructor");
          }
+       });
+
+  prop("works with non-copyable models",
+       [](const GenParams &params) {
+         const auto commands = *genNonCopyableCommands();
+         RC_ASSERT(isValidSequence(commands, &initialNonCopyableModel));
+
+         NonCopyableModel s0;
+         state::applyAll(commands, s0);
        });
 }

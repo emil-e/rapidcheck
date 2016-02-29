@@ -13,22 +13,37 @@ void applyAll(const Cmds &commands, Model &state) {
   }
 }
 
-template <typename Cmds, typename Model, typename Sut>
-void runAll(const Cmds &commands, const Model &state, Sut &sut) {
-  Model currentState = state;
+template <typename Cmds>
+void runAll(const Cmds &commands,
+            const typename Cmds::value_type::element_type::Model &state,
+            typename Cmds::value_type::element_type::Sut &sut) {
+  runAll(commands, fn::constant(state), sut);
+}
+
+template <typename Cmds, typename MakeInitialState, typename>
+void runAll(const Cmds &commands,
+            const MakeInitialState &makeInitialState,
+            typename Cmds::value_type::element_type::Sut &sut) {
+  auto currentState = makeInitialState();
   for (const auto &command : commands) {
-    auto preState = currentState;
     command->preconditions(currentState);
+    command->run(currentState, sut);
     command->apply(currentState);
-    command->run(preState, sut);
   }
 }
 
-template <typename Cmds, typename Model>
-bool isValidSequence(const Cmds &commands, const Model &s0) {
+template <typename Cmds>
+bool isValidSequence(const Cmds &commands,
+                     const typename Cmds::value_type::element_type::Model &s0) {
+  return isValidSequence(commands, fn::constant(s0));
+}
+
+template <typename Cmds, typename MakeInitialState, typename>
+bool isValidSequence(const Cmds &commands,
+                     const MakeInitialState &makeInitialState) {
+  auto state = makeInitialState();
   try {
-    auto s1 = s0;
-    applyAll(commands, s1);
+    applyAll(commands, state);
   } catch (const ::rc::detail::CaseResult &result) {
     if (result.type == ::rc::detail::CaseResult::Type::Discard) {
       return false;

@@ -27,6 +27,8 @@ Outputs a string representation of the command to the given output stream. The d
 #### `Model nextState(const Model &s0) const` ####
 Convenience method that calls `apply` on a copy of the given state and returns it. Saves some keystrokes occasionally since you don't have to allocate a model on the stack. Cannot be overridden, override `apply` instead.
 
+This method does work for non-copyable models.
+
 ## Command sequences ##
 #### `Commands<CommandType>` ####
 Type alias for an `std::vector<std::shared_ptr<const CommandType>>`. Useful since command sequences are generally stored in vectors and individual commands are usuall passed by `shared_ptr`-to-const.

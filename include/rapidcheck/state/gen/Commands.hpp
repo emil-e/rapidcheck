@@ -11,16 +11,16 @@ namespace state {
 namespace gen {
 namespace detail {
 
-template <typename Cmd, typename GenFunc>
+template <typename Cmd, typename MakeInitialState, typename GenFunc>
 class CommandsGen {
 public:
   using CmdSP = std::shared_ptr<const Cmd>;
   using Model = typename Cmd::Model;
   using Sut = typename Cmd::Sut;
 
-  template <typename ModelArg, typename GenFuncArg>
-  CommandsGen(ModelArg &&initialState, GenFuncArg &&genFunc)
-      : m_initialState(std::forward<ModelArg>(initialState))
+  template <typename InitialStateArg, typename GenFuncArg>
+  CommandsGen(InitialStateArg &&initialState, GenFuncArg &&genFunc)
+      : m_initialState(std::forward<InitialStateArg>(initialState))
       , m_genFunc(std::forward<GenFuncArg>(genFunc)) {}
 
   Shrinkable<Commands<Cmd>> operator()(const Random &random, int size) const {
@@ -60,7 +60,7 @@ private:
 
   class CommandSequence {
   public:
-    CommandSequence(const Model &initState,
+    CommandSequence(const MakeInitialState &initState,
                     const Random &random,
                     const GenFunc &func,
                     int sz)
@@ -91,7 +91,7 @@ private:
     void generateInitial(const Random &random, std::size_t count) {
       m_entries.reserve(count);
 
-      auto state = m_initialState;
+      auto state = m_initialState();
       auto r = random;
       while (m_entries.size() < count) {
         m_entries.push_back(nextEntry(r.split(), state));
@@ -116,7 +116,7 @@ private:
 
     // Returns the state at the given index.
     Model stateAt(std::size_t n) const {
-      auto state = m_initialState;
+      auto state = m_initialState();
       for (std::size_t i = 0; i < n; i++) {
         m_entries[i].command()->apply(state);
       }
@@ -126,7 +126,7 @@ private:
 
     // Repairs entries so that the command sequence is valid.
     void repairEntries() {
-      auto state = m_initialState;
+      auto state = m_initialState();
       for (std::size_t i = 0; i < m_entries.size(); i++) {
         if (!repairEntryAt(i, state)) {
           m_entries.erase(begin(m_entries) + i--);
@@ -198,11 +198,11 @@ private:
       return seq::mapcat(
           seq::range<std::size_t>(0, m_entries.size()),
           [=](std::size_t i) {
-            const auto preState = copy.stateAt(i);
+            const auto preState = std::make_shared<Model>(copy.stateAt(i));
             auto validReplacements =
                 seq::filter(copy.m_entries[i].shrinkable().shrinks(),
                             [=](const Shrinkable<CmdSP> &s) {
-                              return isValidCommand(*s.value(), preState);
+                              return isValidCommand(*s.value(), *preState);
                             });
 
             return seq::map(std::move(validReplacements),
@@ -220,13 +220,13 @@ private:
       repairEntries();
     }
 
-    Model m_initialState;
+    MakeInitialState m_initialState;
     GenFunc m_genFunc;
     int m_size;
     std::vector<CommandEntry> m_entries;
   };
 
-  Model m_initialState;
+  MakeInitialState m_initialState;
   GenFunc m_genFunc;
 };
 
@@ -235,8 +235,21 @@ private:
 template <typename Cmd, typename GenerationFunc>
 Gen<Commands<Cmd>> commands(const typename Cmd::Model &initialState,
                             GenerationFunc &&genFunc) {
-  return detail::CommandsGen<Cmd, Decay<GenerationFunc>>(
-      initialState, std::forward<GenerationFunc>(genFunc));
+  return commands<Cmd>(fn::constant(initialState),
+                       std::forward<GenerationFunc>(genFunc));
+}
+
+template <typename Cmd,
+          typename MakeInitialState,
+          typename GenerationFunc,
+          typename>
+Gen<Commands<Cmd>> commands(MakeInitialState &&initialState,
+                            GenerationFunc &&genFunc) {
+  return detail::CommandsGen<Cmd,
+                             Decay<MakeInitialState>,
+                             Decay<GenerationFunc>>(
+      std::forward<MakeInitialState>(initialState),
+      std::forward<GenerationFunc>(genFunc));
 }
 
 } // namespace gen

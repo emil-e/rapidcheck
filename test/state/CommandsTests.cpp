@@ -3,6 +3,7 @@
 #include <rapidcheck/state.h>
 
 #include "util/IntVec.h"
+#include "util/NonCopyableModel.h"
 
 using namespace rc;
 using namespace rc::test;
@@ -13,6 +14,17 @@ Gen<std::vector<IntVecCmdSP>> pushBackCommands() {
   return gen::container<std::vector<IntVecCmdSP>>(gen::exec(
       []() -> IntVecCmdSP { return std::make_shared<PushBack>(); }));
 }
+
+struct CompareWithModel : public IntVecCmd {
+  int value = *gen::arbitrary<int>();
+
+  void apply(IntVec &s0) const override { s0.push_back(value); }
+
+  void run(const IntVec &s0, IntVec &sut) const override{
+    RC_ASSERT(s0 == sut);
+    sut.push_back(value);
+  }
+};
 
 } // namespace
 
@@ -46,6 +58,21 @@ TEST_CASE("state::runAll") {
          runAll(cmds, s0, actual);
          RC_ASSERT(actual == expected);
        });
+
+  prop("passes the correct pre-state to every invocation of run",
+       [](const IntVec &s0) {
+         const auto cmds = *state::gen::commands<IntVecCmd>(
+             s0, &state::gen::execOneOf<CompareWithModel>);
+         IntVec sut = s0;
+         state::runAll(cmds, s0, sut);
+       });
+
+  prop("initial-state-factory version works with non-copyable models",
+       [] {
+         const auto cmds = *genNonCopyableCommands();
+         NonCopyableModel sut;
+         state::runAll(cmds, &initialNonCopyableModel, sut);
+       });
 }
 
 TEST_CASE("state::isValidSequence") {
@@ -64,6 +91,12 @@ TEST_CASE("state::isValidSequence") {
          sequence.insert(begin(sequence) + i,
                          std::make_shared<PreNeverHolds>());
          RC_ASSERT(!isValidSequence(sequence, s0));
+       });
+
+  prop("initial-state-factory version works with non-copyable models",
+       [] {
+         const auto cmds = *genNonCopyableCommands();
+         RC_ASSERT(isValidSequence(cmds, &initialNonCopyableModel));
        });
 }
 
