@@ -2,6 +2,15 @@
 
 #include "rapidcheck/Maybe.h"
 
+#if defined(__GNUC__)
+#define RC_INTERNAL_DEPRECATED(msg) __attribute__((deprecated(msg)))
+#elif defined(_MSC_VER)
+#define RC_INTERNAL_DEPRECATED(msg) __declspec(deprecated(msg))
+#else
+#pragma message(                                                        \
+    "You need to implement RC_INTERNAL_DEPRECATED for this compiler")
+#endif
+
 namespace rc {
 namespace detail {
 

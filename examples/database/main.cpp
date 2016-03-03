@@ -115,11 +115,14 @@ int main() {
   check([] {
     DatabaseModel s0;
     Database db(connectToDatabase("localhost"));
-    state::check(
-        s0,
-        db,
-        &state::gen::
-            execOneOf<Open, Close, Put, BeginWrite, ExecuteWrite, Get>);
+    state::check(s0,
+                 db,
+                 state::gen::execOneOfWithArgs<Open,
+                                               Close,
+                                               Put,
+                                               BeginWrite,
+                                               ExecuteWrite,
+                                               Get>());
   });
   return 0;
 }

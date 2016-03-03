@@ -21,8 +21,9 @@ class ExecOneOf;
 /// constructor so that another one may be tried. This can be used as the
 /// generator function parameter of `check`.
 template <typename Cmd, typename... Cmds>
-Gen<std::shared_ptr<const typename Cmd::CommandType>>
-execOneOf(const typename Cmd::Model &state);
+RC_INTERNAL_DEPRECATED("Use execOneOfWithArgs instead")
+Gen<std::shared_ptr<const typename Cmd::CommandType>> execOneOf(
+    const typename Cmd::Model &state);
 
 /// Similar to `execOneOf(Model)` but instead of returning a generator directly
 /// it returns a callable which may be called with any number of arguments. When

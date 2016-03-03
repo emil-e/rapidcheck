@@ -49,7 +49,7 @@ int main() {
   check([] {
     CounterModel state;
     Counter sut;
-    state::check(state, sut, &state::gen::execOneOf<Inc, Dec>);
+    state::check(state, sut, state::gen::execOneOfWithArgs<Inc, Dec>());
   });
 
   return 0;
