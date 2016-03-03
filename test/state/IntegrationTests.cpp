@@ -187,7 +187,8 @@ TEST_CASE("state integration tests") {
       [](const GenParams &params) {
         Bag s0;
         const auto gen = state::gen::commands<BagCommand>(
-            s0, &state::gen::execOneOf<Open, Close, Add, Del, BuggyGet>);
+            s0,
+            state::gen::execOneOfWithArgs<Open, Close, Add, Del, BuggyGet>());
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
         RC_ASSERT(cmdStrings.size() == 4U);
@@ -204,7 +205,9 @@ TEST_CASE("state integration tests") {
       [](const GenParams &params) {
         Bag s0;
         const auto gen = state::gen::commands<BagCommand>(
-            s0, &state::gen::execOneOf<Open, Close, Add, Del, BuggyDelAll>);
+            s0,
+            state::gen::
+                execOneOfWithArgs<Open, Close, Add, Del, BuggyDelAll>());
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
         std::vector<std::string> expected{"Open", "Add(0)", "BuggyDelAll(0)"};
@@ -217,7 +220,9 @@ TEST_CASE("state integration tests") {
       [](const GenParams &params) {
         Bag s0;
         const auto gen = state::gen::commands<BagCommand>(
-            s0, &state::gen::execOneOf<Open, Close, Add, Del, SneakyBuggyGet>);
+            s0,
+            state::gen::
+                execOneOfWithArgs<Open, Close, Add, Del, SneakyBuggyGet>());
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
         std::vector<std::string> expected{"Open", "Add(2)", "SneakyBuggyGet(2)"};

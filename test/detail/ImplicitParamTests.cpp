@@ -208,14 +208,14 @@ TEST_CASE("ImplicitParam") {
          ImplicitParamSystem sut;
          state::check(s0,
                       sut,
-                      state::gen::execOneOf<NewScope,
-                                            BindA,
-                                            BindB,
-                                            ModifyA,
-                                            ModifyB,
-                                            PopA,
-                                            PopB,
-                                            PopScope>);
+                      state::gen::execOneOfWithArgs<NewScope,
+                                                    BindA,
+                                                    BindB,
+                                                    ModifyA,
+                                                    ModifyB,
+                                                    PopA,
+                                                    PopB,
+                                                    PopScope>());
        });
 
   SECTION("unit tests") {

@@ -82,7 +82,7 @@ TEST_CASE("state::gen::commands") {
   prop("command sequences are always valid",
        [](const GenParams &params, const IntVec &s0) {
          const auto gen = state::gen::commands<IntVecCmd>(
-             s0, &state::gen::execOneOf<PushBack, PopBack>);
+             s0, state::gen::execOneOfWithArgs<PushBack, PopBack>());
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<IntVecCmds> &value,
                        const Shrinkable<IntVecCmds> &shrink) {
@@ -93,7 +93,7 @@ TEST_CASE("state::gen::commands") {
   prop("shrinks are shorter or equal length when compared to original",
        [](const GenParams &params, const IntVec &s0) {
          const auto gen = state::gen::commands<IntVecCmd>(
-             s0, &state::gen::execOneOf<PushBack, PopBack>);
+             s0, state::gen::execOneOfWithArgs<PushBack, PopBack>());
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<IntVecCmds> &value,
                        const Shrinkable<IntVecCmds> &shrink) {
@@ -167,31 +167,33 @@ TEST_CASE("state::gen::commands") {
                    });
        });
 
-  prop(
-      "finds minimum where one commands always fails",
-      [](const GenParams &params, const IntVec &s0) {
-        const auto gen = state::gen::commands<IntVecCmd>(
-            s0,
-            &state::gen::execOneOf<AlwaysFail, PushBack, PopBack, SomeCommand>);
-        const auto result = searchGen(params.random,
-                                      params.size,
-                                      gen,
-                                      [&](const IntVecCmds &cmds) {
-                                        try {
-                                          IntVec sut = s0;
-                                          runAll(cmds, s0, sut);
-                                        } catch (...) {
-                                          return true;
-                                        }
-                                        return false;
+  prop("finds minimum where one commands always fails",
+       [](const GenParams &params, const IntVec &s0) {
+         const auto gen = state::gen::commands<IntVecCmd>(
+             s0,
+             state::gen::execOneOfWithArgs<AlwaysFail,
+                                           PushBack,
+                                           PopBack,
+                                           SomeCommand>());
+         const auto result = searchGen(params.random,
+                                       params.size,
+                                       gen,
+                                       [&](const IntVecCmds &cmds) {
+                                         try {
+                                           IntVec sut = s0;
+                                           runAll(cmds, s0, sut);
+                                         } catch (...) {
+                                           return true;
+                                         }
+                                         return false;
 
-                                      });
+                                       });
 
-        RC_ASSERT(result.size() == 1U);
-        std::ostringstream os;
-        result.front()->show(os);
-        RC_ASSERT(os.str().find("AlwaysFail") != std::string::npos);
-      });
+         RC_ASSERT(result.size() == 1U);
+         std::ostringstream os;
+         result.front()->show(os);
+         RC_ASSERT(os.str().find("AlwaysFail") != std::string::npos);
+       });
 
   prop(
       "for every shrink for every command, there exists a shrink of the "
@@ -201,7 +203,7 @@ TEST_CASE("state::gen::commands") {
         using CommandsType = state::Commands<CommandType>;
 
         const auto gen = state::gen::commands<CommandType>(
-            false, &state::gen::execOneOf<TaggedCountdownCmd>);
+            false, state::gen::execOneOfWithArgs<TaggedCountdownCmd>());
         const auto shrinkable = gen(params.random, params.size);
 
         // Pick one of the commands
@@ -236,7 +238,7 @@ TEST_CASE("state::gen::commands") {
         using CommandsType = state::Commands<CommandType>;
 
         const auto gen = state::gen::commands<CommandType>(
-            false, &state::gen::execOneOf<TaggedCountdownCmd>);
+            false, state::gen::execOneOfWithArgs<TaggedCountdownCmd>());
         const auto shrinkable = gen(params.random, params.size);
 
         // Pick one of the commands
@@ -264,7 +266,7 @@ TEST_CASE("state::gen::commands") {
   prop("gives up if unable to generate sequence of enough length",
        [](const GenParams &params, const IntVec &s0) {
          const auto gen = state::gen::commands<IntVecCmd>(
-             s0, &state::gen::execOneOf<PreNeverHolds>);
+             s0, state::gen::execOneOfWithArgs<PreNeverHolds>());
 
          const auto shrinkable = gen(params.random, params.size);
          RC_ASSERT_THROWS_AS(shrinkable.value(), GenerationFailure);
@@ -273,7 +275,8 @@ TEST_CASE("state::gen::commands") {
   prop("discards commands that discard in constructor",
        [](const GenParams &params, const IntVec &s0) {
          const auto gen = state::gen::commands<IntVecCmd>(
-             s0, &state::gen::execOneOf<DiscardInConstructor, PushBack>);
+             s0,
+             state::gen::execOneOfWithArgs<DiscardInConstructor, PushBack>());
          const auto commands = gen(params.random, params.size).value();
          for (const auto &cmd : commands) {
            std::ostringstream ss;
