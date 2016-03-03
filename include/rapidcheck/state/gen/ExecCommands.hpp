@@ -8,24 +8,23 @@ namespace detail {
 template <typename... Ts>
 using TypeList = ::rc::detail::TypeList<Ts...>;
 
-template <typename Cmd,
-          typename Args,
-          typename =
-              typename std::is_constructible<Cmd, typename Cmd::Model &&>::type>
+template <typename Cmd, typename Args>
 struct MakeCommand;
 
 template <typename Cmd, typename... Args>
-struct MakeCommand<Cmd, TypeList<Args...>, std::true_type> {
+struct MakeCommand<Cmd, TypeList<Args...>> {
   static std::shared_ptr<const typename Cmd::CommandType>
   make(const Args &... args) {
+    return make(std::is_constructible<Cmd, Args...>(), args...);
+  }
+
+  static std::shared_ptr<const typename Cmd::CommandType>
+  make(std::true_type, const Args &... args) {
     return std::make_shared<Cmd>(args...);
   }
-};
 
-template <typename Cmd, typename... Args>
-struct MakeCommand<Cmd, TypeList<Args...>, std::false_type> {
   static std::shared_ptr<const typename Cmd::CommandType>
-  make(const Args &... args) {
+  make(std::false_type, const Args &... args) {
     return std::make_shared<Cmd>();
   }
 };
@@ -40,9 +39,8 @@ public:
   Gen<CmdSP> operator()(const Args &... args) const {
     using MakeFunc = CmdSP (*)(const Args &...);
     using ArgsList = TypeList<Args...>;
-    static const MakeFunc makeFuncs[] = {
-        &detail::MakeCommand<Cmd, ArgsList>::make,
-        &detail::MakeCommand<Cmds, ArgsList>::make...};
+    static const MakeFunc makeFuncs[] = {&MakeCommand<Cmd, ArgsList>::make,
+                                         &MakeCommand<Cmds, ArgsList>::make...};
 
     return [=](const Random &random, int size) {
       auto r = random;
