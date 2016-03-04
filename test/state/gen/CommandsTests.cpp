@@ -76,6 +76,10 @@ struct TaggedCountdownCmd : public state::Command<bool, bool> {
   int tag = *gen::noShrink(gen::arbitrary<int>());
 };
 
+struct DeprecatedCmd : public IntVecCmd {
+  void apply(IntVec &s0) const override { RC_DISCARD(); }
+};
+
 } // namespace
 
 TEST_CASE("state::gen::commands") {
@@ -292,5 +296,14 @@ TEST_CASE("state::gen::commands") {
 
          NonCopyableModel s0;
          state::applyAll(commands, s0);
+       });
+
+  prop("throws GenerationFailure if command discards in apply(...)",
+       [](const GenParams &params, const IntVec &s0) {
+         RC_PRE(params.size > 0);
+         const auto gen = state::gen::commands<IntVecCmd>(
+             s0, state::gen::execOneOfWithArgs<DeprecatedCmd>());
+         RC_ASSERT_THROWS_AS(gen(params.random, params.size).value(),
+                             GenerationFailure);
        });
 }
