@@ -16,7 +16,7 @@ public:
   virtual void showType(std::ostream &os) const = 0;
   virtual void showValue(std::ostream &os) const = 0;
   virtual const std::type_info &typeInfo() const = 0;
-  virtual ~IAnyImpl() = default;
+  virtual ~IAnyImpl();
 };
 
 template <typename T>

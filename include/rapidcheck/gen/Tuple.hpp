@@ -112,7 +112,7 @@ private:
 template <>
 class TupleGen<rc::detail::IndexSequence<>> {
 public:
-  Shrinkable<std::tuple<>> operator()(const Random &random, int size) const {
+  Shrinkable<std::tuple<>> operator()(const Random &, int) const {
     return shrinkable::just(std::tuple<>());
   }
 };

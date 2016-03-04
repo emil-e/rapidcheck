@@ -26,7 +26,7 @@ public:
   /// Adds a tag to the current scope.
   virtual void addTag(std::string str) = 0;
 
-  virtual ~PropertyContext() = default;
+  virtual ~PropertyContext();
 };
 
 namespace param {

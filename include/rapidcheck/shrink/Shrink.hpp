@@ -166,7 +166,7 @@ template <typename T>
 Seq<T> real(T value) {
   std::vector<T> shrinks;
 
-  if (value != 0) {
+  if (value != 0.0) {
     shrinks.push_back(0.0);
   }
 

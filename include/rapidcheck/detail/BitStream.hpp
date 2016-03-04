@@ -32,7 +32,7 @@ T BitStream<Source>::next(int nbits) {
 
 template <typename Source>
 template <typename T>
-T BitStream<Source>::next(int nbits, std::true_type) {
+T BitStream<Source>::next(int, std::true_type) {
   return next<unsigned int>(1) != 0;
 }
 

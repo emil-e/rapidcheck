@@ -26,7 +26,7 @@ namespace detail {
 
 /// Base case for `pushBackAll`
 template <typename Collection>
-void pushBackAll(Collection &collection) {
+void pushBackAll(Collection &) {
   // Base case
 }
 
@@ -42,7 +42,7 @@ void pushBackAll(Collection &collection, Item &&item, Items &&... items) {
 }
 
 /// Base case for `join`.
-inline std::string join(const std::string &sep, const std::string str) {
+inline std::string join(const std::string &, const std::string str) {
   return str;
 }
 
@@ -62,7 +62,7 @@ struct TupleTailHelper;
 
 template <typename TupleT>
 struct TupleTailHelper<TupleT> {
-  static std::tuple<> tail(const TupleT &tuple) { return std::tuple<>(); }
+  static std::tuple<> tail(const TupleT &) { return std::tuple<>(); }
 };
 
 template <typename TupleT, typename Type, typename... Types>

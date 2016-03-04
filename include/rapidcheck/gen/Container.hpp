@@ -294,7 +294,7 @@ public:
   generate(const Random &random, int size, const Gen<Ts> &... gens) const {
     const auto strategy = m_strategy;
     auto r = random;
-    std::size_t count = r.split().next() % (size + 1);
+    std::size_t count = r.split().next() % (static_cast<std::size_t>(size + 1));
     auto shrinkables = strategy.generateElements(r, size, count, gens...);
 
     using Elements = decltype(shrinkables);
