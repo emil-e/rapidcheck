@@ -47,6 +47,21 @@ private:
     const Shrinkable<CmdSP> &shrinkable() const { return m_shrinkable; }
     const CmdSP &command() const { return m_command; }
 
+    void safeApply(Model &model) const {
+      try {
+        m_command->apply(model);
+      } catch (const ::rc::detail::CaseResult &result) {
+        if (result.type == ::rc::detail::CaseResult::Type::Discard) {
+          throw GenerationFailure(
+              result.description +
+              "\n\nAsserting preconditions in apply(...) is deprecated. "
+              "Implement 'void preconditions(const Model &s0) const' and do it "
+              "there instead. See the documentation for more details.");
+        }
+        throw;
+      }
+    }
+
     void setShrinkable(Shrinkable<CmdSP> &&s) {
       m_shrinkable = std::move(s);
       m_command = m_shrinkable.value();
@@ -95,7 +110,7 @@ private:
       auto r = random;
       while (m_entries.size() < count) {
         m_entries.push_back(nextEntry(r.split(), state));
-        m_entries.back().command()->apply(state);
+        m_entries.back().safeApply(state);
       }
     }
 
@@ -118,7 +133,7 @@ private:
     Model stateAt(std::size_t n) const {
       auto state = m_initialState();
       for (std::size_t i = 0; i < n; i++) {
-        m_entries[i].command()->apply(state);
+        m_entries[i].safeApply(state);
       }
 
       return state;
@@ -140,7 +155,7 @@ private:
       if (!isValidCommand(*entry.command(), state)) {
         return regenerateEntryAt(i, state);
       }
-      entry.command()->apply(state);
+      entry.safeApply(state);
       return true;
     }
 
@@ -149,7 +164,7 @@ private:
       auto &entry = m_entries[i];
       if (auto newEntry = entryForState(entry.random(), state)) {
         entry = std::move(*newEntry);
-        entry.command()->apply(state);
+        entry.safeApply(state);
         return true;
       }
 
