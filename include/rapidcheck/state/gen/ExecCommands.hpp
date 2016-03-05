@@ -29,6 +29,40 @@ struct MakeCommand<Cmd, TypeList<Args...>> {
   }
 };
 
+template <typename Args, typename... Cmds>
+class OneOfCmdGen;
+
+// GCC HACK - Variadics + lambdas don't work very well so this has to be a
+// separate class that stores args as a tuple and uses applyTuple and all that.
+// When we drop support for old crashing compilers (i.e. GCC) we can just inline
+// this as a lambda instead. Much shorter.
+template <typename... Args, typename Cmd, typename... Cmds>
+class OneOfCmdGen<TypeList<Args...>, Cmd, Cmds...> {
+private:
+  using CmdSP = std::shared_ptr<const typename Cmd::CommandType>;
+
+public:
+  template <typename... Ts>
+  OneOfCmdGen(Ts &&... args)
+      : m_args(std::forward<Ts>(args)...) {}
+
+  Shrinkable<CmdSP> operator()(const Random &random, int size) const {
+    using MakeFunc = CmdSP (*)(const Args &...);
+    using ArgsList = TypeList<Args...>;
+    static const MakeFunc makeFuncs[] = {&MakeCommand<Cmd, ArgsList>::make,
+                                         &MakeCommand<Cmds, ArgsList>::make...};
+    auto r = random;
+    std::size_t n = r.split().next() % (sizeof...(Cmds) + 1);
+    const auto args = m_args;
+    return rc::gen::exec([=] {
+      return rc::detail::applyTuple(args, makeFuncs[n]);
+    })(r, size); // TODO monadic bind
+  }
+
+private:
+  std::tuple<Args...> m_args;
+};
+
 template <typename Cmd, typename... Cmds>
 class ExecOneOf {
 private:
@@ -36,18 +70,9 @@ private:
 
 public:
   template <typename... Args>
-  Gen<CmdSP> operator()(const Args &... args) const {
-    using MakeFunc = CmdSP (*)(const Args &...);
-    using ArgsList = TypeList<Args...>;
-    static const MakeFunc makeFuncs[] = {&MakeCommand<Cmd, ArgsList>::make,
-                                         &MakeCommand<Cmds, ArgsList>::make...};
-
-    return [=](const Random &random, int size) {
-      auto r = random;
-      std::size_t n = r.split().next() % (sizeof...(Cmds) + 1);
-      return rc::gen::exec([=] { return makeFuncs[n](args...); })(
-          r, size); // TODO monadic bind
-    };
+  Gen<CmdSP> operator()(Args &&... args) const {
+    using Generator = OneOfCmdGen<TypeList<Decay<Args>...>, Cmd, Cmds...>;
+    return Generator(std::forward<Args>(args)...);
   }
 };
 
