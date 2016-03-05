@@ -46,8 +46,11 @@ Here is an example implementation of the `remove` operation for our `FastKvStore
 struct Remove : rc::state::Command<FastKvStoreModel, FastKvStore> {
   std::string key;
   
-  void apply(FastKvStoreModel &s0) const override {
+  void preconditions(const FastKvStoreModel &s0) const override {
     RC_PRE(s0.data.count(key) != 0);
+  }
+
+  void apply(FastKvStoreModel &s0) const override {
     s0.data.erase(key);
   }
 
@@ -57,16 +60,18 @@ struct Remove : rc::state::Command<FastKvStoreModel, FastKvStore> {
   }
 
   void show(std::ostream &os) const override {
-    os << "get(" << key << ")";
+    os << "Remove(" << key << ")";
   }
 };
 ```
 
 There are two _main_ methods here that you need to implement, `apply` and `run`. `apply` applies the command to the model and `run` applies the command to the actual System Under Test.
 
-`apply` takes a model state by non-const reference and is expected to perform the equivalent of the operation represented by the command on the state. However, if the command is not valid for the given state, you can use any of the RapidCheck discarding macros such as `RC_PRE` and `RC_DISCARD`. RapidCheck will recognize this, discard the command and try another one. In the example above, a precondition for removing a key is that the key actually exists. If it does, we remove it from the model.
+`apply` takes a model state by non-const reference and is expected to perform the equivalent of the operation represented by the command on the state.
 
 `run` applies the same operation but to the System Under Test instead. The expected state before the operation is applied is given as an argument in addition to a reference to the SUT. This is also where you should place your assertions. In the example above, we remove the key from our system (the `FastKvStore`). After this we assert that the SUT no longer contains the key that we removed.
+
+If your command is not valid every state, you also _need_ to implement `preconditions`. In this method, you can use any of the RapidCheck discarding macros such as `RC_PRE` and `RC_DISCARD`. RapidCheck will use this method to ensure that the command is valid, both during generation and during shrinking. In the example above, the precondition for removing a key is that it is present.
 
 It is also recommended (but not required) to implement the `show` method. This method should output a string representation of what the command does using the given output stream. This representation is used when displaying counterexamples on a test case failure.
 
@@ -103,7 +108,7 @@ In the example above, we use a pointer to the `rc::state::gen::execOneOf` templa
 Using these parameters, `rc::state::check` will generate a valid command sequence for the given initial state and run it on the System Under Test. If there is an assertion failure when the command sequence is run, the property will fail and a minimal counterexample will be printed.
 
 ## Command generation ##
-The state that is passed to the command generator function in `rc::state::check` (and `rc::state::gen::commands`, see the [reference](state_ref.md)) is not necessarily the state that will be used for the generated command. If the state changes during shrinking, a new command will only be generated if the preconditions no longer hold. For this reason, you need to always assert _all_ preconditions for your command in `apply`. The state passed to the generator function should be seen as a hint to aid in generating useful commands, not a promise.
+The state that is passed to the command generator function in `rc::state::check` (and `rc::state::gen::commands`, see the [reference](state_ref.md)) is not necessarily the state that will be used for the generated command. If the state changes during shrinking, a new command will only be generated if the preconditions no longer hold. For this reason, you need to _**always assert all preconditions**_ for your command in `apply`. The state passed to the generator function should be seen as a hint to aid in generating useful commands, not a promise.
 
 ## Tips ##
 ### Generate initialization parameters ###
@@ -119,3 +124,6 @@ rc::check([](const std::map<std::string, std::string> &data) {
                    &rc::state::gen::execOneOf<Put, Get, Remove>);
 });
 ```
+
+### Non-copyable models ###
+The state testing framework supports models that not have copy constructors and/or copy-assignment operators. For a lot of [calls to the API](state_ref.md) (i.e. `rc::state::check`), you have to use an overload that takes a callable that returns a model state instead of passing the model state directly. Since testing process is destroys the model state, fresh new model states have to be created. For a model which is not copyable, RapidCheck can obivously not store a copy to use as a template.
