@@ -103,7 +103,7 @@ template <typename T, typename... Lenses, std::size_t... Indexes>
 class BuildMapper<T, rc::detail::IndexSequence<Indexes...>, Lenses...> {
 public:
   BuildMapper(const Lenses &... lenses)
-      : m_lenses(std::move(lenses)...) {}
+      : m_lenses(lenses...) {}
 
   T operator()(std::tuple<T, typename Lenses::ValueType...> &&tuple) const {
     T &obj = std::get<0>(tuple);
