@@ -15,8 +15,8 @@ template <typename MakeInitialState, typename GenFunc>
 class CommandsGen {
 public:
   using Model = Decay<typename std::result_of<MakeInitialState()>::type>;
-  using Cmd = Decay<typename std::result_of<GenFunc(
-      Model)>::type::ValueType::element_type::CommandType>;
+  using CommandGen = typename std::result_of<GenFunc(Model)>::type;
+  using Cmd = typename CommandGen::ValueType::element_type::CommandType;
   using CmdSP = std::shared_ptr<const Cmd>;
   using Sut = typename Cmd::Sut;
 
@@ -251,16 +251,14 @@ private:
 
 template <typename Model, typename GenerationFunc>
 auto commands(const Model &initialState, GenerationFunc &&genFunc)
-    -> Gen<Commands<Decay<typename decltype(
-        genFunc(initialState))::ValueType::element_type::CommandType>>> {
+    -> detail::CommandsGenFor<decltype(genFunc(initialState))> {
   return commands(fn::constant(initialState),
                   std::forward<GenerationFunc>(genFunc));
 }
 
 template <typename MakeInitialState, typename GenerationFunc>
 auto commands(MakeInitialState &&initialState, GenerationFunc &&genFunc)
-    -> Gen<Commands<Decay<typename decltype(
-        genFunc(initialState()))::ValueType::element_type::CommandType>>> {
+    -> detail::CommandsGenFor<decltype(genFunc(initialState()))> {
   return detail::CommandsGen<Decay<MakeInitialState>, Decay<GenerationFunc>>(
       std::forward<MakeInitialState>(initialState),
       std::forward<GenerationFunc>(genFunc));
