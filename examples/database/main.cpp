@@ -16,41 +16,38 @@ struct DatabaseModel {
 using DbCommand = state::Command<DatabaseModel, Database>;
 
 struct Open : public DbCommand {
-  void apply(DatabaseModel &s0) const override {
+  void preconditions(const DatabaseModel &s0) const override {
     RC_PRE(!s0.open);
-    s0.open = true;
   }
 
-  void run(const DatabaseModel &s0, Database &db) const override {
-    db.open();
-  }
+  void apply(DatabaseModel &s0) const override { s0.open = true; }
 
-  void show(std::ostream &os) const override {
-    os << "Open";
-  }
+  void run(const DatabaseModel &s0, Database &db) const override { db.open(); }
+
+  void show(std::ostream &os) const override { os << "Open"; }
 };
 
 struct Close : public DbCommand {
-  void apply(DatabaseModel &s0) const override {
+  void preconditions(const DatabaseModel &s0) const override {
     RC_PRE(!s0.inWriteBlock);
     RC_PRE(s0.open);
-    s0.open = false;
   }
 
-  void run(const DatabaseModel &s0, Database &db) const override {
-    db.close();
-  }
+  void apply(DatabaseModel &s0) const override { s0.open = false; }
 
-  void show(std::ostream &os) const override {
-    os << "Close";
-  }
+  void run(const DatabaseModel &s0, Database &db) const override { db.close(); }
+
+  void show(std::ostream &os) const override { os << "Close"; }
 };
 
 struct Put : public DbCommand {
   User user = *gen::arbitrary<User>();
 
-  void apply(DatabaseModel &s0) const override {
+  void preconditions(const DatabaseModel &s0) const override {
     RC_PRE(s0.inWriteBlock);
+  }
+
+  void apply(DatabaseModel &s0) const override {
     s0.data[user.username] = user;
   }
 
@@ -58,9 +55,7 @@ struct Put : public DbCommand {
     db.put(user);
   }
 
-  void show(std::ostream &os) const override {
-    os << "Put(" << user << ")";
-  }
+  void show(std::ostream &os) const override { os << "Put(" << user << ")"; }
 };
 
 struct Get : public DbCommand {
@@ -70,7 +65,7 @@ struct Get : public DbCommand {
     username = (*gen::elementOf(s0.data)).second.username;
   }
 
-  void apply(DatabaseModel &s0) const override {
+  void preconditions(const DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
     RC_PRE(s0.data.count(username) > 0U);
@@ -88,45 +83,46 @@ struct Get : public DbCommand {
 };
 
 struct BeginWrite : public DbCommand {
-  void apply(DatabaseModel &s0) const override {
+  void preconditions(const DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
-    s0.inWriteBlock = true;
   }
+
+  void apply(DatabaseModel &s0) const override { s0.inWriteBlock = true; }
 
   void run(const DatabaseModel &s0, Database &db) const override {
     db.beginWrite();
   }
 
-  void show(std::ostream &os) const override {
-    os << "BeginWrite";
-  }
+  void show(std::ostream &os) const override { os << "BeginWrite"; }
 };
 
 struct ExecuteWrite : public DbCommand {
-  void apply(DatabaseModel &s0) const override {
+  void preconditions(const DatabaseModel &s0) const override {
     RC_PRE(s0.inWriteBlock);
-    s0.inWriteBlock = false;
   }
+
+  void apply(DatabaseModel &s0) const override { s0.inWriteBlock = false; }
 
   void run(const DatabaseModel &s0, Database &db) const override {
     db.executeWrite();
   }
 
-  void show(std::ostream &os) const override {
-    os << "ExecuteWrite";
-  }
+  void show(std::ostream &os) const override { os << "ExecuteWrite"; }
 };
 
 int main() {
   check([] {
     DatabaseModel s0;
     Database db(connectToDatabase("localhost"));
-    state::check(
-        s0,
-        db,
-        &state::gen::
-            execOneOf<Open, Close, Put, BeginWrite, ExecuteWrite, Get>);
+    state::check(s0,
+                 db,
+                 state::gen::execOneOfWithArgs<Open,
+                                               Close,
+                                               Put,
+                                               BeginWrite,
+                                               ExecuteWrite,
+                                               Get>());
   });
   return 0;
 }

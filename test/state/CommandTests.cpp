@@ -2,7 +2,7 @@
 #include <rapidcheck/catch.h>
 #include <rapidcheck/state.h>
 
-#include "util/StringVec.h"
+#include "util/IntVec.h"
 #include "util/ShowTypeTestUtils.h"
 
 using namespace rc;
@@ -13,26 +13,26 @@ using namespace rc::state;
 TEST_CASE("Command") {
   SECTION("apply") {
     prop("default implementation does not modify state",
-         [](const StringVec &s0) {
+         [](const IntVec &s0) {
            auto s1 = s0;
-           StringVecCmd().apply(s1);
+           IntVecCmd().apply(s1);
            RC_ASSERT(s1 == s0);
          });
   }
 
   SECTION("run") {
     prop("default implementation does not modify SUT",
-         [](const StringVec &state, const StringVec &sut) {
+         [](const IntVec &state, const IntVec &sut) {
            const auto pre = sut;
            auto post = sut;
-           StringVecCmd().run(state, post);
+           IntVecCmd().run(state, post);
            RC_ASSERT(pre == post);
          });
   }
 
   SECTION("nextState") {
     prop("uses `apply` to calculate next state",
-         [](StringVec state, const std::string &value) {
+         [](IntVec state, int value) {
            PushBack cmd(value);
            const auto s1 = cmd.nextState(state);
            cmd.apply(state);

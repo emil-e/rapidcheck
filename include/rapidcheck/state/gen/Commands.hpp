@@ -11,215 +11,237 @@ namespace state {
 namespace gen {
 namespace detail {
 
-template <typename Cmd, typename GenFunc>
+template <typename Cmd, typename MakeInitialState, typename GenFunc>
 class CommandsGen {
 public:
   using CmdSP = std::shared_ptr<const Cmd>;
   using Model = typename Cmd::Model;
   using Sut = typename Cmd::Sut;
 
-  template <typename ModelArg, typename GenFuncArg>
-  CommandsGen(ModelArg &&initialState, GenFuncArg &&genFunc)
-      : m_initialState(std::forward<ModelArg>(initialState))
+  template <typename InitialStateArg, typename GenFuncArg>
+  CommandsGen(InitialStateArg &&initialState, GenFuncArg &&genFunc)
+      : m_initialState(std::forward<InitialStateArg>(initialState))
       , m_genFunc(std::forward<GenFuncArg>(genFunc)) {}
 
-  Shrinkable<Commands<Cmd>> operator()(const Random &random,
-                                          int size) const {
-    return generateCommands(random, size);
+  Shrinkable<Commands<Cmd>> operator()(const Random &random, int size) const {
+    auto sequenceShrinkable = shrinkable::shrinkRecur(
+        CommandSequence(m_initialState, random, m_genFunc, size),
+        [](const CommandSequence &commandSequence) {
+          return commandSequence.shrinks();
+        });
+
+    return shrinkable::map(
+        std::move(sequenceShrinkable),
+        [](const CommandSequence &sequence) { return sequence.asCommands(); });
   }
 
 private:
-  struct CommandEntry {
-    CommandEntry(Random &&aRandom,
-                 Shrinkable<CmdSP> &&aShrinkable,
-                 Model &&aState)
-        : random(std::move(aRandom))
-        , shrinkable(std::move(aShrinkable))
-        , postState(std::move(aState)) {}
+  class CommandEntry {
+  public:
+    CommandEntry(Random random, Shrinkable<CmdSP> &&shrinkable)
+        : m_random(std::move(random))
+        , m_shrinkable(std::move(shrinkable))
+        , m_command(m_shrinkable.value()) {}
 
-    Random random;
-    Shrinkable<CmdSP> shrinkable;
-    Model postState;
+    const Random &random() const { return m_random; }
+    const Shrinkable<CmdSP> &shrinkable() const { return m_shrinkable; }
+    const CmdSP &command() const { return m_command; }
+
+    void safeApply(Model &model) const {
+      try {
+        m_command->apply(model);
+      } catch (const ::rc::detail::CaseResult &result) {
+        if (result.type == ::rc::detail::CaseResult::Type::Discard) {
+          throw GenerationFailure(
+              result.description +
+              "\n\nAsserting preconditions in apply(...) is deprecated. "
+              "Implement 'void preconditions(const Model &s0) const' and do it "
+              "there instead. See the documentation for more details.");
+        }
+        throw;
+      }
+    }
+
+    void setShrinkable(Shrinkable<CmdSP> &&s) {
+      m_shrinkable = std::move(s);
+      m_command = m_shrinkable.value();
+    }
+
+  private:
+    Random m_random;
+    Shrinkable<CmdSP> m_shrinkable;
+    CmdSP m_command;
   };
 
-  struct CommandSequence {
-    CommandSequence(const Model &initState, const GenFunc &func, int sz)
-        : initialState(initState)
-        , genFunc(func)
-        , size(sz) {}
-
-    Model initialState;
-    GenFunc genFunc;
-    int size;
-    std::vector<CommandEntry> entries;
-
-    const Model &stateAt(std::size_t i) const {
-      if (i <= 0) {
-        return initialState;
-      }
-      return entries[i - 1].postState;
+  class CommandSequence {
+  public:
+    CommandSequence(const MakeInitialState &initState,
+                    const Random &random,
+                    const GenFunc &func,
+                    int sz)
+        : m_initialState(initState)
+        , m_genFunc(func)
+        , m_size(sz) {
+      auto r = random;
+      std::size_t count = (r.split().next() % (m_size + 1)) + 1;
+      generateInitial(r, count);
     }
 
-    void repairEntriesFrom(std::size_t start) {
-      for (auto i = start; i < entries.size(); i++) {
-        if (!repairEntryAt(i)) {
-          entries.erase(begin(entries) + i--);
+    Commands<Cmd> asCommands() const {
+      Commands<Cmd> cmds;
+      cmds.reserve(m_entries.size());
+      std::transform(begin(m_entries),
+                     end(m_entries),
+                     std::back_inserter(cmds),
+                     [](const CommandEntry &entry) { return entry.command(); });
+      return cmds;
+    }
+
+    Seq<CommandSequence> shrinks() const {
+      return seq::concat(shrinksRemoving(), shrinksIndividual());
+    }
+
+  private:
+    // Generates the initial sequence of commands
+    void generateInitial(const Random &random, std::size_t count) {
+      m_entries.reserve(count);
+
+      auto state = m_initialState();
+      auto r = random;
+      while (m_entries.size() < count) {
+        m_entries.push_back(nextEntry(r.split(), state));
+        m_entries.back().safeApply(state);
+      }
+    }
+
+    // Tries to generate the next entry given the specified random and state.
+    CommandEntry nextEntry(const Random &random, Model &state) const {
+      auto r = random;
+      const auto gen = m_genFunc(state);
+      // TODO configurability?
+      for (int tries = 0; tries < 100; tries++) {
+        if (auto entry = entryForState(r.split(), state)) {
+          return *entry;
+        }
+      }
+
+      // TODO better error message
+      throw GenerationFailure("Failed to generate command after 100 tries.");
+    }
+
+    // Returns the state at the given index.
+    Model stateAt(std::size_t n) const {
+      auto state = m_initialState();
+      for (std::size_t i = 0; i < n; i++) {
+        m_entries[i].safeApply(state);
+      }
+
+      return state;
+    }
+
+    // Repairs entries so that the command sequence is valid.
+    void repairEntries() {
+      auto state = m_initialState();
+      for (std::size_t i = 0; i < m_entries.size(); i++) {
+        if (!repairEntryAt(i, state)) {
+          m_entries.erase(begin(m_entries) + i--);
         }
       }
     }
 
-    bool repairEntryAt(std::size_t i) {
-      using namespace ::rc::detail;
-      try {
-        auto &entry = entries[i];
-        const auto cmd = entry.shrinkable.value();
-        entry.postState = stateAt(i);
-        cmd->apply(entry.postState);
-      } catch (const CaseResult &result) {
-        if (result.type != CaseResult::Type::Discard) {
-          throw;
-        }
-
-        return regenerateEntryAt(i);
+    // Repairs the entry at the given index by regenerating it if necessary.
+    bool repairEntryAt(std::size_t i, Model &state) {
+      auto &entry = m_entries[i];
+      if (!isValidCommand(*entry.command(), state)) {
+        return regenerateEntryAt(i, state);
       }
-
+      entry.safeApply(state);
       return true;
     }
 
-    bool regenerateEntryAt(std::size_t i) {
-      using namespace ::rc::detail;
-      try {
-        auto &entry = entries[i];
-        const auto &preState = stateAt(i);
-        entry.shrinkable = genFunc(preState)(entry.random, size);
-        const auto cmd = entry.shrinkable.value();
-        entry.postState = preState;
-        // NOTE: Apply might throw which leaves us with an incorrect postState
-        // but that's okay since the entry will discarded anyway in that case.
-        cmd->apply(entry.postState);
+    // Regenerates the entry at the given index.
+    bool regenerateEntryAt(std::size_t i, Model &state) {
+      auto &entry = m_entries[i];
+      if (auto newEntry = entryForState(entry.random(), state)) {
+        entry = std::move(*newEntry);
+        entry.safeApply(state);
         return true;
-      } catch (const CaseResult &result) {
-        if (result.type != CaseResult::Type::Discard) {
-          throw;
-        }
-      } catch (const GenerationFailure &) {
-        // Just return false below
       }
 
       return false;
     }
-  };
 
-  Shrinkable<Commands<Cmd>> generateCommands(const Random &random,
-                                                int size) const {
-    return shrinkable::map(generateSequence(random, size),
-                           [](const CommandSequence &sequence) {
-                             Commands<Cmd> cmds;
-                             const auto &entries = sequence.entries;
-                             cmds.reserve(entries.size());
-                             std::transform(begin(entries),
-                                            end(entries),
-                                            std::back_inserter(cmds),
-                                            [](const CommandEntry &entry) {
-                                              return entry.shrinkable.value();
-                                            });
-                             return cmds;
-                           });
-  }
-
-  Shrinkable<CommandSequence> generateSequence(const Random &random,
-                                               int size) const {
-    Random r(random);
-    std::size_t count = (r.split().next() % (size + 1)) + 1;
-    return shrinkable::shrinkRecur(generateInitial(random, size, count),
-                                   &shrinkSequence);
-  }
-
-  CommandSequence
-  generateInitial(const Random &random, int size, std::size_t count) const {
-    CommandSequence sequence(m_initialState, m_genFunc, size);
-    sequence.entries.reserve(count);
-
-    auto *state = &m_initialState;
-    auto r = random;
-    while (sequence.entries.size() < count) {
-      sequence.entries.push_back(nextEntry(r.split(), size, *state));
-      state = &sequence.entries.back().postState;
-    }
-
-    return sequence;
-  }
-
-  CommandEntry
-  nextEntry(const Random &random, int size, const Model &state) const {
-    using namespace ::rc::detail;
-    auto r = random;
-    const auto gen = m_genFunc(state);
-    // TODO configurability?
-    for (int tries = 0; tries < 100; tries++) {
+    // Returns the state after applying commands up to the given index.
+    Maybe<CommandEntry> entryForState(const Random &random,
+                                      const Model &state) const {
       try {
-        auto random = r.split();
-        auto shrinkable = gen(random, size);
-        auto postState = state;
-        shrinkable.value()->apply(postState);
-
-        return CommandEntry(
-            std::move(random), std::move(shrinkable), std::move(postState));
-      } catch (const CaseResult &result) {
-        if (result.type != CaseResult::Type::Discard) {
+        auto shrinkable = m_genFunc(state)(random, m_size);
+        CommandEntry entry(random, std::move(shrinkable));
+        if (isValidCommand(*entry.command(), state)) {
+          return entry;
+        }
+      } catch (const GenerationFailure &) {
+      } catch (const rc::detail::CaseResult &result) {
+        if (result.type != rc::detail::CaseResult::Type::Discard) {
           throw;
         }
-        // What to do?
-      } catch (const GenerationFailure &) {
-        // What to do?
       }
+
+      return Nothing;
     }
 
-    // TODO better error message
-    throw GenerationFailure("Failed to generate command after 100 tries.");
-  }
+    // Returns the shrinks possible by removing subranges of commands.
+    Seq<CommandSequence> shrinksRemoving() const {
+      const auto copy = *this;
+      return seq::map(seq::subranges(0, m_entries.size()),
+                      [=](const std::pair<std::size_t, std::size_t> &r) {
+                        auto shrunk = copy;
+                        shrunk.removeRange(r.first, r.second);
+                        return shrunk;
+                      });
+    }
 
-  static Seq<CommandSequence> shrinkSequence(const CommandSequence &s) {
-    return seq::concat(shrinkRemoving(s), shrinkIndividual(s));
-  }
+    // Removes the commands in the given range.
+    void removeRange(std::size_t l, std::size_t r) {
+      m_entries.erase(begin(m_entries) + l, begin(m_entries) + r);
+      repairEntries();
+    }
 
-  static Seq<CommandSequence> shrinkRemoving(const CommandSequence &s) {
-    auto nonEmptyRanges = seq::subranges(0, s.entries.size());
-    return seq::map(std::move(nonEmptyRanges),
-                    [=](const std::pair<std::size_t, std::size_t> &r) {
-                      auto shrunk = s;
-                      shrunk.entries.erase(begin(shrunk.entries) + r.first,
-                                           begin(shrunk.entries) + r.second);
-                      shrunk.repairEntriesFrom(r.first);
-                      return shrunk;
-                    });
-  }
+    // Returns the shrinks possible by replacing a command with shrunk version.
+    Seq<CommandSequence> shrinksIndividual() const {
+      const auto copy = *this;
+      return seq::mapcat(
+          seq::range<std::size_t>(0, m_entries.size()),
+          [=](std::size_t i) {
+            const auto preState = std::make_shared<Model>(copy.stateAt(i));
+            auto validReplacements =
+                seq::filter(copy.m_entries[i].shrinkable().shrinks(),
+                            [=](const Shrinkable<CmdSP> &s) {
+                              return isValidCommand(*s.value(), *preState);
+                            });
 
-  static Seq<CommandSequence> shrinkIndividual(const CommandSequence &s) {
-    return seq::mapcat(
-      seq::range<std::size_t>(0, s.entries.size()),
-        [=](std::size_t i) {
-          const auto &preState = s.stateAt(i);
-          auto valid =
-              seq::filter(s.entries[i].shrinkable.shrinks(),
-                          [=](const Shrinkable<CmdSP> &s) {
-                            return isValidCommand(*s.value(), preState);
-                          });
+            return seq::map(std::move(validReplacements),
+                            [=](Shrinkable<CmdSP> &&shrink) {
+                              auto shrunk = copy;
+                              shrunk.replaceShrinkable(i, std::move(shrink));
+                              return shrunk;
+                            });
+          });
+    }
 
-          return seq::map(std::move(valid),
-                          [=](Shrinkable<CmdSP> &&cmd) {
-                            auto shrunk = s;
-                            auto &entry = shrunk.entries[i];
+    // Replaces the shrinkable at the given index.
+    void replaceShrinkable(std::size_t i, Shrinkable<CmdSP> shrinkable) {
+      m_entries[i].setShrinkable(std::move(shrinkable));
+      repairEntries();
+    }
 
-                            entry.shrinkable = std::move(cmd);
-                            shrunk.repairEntriesFrom(i);
+    MakeInitialState m_initialState;
+    GenFunc m_genFunc;
+    int m_size;
+    std::vector<CommandEntry> m_entries;
+  };
 
-                            return shrunk;
-                          });
-        });
-  }
-
-  Model m_initialState;
+  MakeInitialState m_initialState;
   GenFunc m_genFunc;
 };
 
@@ -228,8 +250,21 @@ private:
 template <typename Cmd, typename GenerationFunc>
 Gen<Commands<Cmd>> commands(const typename Cmd::Model &initialState,
                             GenerationFunc &&genFunc) {
-  return detail::CommandsGen<Cmd, Decay<GenerationFunc>>(
-      initialState, std::forward<GenerationFunc>(genFunc));
+  return commands<Cmd>(fn::constant(initialState),
+                       std::forward<GenerationFunc>(genFunc));
+}
+
+template <typename Cmd,
+          typename MakeInitialState,
+          typename GenerationFunc,
+          typename>
+Gen<Commands<Cmd>> commands(MakeInitialState &&initialState,
+                            GenerationFunc &&genFunc) {
+  return detail::CommandsGen<Cmd,
+                             Decay<MakeInitialState>,
+                             Decay<GenerationFunc>>(
+      std::forward<MakeInitialState>(initialState),
+      std::forward<GenerationFunc>(genFunc));
 }
 
 } // namespace gen

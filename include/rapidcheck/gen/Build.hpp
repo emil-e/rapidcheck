@@ -103,7 +103,7 @@ template <typename T, typename... Lenses, std::size_t... Indexes>
 class BuildMapper<T, rc::detail::IndexSequence<Indexes...>, Lenses...> {
 public:
   BuildMapper(const Lenses &... lenses)
-      : m_lenses(std::move(lenses)...) {}
+      : m_lenses(lenses...) {}
 
   T operator()(std::tuple<T, typename Lenses::ValueType...> &&tuple) const {
     T &obj = std::get<0>(tuple);
@@ -180,6 +180,9 @@ Gen<T> build(Gen<T> gen, const detail::Binding<Members, SourceTypes> &... bs) {
                           rc::detail::MakeIndexSequence<sizeof...(Members)>,
                           detail::Lens<Members>...>;
 
+  // GCC HACK - Variadics + lambdas don't work very well in GCC so we use an old
+  // fashioned function object (the Mapper thing) to prevent GCC from crashing.
+  // Use lambdas and applyTuple once we drop support for the crashing ones.
   return gen::map(gen::tuple(std::move(gen), std::move(bs.gen)...),
                   Mapper(bs.lens...));
 }

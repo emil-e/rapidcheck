@@ -1,6 +1,10 @@
 language: cpp
 sudo: false
 
+branches:
+  only:
+    - master
+
 matrix:
   include:
     # Clang 3.5

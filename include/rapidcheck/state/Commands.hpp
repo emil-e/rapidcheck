@@ -8,27 +8,42 @@ namespace state {
 template <typename Cmds, typename Model>
 void applyAll(const Cmds &commands, Model &state) {
   for (const auto &command : commands) {
+    command->preconditions(state);
     command->apply(state);
   }
 }
 
-template <typename Cmds, typename Model, typename Sut>
-void runAll(const Cmds &commands, const Model &state, Sut &sut) {
-  Model currentState = state;
+template <typename Cmds>
+void runAll(const Cmds &commands,
+            const typename Cmds::value_type::element_type::Model &state,
+            typename Cmds::value_type::element_type::Sut &sut) {
+  runAll(commands, fn::constant(state), sut);
+}
+
+template <typename Cmds, typename MakeInitialState, typename>
+void runAll(const Cmds &commands,
+            const MakeInitialState &makeInitialState,
+            typename Cmds::value_type::element_type::Sut &sut) {
+  auto currentState = makeInitialState();
   for (const auto &command : commands) {
-    auto preState = currentState;
-    // We need to apply first so we trigger any precondition assertions
-    // before running
+    command->preconditions(currentState);
+    command->run(currentState, sut);
     command->apply(currentState);
-    command->run(preState, sut);
   }
 }
 
-template <typename Cmds, typename Model>
-bool isValidSequence(const Cmds &commands, const Model &s0) {
+template <typename Cmds>
+bool isValidSequence(const Cmds &commands,
+                     const typename Cmds::value_type::element_type::Model &s0) {
+  return isValidSequence(commands, fn::constant(s0));
+}
+
+template <typename Cmds, typename MakeInitialState, typename>
+bool isValidSequence(const Cmds &commands,
+                     const MakeInitialState &makeInitialState) {
+  auto state = makeInitialState();
   try {
-    auto s1 = s0;
-    applyAll(commands, s1);
+    applyAll(commands, state);
   } catch (const ::rc::detail::CaseResult &result) {
     if (result.type == ::rc::detail::CaseResult::Type::Discard) {
       return false;
