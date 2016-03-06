@@ -174,7 +174,7 @@ TEST_CASE("state integration tests") {
       "shrinking",
       [](const GenParams &params) {
         Bag s0;
-        const auto gen = state::gen::commands<BagCommand>(
+        const auto gen = state::gen::commands(
             s0,
             state::gen::execOneOfWithArgs<Open, Close, Add, Del, BuggyGet>());
         const auto commands = findMinCommands(params, gen, s0);
@@ -192,7 +192,7 @@ TEST_CASE("state integration tests") {
       "previous commands",
       [](const GenParams &params) {
         Bag s0;
-        const auto gen = state::gen::commands<BagCommand>(
+        const auto gen = state::gen::commands(
             s0,
             state::gen::
                 execOneOfWithArgs<Open, Close, Add, Del, BuggyDelAll>());
@@ -207,7 +207,7 @@ TEST_CASE("state integration tests") {
       "of previous commands",
       [](const GenParams &params) {
         Bag s0;
-        const auto gen = state::gen::commands<BagCommand>(
+        const auto gen = state::gen::commands(
             s0,
             state::gen::
                 execOneOfWithArgs<Open, Close, Add, Del, SneakyBuggyGet>());

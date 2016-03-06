@@ -11,11 +11,13 @@ namespace state {
 namespace gen {
 namespace detail {
 
-template <typename Cmd, typename MakeInitialState, typename GenFunc>
+template <typename MakeInitialState, typename GenFunc>
 class CommandsGen {
 public:
+  using Model = Decay<typename std::result_of<MakeInitialState()>::type>;
+  using Cmd = Decay<typename std::result_of<GenFunc(
+      Model)>::type::ValueType::element_type::CommandType>;
   using CmdSP = std::shared_ptr<const Cmd>;
-  using Model = typename Cmd::Model;
   using Sut = typename Cmd::Sut;
 
   template <typename InitialStateArg, typename GenFuncArg>
@@ -247,22 +249,19 @@ private:
 
 } // namespace detail
 
-template <typename Cmd, typename GenerationFunc>
-Gen<Commands<Cmd>> commands(const typename Cmd::Model &initialState,
-                            GenerationFunc &&genFunc) {
-  return commands<Cmd>(fn::constant(initialState),
-                       std::forward<GenerationFunc>(genFunc));
+template <typename Model, typename GenerationFunc>
+auto commands(const Model &initialState, GenerationFunc &&genFunc)
+    -> Gen<Commands<Decay<typename decltype(
+        genFunc(initialState))::ValueType::element_type::CommandType>>> {
+  return commands(fn::constant(initialState),
+                  std::forward<GenerationFunc>(genFunc));
 }
 
-template <typename Cmd,
-          typename MakeInitialState,
-          typename GenerationFunc,
-          typename>
-Gen<Commands<Cmd>> commands(MakeInitialState &&initialState,
-                            GenerationFunc &&genFunc) {
-  return detail::CommandsGen<Cmd,
-                             Decay<MakeInitialState>,
-                             Decay<GenerationFunc>>(
+template <typename MakeInitialState, typename GenerationFunc>
+auto commands(MakeInitialState &&initialState, GenerationFunc &&genFunc)
+    -> Gen<Commands<Decay<typename decltype(
+        genFunc(initialState()))::ValueType::element_type::CommandType>>> {
+  return detail::CommandsGen<Decay<MakeInitialState>, Decay<GenerationFunc>>(
       std::forward<MakeInitialState>(initialState),
       std::forward<GenerationFunc>(genFunc));
 }

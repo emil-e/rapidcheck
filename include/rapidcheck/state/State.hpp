@@ -18,9 +18,8 @@ template <typename MakeInitialState, typename Sut, typename GenFunc, typename>
 void check(MakeInitialState &&makeInitialState,
            Sut &sut,
            GenFunc &&generationFunc) {
-  using Model = Decay<decltype(makeInitialState())>;
-  const auto commands = *gen::commands<Command<Model, Sut>>(
-      makeInitialState, std::forward<GenFunc>(generationFunc));
+  const auto commands =
+      *gen::commands(makeInitialState, std::forward<GenFunc>(generationFunc));
   runAll(commands, makeInitialState, sut);
 }
 

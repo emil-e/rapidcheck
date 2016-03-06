@@ -8,20 +8,17 @@ namespace gen {
 
 /// Generates a valid commands sequence for the given state initial state
 /// consisting of commands of the given type.
-template <typename Cmd, typename GenerationFunc>
-Gen<Commands<Cmd>> commands(const typename Cmd::Model &initialState,
-                            GenerationFunc &&genFunc);
+template <typename Model, typename GenerationFunc>
+auto commands(const Model &initialState, GenerationFunc &&genFunc)
+    -> Gen<Commands<Decay<typename decltype(
+        genFunc(initialState))::ValueType::element_type::CommandType>>>;
 
 /// Generates a valid commands sequence for the state returned by the given
 /// callable consisting of commands of the given type.
-template <typename Cmd,
-          typename MakeInitialState,
-          typename GenerationFunc,
-          typename = typename std::enable_if<
-              !std::is_same<Decay<MakeInitialState>,
-                            typename Cmd::Model>::value>::type>
-Gen<Commands<Cmd>> commands(MakeInitialState &&initialState,
-                            GenerationFunc &&genFunc);
+template <typename MakeInitialState, typename GenerationFunc>
+auto commands(MakeInitialState &&initialState, GenerationFunc &&genFunc)
+    -> Gen<Commands<Decay<typename decltype(
+        genFunc(initialState()))::ValueType::element_type::CommandType>>>;
 
 } // namespace gen
 } // namespace state
