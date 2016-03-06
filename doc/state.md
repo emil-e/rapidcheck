@@ -71,7 +71,7 @@ There are two _main_ methods here that you need to implement, `apply` and `run`.
 
 `run` applies the same operation but to the System Under Test instead. The expected state before the operation is applied is given as an argument in addition to a reference to the SUT. This is also where you should place your assertions. In the example above, we remove the key from our system (the `FastKvStore`). After this we assert that the SUT no longer contains the key that we removed.
 
-If your command is not valid every state, you also _need_ to implement `preconditions`. In this method, you can use any of the RapidCheck discarding macros such as `RC_PRE` and `RC_DISCARD`. RapidCheck will use this method to ensure that the command is valid, both during generation and during shrinking. In the example above, the precondition for removing a key is that it is present.
+If your command is not valid for every state, you also _need_ to implement `preconditions`. In this method, you can use any of the RapidCheck discarding macros such as `RC_PRE` and `RC_DISCARD`. RapidCheck will use this method to ensure that the command is valid, both during generation and during shrinking. In the example above, the precondition for removing a key is that it is present.
 
 It is also recommended (but not required) to implement the `show` method. This method should output a string representation of what the command does using the given output stream. This representation is used when displaying counterexamples on a test case failure.
 
@@ -126,4 +126,4 @@ rc::check([](const std::map<std::string, std::string> &data) {
 ```
 
 ### Non-copyable models ###
-The state testing framework supports models that not have copy constructors and/or copy-assignment operators. For a lot of [calls to the API](state_ref.md) (i.e. `rc::state::check`), you have to use an overload that takes a callable that returns a model state instead of passing the model state directly. Since testing process is destroys the model state, fresh new model states have to be created. For a model which is not copyable, RapidCheck can obivously not store a copy to use as a template.
+The state testing framework supports models that does not have copy constructors and/or copy-assignment operators. For a lot of [calls to the API](state_ref.md) (i.e. `rc::state::check`), you have to use an overload that takes a callable that returns a model state instead of passing the model state directly. Since the testing process destroys the model state, fresh new model states have to be created. For a model which is not copyable, RapidCheck can obivously not store a copy to use as a template.
