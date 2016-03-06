@@ -12,7 +12,7 @@ This function must be used inside a property, it cannot be used standalone.
 ## `Command<Model, Sut>` ##
 Represents an operation in the state testing framework. The `Model` type parameter is the type of the model that models `Sut` which is the actual System Under Test. These can also be accessed through the `Model` and `Sut` member type alises.
 
-#### `virtual void preconditions(const Model &s0) const` ####
+#### `virtual void checkPreconditions(const Model &s0) const` ####
 If your command is not valid for all states, you must implement this method to assert preconditions. Preconditions can be asserted using any of the discarding macros such as `RC_PRE` or `RC_DISCARD`. If the command is discarded, RapidCheck will simply try to generate a new one. This method is intended to be overriden but has a default implementation that does nothing which is what you want if your command has no preconditions.
 
 While the model state is passed as `const`, this doesn't prevent modification of the model if it, for example, is a `shared_ptr` or similar. Regardless, modifying the model state in this method leads to undefined behavior.

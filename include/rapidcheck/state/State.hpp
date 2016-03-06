@@ -27,7 +27,7 @@ void check(MakeInitialState &&makeInitialState,
 template <typename Model, typename Sut>
 bool isValidCommand(const Command<Model, Sut> &command, const Model &s0) {
   try {
-    command.preconditions(s0);
+    command.checkPreconditions(s0);
   } catch (const ::rc::detail::CaseResult &result) {
     if (result.type == ::rc::detail::CaseResult::Type::Discard) {
       return false;

@@ -18,7 +18,7 @@ public:
   //
   /// Assert preconditions using `RC_PRE` or `RC_DISCARD`. If preconditions do
   /// not hold, the command will be discarded and a new one will be generated.
-  virtual void preconditions(const Model &s0) const;
+  virtual void checkPreconditions(const Model &s0) const;
 
   /// Applies the command to the given model state. Default implementation does
   /// nothing.

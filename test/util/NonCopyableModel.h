@@ -16,7 +16,7 @@ struct NonCopyableModel {
 using NonCopyableCmd = state::Command<NonCopyableModel, NonCopyableModel>;
 
 struct NonCopyableInc : public NonCopyableCmd {
-  void preconditions(const NonCopyableModel &model) const override {
+  void checkPreconditions(const NonCopyableModel &model) const override {
     RC_PRE(model.value < 20);
   }
 
@@ -28,7 +28,7 @@ struct NonCopyableInc : public NonCopyableCmd {
 };
 
 struct NonCopyableDec : public NonCopyableCmd {
-  void preconditions(const NonCopyableModel &model) const override {
+  void checkPreconditions(const NonCopyableModel &model) const override {
     RC_PRE(model.value > 0);
   }
 
