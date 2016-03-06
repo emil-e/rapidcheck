@@ -30,20 +30,17 @@ struct DurationProperties {
 } // namespace
 
 TEST_CASE("arbitrary duration") {
-  prop("equivalent",
-       [] {
-         forEachType<DurationProperties,
-                     std::chrono::nanoseconds,
-                     std::chrono::microseconds,
-                     std::chrono::milliseconds,
-                     std::chrono::seconds,
-                     std::chrono::minutes,
-                     std::chrono::hours>();
-       });
+  forEachType<DurationProperties,
+              std::chrono::nanoseconds,
+              std::chrono::microseconds,
+              std::chrono::milliseconds,
+              std::chrono::seconds,
+              std::chrono::minutes,
+              std::chrono::hours>();
 }
 
 TEST_CASE("arbitrary time_point") {
-  prop("equivalent",
+  prop("equivalent to generator of underlying type",
        [](const GenParams &params) {
          using TimePoint = std::chrono::system_clock::time_point;
          const auto gen =
