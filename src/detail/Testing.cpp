@@ -176,7 +176,7 @@ TestResult reproduceProperty(const Property &property,
   // ...and here we actually run it
   auto desc = minShrinkable->value();
   if (desc.result.type != CaseResult::Type::Failure) {
-    return Error("Reproduced value is not a failure");
+    return Error("Reproduced result is not a failure");
   }
 
   FailureResult failure;
