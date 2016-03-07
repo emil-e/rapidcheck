@@ -55,8 +55,8 @@ private:
           throw GenerationFailure(
               result.description +
               "\n\nAsserting preconditions in apply(...) is deprecated. "
-              "Implement 'void preconditions(const Model &s0) const' and do it "
-              "there instead. See the documentation for more details.");
+              "Implement 'void checkPreconditions(const Model &s0) const' and "
+              "do it there instead. See the documentation for more details.");
         }
         throw;
       }

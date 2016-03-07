@@ -29,17 +29,13 @@ struct PushBack : public IntVecCmd {
 };
 
 struct PopBack : public IntVecCmd {
-  void preconditions(const IntVec &s0) const override {
+  void checkPreconditions(const IntVec &s0) const override {
     RC_PRE(!s0.empty());
   }
 
-  void apply(IntVec &s0) const override {
-    s0.pop_back();
-  }
+  void apply(IntVec &s0) const override { s0.pop_back(); }
 
-  void run(const IntVec &s0, IntVec &sut) const override {
-    sut.pop_back();
-  }
+  void run(const IntVec &s0, IntVec &sut) const override { sut.pop_back(); }
 };
 
 struct AlwaysFail : public IntVecCmd {
@@ -49,7 +45,7 @@ struct AlwaysFail : public IntVecCmd {
 };
 
 struct PreNeverHolds : public IntVecCmd {
-  void preconditions(const IntVec &s0) const override {
+  void checkPreconditions(const IntVec &s0) const override {
     RC_DISCARD("Preconditions never hold");
   }
 };

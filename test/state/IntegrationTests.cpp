@@ -17,13 +17,9 @@ struct Bag {
 using BagCommand = state::Command<Bag, Bag>;
 
 struct Open : public BagCommand {
-  void preconditions(const Model &s0) const override {
-    RC_PRE(!s0.open);
-  }
+  void checkPreconditions(const Model &s0) const override { RC_PRE(!s0.open); }
 
-  void apply(Model &s0) const override {
-    s0.open = true;
-  }
+  void apply(Model &s0) const override { s0.open = true; }
 
   void run(const Model &s0, Sut &sut) const override { sut.open = true; }
 
@@ -31,13 +27,9 @@ struct Open : public BagCommand {
 };
 
 struct Close : public BagCommand {
-  void preconditions(const Model &s0) const override {
-    RC_PRE(s0.open);
-  }
+  void checkPreconditions(const Model &s0) const override { RC_PRE(s0.open); }
 
-  void apply(Model &s0) const override {
-    s0.open = false;
-  }
+  void apply(Model &s0) const override { s0.open = false; }
 
   void run(const Model &s0, Sut &sut) const override { sut.open = false; }
 
@@ -47,13 +39,9 @@ struct Close : public BagCommand {
 struct Add : public BagCommand {
   int item = *gen::inRange<int>(0, 10);
 
-  void preconditions(const Model &s0) const override {
-    RC_PRE(s0.open);
-  }
+  void checkPreconditions(const Model &s0) const override { RC_PRE(s0.open); }
 
-  void apply(Model &s0) const override {
-    s0.items.push_back(item);
-  }
+  void apply(Model &s0) const override { s0.items.push_back(item); }
 
   void run(const Model &s0, Sut &sut) const override {
     sut.items.push_back(item);
@@ -69,7 +57,7 @@ struct Del : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  void preconditions(const Model &s0) const override {
+  void checkPreconditions(const Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
   }
@@ -93,7 +81,7 @@ struct BuggyGet : public BagCommand {
     index = *gen::inRange<std::size_t>(0, s0.items.size());
   }
 
-  void preconditions(const Model &s0) const override {
+  void checkPreconditions(const Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(index < s0.items.size());
   }
@@ -113,7 +101,7 @@ struct BuggyDelAll : public BagCommand {
 
   explicit BuggyDelAll(const Bag &s0) { value = *gen::elementOf(s0.items); }
 
-  void preconditions(const Model &s0) const override {
+  void checkPreconditions(const Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(std::find(begin(s0.items), end(s0.items), value) != end(s0.items));
   }
@@ -135,7 +123,7 @@ struct SneakyBuggyGet : public BagCommand {
 
   explicit SneakyBuggyGet(const Bag &s0) { value = *gen::elementOf(s0.items); }
 
-  void preconditions(const Model &s0) const override {
+  void checkPreconditions(const Model &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(std::find(begin(s0.items), end(s0.items), value) != end(s0.items));
   }
@@ -225,7 +213,8 @@ TEST_CASE("state integration tests") {
                 execOneOfWithArgs<Open, Close, Add, Del, SneakyBuggyGet>());
         const auto commands = findMinCommands(params, gen, s0);
         const auto cmdStrings = showCommands(commands);
-        std::vector<std::string> expected{"Open", "Add(2)", "SneakyBuggyGet(2)"};
+        std::vector<std::string> expected{
+            "Open", "Add(2)", "SneakyBuggyGet(2)"};
         RC_ASSERT(cmdStrings == expected);
       });
 }

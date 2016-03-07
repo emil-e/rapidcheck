@@ -16,7 +16,7 @@ struct DatabaseModel {
 using DbCommand = state::Command<DatabaseModel, Database>;
 
 struct Open : public DbCommand {
-  void preconditions(const DatabaseModel &s0) const override {
+  void checkPreconditions(const DatabaseModel &s0) const override {
     RC_PRE(!s0.open);
   }
 
@@ -28,7 +28,7 @@ struct Open : public DbCommand {
 };
 
 struct Close : public DbCommand {
-  void preconditions(const DatabaseModel &s0) const override {
+  void checkPreconditions(const DatabaseModel &s0) const override {
     RC_PRE(!s0.inWriteBlock);
     RC_PRE(s0.open);
   }
@@ -43,7 +43,7 @@ struct Close : public DbCommand {
 struct Put : public DbCommand {
   User user = *gen::arbitrary<User>();
 
-  void preconditions(const DatabaseModel &s0) const override {
+  void checkPreconditions(const DatabaseModel &s0) const override {
     RC_PRE(s0.inWriteBlock);
   }
 
@@ -65,7 +65,7 @@ struct Get : public DbCommand {
     username = (*gen::elementOf(s0.data)).second.username;
   }
 
-  void preconditions(const DatabaseModel &s0) const override {
+  void checkPreconditions(const DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
     RC_PRE(s0.data.count(username) > 0U);
@@ -83,7 +83,7 @@ struct Get : public DbCommand {
 };
 
 struct BeginWrite : public DbCommand {
-  void preconditions(const DatabaseModel &s0) const override {
+  void checkPreconditions(const DatabaseModel &s0) const override {
     RC_PRE(s0.open);
     RC_PRE(!s0.inWriteBlock);
   }
@@ -98,7 +98,7 @@ struct BeginWrite : public DbCommand {
 };
 
 struct ExecuteWrite : public DbCommand {
-  void preconditions(const DatabaseModel &s0) const override {
+  void checkPreconditions(const DatabaseModel &s0) const override {
     RC_PRE(s0.inWriteBlock);
   }
 

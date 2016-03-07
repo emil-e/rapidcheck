@@ -7,7 +7,7 @@ namespace rc {
 namespace state {
 
 template <typename Model, typename Sut>
-void Command<Model, Sut>::preconditions(const Model &s0) const {}
+void Command<Model, Sut>::checkPreconditions(const Model &s0) const {}
 
 template <typename Model, typename Sut>
 void Command<Model, Sut>::apply(Model &s0) const {}

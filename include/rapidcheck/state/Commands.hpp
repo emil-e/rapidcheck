@@ -8,7 +8,7 @@ namespace state {
 template <typename Cmds, typename Model>
 void applyAll(const Cmds &commands, Model &state) {
   for (const auto &command : commands) {
-    command->preconditions(state);
+    command->checkPreconditions(state);
     command->apply(state);
   }
 }
@@ -26,7 +26,7 @@ void runAll(const Cmds &commands,
             typename Cmds::value_type::element_type::Sut &sut) {
   auto currentState = makeInitialState();
   for (const auto &command : commands) {
-    command->preconditions(currentState);
+    command->checkPreconditions(currentState);
     command->run(currentState, sut);
     command->apply(currentState);
   }
