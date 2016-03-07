@@ -61,7 +61,7 @@ TEST_CASE("state::runAll") {
 
   prop("passes the correct pre-state to every invocation of run",
        [](const IntVec &s0) {
-         const auto cmds = *state::gen::commands<IntVecCmd>(
+         const auto cmds = *state::gen::commands(
              s0, state::gen::execOneOfWithArgs<CompareWithModel>());
          IntVec sut = s0;
          state::runAll(cmds, s0, sut);

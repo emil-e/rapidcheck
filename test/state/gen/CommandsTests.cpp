@@ -85,7 +85,7 @@ struct DeprecatedCmd : public IntVecCmd {
 TEST_CASE("state::gen::commands") {
   prop("command sequences are always valid",
        [](const GenParams &params, const IntVec &s0) {
-         const auto gen = state::gen::commands<IntVecCmd>(
+         const auto gen = state::gen::commands(
              s0, state::gen::execOneOfWithArgs<PushBack, PopBack>());
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<IntVecCmds> &value,
@@ -96,7 +96,7 @@ TEST_CASE("state::gen::commands") {
 
   prop("shrinks are shorter or equal length when compared to original",
        [](const GenParams &params, const IntVec &s0) {
-         const auto gen = state::gen::commands<IntVecCmd>(
+         const auto gen = state::gen::commands(
              s0, state::gen::execOneOfWithArgs<PushBack, PopBack>());
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<IntVecCmds> &value,
@@ -107,8 +107,7 @@ TEST_CASE("state::gen::commands") {
 
   prop("passed random generators are unique",
        [](const GenParams &params) {
-         const auto gen =
-             state::gen::commands<IntVecCmd>(IntVec(), &captureParams);
+         const auto gen = state::gen::commands(IntVec(), &captureParams);
          const auto cmds = gen(params.random, params.size).value();
          const auto randoms = collectRandoms(cmds);
          RC_ASSERT(randoms.size() == cmds.size());
@@ -116,8 +115,7 @@ TEST_CASE("state::gen::commands") {
 
   prop("shrinks use a subset of the original random generators",
        [](const GenParams &params) {
-         const auto gen =
-             state::gen::commands<IntVecCmd>(IntVec(), &captureParams);
+         const auto gen = state::gen::commands(IntVec(), &captureParams);
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<IntVecCmds> &value,
                        const Shrinkable<IntVecCmds> &shrink) {
@@ -135,8 +133,7 @@ TEST_CASE("state::gen::commands") {
 
   prop("passes the correct size",
        [](const GenParams &params) {
-         const auto gen =
-             state::gen::commands<IntVecCmd>(IntVec(), &captureParams);
+         const auto gen = state::gen::commands(IntVec(), &captureParams);
          onAnyPath(gen(params.random, params.size),
                    [&](const Shrinkable<IntVecCmds> &value,
                        const Shrinkable<IntVecCmds> &shrink) {
@@ -152,7 +149,7 @@ TEST_CASE("state::gen::commands") {
   prop("correctly threads the state when generating commands",
        [](const GenParams &params) {
          IntVec s0({0});
-         const auto gen = state::gen::commands<IntVecCmd>(
+         const auto gen = state::gen::commands(
              s0,
              [](const IntVec &vec) {
                auto cmd = std::make_shared<const CountCmd>(vec.back() + 1);
@@ -173,12 +170,12 @@ TEST_CASE("state::gen::commands") {
 
   prop("finds minimum where one commands always fails",
        [](const GenParams &params, const IntVec &s0) {
-         const auto gen = state::gen::commands<IntVecCmd>(
-             s0,
-             state::gen::execOneOfWithArgs<AlwaysFail,
-                                           PushBack,
-                                           PopBack,
-                                           SomeCommand>());
+         const auto gen =
+             state::gen::commands(s0,
+                                  state::gen::execOneOfWithArgs<AlwaysFail,
+                                                                PushBack,
+                                                                PopBack,
+                                                                SomeCommand>());
          const auto result = searchGen(params.random,
                                        params.size,
                                        gen,
@@ -206,7 +203,7 @@ TEST_CASE("state::gen::commands") {
         using CommandType = TaggedCountdownCmd::CommandType;
         using CommandsType = state::Commands<CommandType>;
 
-        const auto gen = state::gen::commands<CommandType>(
+        const auto gen = state::gen::commands(
             false, state::gen::execOneOfWithArgs<TaggedCountdownCmd>());
         const auto shrinkable = gen(params.random, params.size);
 
@@ -241,7 +238,7 @@ TEST_CASE("state::gen::commands") {
         using CommandType = TaggedCountdownCmd::CommandType;
         using CommandsType = state::Commands<CommandType>;
 
-        const auto gen = state::gen::commands<CommandType>(
+        const auto gen = state::gen::commands(
             false, state::gen::execOneOfWithArgs<TaggedCountdownCmd>());
         const auto shrinkable = gen(params.random, params.size);
 
@@ -269,7 +266,7 @@ TEST_CASE("state::gen::commands") {
 
   prop("gives up if unable to generate sequence of enough length",
        [](const GenParams &params, const IntVec &s0) {
-         const auto gen = state::gen::commands<IntVecCmd>(
+         const auto gen = state::gen::commands(
              s0, state::gen::execOneOfWithArgs<PreNeverHolds>());
 
          const auto shrinkable = gen(params.random, params.size);
@@ -278,7 +275,7 @@ TEST_CASE("state::gen::commands") {
 
   prop("discards commands that discard in constructor",
        [](const GenParams &params, const IntVec &s0) {
-         const auto gen = state::gen::commands<IntVecCmd>(
+         const auto gen = state::gen::commands(
              s0,
              state::gen::execOneOfWithArgs<DiscardInConstructor, PushBack>());
          const auto commands = gen(params.random, params.size).value();
@@ -301,7 +298,7 @@ TEST_CASE("state::gen::commands") {
   prop("throws GenerationFailure if command discards in apply(...)",
        [](const GenParams &params, const IntVec &s0) {
          RC_PRE(params.size > 0);
-         const auto gen = state::gen::commands<IntVecCmd>(
+         const auto gen = state::gen::commands(
              s0, state::gen::execOneOfWithArgs<DeprecatedCmd>());
          RC_ASSERT_THROWS_AS(gen(params.random, params.size).value(),
                              GenerationFailure);

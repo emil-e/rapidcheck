@@ -42,7 +42,7 @@ struct NonCopyableDec : public NonCopyableCmd {
 inline NonCopyableModel initialNonCopyableModel() { return NonCopyableModel(); }
 
 inline Gen<state::Commands<NonCopyableCmd>> genNonCopyableCommands() {
-  return state::gen::commands<NonCopyableCmd>(
+  return state::gen::commands(
       &initialNonCopyableModel,
       [](const NonCopyableModel &model) {
         return state::gen::execOneOfWithArgs<NonCopyableInc, NonCopyableDec>()(
