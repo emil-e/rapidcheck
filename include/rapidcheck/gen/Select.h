@@ -1,6 +1,22 @@
 #pragma once
 
+#include <initializer_list>
+#include <string>
+#include <utility>
+
+#include "rapidcheck/GenerationFailure.h"
+#include "rapidcheck/Random.h"
+#include "rapidcheck/Shrinkable.h"
+#include "rapidcheck/Traits.h"
+#include "rapidcheck/gen/Transform.h"
+#include "rapidcheck/shrink/Shrink.h"
+#include "rapidcheck/shrinkable/Create.h"
+#include "rapidcheck/shrinkable/Transform.h"
+
 namespace rc {
+
+template <typename T> class Gen;
+
 namespace gen {
 
 /// Returns a generator which randomly selects an element from the given
