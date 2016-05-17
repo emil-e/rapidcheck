@@ -24,7 +24,7 @@ struct MakeCommand<Cmd, TypeList<Args...>> {
   }
 
   static std::shared_ptr<const typename Cmd::CommandType>
-  make(std::false_type, const Args &... args) {
+  make(std::false_type, const Args &... /*args*/) {
     return std::make_shared<Cmd>();
   }
 };

@@ -67,6 +67,6 @@ private:
   std::map<std::string, User> m_store;
 };
 
-std::unique_ptr<IDatabaseConnection> connectToDatabase(const std::string &id) {
+std::unique_ptr<IDatabaseConnection> connectToDatabase(const std::string &/*id*/) {
   return std::unique_ptr<IDatabaseConnection>(new DatabaseConnection());
 }

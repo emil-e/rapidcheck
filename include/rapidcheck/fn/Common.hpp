@@ -13,7 +13,7 @@ public:
       : m_value(std::forward<Arg>(arg)) {}
 
   template <typename... Args>
-  T operator()(Args &&... args) const {
+  T operator()(Args &&... /*args*/) const {
     return m_value;
   }
 

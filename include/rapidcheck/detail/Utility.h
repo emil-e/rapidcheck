@@ -42,7 +42,7 @@ void pushBackAll(Collection &collection, Item &&item, Items &&... items) {
 }
 
 /// Base case for `join`.
-inline std::string join(const std::string &sep, const std::string str) {
+inline std::string join(const std::string &/*sep*/, const std::string str) {
   return str;
 }
 

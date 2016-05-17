@@ -12,7 +12,7 @@ using Any = rc::detail::Any;
 
 /// Default handler. Just throws exception.
 class NullGenerationHandler : public GenerationHandler {
-  Any onGenerate(const Gen<rc::detail::Any> &gen) override {
+  Any onGenerate(const Gen<rc::detail::Any> &/*gen*/) override {
     throw std::runtime_error("operator* is not allowed in this context");
   }
 };

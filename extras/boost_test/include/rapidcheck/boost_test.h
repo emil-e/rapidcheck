@@ -8,7 +8,7 @@ namespace rc {
 namespace detail {
 
 template <typename Testable>
-void checkBoostTest(const std::string &description, Testable &&testable) {
+void checkBoostTest(const std::string &/*description*/, Testable &&testable) {
   const auto &testCase = boost::unit_test::framework::current_test_case();
   TestMetadata metadata;
   metadata.id = testCase.full_name();
