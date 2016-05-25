@@ -23,6 +23,20 @@ If we rerun the program with the same configuration we will get an identical run
 RC_PARAMS="seed=12776003016957408636" ./my_test
 ```
 
+#### RC_PARAMS options
+
+| Option              | Type   | Meaning                                         |
+| ------------------- | ------ | ----------------------------------------------- |
+| `seed`              | uint64 | Initial randomization seed, for reproducibility |
+| `max_success`       | uint   | Max successes before discontinuing search       |
+| `max_size`          | uint   | Maximum size of any generated data structure    |
+| `max_discard_ratio` | uint   | Allowed fraction of discards during filtering   |
+| `noshrink`          | {1\|0}  | Disable attempt to produce a minimal test case  |
+| `verbose_progress`  | {1\|0}  | Print RC_LOG() for successful runs as well      |
+| `verbose_shrinking` | {1\|0}  | Produce test case minimization progress log     |
+| `reproduce`         | *      | Compact state to fully reproducing the run      |
+
+
 ### Reproduce mode ###
 If the bug occured after large number of test cases, waiting for test cases that are known to be successful to run before the failing test case is run can be time consuming. For example, if the bug occured after 2000 tests and 200 shrinks, it is not interesting to run the 1999 (successful) test cases before that and it is not really necessary to try all the shrunk versions of the failure that were tried byt could not reproduce the bug.
 
