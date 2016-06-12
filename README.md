@@ -26,6 +26,11 @@ RapidCheck uses CMake and is built like any other CMake project. If your own pro
 
 This will give you both linking and include directories.
 
+### System Installation
+You can now install rapidcheck on your system. Simply add `-DRC_ENABLE_INSTALL=ON` when you run `cmake` to build the project. This will install all the include directories (include the extras - if they are enabled) and the static library that is built. 
+
+When using the system install version with another CMake project you won't need to use `find_package(rapidcheck_<extra>)`; just make sure that the extra was enabled when you were running cmake to build the project.
+
 ## Quick introduction ##
 A common first example is testing a reversal function. For such a function, double reversal should always result in the original list. In this example we will use the standard C++ `std::reverse` function:
 
