@@ -5,6 +5,10 @@ enable_testing()
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 
+set(cmake_config_files
+	"rapidcheck-config.cmake"
+	)
+
 if(MSVC)
   # /bigobj - some object files become very large so we need this
   # /wd4503 - truncation of decorated name, not much we can do about it so
@@ -76,3 +80,34 @@ if (RC_ENABLE_EXAMPLES)
 endif()
 
 add_subdirectory(extras)
+
+# install the targets and include directories
+install(TARGETS rapidcheck
+	ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+	)
+
+install(DIRECTORY "include/"
+	DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
+	)
+
+# setup the cmake config files
+# the include directories to export in our cmake config file
+set(CONFIG_INCLUDE_DIRS 
+	"${CMAKE_INSTALL_PREFIX}/include"
+	)
+
+# The libraries to export in our cmake config file
+set(CONFIG_LIBRARIES "rapidcheck")
+
+# generate the cmake config files
+foreach(f ${cmake_config_files})
+	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${f}.in"
+	"${PROJECT_BINARY_DIR}/${f}"
+	@ONLY
+	)
+
+	install(
+		FILES "${PROJECT_BINARY_DIR}/${f}"
+		DESTINATION "lib/cmake/rapidcheck"
+		)
+endforeach()
