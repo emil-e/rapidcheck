@@ -7,9 +7,9 @@ namespace {
 
 class DummyPropertyContext : public PropertyContext {
 public:
-  bool reportResult(const CaseResult &result) override { return false; }
+  bool reportResult(const CaseResult &/*result*/) override { return false; }
   std::ostream &logStream() override { return std::cerr; }
-  void addTag(std::string str) override {}
+  void addTag(std::string /*str*/) override {}
 };
 
 } // namespace
