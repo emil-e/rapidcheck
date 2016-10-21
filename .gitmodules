@@ -1,3 +1,6 @@
 [submodule "ext/catch"]
 	path = ext/catch
 	url = https://github.com/philsquared/Catch.git
+[submodule "ext/googletest"]
+	path = ext/googletest
+	url = https://github.com/google/googletest
