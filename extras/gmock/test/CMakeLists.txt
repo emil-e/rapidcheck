@@ -5,8 +5,8 @@ target_link_libraries(rapidcheck_gmock_tests
   catch
   gmock)
 target_include_directories(rapidcheck_gmock_tests PRIVATE 
-    ${CMAKE_SOURCE_DIR}/ext/gmock/include
-    ${CMAKE_SOURCE_DIR}/ext/gmock/gtest/include)
+    ${CMAKE_SOURCE_DIR}/ext/googletest/googletest/include
+    ${CMAKE_SOURCE_DIR}/ext/googletest/googlemock/include)
 
 # Prevent collision between Gmock and Catch
 target_compile_definitions(rapidcheck_gmock_tests PRIVATE
