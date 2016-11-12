@@ -10,18 +10,18 @@ There are two overloads, one that takes the initial state as an immediate value 
 This function must be used inside a property, it cannot be used standalone.
 
 ## `Command<Model, Sut>` ##
-Represents an operation in the state testing framework. The `Model` type parameter is the type of the model that models `Sut` which is the actual System Under Test. These can also be accessed through the `Model` and `Sut` member type alises.
+Represents an operation in the state testing framework. The `Model` type parameter is the type of the model that models `Sut` which is the actual System Under Test. These can also be accessed through the `Model` and `Sut` member type aliases.
 
 #### `virtual void checkPreconditions(const Model &s0) const` ####
-If your command is not valid for all states, you must implement this method to assert preconditions. Preconditions can be asserted using any of the discarding macros such as `RC_PRE` or `RC_DISCARD`. If the command is discarded, RapidCheck will simply try to generate a new one. This method is intended to be overriden but has a default implementation that does nothing which is what you want if your command has no preconditions.
+If your command is not valid for all states, you must implement this method to assert preconditions. Preconditions can be asserted using any of the discarding macros such as `RC_PRE` or `RC_DISCARD`. If the command is discarded, RapidCheck will simply try to generate a new one. This method is intended to be overridden but has a default implementation that does nothing which is what you want if your command has no preconditions.
 
 While the model state is passed as `const`, this doesn't prevent modification of the model if it, for example, is a `shared_ptr` or similar. Regardless, modifying the model state in this method leads to undefined behavior.
 
 #### `virtual void apply(Model &s0) const` ####
-Applies this command to the given state. The effect of this command on the model should be equivalent to this commands effect on the System Under Test. This method is intended to be overriden but has a default implementation that does nothing, something that can be useful for commands that do not modify state.
+Applies this command to the given state. The effect of this command on the model should be equivalent to this commands effect on the System Under Test. This method is intended to be overridden but has a default implementation that does nothing, something that can be useful for commands that do not modify state.
 
 #### `virtual void run(const Model &s0, Sut &sut) const` ####
-Applies this command to the given System Under Test. The state before this command has been applied is also passed in. If you need the post state, you can get this using the `nextState` convenience method. This is the method in which to place your assertions (`RC_ASSERT` et al.). This method is intended to be overriden but has a default implementation that does nothing.
+Applies this command to the given System Under Test. The state before this command has been applied is also passed in. If you need the post state, you can get this using the `nextState` convenience method. This is the method in which to place your assertions (`RC_ASSERT` et al.). This method is intended to be overridden but has a default implementation that does nothing.
 
 While the model state is passed as `const`, this doesn't prevent modification of the model if it, for example, is a `shared_ptr` or similar. Regardless, modifying the model state in this method leads to undefined behavior.
 

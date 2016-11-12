@@ -22,7 +22,7 @@ RapidCheck provides a framework that takes exactly this approach in the `rapidch
 - Implementations of the operations that can be performed on the System Under Test.
 - A model of the state of the System Under Test.
 
-The operations are represented as subclasses of the `rc::state::Command<Model, Sut>` template and the model is usually just a simple struct containg enough information to model the expected behavior of the system.
+The operations are represented as subclasses of the `rc::state::Command<Model, Sut>` template and the model is usually just a simple struct containing enough information to model the expected behavior of the system.
 
 The need for a model might require some explanation. First, a system does not always provide enough public information to be able to know the expected behavior. Systems typically have lots of hidden state that we cannot see but still want to test. More importantly, the model allows RapidCheck to generate valid sequences of commands without even running the actual System Under Test. This is especially important while shrinking a test case since we do not want to try a shrunk sequence only to find out that it was not valid. This could lead to very slow shrinking.
 
@@ -112,7 +112,7 @@ The state that is passed to the command generator function in `rc::state::check`
 
 ## Tips ##
 ### Generate initialization parameters ###
-Since the `rc::state::check` call is part of a regular RapidCheck property, you are free to also generate the initalization data for the model and state. If we for example modify the above example a bit:
+Since the `rc::state::check` call is part of a regular RapidCheck property, you are free to also generate the initialization data for the model and state. If we for example modify the above example a bit:
 
 ```C++
 rc::check([](const std::map<std::string, std::string> &data) {
@@ -126,4 +126,4 @@ rc::check([](const std::map<std::string, std::string> &data) {
 ```
 
 ### Non-copyable models ###
-The state testing framework supports models that not have copy constructors and/or copy-assignment operators. For a lot of [calls to the API](state_ref.md) (i.e. `rc::state::check`), you have to use an overload that takes a callable that returns a model state instead of passing the model state directly. Since testing process is destroys the model state, fresh new model states have to be created. For a model which is not copyable, RapidCheck can obivously not store a copy to use as a template.
+The state testing framework supports models that not have copy constructors and/or copy-assignment operators. For a lot of [calls to the API](state_ref.md) (i.e. `rc::state::check`), you have to use an overload that takes a callable that returns a model state instead of passing the model state directly. Since testing process is destroys the model state, fresh new model states have to be created. For a model which is not copyable, RapidCheck can obviously not store a copy to use as a template.

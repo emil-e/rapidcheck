@@ -18,7 +18,7 @@ RC_GTEST_PROP(MyTestCase,
 }
 ```
 
-The parenthesis around the argument list are required because of how the preprocessor works and can not be omitted. This also means that if you don't want any arguments generated, you need to include an empty set of paranthesis:
+The parenthesis around the argument list are required because of how the preprocessor works and can not be omitted. This also means that if you don't want any arguments generated, you need to include an empty set of parenthesis:
 
 ```C++
 // If you don't have any arguments, you have to have an empty paren
