@@ -40,6 +40,7 @@ template <typename Source>
 template <typename T>
 T BitStream<Source>::next(int nbits, std::false_type) {
   using SourceType = decltype(m_source.next());
+  auto sourceTypeLength = (sizeof(SourceType) * 8);
 
   if (nbits == 0) {
     return 0;
@@ -57,7 +58,12 @@ T BitStream<Source>::next(int nbits, std::false_type) {
     const auto n = std::min(m_numBits, wantBits);
     const auto bits = m_bits & bitMask<SourceType>(n);
     value |= (bits << (nbits - wantBits));
-    m_bits >>= static_cast<SourceType>(n);
+    // To avoid right-shifting data beyond the width of the given type (which is
+    // undefined behavior, because of course it is) only perform this shift-
+    // assignment if we have room.
+    if (static_cast<SourceType>(n) < sourceTypeLength) {
+      m_bits >>= static_cast<SourceType>(n);
+    }
     m_numBits -= n;
     wantBits -= n;
   }
