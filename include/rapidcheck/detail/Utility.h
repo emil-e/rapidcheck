@@ -95,9 +95,10 @@ inline uint64_t avalanche(uint64_t x) {
 /// and the rest set to 0.
 template <typename T>
 constexpr T bitMask(int nbits) {
-  // Avoid undefined behavior by never left-shifting a negative number.
-  auto left  = (~static_cast<T>(0) - 1) > 0 ? (~static_cast<T>(0) - 1) : 0;
-  return ~(left << static_cast<T>(nbits - 1));
+  // Avoid undefined behavior by operating on unsigned numbers (`UT`), and then
+  // casting back to T.
+  typedef typename std::make_unsigned<T>::type UT;
+  return (T)(~((~static_cast<UT>(0) - 1) << static_cast<UT>(nbits - 1)));
 }
 
 // TODO separate into header and implementation file
