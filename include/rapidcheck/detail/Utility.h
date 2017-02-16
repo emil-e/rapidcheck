@@ -96,7 +96,7 @@ inline uint64_t avalanche(uint64_t x) {
 template <typename T>
 constexpr T bitMask(int nbits) {
   // Avoid undefined behavior by never left-shifting a negative number.
-  auto left = (~static_cast<T>(0) - 1) ? (~static_cast<T>(0) - 1) : 0;
+  auto left  = (~static_cast<T>(0) - 1) > 0 ? (~static_cast<T>(0) - 1) : 0;
   return ~(left << static_cast<T>(nbits - 1));
 }
 
