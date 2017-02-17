@@ -98,7 +98,7 @@ constexpr T bitMask(int nbits) {
   // Avoid undefined behavior by operating on unsigned numbers (`UT`), and then
   // casting back to T.
   using UT = typename std::make_unsigned<T>::type;
-  return (T)(~((~static_cast<UT>(0) - 1) << static_cast<UT>(nbits - 1)));
+  return (T)(~(~static_cast<UT>(0) << static_cast<UT>(nbits)));
 }
 
 // TODO separate into header and implementation file
