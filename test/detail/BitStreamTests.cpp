@@ -117,7 +117,7 @@ TEST_CASE("BitStream") {
            const auto n = *gen::inRange(0, 64);
            const bool sign = (x & (1LL << (n - 1LL))) != 0;
            const auto mask = ~bitMask<int64_t>(n);
-           if (sign) {
+           if (sign && n > 0) {
              RC_ASSERT((stream.next<int64_t>(n) & mask) == mask);
            } else {
              RC_ASSERT((stream.next<int64_t>(n) & mask) == 0);
