@@ -99,12 +99,12 @@ constexpr T bitMask(int nbits) {
   // There are two pieces of undefined behavior we're avoiding here,
   //   1. Shifting past the width of a type (ex `<< 32` against an `int32_t`)
   //   2. Shifting a negative operand (which `~0` is for all signed types)
-  // First we branch to avoid shifting the bit-width of the given type, then
-  // (assuming we are shifting, and aren't just returning all 1s) we cast `~0`
-  // to an explicitly signed type before performing the shift.
-  return nbits != sizeof(T) * 8                            ?
-         static_cast<T>(~(static_cast<UT>(~(0)) << nbits)) :
-         static_cast<T>(~(0));
+  // First we branch to avoid shifting the past the width of the type, then
+  // (assuming we are shifting, and aren't just returning all `~0`) we cast `~0`
+  // to an explicitly unsigned type before performing the shift.
+  return nbits != std::numeric_limits<UT>::digits ?
+         ~T(~UT(0) << nbits)                      :
+         ~T(0);
 }
 
 // TODO separate into header and implementation file
