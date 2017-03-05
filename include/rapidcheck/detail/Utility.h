@@ -103,8 +103,8 @@ constexpr T bitMask(int nbits) {
   // (assuming we are shifting, and aren't just returning `~0`) we cast `~0`
   // to an explicitly unsigned type before performing the shift.
   return nbits != std::numeric_limits<UT>::digits ?
-                  ~T(~UT(0) << nbits)             :
-                  ~T(0);
+         ~T(~UT(0) << nbits)                      :
+         ~T(0);
 }
 
 // TODO separate into header and implementation file
