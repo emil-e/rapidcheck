@@ -2,6 +2,7 @@
 
 #include <string>
 #include <tuple>
+#include <limits>
 
 namespace rc {
 namespace detail {
