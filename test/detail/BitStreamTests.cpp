@@ -128,14 +128,14 @@ TEST_CASE("BitStream") {
          [=](uint64_t x) {
            auto source = makeSource(seq::repeat(x));
            auto stream = bitStreamOf(source);
-           RC_ASSERT((stream.next<uint64_t>(0) & bitMask<uint64_t>(64)) == 0U);
+           RC_ASSERT(stream.next<uint64_t>(0) == 0U);
          });
 
     prop("does not return any bits when none are requested (signed)",
          [=](uint64_t x) {
            auto source = makeSource(seq::repeat(x));
            auto stream = bitStreamOf(source);
-           RC_ASSERT((stream.next<int64_t>(0) & bitMask<int64_t>(64)) == 0);
+           RC_ASSERT(stream.next<int64_t>(0) == 0);
          });
 
     prop("works with booleans",
