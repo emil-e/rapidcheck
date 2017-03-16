@@ -51,11 +51,10 @@ std::string demangle(const char *name) {
 
 Maybe<std::string> getEnvValue(const std::string &name) {
   char *buffer = nullptr;
-  const auto ret = _dupenv_s(&buffer, nullptr, name.c_str());
-  const auto ptr = std::unique_ptr<char, decltype(&std::free)>(buffer, &std::free);
+  _dupenv_s(&buffer, nullptr, name.c_str());
 
   if (buffer != nullptr) {
-    return buffer;
+    return std::string(buffer);
   } else {
     return Nothing;
   }
