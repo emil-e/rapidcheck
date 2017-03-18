@@ -12,12 +12,12 @@ namespace rc {
 namespace test {
 
 Gen<int> genSize() {
-  return [](const Random &random, int size) { return shrinkable::just(size); };
+  return [](const Random &/*random*/, int size) { return shrinkable::just(size); };
 };
 
 Gen<Random> genRandom() {
   return
-      [](const Random &random, int size) { return shrinkable::just(random); };
+      [](const Random &random, int /*size*/) { return shrinkable::just(random); };
 }
 
 Gen<int> genCountdown() {
@@ -28,7 +28,7 @@ Gen<int> genCountdown() {
 }
 
 Gen<int> genFixedCountdown(int value) {
-  return [=](const Random &random, int size) {
+  return [=](const Random &/*random*/, int /*size*/) {
     return countdownShrinkable(value);
   };
 }

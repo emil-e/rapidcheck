@@ -22,7 +22,7 @@ struct Open : public DbCommand {
 
   void apply(DatabaseModel &s0) const override { s0.open = true; }
 
-  void run(const DatabaseModel &s0, Database &db) const override { db.open(); }
+  void run(const DatabaseModel &/*s0*/, Database &db) const override { db.open(); }
 
   void show(std::ostream &os) const override { os << "Open"; }
 };
@@ -35,7 +35,7 @@ struct Close : public DbCommand {
 
   void apply(DatabaseModel &s0) const override { s0.open = false; }
 
-  void run(const DatabaseModel &s0, Database &db) const override { db.close(); }
+  void run(const DatabaseModel &/*s0*/, Database &db) const override { db.close(); }
 
   void show(std::ostream &os) const override { os << "Close"; }
 };
@@ -51,7 +51,7 @@ struct Put : public DbCommand {
     s0.data[user.username] = user;
   }
 
-  void run(const DatabaseModel &s0, Database &db) const override {
+  void run(const DatabaseModel &/*s0*/, Database &db) const override {
     db.put(user);
   }
 
@@ -90,7 +90,7 @@ struct BeginWrite : public DbCommand {
 
   void apply(DatabaseModel &s0) const override { s0.inWriteBlock = true; }
 
-  void run(const DatabaseModel &s0, Database &db) const override {
+  void run(const DatabaseModel &/*s0*/, Database &db) const override {
     db.beginWrite();
   }
 
@@ -104,7 +104,7 @@ struct ExecuteWrite : public DbCommand {
 
   void apply(DatabaseModel &s0) const override { s0.inWriteBlock = false; }
 
-  void run(const DatabaseModel &s0, Database &db) const override {
+  void run(const DatabaseModel &/*s0*/, Database &db) const override {
     db.executeWrite();
   }
 

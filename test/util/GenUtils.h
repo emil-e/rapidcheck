@@ -108,7 +108,7 @@ struct Arbitrary<test::GenParams> {
 template <>
 struct Arbitrary<test::PassedSize> {
   static Gen<test::PassedSize> arbitrary() {
-    return [](const Random &random, int size) {
+    return [](const Random &/*random*/, int size) {
       test::PassedSize sz;
       sz.value = size;
       return shrinkable::just(sz);
@@ -119,7 +119,7 @@ struct Arbitrary<test::PassedSize> {
 template <>
 struct Arbitrary<test::PassedRandom> {
   static Gen<test::PassedRandom> arbitrary() {
-    return [](const Random &random, int size) {
+    return [](const Random &random, int /*size*/) {
       test::PassedRandom rnd;
       rnd.value = random;
       return shrinkable::just(rnd);
