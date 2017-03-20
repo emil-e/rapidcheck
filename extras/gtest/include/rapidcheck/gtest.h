@@ -46,6 +46,24 @@ void checkGTest(Testable &&testable) {
 /// Defines a RapidCheck property as a Google Test fixture based test. The
 /// fixture is reinstantiated for each test case of the property.
 #define RC_GTEST_FIXTURE_PROP(Fixture, Name, ArgList)                          \
+  RC_GTEST_FIXTURE_GEN(TEST_F, Fixture, Name, ArgList)
+
+/// Defines a RapidCheck property as a Google Test value-parameterized
+/// test. The fixture is reinstantiated for each test case of the property.
+#define RC_GTEST_PROP_P(Fixture, Name, ArgList)                                \
+  RC_GTEST_FIXTURE_GEN(TEST_P, Fixture, Name, ArgList)
+
+/// Defines a RapidCheck property as a Google Test typed test. The
+/// fixture is reinstantiated for each test case of the property.
+#define RC_GTEST_PROP_TYPED(Fixture, Name, ArgList)                            \
+  RC_GTEST_FIXTURE_GEN(TYPED_TEST, Fixture, Name, ArgList)
+
+/// Defines a RapidCheck property as a Google Test type-parameterized
+/// test. The fixture is reinstantiated for each test case of the property.
+#define RC_GTEST_PROP_TYPED_P(Fixture, Name, ArgList)                          \
+  RC_GTEST_FIXTURE_GEN(TYPED_TEST_P, Fixture, Name, ArgList)
+
+#define RC_GTEST_FIXTURE_GEN(TestDeclaration, Fixture, Name, ArgList)          \
   class RapidCheckPropImpl_##Fixture##_##Name : public Fixture {               \
   public:                                                                      \
     void rapidCheck_fixtureSetUp() { SetUp(); }                                \
@@ -54,7 +72,7 @@ void checkGTest(Testable &&testable) {
     void rapidCheck_fixtureTearDown() { TearDown(); }                          \
   };                                                                           \
                                                                                \
-  TEST(Fixture##_RapidCheck, Name) {                                           \
+  TestDeclaration(Fixture##_RapidCheck, Name) {                                \
     ::rc::detail::checkGTest(&rc::detail::ExecFixture<                         \
                              RapidCheckPropImpl_##Fixture##_##Name>::exec);    \
   }                                                                            \

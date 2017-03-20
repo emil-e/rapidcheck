@@ -35,5 +35,11 @@ Analogous to the Google Test `TEST_F` macro, defines a RapidCheck property as a 
 
 Since this macro is implemented in terms of Google Test's `TEST` macro and Google Test does not allow mixing of `TEST` and `TEST_F` for the same test case, test cases, a property tied to a fixture named `Fixture` will be registered under a test case named `Fixed_RapidCheck`. This is usually not a big issue but is something to be aware of, in particular when filtering Google Test case names from the command line.
 
+There are also additional macros to instatiate parameterized test cases:
+
+* `RC_GTEST_PROP_P(Fixture, Name, (args...))` for [Google Test value-parameterized tests](https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md#value-parameterized-tests) (`TEST_P`)
+* `RC_GTEST_PROP_TYPED(Fixture, Name, (args...))` for [Google Test typed tests](https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md#typed-tests) (`TYPED_TEST`)
+* `RC_GTEST_PROP_TYPED_P(Fixture, Name, (args...))` for [Google Test type-parameterized tests](https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md#type-parameterized-tests) (`TYPED_TEST_P`)
+
 ## Assertions ##
 RapidCheck will treat any exception as a property failure so you should be able to use any assertion mechanism that signals failures as exceptions. However, Google Test assertions are not implemented using exceptions which means that you should avoid them and use RapidCheck assertions such as `RC_ASSERT` in your RapidCheck properties instead.
