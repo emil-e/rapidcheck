@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/Gen.h"
 #include "rapidcheck/detail/FunctionTraits.h"
 #include "rapidcheck/gen/detail/Recipe.h"
 

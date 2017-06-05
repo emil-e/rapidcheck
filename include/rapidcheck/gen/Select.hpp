@@ -1,5 +1,7 @@
 #pragma once
 
+#include <initializer_list>
+
 #include "rapidcheck/detail/FrequencyMap.h"
 #include "rapidcheck/gen/detail/ScaleInteger.h"
 

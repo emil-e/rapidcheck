@@ -3,16 +3,19 @@
 #include <map>
 #include <vector>
 #include <deque>
-#include <forward_list>
 #include <list>
 #include <set>
 #include <unordered_set>
 #include <unordered_map>
 #include <memory>
+#include <cstdlib>
 #include <cstdint>
 #include <type_traits>
 #include <array>
 #include <sstream>
+#include <tuple>
+#include <ostream>
+#include <forward_list>
 
 #include "rapidcheck/detail/Traits.h"
 

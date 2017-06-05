@@ -1,6 +1,10 @@
 #pragma once
 
+#include <type_traits>
+
 #include "TypeList.h"
+#include "rapidcheck/Traits.h"
+
 
 namespace rc {
 namespace detail {

@@ -1,5 +1,10 @@
 #pragma once
 
+#include <type_traits>
+#include <utility>
+
+#include "rapidcheck/Traits.h"
+
 namespace rc {
 namespace fn {
 

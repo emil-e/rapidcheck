@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <typeinfo>
 
 #include "rapidcheck/Traits.h"
 #include "rapidcheck/Show.h"

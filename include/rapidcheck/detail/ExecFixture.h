@@ -1,5 +1,9 @@
 #pragma once
 
+
+#include <utility>
+#include <rapidcheck/detail/FunctionTraits.h>
+
 namespace rc {
 namespace detail {
 

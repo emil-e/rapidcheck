@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdlib>
+#include <type_traits>
+
 namespace rc {
 namespace detail {
 

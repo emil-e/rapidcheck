@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/gen/Arbitrary.h"
+
 namespace rc {
 namespace gen {
 namespace detail {

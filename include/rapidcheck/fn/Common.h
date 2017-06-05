@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/Traits.h"
+
 namespace rc {
 namespace fn {
 

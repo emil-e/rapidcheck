@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+#include <cstdlib>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>

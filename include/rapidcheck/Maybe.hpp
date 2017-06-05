@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "rapidcheck/Show.h"
 
 namespace rc {

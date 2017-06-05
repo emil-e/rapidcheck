@@ -1,6 +1,9 @@
 #pragma once
 
-#include "rapidcheck/detail/IntSequence.h"
+#include <tuple>
+#include <utility>
+
+#include "rapidcheck/Traits.h"
 
 namespace rc {
 namespace detail {

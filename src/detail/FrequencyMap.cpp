@@ -1,6 +1,7 @@
 #include "rapidcheck/detail/FrequencyMap.h"
 
 #include <algorithm>
+#include <iterator>
 
 namespace rc {
 namespace detail {
@@ -15,7 +16,7 @@ FrequencyMap::FrequencyMap(const std::vector<std::size_t> &frequencies)
 }
 
 std::size_t FrequencyMap::lookup(std::size_t x) const {
-  return std::upper_bound(begin(m_table), end(m_table), x) - begin(m_table);
+  return std::upper_bound(std::begin(m_table), std::end(m_table), x) - std::begin(m_table);
 }
 
 std::size_t FrequencyMap::sum() const { return m_sum; }
