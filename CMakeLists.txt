@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(rapidcheck)
+
+# Don't warn about symbol visibility for static libraries with CMake 3.3 and later.
+if(POLICY CMP0063)
+  cmake_policy(SET CMP0063 NEW)
+endif()
+
 enable_testing()
 
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
