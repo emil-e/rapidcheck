@@ -131,6 +131,13 @@ struct DefaultArbitrary<std::pair<T1, T2>> {
   }
 };
 
+template <typename T1>
+struct DefaultArbitrary<std::complex<T1>> {
+  static Gen<std::complex<Decay<T1>>> arbitrary() {
+    return gen::complex(gen::arbitrary<Decay<T1>>(), gen::arbitrary<Decay<T1>>());
+  }
+};
+
 } // namespace detail
 
 template <typename... Ts>
@@ -145,6 +152,15 @@ Gen<std::pair<T1, T2>> pair(Gen<T1> gen1, Gen<T2> gen2) {
                   [](std::tuple<T1, T2> &&t) {
                     return std::make_pair(std::move(std::get<0>(t)),
                                           std::move(std::get<1>(t)));
+                  });
+}
+
+template <typename T1>
+Gen<std::complex<T1>> complex(Gen<T1> gen1, Gen<T1> gen2) {
+  return gen::map(gen::complex(std::move(gen1), std::move(gen2)),
+                  [](std::complex<T1> &&t) {
+                    return std::complex<T1>(std::move(t.real()),
+                                            std::move(t.imag()));
                   });
 }
 
