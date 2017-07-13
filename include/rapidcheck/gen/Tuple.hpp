@@ -131,6 +131,13 @@ struct DefaultArbitrary<std::pair<T1, T2>> {
   }
 };
 
+template <typename T1>
+struct DefaultArbitrary<std::complex<T1>> {
+  static Gen<std::complex<Decay<T1>>> arbitrary() {
+    return gen::complex(gen::arbitrary<Decay<T1>>(), gen::arbitrary<Decay<T1>>());
+  }
+};
+
 } // namespace detail
 
 template <typename... Ts>
