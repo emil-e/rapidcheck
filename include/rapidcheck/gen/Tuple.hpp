@@ -155,5 +155,14 @@ Gen<std::pair<T1, T2>> pair(Gen<T1> gen1, Gen<T2> gen2) {
                   });
 }
 
+template <typename T1>
+Gen<std::complex<T1>> complex(Gen<T1> gen1, Gen<T1> gen2) {
+  return gen::map(gen::complex(std::move(gen1), std::move(gen2)),
+                  [](std::complex<T1> &&t) {
+                    return std::complex<T1>(std::move(t.real()),
+                                            std::move(t.imag()));
+                  });
+}
+
 } // namespace gen
 } // namespace rc
