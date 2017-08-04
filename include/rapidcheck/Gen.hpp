@@ -71,13 +71,6 @@ Shrinkable<T> Gen<T>::operator()(const Random &random, int size) const
     auto exception = std::current_exception();
     return shrinkable::lambda([=]() -> T {
       std::rethrow_exception(exception);
-
-      // MSVC HACK: the following is required for MSVC to stop complaining
-      //            about missing return value. Will never be reached, of
-      //            course.
-#ifdef _MSC_VER
-      throw nullptr;
-#endif // _MSC_VER
     });
   }
 }
