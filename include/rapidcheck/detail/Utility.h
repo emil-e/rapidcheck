@@ -27,7 +27,7 @@ namespace detail {
 
 /// Base case for `pushBackAll`
 template <typename Collection>
-void pushBackAll(Collection &collection) {
+void pushBackAll(Collection &/*collection*/) {
   // Base case
 }
 
@@ -63,7 +63,7 @@ struct TupleTailHelper;
 
 template <typename TupleT>
 struct TupleTailHelper<TupleT> {
-  static std::tuple<> tail(const TupleT &tuple) { return std::tuple<>(); }
+  static std::tuple<> tail(const TupleT &/*tuple*/) { return std::tuple<>(); }
 };
 
 template <typename TupleT, typename Type, typename... Types>

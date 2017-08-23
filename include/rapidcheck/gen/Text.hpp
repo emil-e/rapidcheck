@@ -52,7 +52,7 @@ struct DefaultArbitrary<std::basic_string<T, Args...>> {
 
 template <typename T>
 Gen<T> character() {
-  return [](const Random &random, int size) {
+  return [](const Random &random, int /*size*/) {
     auto stream = ::rc::detail::bitStreamOf(random);
     bool small = stream.next<bool>();
     T value;
