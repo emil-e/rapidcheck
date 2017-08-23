@@ -24,7 +24,7 @@ RC_PARAMS="seed=12776003016957408636" ./my_test
 ```
 
 ### Reproduce mode ###
-If the bug occured after large number of test cases, waiting for test cases that are known to be successful to run before the failing test case is run can be time consuming. For example, if the bug occured after 2000 tests and 200 shrinks, it is not interesting to run the 1999 (successful) test cases before that and it is not really necessary to try all the shrunk versions of the failure that were tried byt could not reproduce the bug.
+If the bug occurred after large number of test cases, waiting for test cases that are known to be successful to run before the failing test case is run can be time consuming. For example, if the bug occurred after 2000 tests and 200 shrinks, it is not interesting to run the 1999 (successful) test cases before that and it is not really necessary to try all the shrunk versions of the failure that were tried but could not reproduce the bug.
 
 Fortunately, RapidCheck will print a string that encodes the necessary information to avoid this to the console if there are failures:
 
@@ -60,7 +60,7 @@ When passed a string argument it will instead immediately log the message follow
 RC_LOG("It's all broken!");
 ```
 
-As stated above, none of this will have any effect on the sucess or failure of the test case. The information will only be printed when the test case fails otherwise. For example:
+As stated above, none of this will have any effect on the success or failure of the test case. The information will only be printed when the test case fails otherwise. For example:
 
 ```
 Falsifiable after 38 tests and 2 shrinks
