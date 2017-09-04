@@ -16,8 +16,8 @@ void checkBoostTest(Testable &&testable) {
 
   const auto result = checkTestable(std::forward<Testable>(testable), metadata);
 
-  //Without this boost.test will complain about the test case having no assertions when the
-  //rapidcheck test passes
+  // Without this boost.test will complain about the test case having no assertions when the
+  // rapidcheck test passes
   BOOST_CHECK (true);
 
   if (result.template is<SuccessResult>()) {
@@ -43,7 +43,7 @@ void checkBoostTest(Testable &&testable) {
   void rapidCheck_propImpl_##Name ArgList;                                     \
                                                                                \
   BOOST_AUTO_TEST_CASE(Name) {                                                 \
-    ::rc::detail::checkBoostTest(&rapidCheck_propImpl_##Name);          \
+    ::rc::detail::checkBoostTest(&rapidCheck_propImpl_##Name);                 \
   }                                                                            \
                                                                                \
   void rapidCheck_propImpl_##Name ArgList
@@ -59,7 +59,7 @@ void checkBoostTest(Testable &&testable) {
   };                                                                           \
                                                                                \
   BOOST_AUTO_TEST_CASE(Name) {                                                 \
-     ::rc::detail::checkBoostTest(                                      \
+     ::rc::detail::checkBoostTest(                                             \
         &rc::detail::ExecFixture<                                              \
             RapidCheckPropImpl_##Fixture##_##Name>::exec);                     \
   }                                                                            \
