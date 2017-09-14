@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.0)
 project(rapidcheck)
 
 # Don't warn about symbol visibility for static libraries with CMake 3.3 and later.
