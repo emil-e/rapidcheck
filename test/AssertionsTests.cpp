@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck/catch.h>
 
+#include <algorithm>
+
 #include "util/Generators.h"
 
 using namespace rc;

@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck/catch.h>
 
+#include <algorithm>
+
 #include "rapidcheck/Shrinkable.h"
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/gen/detail/ShrinkValueIterator.h"
