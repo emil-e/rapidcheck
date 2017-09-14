@@ -47,17 +47,6 @@ struct InitTracker {
       , value(std::move(other.value)) {
     other.itype = InitType::Dead;
   }
-
-  InitTracker<T> &operator=(InitTracker<T> &&rhs) {
-    itype = InitType::Move;
-    value = std::move(rhs.value);
-    rhs.itype = InitType::Dead;
-  }
-
-  InitTracker<T> &operator=(const InitTracker<T> &rhs) {
-    itype = InitType::Copy;
-    value = std::move(rhs.value);
-  }
 };
 
 template <typename T>

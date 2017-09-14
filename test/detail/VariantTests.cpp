@@ -15,7 +15,6 @@ namespace {
 
 template <std::size_t N>
 struct X {
-  X() {}
   X(const std::string &x)
       : value(x) {}
 
