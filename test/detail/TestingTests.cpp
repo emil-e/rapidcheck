@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include <rapidcheck/catch.h>
 
+#include <algorithm>
+
 #include "rapidcheck/detail/TestListenerAdapter.h"
 #include "detail/Testing.h"
 

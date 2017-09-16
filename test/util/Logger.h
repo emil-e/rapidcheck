@@ -2,6 +2,8 @@
 
 #include <catch.hpp>
 
+#include <algorithm>
+
 namespace rc {
 namespace test {
 

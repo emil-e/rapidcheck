@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include <rapidcheck/catch.h>
 
+#include <algorithm>
 #include <numeric>
 
 #include "util/Predictable.h"
