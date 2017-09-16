@@ -21,7 +21,7 @@ matrix:
             - g++-4.9
             - clang-3.5
       compiler: clang
-      env: COMPILER_VERSION=3.5 BUILD_TYPE=Debug
+      env: COMPILER_VERSION=3.5 BUILD_TYPE=Debug RC_PARAMS="seed=8916745316041475299"
 
     - addons: *clang35
       compiler: clang
