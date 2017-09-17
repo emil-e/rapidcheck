@@ -262,7 +262,8 @@ TEST_CASE("searchProperty") {
        });
 }
 
-static Shrinkable<CaseDescription> countdownEven(int start) {
+namespace {
+Shrinkable<CaseDescription> countdownEven(int start) {
   return shrinkable::map(countdownShrinkable(start),
                          [=](int x) {
                            CaseDescription desc;
@@ -272,6 +273,7 @@ static Shrinkable<CaseDescription> countdownEven(int start) {
                            desc.result.description = std::to_string(x);
                            return desc;
                          });
+}
 }
 
 TEST_CASE("shrinkTestCase") {
