@@ -30,7 +30,7 @@ private:
               seq::just(shrinkable::lambda([] { return Maybe<T>(); })),
               seq::map(std::move(shrinks), &prependNothing));
         });
-  };
+  }
 
   Gen<T> m_gen;
 };

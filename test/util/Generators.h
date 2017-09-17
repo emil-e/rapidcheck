@@ -155,7 +155,7 @@ struct Arbitrary<detail::Variant<T, Ts...>> {
     return gen::oneOf(
         gen::cast<detail::Variant<T, Ts...>>(gen::arbitrary<T>()),
         gen::cast<detail::Variant<T, Ts...>>(gen::arbitrary<Ts>())...);
-  };
+  }
 };
 
 } // namespace rc

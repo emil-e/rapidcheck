@@ -34,7 +34,7 @@ struct AssociativeProperties {
 
                          RC_ASSERT(extracted == pairs);
                        });
-  };
+  }
 };
 }
 
