@@ -262,7 +262,7 @@ TEST_CASE("searchProperty") {
        });
 }
 
-Shrinkable<CaseDescription> countdownEven(int start) {
+static Shrinkable<CaseDescription> countdownEven(int start) {
   return shrinkable::map(countdownShrinkable(start),
                          [=](int x) {
                            CaseDescription desc;

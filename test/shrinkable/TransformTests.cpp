@@ -11,7 +11,7 @@
 using namespace rc;
 using namespace rc::test;
 
-int doubleIt(int x) { return x * 2; }
+static int doubleIt(int x) { return x * 2; }
 
 TEST_CASE("shrinkable::map") {
   prop("maps value()",
