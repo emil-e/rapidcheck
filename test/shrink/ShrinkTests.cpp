@@ -228,13 +228,13 @@ struct RealProperties {
         });
 
     TEMPLATED_SECTION(T, "zero has no shrinks") {
-      REQUIRE(!shrink::real<T>(0.0).next());
+      REQUIRE(!shrink::real<T>(T(0.0)).next());
     }
 
     templatedProp<T>("tries 0.0 first",
                      [] {
                        T value = *gen::nonZero<T>();
-                       RC_ASSERT(*shrink::real<T>(value).next() == 0.0);
+                       RC_ASSERT(*shrink::real<T>(value).next() == T(0.0));
                      });
 
     templatedProp<T>(
