@@ -16,7 +16,6 @@ struct B : public IntVecCmd {};
 struct C : public IntVecCmd {};
 
 struct StateConstructible : public IntVecCmd {
-  StateConstructible() = default;
   StateConstructible(const IntVec &s)
       : state(s)
       , generated(*gen::just(s)) {}
@@ -26,7 +25,6 @@ struct StateConstructible : public IntVecCmd {
 };
 
 struct ArgsConstructible : public IntVecCmd {
-  ArgsConstructible() = default;
   ArgsConstructible(const std::string &s, int n)
       : str(s)
       , num(n) {}
@@ -41,10 +39,6 @@ struct GeneratesOnConstrution : public IntVecCmd {
       : value(*gen::just(v)) {}
 
   T value;
-};
-
-struct AlwaysDiscard : public IntVecCmd {
-  AlwaysDiscard() { RC_DISCARD("Nope"); }
 };
 
 } // namespace

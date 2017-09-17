@@ -35,13 +35,6 @@ typename std::make_unsigned<T>::type absolute(T x) {
   return absoluteInt(x, std::is_signed<T>());
 }
 
-template <
-    typename T,
-    typename = typename std::enable_if<std::is_floating_point<T>::value>::type>
-T absolute(T x) {
-  return std::abs(x);
-}
-
 template <typename T>
 bool isAllOnes(T x) {
   using UInt = typename std::make_unsigned<T>::type;

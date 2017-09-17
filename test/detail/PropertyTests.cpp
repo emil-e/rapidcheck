@@ -243,11 +243,6 @@ namespace {
 template <int N>
 struct Fixed {};
 
-template <int N>
-void showValue(std::ostream &os, const Fixed<N> &) {
-  os << N;
-}
-
 } // namespace
 
 namespace rc {

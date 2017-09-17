@@ -14,8 +14,6 @@ namespace {
 
 class LoggingSeqImpl : public Logger {
 public:
-  LoggingSeqImpl()
-      : Logger() {}
   LoggingSeqImpl(std::string theId)
       : Logger(std::move(theId)) {}
 

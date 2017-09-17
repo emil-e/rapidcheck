@@ -53,11 +53,6 @@ namespace {
 
 struct NonDeserializable {};
 
-template <typename Iterator>
-Iterator deserialize(Iterator begin, Iterator end, NonDeserializable &output) {
-  return begin;
-}
-
 } // namespace
 
 TEST_CASE("deserializeN") {
