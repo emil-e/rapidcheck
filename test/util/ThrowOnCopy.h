@@ -10,7 +10,7 @@ struct ThrowOnCopy {
   ThrowOnCopy(std::string s)
       : value(std::move(s)) {}
 
-  ThrowOnCopy(const ThrowOnCopy &) { throw std::runtime_error("can't copy"); }
+  [[noreturn]] ThrowOnCopy(const ThrowOnCopy &) { throw std::runtime_error("can't copy"); }
 
   ThrowOnCopy &operator=(const ThrowOnCopy &) {
     throw std::runtime_error("can't copy");
