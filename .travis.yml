@@ -7,6 +7,24 @@ branches:
 
 matrix:
   include:
+    # GCC 4.9
+    - addons: &gcc49
+        apt:
+          sources:
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - cmake-data
+            - ninja-build
+            - g++-4.9
+      compiler: gcc
+      env: COMPILER_VERSION=4.9 BUILD_TYPE=Release
+
+    - addons: *gcc49
+      compiler: gcc
+      env: COMPILER_VERSION=4.9 BUILD_TYPE=Debug
+
     # Clang 3.5
     - addons: &clang35
         apt:
@@ -21,11 +39,11 @@ matrix:
             - g++-4.9
             - clang-3.5
       compiler: clang
-      env: COMPILER_VERSION=3.5 BUILD_TYPE=Debug
+      env: COMPILER_VERSION=3.5 BUILD_TYPE=Release
 
     - addons: *clang35
       compiler: clang
-      env: COMPILER_VERSION=3.5 BUILD_TYPE=Release
+      env: COMPILER_VERSION=3.5 BUILD_TYPE=Debug
 
     # Clang 3.7
     - addons: &clang37
@@ -41,29 +59,11 @@ matrix:
             - g++-4.9
             - clang-3.7
       compiler: clang
-      env: COMPILER_VERSION=3.7 BUILD_TYPE=Debug
+      env: COMPILER_VERSION=3.7 BUILD_TYPE=Release
 
     - addons: *clang37
       compiler: clang
-      env: COMPILER_VERSION=3.7 BUILD_TYPE=Release
-
-    # GCC 4.9
-    - addons: &gcc49
-        apt:
-          sources:
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-          packages:
-            - cmake
-            - cmake-data
-            - ninja-build
-            - g++-4.9
-      compiler: gcc
-      env: COMPILER_VERSION=4.9 BUILD_TYPE=Debug
-
-    - addons: *gcc49
-      compiler: gcc
-      env: COMPILER_VERSION=4.9 BUILD_TYPE=Release
+      env: COMPILER_VERSION=3.7 BUILD_TYPE=Debug
 
 script:
   - mkdir build && cd build
