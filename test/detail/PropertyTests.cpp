@@ -219,8 +219,8 @@ TEST_CASE("PropertyAdapter") {
        [](int a, const std::string &b, NonCopyable c) {
          const auto expected = std::to_string(a) + b + std::to_string(c.extra);
          const auto adapter =
-             makeAdapter([](int a, const std::string &b, NonCopyable c) {
-               return std::to_string(a) + b + std::to_string(c.extra);
+             makeAdapter([](int d, const std::string &e, NonCopyable f) {
+               return std::to_string(d) + e + std::to_string(f.extra);
              });
          const auto result = adapter(std::move(a), std::move(b), std::move(c));
          RC_ASSERT(result.result.description == expected);

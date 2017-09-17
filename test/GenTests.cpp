@@ -46,10 +46,10 @@ TEST_CASE("Gen") {
            bool called = false;
            Random passedRandom;
            int passedSize;
-           Gen<int> gen([&](const Random &random, int size) {
+           Gen<int> gen([&](const Random &lambdaRandom, int lambdaSize) {
              called = true;
-             passedRandom = random;
-             passedSize = size;
+             passedRandom = lambdaRandom;
+             passedSize = lambdaSize;
              return shrinkable::just(0);
            });
 
@@ -61,7 +61,7 @@ TEST_CASE("Gen") {
 
     prop("returns the value returned by the functor",
          [](const Random &random, int size, int x) {
-           Gen<int> gen([=](const Random &random, int size) {
+           Gen<int> gen([=](const Random &lambdaRandom, int lambdaSize) {
              return shrinkable::just(x);
            });
 
