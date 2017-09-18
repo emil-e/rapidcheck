@@ -45,8 +45,6 @@ class LoggingShrinkableImpl : public Logger {
 public:
   using IdLogPair = std::pair<std::string, std::vector<std::string>>;
 
-  LoggingShrinkableImpl()
-      : Logger() {}
   LoggingShrinkableImpl(std::string theId)
       : Logger(std::move(theId)) {}
 

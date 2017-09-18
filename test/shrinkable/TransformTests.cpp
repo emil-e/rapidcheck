@@ -11,7 +11,9 @@
 using namespace rc;
 using namespace rc::test;
 
+namespace {
 int doubleIt(int x) { return x * 2; }
+}
 
 TEST_CASE("shrinkable::map") {
   prop("maps value()",
@@ -36,8 +38,8 @@ TEST_CASE("shrinkable::map") {
 TEST_CASE("shrinkable::mapShrinks") {
   prop("maps shrinks with the given mapping callable",
        [](Shrinkable<int> shrinkable) {
-         const auto mapper = [](Seq<Shrinkable<int>> &&shrinkable) {
-           return seq::map(std::move(shrinkable),
+         const auto mapper = [](Seq<Shrinkable<int>> &&lambdaShrinkable) {
+           return seq::map(std::move(lambdaShrinkable),
                            [](const Shrinkable<int> &shrink) {
                              return shrinkable::just(shrink.value());
                            });
@@ -162,7 +164,7 @@ TEST_CASE("shrinkable::mapcat") {
          const auto shrink = *seq::at(shrinkable.shrinks(), n);
          onAnyPath(shrink,
                    [=](const Shrinkable<std::pair<int, int>> &value,
-                       const Shrinkable<std::pair<int, int>> &shrink) {
+                       const Shrinkable<std::pair<int, int>> &lambdaShrink) {
                      RC_ASSERT(value.value().first == firstValue);
                    });
        });

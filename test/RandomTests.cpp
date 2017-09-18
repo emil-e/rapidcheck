@@ -34,7 +34,7 @@ struct AssociativeProperties {
 
                          RC_ASSERT(extracted == pairs);
                        });
-  };
+  }
 };
 }
 
@@ -169,9 +169,9 @@ TEST_CASE("Random") {
          double error = std::accumulate(begin(bins),
                                         end(bins),
                                         0.0,
-                                        [=](double error, std::uint64_t x) {
+                                        [=](double lambdaError, std::uint64_t x) {
                                           double diff = 1.0 - (x / ideal);
-                                          return error + (diff * diff);
+                                          return lambdaError + (diff * diff);
                                         });
 
          RC_ASSERT(error < 0.01);

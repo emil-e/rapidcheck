@@ -26,7 +26,6 @@ TEST_CASE("LogTestListener") {
 
   SECTION("when verbose progress is on") {
     LogTestListener listener(os, true, false);
-    CaseDescription desc;
 
     SECTION("prints '.' on successful test case") {
       desc.result.type = CaseResult::Type::Success;

@@ -68,9 +68,9 @@ TEST_CASE("BitStream") {
            auto stream = bitStreamOf(source);
 
            const auto sizes = *gen::suchThat(bitSizes,
-                                       [](const std::vector<int> &x) {
+                                       [](const std::vector<int> &y) {
                                          return std::accumulate(
-                                                    begin(x), end(x), 0) >= 64;
+                                                    begin(y), end(y), 0) >= 64;
                                        });
 
            uint64_t value = 0;

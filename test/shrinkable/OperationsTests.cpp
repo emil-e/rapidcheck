@@ -14,7 +14,7 @@ TEST_CASE("shrinkable::all") {
          // TODO sized ranged
          int x = *gen::inRange<int>(1, 5);
          const auto shrinkable = shrinkable::shrinkRecur(
-             x, [](int x) { return seq::range(x - 1, 0); });
+             x, [](int y) { return seq::range(y - 1, 0); });
 
          RC_ASSERT(shrinkable::all(
              shrinkable,
@@ -101,10 +101,10 @@ TEST_CASE("shrinkable::walkPath") {
                                gen::inRange<std::size_t>(0, 100));
          const auto shrinkable =
              shrinkable::shrinkRecur(std::vector<std::size_t>(),
-                                     [](const std::vector<std::size_t> &path) {
+                                     [](const std::vector<std::size_t> &lambdaPath) {
                                        return seq::map(seq::index(),
                                                        [=](std::size_t i) {
-                                                         auto p = path;
+                                                         auto p = lambdaPath;
                                                          p.push_back(i);
                                                          return p;
                                                        });
