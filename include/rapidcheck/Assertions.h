@@ -6,7 +6,7 @@
 
 #define RC_INTERNAL_CONDITIONAL_RESULT(                                        \
     ResultType, expression, invert, name, ...)                                 \
-  doAssert(RC_INTERNAL_CAPTURE(expression),                                    \
+  ::rc::detail::doAssert(RC_INTERNAL_CAPTURE(expression),                      \
            (invert),                                                           \
            ::rc::detail::CaseResult::Type::ResultType,                         \
            __FILE__,                                                           \
