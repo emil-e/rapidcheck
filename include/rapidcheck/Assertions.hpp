@@ -25,7 +25,7 @@ std::string makeWrongExceptionMessage(const std::string &file,
                                       const std::string &expected);
 
 template <typename Expression>
-void doAssert(const Expression &expression,
+bool doAssert(const Expression &expression,
               bool expectedResult,
               CaseResult::Type type,
               const std::string &file,
@@ -34,8 +34,16 @@ void doAssert(const Expression &expression,
   if (static_cast<bool>(expression.value()) != expectedResult) {
     std::ostringstream ss;
     expression.show(ss);
-    RC_THROW_EXCEPTION(CaseResult, type, makeExpressionMessage(file, line, assertion, ss.str()));
+#if RC_EXCEPTION_ENABLED
+    throw CaseResult(type, makeExpressionMessage(file, line, assertion, ss.str()));
+#else
+    std::cerr << makeExpressionMessage(file, line, assertion, ss.str()) << std::endl;
+#endif
+
+    return false;
   }
+
+  return true;
 }
 
 } // namespace detail

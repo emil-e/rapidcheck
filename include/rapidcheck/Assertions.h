@@ -4,6 +4,7 @@
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/Capture.h"
 
+#if RC_EXCEPTIONS_ENABLED
 #define RC_INTERNAL_CONDITIONAL_RESULT(                                        \
     ResultType, expression, invert, name, ...)                                 \
   ::rc::detail::doAssert(RC_INTERNAL_CAPTURE(expression),                      \
@@ -12,6 +13,18 @@
            __FILE__,                                                           \
            __LINE__,                                                           \
            name "(" #expression ")")
+#else
+#define RC_INTERNAL_CONDITIONAL_RESULT(                                        \
+    ResultType, expression, invert, name, ...)                                 \
+  if (! ::rc::detail::doAssert(RC_INTERNAL_CAPTURE(expression),                \
+           (invert),                                                           \
+           ::rc::detail::CaseResult::Type::ResultType,                         \
+           __FILE__,                                                           \
+           __LINE__,                                                           \
+           name "(" #expression ")")) {                                        \
+    return false;                                                              \
+  }
+#endif
 
 #define RC_INTERNAL_STRINGIFY(x) #x
 
