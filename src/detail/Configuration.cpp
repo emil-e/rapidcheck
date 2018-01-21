@@ -224,8 +224,11 @@ Configuration loadConfiguration() {
   }
 
   // TODO rapidcheck logging framework ftw
-  std::cerr << "Using configuration: " << configToMinimalString(config)
-            << std::endl;
+  if (config.verboseProgress) {
+    std::cerr << "Using configuration: " << configToMinimalString(config)
+              << std::endl;
+  }
+
   return config;
 }
 
