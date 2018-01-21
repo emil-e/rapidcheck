@@ -49,12 +49,16 @@ template <typename T>
 void fromString(const std::string &str,
                 std::unordered_map<std::string, Reproduce> &out,
                 bool &ok) {
+#if RC_EXCEPTIONS_ENABLED
   try {
+#endif
     out = stringToReproduceMap(str);
     ok = true;
+#if RC_EXCEPTIONS_ENABLED
   } catch (const ParseException &) {
     ok = false;
   }
+#endif
 }
 
 // Returns false only on invalid format, not on missing key
@@ -73,7 +77,7 @@ bool loadParam(const std::map<std::string, std::string> &map,
   T value;
   fromString<T>(it->second, value, ok);
   if (!ok || !validate(value)) {
-    throw ConfigurationException(std::move(failMsg));
+    RC_THROW_EXCEPTION(ConfigurationException, std::move(failMsg));
   }
   dest = value;
   return true;
@@ -174,12 +178,16 @@ mapDifference(const std::map<std::string, std::string> &lhs,
 
 Configuration configFromString(const std::string &str,
                                const Configuration &defaults) {
+#if RC_EXCEPTIONS_ENABLED
   try {
+#endif
     return configFromMap(parseMap(str), defaults);
+#if RC_EXCEPTIONS_ENABLED
   } catch (const ParseException &e) {
     throw ConfigurationException(
         std::string("Failed to parse configuration string -- ") + e.what());
   }
+#endif
 }
 
 std::string configToString(const Configuration &config) {
@@ -203,12 +211,16 @@ Configuration loadConfiguration() {
 
   const auto params = getEnvValue("RC_PARAMS");
   if (params) {
+#if RC_EXCEPTIONS_ENABLED
     try {
+#endif
       config = configFromString(*params, config);
+#if RC_EXCEPTIONS_ENABLED
     } catch (const ConfigurationException &e) {
       std::cerr << "Error parsing configuration: " << e.what() << std::endl;
       std::exit(1);
     }
+#endif
   }
 
   // TODO rapidcheck logging framework ftw

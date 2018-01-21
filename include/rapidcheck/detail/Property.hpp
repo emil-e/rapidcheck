@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/detail/Compiler.h"
 #include "rapidcheck/detail/FunctionTraits.h"
 #include "rapidcheck/gen/detail/ExecRaw.h"
 #include "rapidcheck/detail/PropertyContext.h"
@@ -66,9 +67,12 @@ public:
     AdapterContext context;
     ImplicitParam<param::CurrentPropertyContext> letContext(&context);
 
+#if RC_EXCEPTIONS_ENABLED
     try {
+#endif
       context.reportResult(CaseResultHelper<ReturnType>::resultOf(
           m_callable, static_cast<Args &&>(args)...));
+#if RC_EXCEPTIONS_ENABLED
     } catch (const CaseResult &result) {
       context.reportResult(result);
     } catch (const GenerationFailure &e) {
@@ -85,6 +89,7 @@ public:
       context.reportResult(
           CaseResult(CaseResult::Type::Failure, "Unknown object thrown"));
     }
+#endif
 
     return context.result();
   }

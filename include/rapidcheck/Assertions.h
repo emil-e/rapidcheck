@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/detail/Compiler.h"
 #include "rapidcheck/detail/Results.h"
 #include "rapidcheck/detail/Capture.h"
 
@@ -16,7 +17,7 @@
 
 #define RC_INTERNAL_UNCONDITIONAL_RESULT(ResultType, name, expression)         \
   do {                                                                         \
-    throw ::rc::detail::CaseResult(                                            \
+    RC_THROW_EXCEPTION(::rc::detail::CaseResult,                               \
         ::rc::detail::CaseResult::Type::ResultType,                            \
         ::rc::detail::makeMessage(                                             \
             __FILE__, __LINE__, name "(" #expression ")", {expression}));      \
@@ -38,12 +39,11 @@
 /// exception of any type
 #define RC_ASSERT_THROWS(expression)                                           \
   do {                                                                         \
-    try {                                                                      \
+    TRY {                                                                      \
       expression;                                                              \
-    } catch (...) {                                                            \
-      break;                                                                   \
     }                                                                          \
-    throw ::rc::detail::CaseResult(                                            \
+    CATCH (..., break;)                                                        \
+    RC_THROW_EXCEPTION(::rc::detail::CaseResult,                               \
         ::rc::detail::CaseResult::Type::Failure,                               \
         ::rc::detail::makeUnthrownExceptionMessage(                            \
             __FILE__, __LINE__, "RC_ASSERT_THROWS(" #expression ")"));         \
@@ -53,25 +53,23 @@
 /// exception that matches the given exception type
 #define RC_ASSERT_THROWS_AS(expression, ExceptionType)                         \
   do {                                                                         \
-    try {                                                                      \
+    TRY {                                                                      \
       expression;                                                              \
-    } catch (const ExceptionType &) {                                          \
-      break;                                                                   \
-    } catch (...) {                                                            \
-      throw ::rc::detail::CaseResult(::rc::detail::CaseResult::Type::Failure,  \
-                                     ::rc::detail::makeWrongExceptionMessage(  \
-                                         __FILE__,                             \
-                                         __LINE__,                             \
-                                         "RC_ASSERT_THROWS_AS(" #expression    \
-                                         ", " #ExceptionType ")",              \
-                                         #ExceptionType));                     \
     }                                                                          \
-    throw ::rc::detail::CaseResult(::rc::detail::CaseResult::Type::Failure,    \
-                                   ::rc::detail::makeUnthrownExceptionMessage( \
-                                       __FILE__,                               \
-                                       __LINE__,                               \
-                                       "RC_ASSERT_THROWS_AS(" #expression      \
-                                       ", " #ExceptionType ")"));              \
+    CATCH (const ExceptionType &, break;)                                      \
+    CATCH (...,                                                                \
+      RC_THROW_EXCEPTION(::rc::detail::CaseResult,                             \
+        ::rc::detail::CaseResult::Type::Failure,                               \
+        ::rc::detail::makeUnthrownExceptionMessage(                            \
+          __FILE__, __LINE__,                                                  \
+          "RC_ASSERT_THROWS_AS(" #expression ", " #ExceptionType ")",          \
+          #ExceptionType));                                                    \
+    )                                                                          \
+    RC_THROW_EXCEPTION(::rc::detail::CaseResult,                               \
+      ::rc::detail::CaseResult::Type::Failure,                                 \
+      ::rc::detail::makeUnthrownExceptionMessage(                              \
+        __FILE__, __LINE__,                                                    \
+        "RC_ASSERT_THROWS_AS(" #expression ", " #ExceptionType ")"));          \
   } while (false)
 
 /// Unconditionally fails the current test case with the given message.

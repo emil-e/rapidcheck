@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/detail/Compiler.h"
 #include "rapidcheck/gen/Arbitrary.h"
 #include "rapidcheck/gen/Tuple.h"
 #include "rapidcheck/gen/detail/ShrinkValueIterator.h"
@@ -46,9 +47,7 @@ Shrinkables<T> generateShrinkables(const Random &random,
       tries++;
       if (tries >= 100) {
         // TODO magic constant!
-        throw GenerationFailure("Gave up trying to generate " +
-                                std::to_string(count) +
-                                " values for container");
+        RC_THROW_EXCEPTION(GenerationFailure, ("Gave up trying to generate " + std::to_string(count) + " values for container"));
       }
       currentSize++;
     }
@@ -363,8 +362,7 @@ public:
                              int size,
                              const Gen<U> &gen) const {
     if (count != N) {
-      throw GenerationFailure(
-          "Count must be equal to length of array for std::array");
+      RC_THROW_EXCEPTION(GenerationFailure, "Count must be equal to length of array for std::array");
     }
     return generate(random, size, gen);
   }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/detail/Compiler.h"
+
 namespace rc {
 namespace detail {
 
@@ -32,8 +34,7 @@ void doAssert(const Expression &expression,
   if (static_cast<bool>(expression.value()) != expectedResult) {
     std::ostringstream ss;
     expression.show(ss);
-    throw CaseResult(type,
-                     makeExpressionMessage(file, line, assertion, ss.str()));
+    RC_THROW_EXCEPTION(CaseResult, type, makeExpressionMessage(file, line, assertion, ss.str()));
   }
 }
 

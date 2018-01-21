@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "rapidcheck/detail/Compiler.h"
+
 namespace rc {
 namespace detail {
 

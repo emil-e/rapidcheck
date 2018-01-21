@@ -4,6 +4,7 @@
 
 #include "rapidcheck/detail/Any.h"
 #include "rapidcheck/detail/ImplicitParam.h"
+#include "rapidcheck/detail/Compiler.h"
 #include "rapidcheck/gen/detail/GenerationHandler.h"
 #include "rapidcheck/shrinkable/Create.h"
 
@@ -65,14 +66,18 @@ std::string Gen<T>::name() const {
 template <typename T>
 Shrinkable<T> Gen<T>::operator()(const Random &random, int size) const
     noexcept {
+#if RC_EXCEPTIONS_ENABLED
   try {
+#endif
     return m_impl->generate(random, size);
+#if RC_EXCEPTIONS_ENABLED
   } catch (...) {
     auto exception = std::current_exception();
     return shrinkable::lambda([=]() -> T {
       std::rethrow_exception(exception);
     });
   }
+#endif
 }
 
 template <typename T>

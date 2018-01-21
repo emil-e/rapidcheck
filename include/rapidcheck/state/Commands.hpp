@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/detail/Compiler.h"
 #include "rapidcheck/detail/Results.h"
 
 namespace rc {
@@ -42,14 +43,18 @@ template <typename Cmds, typename MakeInitialState, typename>
 bool isValidSequence(const Cmds &commands,
                      const MakeInitialState &makeInitialState) {
   auto state = makeInitialState();
+#if RC_EXCEPTIONS_ENABLED
   try {
+#endif
     applyAll(commands, state);
+#if RC_EXCEPTIONS_ENABLED
   } catch (const ::rc::detail::CaseResult &result) {
     if (result.type == ::rc::detail::CaseResult::Type::Discard) {
       return false;
     }
     throw;
   }
+#endif
 
   return true;
 }

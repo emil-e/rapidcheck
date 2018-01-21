@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rapidcheck/detail/Compiler.h"
+
 namespace rc {
 namespace gen {
 namespace detail {
@@ -25,8 +27,7 @@ public:
       currentSize++;
     }
 
-    throw GenerationFailure(
-        "Gave up trying to generate value satisfying predicate.");
+    RC_THROW_EXCEPTION(GenerationFailure, "Gave up trying to generate value satisfying predicate.");
   }
 
 private:

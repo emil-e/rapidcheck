@@ -132,8 +132,11 @@ std::pair<std::string, std::string>
 describeIngredient(const gen::detail::Recipe::Ingredient &ingredient) {
   // TODO I don't know if this is the right approach with counterexamples
   // even...
+#if RC_EXCEPTIONS_ENABLED
   try {
+#endif
     return tryDescribeIngredientValue(ingredient);
+#if RC_EXCEPTIONS_ENABLED
   } catch (const GenerationFailure &e) {
     return {"Generation failed", e.what()};
   } catch (const std::exception &e) {
@@ -141,6 +144,7 @@ describeIngredient(const gen::detail::Recipe::Ingredient &ingredient) {
   } catch (...) {
     return {"Unknown exception", "<\?\?\?>"};
   }
+#endif
 }
 
 } // namespace

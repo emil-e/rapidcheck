@@ -1,4 +1,5 @@
 #include "Serialization.h"
+#include "Compiler.h"
 
 #include <limits>
 
@@ -29,7 +30,7 @@ Iterator deserialize(Iterator begin, Iterator end, T &out) {
   auto it = begin;
   for (std::size_t i = 0; i < nbytes; i++) {
     if (it == end) {
-      throw SerializationException("Unexpected end of input");
+      RC_THROW_EXCEPTION(SerializationException, "Unexpected end of input");
     }
 
     uvalue |= static_cast<UInt>(*it & 0xFF) << (i * 8);
@@ -57,7 +58,7 @@ Iterator deserialize(Iterator begin, Iterator end, std::string &output) {
   output.reserve(len);
   while (output.size() < len) {
     if (iit == end) {
-      throw SerializationException("Unexpected end of input");
+      RC_THROW_EXCEPTION(SerializationException, "Unexpected end of input");
     }
 
     output.push_back(*iit);
@@ -197,7 +198,7 @@ Iterator deserializeCompact(Iterator begin, Iterator end, T &output) {
     }
   }
 
-  throw SerializationException("Unexpected end of input");
+  RC_THROW_EXCEPTION(SerializationException, "Unexpected end of input");
 }
 
 template <typename InputIterator, typename OutputIterator>

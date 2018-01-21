@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/detail/Compiler.h"
 #include "rapidcheck/detail/BitStream.h"
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/shrink/Shrink.h"
@@ -94,7 +95,7 @@ Gen<T> inRange(T min, T max) {
       std::string msg;
       msg += "Invalid range [" + std::to_string(min);
       msg += ", " + std::to_string(max) + ")";
-      throw GenerationFailure(msg);
+      RC_THROW_EXCEPTION(GenerationFailure, msg);
     }
 
     const auto rangeSize =

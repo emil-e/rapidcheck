@@ -25,14 +25,18 @@ void check(MakeInitialState &&makeInitialState,
 
 template <typename Model, typename Sut>
 bool isValidCommand(const Command<Model, Sut> &command, const Model &s0) {
+#if RC_EXCEPTIONS_ENABLED
   try {
+#endif
     command.checkPreconditions(s0);
+#if RC_EXCEPTIONS_ENABLED
   } catch (const ::rc::detail::CaseResult &result) {
     if (result.type == ::rc::detail::CaseResult::Type::Discard) {
       return false;
     }
     throw;
   }
+#endif
 
   return true;
 }

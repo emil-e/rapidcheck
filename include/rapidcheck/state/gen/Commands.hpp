@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "rapidcheck/detail/Compiler.h"
 #include "rapidcheck/Random.h"
 #include "rapidcheck/GenerationFailure.h"
 #include "rapidcheck/shrinkable/Transform.h"
@@ -50,8 +51,11 @@ private:
     const CmdSP &command() const { return m_command; }
 
     void safeApply(Model &model) const {
+#if RC_EXCEPTIONS_ENABLED
       try {
+#endif
         m_command->apply(model);
+#if RC_EXCEPTIONS_ENABLED
       } catch (const ::rc::detail::CaseResult &result) {
         if (result.type == ::rc::detail::CaseResult::Type::Discard) {
           throw GenerationFailure(
@@ -62,6 +66,7 @@ private:
         }
         throw;
       }
+#endif
     }
 
     void setShrinkable(Shrinkable<CmdSP> &&s) {
@@ -128,7 +133,7 @@ private:
       }
 
       // TODO better error message
-      throw GenerationFailure("Failed to generate command after 100 tries.");
+      RC_THROW_EXCEPTION(GenerationFailure, "Failed to generate command after 100 tries.");
     }
 
     // Returns the state at the given index.
@@ -176,18 +181,22 @@ private:
     // Returns the state after applying commands up to the given index.
     Maybe<CommandEntry> entryForState(const Random &random,
                                       const Model &state) const {
+#if RC_EXCEPTIONS_ENABLED
       try {
+#endif
         auto shrinkable = m_genFunc(state)(random, m_size);
         CommandEntry entry(random, std::move(shrinkable));
         if (isValidCommand(*entry.command(), state)) {
           return entry;
         }
+#if RC_EXCEPTIONS_ENABLED
       } catch (const GenerationFailure &) {
       } catch (const rc::detail::CaseResult &result) {
         if (result.type != rc::detail::CaseResult::Type::Discard) {
           throw;
         }
       }
+#endif
 
       return Nothing;
     }

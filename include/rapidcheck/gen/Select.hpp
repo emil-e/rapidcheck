@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/detail/Compiler.h"
 #include "rapidcheck/detail/FrequencyMap.h"
 #include "rapidcheck/gen/detail/ScaleInteger.h"
 
@@ -51,7 +52,7 @@ public:
     const auto start = begin(m_container);
     const auto containerSize = end(m_container) - start;
     if (containerSize == 0) {
-      throw GenerationFailure("Cannot pick element from empty container.");
+      RC_THROW_EXCEPTION(GenerationFailure, "Cannot pick element from empty container.");
     }
     const auto i =
         static_cast<std::size_t>(Random(random).next() % containerSize);
@@ -72,7 +73,7 @@ public:
 
   Shrinkable<T> operator()(const Random &random, int /*size*/) const {
     if (m_map.sum() == 0) {
-      throw GenerationFailure("Sum of weights is 0");
+      RC_THROW_EXCEPTION(GenerationFailure, "Sum of weights is 0");
     }
     return shrinkable::just(static_cast<T>(
         m_elements[m_map.lookup(Random(random).next() % m_map.sum())]));
@@ -94,7 +95,7 @@ public:
 
   Shrinkable<T> operator()(const Random &random, int size) const {
     if (m_container.size() == 0) {
-      throw GenerationFailure("Cannot pick element from empty container.");
+      RC_THROW_EXCEPTION(GenerationFailure, "Cannot pick element from empty container.");
     }
 
     const auto max = detail::scaleInteger(m_container.size() - 1, size) + 1;

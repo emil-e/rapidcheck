@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/Show.h"
+#include "rapidcheck/detail/Compiler.h"
 
 namespace rc {
 
@@ -40,12 +41,16 @@ Seq<T>::Seq(Impl &&impl)
 
 template <typename T>
 Maybe<T> Seq<T>::next() noexcept {
+#if RC_EXCEPTIONS_ENABLED
   try {
+#endif
     return m_impl ? m_impl->next() : Nothing;
+#if RC_EXCEPTIONS_ENABLED
   } catch (...) {
     m_impl.reset();
     return Nothing;
   }
+#endif
 }
 
 template <typename T>

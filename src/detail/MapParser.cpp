@@ -64,7 +64,7 @@ bool parseQuotedString(ParseState &state, std::string &value) {
     state.pos++;
   }
 
-  throw ParseException(state.pos, "Unexpected end in quoted string");
+  RC_THROW_EXCEPTION(ParseException, state.pos, "Unexpected end in quoted string");
 }
 
 template <typename Pred>

@@ -55,8 +55,7 @@ std::string base64Encode(const std::vector<std::uint8_t> &data) {
 
 std::vector<std::uint8_t> base64Decode(const std::string &data) {
   if ((data.size() % 4) == 1) {
-    throw ParseException(data.size(),
-                         "Invalid number of characters for Base64");
+    RC_THROW_EXCEPTION(ParseException, data.size(), "Invalid number of characters for Base64");
   }
 
   const auto size = data.size();
@@ -70,7 +69,7 @@ std::vector<std::uint8_t> base64Decode(const std::string &data) {
     for (std::size_t j = i; j < std::min<std::size_t>(size, i + 4); j++) {
       const auto x = reverseAlphabet[static_cast<std::uint8_t>(data[j])];
       if (x == -1) {
-        throw ParseException(j, "Invalid Base64 character");
+        RC_THROW_EXCEPTION(ParseException, j, "Invalid Base64 character");
       }
       bits |= x << nbits;
       nbits += 6;

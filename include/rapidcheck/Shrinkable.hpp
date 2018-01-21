@@ -2,6 +2,8 @@
 
 #include <atomic>
 
+#include "rapidcheck/detail/Compiler.h"
+
 namespace rc {
 
 template <typename T>
@@ -46,11 +48,15 @@ T Shrinkable<T>::value() const {
 
 template <typename T>
 Seq<Shrinkable<T>> Shrinkable<T>::shrinks() const noexcept {
+#if RC_EXCEPTIONS_ENABLED
   try {
+#endif
     return m_impl->shrinks();
+#if RC_EXCEPTIONS_ENABLED
   } catch (...) {
     return Seq<Shrinkable<T>>();
   }
+#endif
 }
 
 template <typename T>
