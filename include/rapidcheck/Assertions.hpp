@@ -37,7 +37,7 @@ bool doAssert(const Expression &expression,
 #if RC_EXCEPTION_ENABLED
     throw CaseResult(type, makeExpressionMessage(file, line, assertion, ss.str()));
 #else
-    std::cerr << makeExpressionMessage(file, line, assertion, ss.str()) << std::endl;
+    std::cerr << "\n" << makeExpressionMessage(file, line, assertion, ss.str()) << "\n";
 #endif
 
     return false;

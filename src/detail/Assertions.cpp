@@ -8,11 +8,9 @@ std::string makeMessage(const std::string &file,
                         const std::string &assertion,
                         const std::string &extra) {
   auto msg = file + ":" + std::to_string(line) + ":\n" + assertion;
+
   if (!extra.empty()) {
-    msg +=
-        "\n"
-        "\n" +
-        extra;
+    msg += "\n" + extra;
   }
 
   return msg;

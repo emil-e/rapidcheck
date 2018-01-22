@@ -4,6 +4,16 @@
 
 #include "rapidcheck/detail/ExecFixture.h"
 
+#define RC_GTEST_INTERNAL_CONDITIONAL_RESULT(                                  \
+    ResultType, expression, invert, name, ...)                                 \
+  ::rc::detail::doAssert(RC_INTERNAL_CAPTURE(expression),                      \
+			(invert), ::rc::detail::CaseResult::Type::ResultType,              \
+			__FILE__, __LINE__, name "(" #expression ")");                     \
+  EXPECT_TRUE(expression)
+
+#define RC_GTEST_EXPECT(expression)                                            \
+  RC_GTEST_INTERNAL_CONDITIONAL_RESULT(Failure, expression, true, "RC_EXPECT", )
+
 namespace rc {
 namespace detail {
 
