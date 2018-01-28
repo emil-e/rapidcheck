@@ -1,6 +1,12 @@
 #include "rapidcheck/detail/Configuration.h"
 
+
+#ifdef RC_SEED_SYSTEM_TIME
+#include <ctime>
+#else
 #include <random>
+#endif
+
 #include <cstdlib>
 #include <sstream>
 #include <iostream>
@@ -197,9 +203,15 @@ namespace {
 
 Configuration loadConfiguration() {
   Configuration config;
+
   // Default to random seed
+#ifdef RC_SEED_SYSTEM_TIME
+  // See comment in CMakeLists.txt where RC_SEED_SYSTEM_TIME is set for the rationale here
+  config.testParams.seed = static_cast<uint64_t>(std::time(nullptr));
+#else
   std::random_device device;
   config.testParams.seed = (static_cast<uint64_t>(device()) << 32) | device();
+#endif
 
   const auto params = getEnvValue("RC_PARAMS");
   if (params) {

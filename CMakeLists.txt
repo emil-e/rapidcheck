@@ -71,6 +71,15 @@ endif()
 
 target_include_directories(rapidcheck PUBLIC include)
 
+
+# On Windows under MinGW, random_device provides no entropy,
+# so it will always return the same value.
+# Seed using system time instead.
+# See: https://stackoverflow.com/questions/18880654/why-do-i-get-the-same-sequence-for-every-run-with-stdrandom-device-with-mingw
+if(MINGW)
+  target_compile_definitions(rapidcheck PRIVATE RC_SEED_SYSTEM_TIME)
+endif()
+
 add_subdirectory(ext)
 
 if (RC_ENABLE_TESTS)
