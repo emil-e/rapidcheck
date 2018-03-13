@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(rapidcheck)
+project(rapidcheck CXX)
 
 # Don't warn about symbol visibility for static libraries with CMake 3.3 and later.
 if(POLICY CMP0063)
