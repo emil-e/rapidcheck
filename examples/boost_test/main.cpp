@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(RapidCheckExample)
 
 // Should succeed:
 RC_BOOST_PROP(copyOfStringIsIdenticalToOriginal, (const std::string &str)) {
-  RC_CLASSIFY(str.empty());
+  RC_CLASSIFY(str.empty(), "empty");
   const auto strCopy = str;
   RC_ASSERT(strCopy == str);
 }
