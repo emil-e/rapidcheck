@@ -7,11 +7,11 @@
 #define RC_INTERNAL_CONDITIONAL_RESULT(                                        \
     ResultType, expression, invert, name, ...)                                 \
   ::rc::detail::doAssert(RC_INTERNAL_CAPTURE(expression),                      \
-           (invert),                                                           \
-           ::rc::detail::CaseResult::Type::ResultType,                         \
-           __FILE__,                                                           \
-           __LINE__,                                                           \
-           name "(" #expression ")")
+                         (invert),                                             \
+                         ::rc::detail::CaseResult::Type::ResultType,           \
+                         __FILE__,                                             \
+                         __LINE__,                                             \
+                         name "(" #expression ")")
 
 #define RC_INTERNAL_STRINGIFY(x) #x
 
