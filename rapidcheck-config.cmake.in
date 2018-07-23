@@ -1,0 +1,7 @@
+#When run this file will define the following CMake cached variables:
+# 
+#   rapidcheck_INCLUDE_DIRS
+#   rapidcheck_LIBRARIES
+#
+set(rapidcheck_INCLUDE_DIRS "@CONFIG_INCLUDE_DIRS@")
+set(rapidcheck_LIBRARIES "@CONFIG_LIBRARIES@")

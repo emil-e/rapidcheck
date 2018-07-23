@@ -5,3 +5,11 @@ target_include_directories(rapidcheck_gmock INTERFACE include)
 if (RC_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
+
+if(RC_ENABLE_INSTALL)
+
+install(DIRECTORY "include/"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
+  )
+
+endif()
