@@ -3,6 +3,7 @@
 #include "rapidcheck/detail/BitStream.h"
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/shrink/Shrink.h"
+#include "rapidcheck/detail/Cpp11.h"
 #include "rapidcheck/gen/Transform.h"
 #include "rapidcheck/gen/detail/ScaleInteger.h"
 
@@ -92,8 +93,8 @@ Gen<T> inRange(T min, T max) {
   return [=](const Random &random, int size) {
     if (max <= min) {
       std::string msg;
-      msg += "Invalid range [" + std::to_string(min);
-      msg += ", " + std::to_string(max) + ")";
+      msg += "Invalid range [" + rc::to_string(min);
+      msg += ", " + rc::to_string(max) + ")";
       throw GenerationFailure(msg);
     }
 

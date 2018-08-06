@@ -70,6 +70,7 @@ else()
 endif()
 
 target_include_directories(rapidcheck PUBLIC include)
+target_include_directories(rapidcheck PRIVATE /usr/local/include)
 
 
 # On Windows under MinGW, random_device provides no entropy,
