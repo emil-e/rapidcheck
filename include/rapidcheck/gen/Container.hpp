@@ -1,5 +1,6 @@
 #pragma once
 
+#include "rapidcheck/detail/Cpp11.h"
 #include "rapidcheck/gen/Arbitrary.h"
 #include "rapidcheck/gen/Tuple.h"
 #include "rapidcheck/gen/detail/ShrinkValueIterator.h"
@@ -47,8 +48,7 @@ Shrinkables<T> generateShrinkables(const Random &random,
       if (tries >= 100) {
         // TODO magic constant!
         throw GenerationFailure("Gave up trying to generate " +
-                                std::to_string(count) +
-                                " values for container");
+                                rc::to_string(count) + " values for container");
       }
       currentSize++;
     }

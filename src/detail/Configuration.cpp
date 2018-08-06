@@ -14,6 +14,7 @@
 #include "MapParser.h"
 #include "ParseException.h"
 #include "StringSerialization.h"
+#include "rapidcheck/detail/Cpp11.h"
 #include "rapidcheck/detail/Platform.h"
 
 namespace rc {
@@ -152,13 +153,13 @@ Configuration configFromMap(const std::map<std::string, std::string> &map,
 
 std::map<std::string, std::string> mapFromConfig(const Configuration &config) {
   return {
-      {"seed", std::to_string(config.testParams.seed)},
-      {"max_success", std::to_string(config.testParams.maxSuccess)},
-      {"max_size", std::to_string(config.testParams.maxSize)},
-      {"max_discard_ratio", std::to_string(config.testParams.maxDiscardRatio)},
+      {"seed", rc::to_string(config.testParams.seed)},
+      {"max_success", rc::to_string(config.testParams.maxSuccess)},
+      {"max_size", rc::to_string(config.testParams.maxSize)},
+      {"max_discard_ratio", rc::to_string(config.testParams.maxDiscardRatio)},
       {"noshrink", config.testParams.disableShrinking ? "1" : "0"},
-      {"verbose_progress", std::to_string(config.verboseProgress)},
-      {"verbose_shrinking", std::to_string(config.verboseShrinking)},
+      {"verbose_progress", rc::to_string(config.verboseProgress)},
+      {"verbose_shrinking", rc::to_string(config.verboseShrinking)},
       {"reproduce", reproduceMapToString(config.reproduce)}};
 }
 

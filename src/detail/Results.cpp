@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "rapidcheck/Show.h"
+#include "rapidcheck/detail/Cpp11.h"
 
 namespace rc {
 namespace detail {
@@ -117,7 +118,7 @@ void printDistribution(const SuccessResult &result, std::ostream &os) {
 }
 
 void printResultMessage(const SuccessResult &result, std::ostream &os) {
-  os << "OK, passed " + std::to_string(result.numSuccess) + " tests";
+  os << "OK, passed " + rc::to_string(result.numSuccess) + " tests";
   if (!result.distribution.empty()) {
     os << std::endl;
     printDistribution(result, os);
