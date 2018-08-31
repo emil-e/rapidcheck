@@ -72,7 +72,24 @@ else()
     APPEND_STRING PROPERTY COMPILE_FLAGS " -O3")
 endif()
 
-target_include_directories(rapidcheck PUBLIC include)
+
+
+target_include_directories(rapidcheck PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+    $<INSTALL_INTERFACE:include/rapidcheck>  # <prefix>/include/rapidcheck
+)
+
+include(GNUInstallDirs)
+install(TARGETS rapidcheck EXPORT rapidcheckConfig
+    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
+
+export(TARGETS rapidcheck FILE rapidcheckConfig.cmake)
+
 
 
 # On Windows under MinGW, random_device provides no entropy,
