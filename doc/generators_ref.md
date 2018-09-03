@@ -323,7 +323,7 @@ Like `sizedElement(T...)` but specifying generators instead of immediate values.
 
 ```C++
 // Example:
-const auto username = *gen::weightedOneOf(
+const auto username = *gen::sizedOneOf(
     gen::element<std::string>("ant", "cockroach", "fly"),
     gen::element<std::string>("cat", "dog", "wolf"),
     gen::element<std::string>("elephant", "giraffe", "horse"));
