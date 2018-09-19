@@ -75,11 +75,10 @@ struct Arbitrary<Person> {
         gen::set(&Person::firstName),
         gen::set(&Person::lastName),
         gen::set(&Person::age, gen::inRange(0, 100)));
-    });
   }
 };
 
-} // namespce rc
+} // namespace rc
 ```
 
 With this added, RapidCheck not only knows how to generate `Person` but also `std::vector<Person>` and `std::pair<std::string, Person>`, among other types.
