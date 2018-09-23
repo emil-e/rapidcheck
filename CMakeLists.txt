@@ -6,6 +6,8 @@ if(POLICY CMP0063)
   cmake_policy(SET CMP0063 NEW)
 endif()
 
+set(CMAKE_CXX_STANDARD 11)
+
 enable_testing()
 
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
@@ -20,7 +22,7 @@ if(MSVC)
   string(REGEX REPLACE "/RTC(su|[1su])" ""
     CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-missing-braces -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-missing-braces -Wno-unused-command-line-argument")
   if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   endif()
