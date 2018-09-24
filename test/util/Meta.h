@@ -8,7 +8,8 @@ namespace test {
 /// tests.
 template <typename MetaFunction, typename... Types>
 void forEachType() {
-  [[maybe_unused]] auto dummy = {(MetaFunction::template exec<Types>(), 0)...};
+  auto dummy = {(MetaFunction::template exec<Types>(), 0)...};
+  (void)dummy; // unused
 }
 
 template <typename T, typename Testable>
