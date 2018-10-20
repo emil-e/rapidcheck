@@ -31,7 +31,7 @@ Since `FastKvStore` is essentially just a map of strings to strings, the model f
 
 ```C++
 struct FastKvStoreModel {
-  std::map<std::string, std:.string> data;
+  std::map<std::string, std::string> data;
 };
 ```
 
