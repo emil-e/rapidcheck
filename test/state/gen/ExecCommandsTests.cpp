@@ -44,10 +44,10 @@ struct GeneratesOnConstrution : public IntVecCmd {
 } // namespace
 
 // Test is for deprecated function, don't warn since we're just testing.
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif // __GNUC__
+#endif // defined(__GNUC__) || defined(__clang__)
 
 TEST_CASE("state::gen::execOneOf") {
   prop("returns one of the commands",
@@ -91,9 +91,9 @@ TEST_CASE("state::gen::execOneOf") {
        });
 }
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
-#endif // __GNUC__
+#endif // defined(__GNUC__) || defined(__clang__)
 
 TEST_CASE("state::gen::execOneOfWithArgs") {
   prop("returns one of the commands",

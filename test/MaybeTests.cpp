@@ -187,7 +187,8 @@ TEST_CASE("Maybe") {
       }
 
       SECTION("self assign leaves self unchanged") {
-        lhs = lhs;
+        auto &ref = lhs;
+        lhs = ref;
         REQUIRE_FALSE(lhs);
       }
     }
@@ -227,7 +228,8 @@ TEST_CASE("Maybe") {
       }
 
       SECTION("self assign leaves self unchanged") {
-        lhs = lhs;
+        auto &ref = lhs;
+        lhs = ref;
         REQUIRE(lhs->id == "bar");
       }
     }
