@@ -8,8 +8,6 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 
-enable_testing()
-
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 
@@ -74,11 +72,9 @@ else()
     APPEND_STRING PROPERTY COMPILE_FLAGS " -O3")
 endif()
 
-
-
 target_include_directories(rapidcheck PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-    $<INSTALL_INTERFACE:include/rapidcheck>  # <prefix>/include/rapidcheck
+    $<INSTALL_INTERFACE:include>  # <prefix>/include
 )
 
 include(GNUInstallDirs)
@@ -87,12 +83,6 @@ install(TARGETS rapidcheck EXPORT rapidcheckConfig
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
-
-export(TARGETS rapidcheck FILE rapidcheckConfig.cmake)
-
-
 
 # On Windows under MinGW, random_device provides no entropy,
 # so it will always return the same value.
@@ -104,12 +94,17 @@ endif()
 
 add_subdirectory(ext)
 
-if (RC_ENABLE_TESTS)
+if(RC_ENABLE_TESTS)
+  enable_testing()
   add_subdirectory(test)
 endif()
 
-if (RC_ENABLE_EXAMPLES)
+if(RC_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 add_subdirectory(extras)
+
+# Install the export file specifying all the targets for RapidCheck
+install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
+export(TARGETS rapidcheck FILE rapidcheckConfig.cmake)
