@@ -8,6 +8,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 
+option(RC_BUILD_SHARED_LIB "Build RapidCheck as a shared library" OFF)
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 
@@ -26,7 +27,13 @@ else()
   endif()
 endif()
 
-add_library(rapidcheck
+if(RC_BUILD_SHARED_LIB)
+  set(RC_SHARED_OR_STATIC "SHARED")
+else()
+  set(RC_SHARED_OR_STATIC "STATIC")
+endif()
+
+add_library(rapidcheck ${RC_SHARED_OR_STATIC}
   src/BeforeMinimalTestCase.cpp
   src/Check.cpp
   src/Classify.cpp
