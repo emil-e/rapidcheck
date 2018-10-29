@@ -79,9 +79,10 @@ target_include_directories(rapidcheck PUBLIC
 
 include(GNUInstallDirs)
 install(TARGETS rapidcheck EXPORT rapidcheckConfig
-    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # On Windows under MinGW, random_device provides no entropy,
@@ -107,4 +108,4 @@ add_subdirectory(extras)
 
 # Install the export file specifying all the targets for RapidCheck
 install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
-export(TARGETS rapidcheck FILE rapidcheckConfig.cmake)
+export(EXPORT rapidcheckConfig FILE rapidcheckConfig.cmake)
