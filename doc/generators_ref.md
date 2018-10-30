@@ -1,10 +1,11 @@
-Generators reference
-====================
+# Generators reference
+
 The following is a reference of all the included generators of RapidCheck. These generators are accessed by factory functions in the `rc::gen` namespace. The signatures are not the actual signatures in the source code and should be seen as pseudo C++ for pedagogical purposes. The real signatures are, of course, uglier.
 
-## Basic ##
+## Basic
 
-#### `Gen<T> arbitrary<T>()` ####
+### `Gen<T> arbitrary<T>()`
+
 Generates an arbitrary value of type `T`. Support for new types can be added by specializing `struct rc::Arbitrary<T>` and providing a static method `arbitrary()` which returns an appropriate generator. For more information see the documentation on [generators](generators.md). The semantics of the returned generator depends entirely on the implementation of the `Arbitrary` specialization.
 
 This generator is also used by RapidCheck whenever it implicitly needs a generator for some type, for example when generating arguments to properties.
@@ -14,7 +15,8 @@ This generator is also used by RapidCheck whenever it implicitly needs a generat
 const auto str = *gen::arbitrary<std::vector<std::string>>();
 ```
 
-#### `Gen<T> just(T value)` ####
+### `Gen<T> just(T value)`
+
 Constantly generates `value`.
 
 ```C++
@@ -22,7 +24,8 @@ Constantly generates `value`.
 const auto alwaysLeet = gen::just(1337);
 ```
 
-#### `Gen<std::tuple<Ts...>> tuple(Gen<Ts>... gens)` ####
+### `Gen<std::tuple<Ts...>> tuple(Gen<Ts>... gens)`
+
 Generates an `std::tuple` using the given generators to generate elements.
 
 ```C++
@@ -32,7 +35,8 @@ const auto tuple = *gen::tuple(gen::arbitrary<std::string>(),
                                gen::arbitrary<float>());
 ```
 
-#### `Gen<std::pair<T1, T2>> pair(Gen<T1> gen1, Gen<T2> gen2)` ####
+### `Gen<std::pair<T1, T2>> pair(Gen<T1> gen1, Gen<T2> gen2)`
+
 Similar to `tuple` but generates `std::pair` instead.
 
 ```C++
@@ -41,9 +45,10 @@ const auto pair = *gen::pair(gen::arbitrary<std::string>(),
                              gen::arbitrary<int>());
 ```
 
-## Filtering ##
+## Filtering
 
-#### `Gen<T> suchThat(Gen<T> gen, Predicate predicate)` ####
+### `Gen<T> suchThat(Gen<T> gen, Predicate predicate)`
+
 Generates a value that satisfies the given predicate. Fails generation if a value that satisfies the predicate cannot be generated after an unspecified number of tries.
 
 ```C++
@@ -53,7 +58,8 @@ const auto smallEven = *gen::suchThat(gen::inRange(0, 100), [](int x) {
 });
 ```
 
-#### `Gen<T> suchThat(Predicate predicate)` ####
+### `Gen<T> suchThat(Predicate predicate)`
+
 Like `suchThat(Gen<T>, Predicate)` but uses `gen::arbitrary<T>()`. `T` cannot be deduced and must be explicitly specified.
 
 ```C++
@@ -63,7 +69,8 @@ const auto even = *gen::suchThat<int>([](int x) {
 });
 ```
 
-#### `Gen<T> distinctFrom(Gen<T> gen, T value)` ####
+### `Gen<T> distinctFrom(Gen<T> gen, T value)`
+
 Generates a value using `gen` that is not equal to `value`.
 
 ```C++
@@ -72,10 +79,12 @@ const auto a = *gen::arbitrary<int>();
 const auto b = *gen::distinctFrom(gen::inRange(0, 100), a);
 ```
 
-#### `Gen<T> distinctFrom(T value)` ####
+### `Gen<T> distinctFrom(T value)`
+
 Like `distinctFrom(Gen<T> gen, T value)` but uses `gen::arbitrary<T>()` as the generator.
 
-#### `Gen<T> nonEmpty(Gen<T> gen)` ####
+### `Gen<T> nonEmpty(Gen<T> gen)`
+
 Generates a value `x` using the given generator for `x.empty()` is false. Useful with strings, STL containers and other similar types.
 
 ```C++
@@ -83,7 +92,8 @@ Generates a value `x` using the given generator for `x.empty()` is false. Useful
 const auto nonEmptyString = *gen::nonEmpty(gen::string<std::string>());
 ```
 
-#### `Gen<T> nonEmpty()` ####
+### `Gen<T> nonEmpty()`
+
 Same as `nonEmpty(Gen<T>)` but uses `gen::arbitrary<T>()`.
 
 ```C++
@@ -91,14 +101,15 @@ Same as `nonEmpty(Gen<T>)` but uses `gen::arbitrary<T>()`.
 const auto nonEmptyInts = *gen::nonEmpty<std::vector<int>>();
 ```
 
-## Transforming ##
+## Transforming
 
 ```C++
 // Example:
 const auto str = *gen::string<std::string>();
 ```
 
-#### `Gen<U> map(Gen<T> gen, Mapper mapper)` ####
+### `Gen<U> map(Gen<T> gen, Mapper mapper)`
+
 Returns a generator equivalent to `gen` but with its values mapped by `mapper`. The value type of the returned generator will be the type returned by `mapper`. This is a functor map, in functional terms.
 
 The value is passed as an rvalue to `mapper` and can thus be moved from.
@@ -109,7 +120,9 @@ const auto year = *gen::map(gen::inRange(1900, 2015), [](int y) {
   return std::to_string(y);
 });
 ```
-#### `Gen<U> map(Mapper mapper)` ####
+
+### `Gen<U> map(Mapper mapper)`
+
 Like `map(Gen<T>, Mapper)` but uses `gen::arbitrary<T>()` for the input generator. `T` cannot be deduced and must be explicitly specified.
 
 ```C++
@@ -117,7 +130,8 @@ Like `map(Gen<T>, Mapper)` but uses `gen::arbitrary<T>()` for the input generato
 const auto strNumber = *gen::map<int>([](int x) { return std::to_string(x); });
 ```
 
-#### `Gen<U> mapcat(Gen<T> gen, Mapper mapper)` ####
+### `Gen<U> mapcat(Gen<T> gen, Mapper mapper)`
+
 [Monadic bind](http://en.wikipedia.org/wiki/Monad_%28functional_programming%29). Takes a `Gen<T>` and a function from a `T` to a `Gen<U>` and returns a `Gen<U>`. This allows you to chain two generators together.
 
 When shrinking, the value generated by the first generator will be shrunk first, then the second.
@@ -130,7 +144,8 @@ const auto name = *gen::mapcat(gen::arbitrary<bool>(), [](bool isMale) {
 });
 ```
 
-#### `Gen<T> join(Gen<Gen<T>> gen)` ####
+### `Gen<T> join(Gen<Gen<T>> gen)`
+
 Flattens a generator of generators of `T` into a generator of `T`. This is the [monadic join](http://en.wikipedia.org/wiki/Monad_%28functional_programming%29) operation.
 
 ```C++
@@ -143,7 +158,8 @@ gens.push_back(gen::element(2, 3, 5, 7));
 const auto someNumber = *gen::join(gen::elementOf(gens));
 ```
 
-#### `Gen<U> apply(Callable callable, Gen<Ts>... gens)` ####
+### `Gen<U> apply(Callable callable, Gen<Ts>... gens)`
+
 Calls the given callable with values generated by the given generators. Has tuple semantics when shrinking. Can be seen as a more C++ friendly version of [applicative functor application](http://learnyouahaskell.com/functors-applicative-functors-and-monoids).
 
 ```C++
@@ -153,7 +169,8 @@ const auto id = gen::apply([](char c, int x) {
 }, gen::elementOf(std::string("ABCDEF")), gen::positive<int>());
 ```
 
-#### `Gen<U> cast(Gen<T> gen)` ####
+### `Gen<U> cast(Gen<T> gen)`
+
 Returns a generator that casts the generated values to `U` using `static_cast<U>(...)`.
 
 ```C++
@@ -161,9 +178,10 @@ Returns a generator that casts the generated values to `U` using `static_cast<U>
 const auto integer = *gen::cast<float>(gen::arbitrary<int>());
 ```
 
-## Text ##
+## Text
 
-#### `Gen<T> character()` ####
+### `Gen<T> character()`
+
 Generates text characters. Commonly occurring characters have a higher probability of being generated.
 
 ```C++
@@ -171,12 +189,14 @@ Generates text characters. Commonly occurring characters have a higher probabili
 const auto c = *gen::character<char>();
 ```
 
-#### `Gen<String> string()` ####
+### `Gen<String> string()`
+
 Generates strings. Essentially equivalent to `gen::container<String>(gen::character<typename String::value_type>())` but a lot faster. If you need to use a custom character generator, use `gen::container`.
 
-## Numeric ##
+## Numeric
 
-#### `Gen<T> inRange(T min, T max)` ####
+### `Gen<T> inRange(T min, T max)`
+
 Generates an integer between `min` (inclusive) and `max` (exclusive). The part of the range that is used grows with size and when size is `0`, only `min` is generated. When shrinking, the value will shrink towards `min`.
 
 ```C++
@@ -184,7 +204,8 @@ Generates an integer between `min` (inclusive) and `max` (exclusive). The part o
 const auto age = *gen::inRange<int>(0, 100);
 ```
 
-#### `Gen<T> nonZero()` ####
+### `Gen<T> nonZero()`
+
 Generates a value that is not equal to `0`.
 
 ```C++
@@ -192,7 +213,8 @@ Generates a value that is not equal to `0`.
 const auto x = *gen::nonZero<int>();
 ```
 
-#### `Gen<T> positive()` ####
+### `Gen<T> positive()`
+
 Generates a value which is greater than `0`.
 
 ```C++
@@ -200,16 +222,17 @@ Generates a value which is greater than `0`.
 const auto x = *gen::positive<int>();
 ```
 
-#### `Gen<T> negative()` ####
-Generates a value which is less than `0`.
+### `Gen<T> negative()`
 
+Generates a value which is less than `0`.
 
 ```C++
 // Example:
 const auto x = *gen::positive<int>();
 ```
 
-#### `Gen<T> nonNegative()` ####
+### `Gen<T> nonNegative()`
+
 Generates a value which is not less than `0`.
 
 ```C++
@@ -217,9 +240,10 @@ Generates a value which is not less than `0`.
 const auto x = *gen::positive<int>();
 ```
 
-## Containers ##
+## Containers
 
-#### `Gen<Container> container(Gen<Ts>... gens)` ####
+### `Gen<Container> container(Gen<Ts>... gens)`
+
 Generates an STL container containing elements generated by the given generator(s). For most containers you should only specify one generator but for containers that have both keys and values (i.e. maps), you need to supply two separate generators. The `Container` type parameter must be specified explicitly.
 
 ```C++
@@ -227,10 +251,12 @@ Generates an STL container containing elements generated by the given generator(
 const auto smallInts = *gen::container<std::vector<int>>(gen::inRange(0, 100));
 ```
 
-#### `Gen<Container> container(std::size_t count, Gen<Ts>... gens)` ####
+### `Gen<Container> container(std::size_t count, Gen<Ts>... gens)`
+
 Like `container(Gen<Ts>... gens)` but generates containers of a fixed size `count.`
 
-#### `Gen<Container> unique(Gen<T> gen)` ####
+### `Gen<Container> unique(Gen<T> gen)`
+
 Generates a container of unique `T`. The `Container` type parameter must be specified explicitly.
 
 ```C++
@@ -238,7 +264,8 @@ Generates a container of unique `T`. The `Container` type parameter must be spec
 const auto uniqueInts = gen::unique<std::vector<int>>(gen::arbitrary<int>());
 ```
 
-#### `Gen<Container> uniqueBy(Gen<T> gen, F f)` ####
+### `Gen<Container> uniqueBy(Gen<T> gen, F f)`
+
 Generates a container of `T` such that for every element `e` in the container, `f(e)` is unique. The `Container` type parameter must be specified explicitly.
 
 ```C++
@@ -250,9 +277,10 @@ const auto uniquePeople = gen::uniqueBy<std::vector<Person>>(
     });
 ```
 
-## Picking ##
+## Picking
 
-#### `Gen<Container::value_type> elementOf(Container container)` ####
+### `Gen<Container::value_type> elementOf(Container container)`
+
 Randomly generates one of the elements of `container`. If `container` is empty, generation will fail.
 
 ```C++
@@ -261,14 +289,16 @@ std::vector<std::string> names{"John", "Jane", "Bob", "Kate"};
 const auto name = *gen::elementOf(names);
 ```
 
-#### `Gen<T> element(T... elements)` ####
+### `Gen<T> element(T... elements)`
+
 Randomly generates on of the given elements.
 
 ```C++
 const auto prime = *gen::element(2, 3, 5, 7, 11, 13);
 ```
 
-#### `Gen<T> weightedElement(std::initializer_list<std::pair<std::size_t, T>> pairs)` ####
+### `Gen<T> weightedElement(std::initializer_list<std::pair<std::size_t, T>> pairs)`
+
 Takes a sequence of weights paired with elements and generates one of the elements with probabilities according to the weights. For example, if one element has the weight `1` and another one the weight `2`, the second one will be generated twice as often as the first.
 
 ```C++
@@ -279,7 +309,8 @@ const auto animal = *gen::weightedElement({
     {1, std::string("zebra")}});
 ```
 
-#### `Gen<Container::value_type> sizedElementOf(Container container)` ####
+### `Gen<Container::value_type> sizedElementOf(Container container)`
+
 Randomly chooses an element from an initial segment of the given container which is proportional to size. Effectively, elements are interpreted as increasing in size from start to end which reflects both with regards to the size but also when shrinking.
 
 ```C++
@@ -287,7 +318,8 @@ Randomly chooses an element from an initial segment of the given container which
 const auto digit = *gen::sizedElementOf(std::string("0123456789"));
 ```
 
-#### `Gen<T> sizedElement(T... elements)` ####
+### `Gen<T> sizedElement(T... elements)`
+
 Like `sizedElementOf(Container)` but takes elements directly instead of a container.
 
 ```C++
@@ -298,7 +330,8 @@ const auto digit = *gen::sizedElement(
     std::string("three"));
 ```
 
-#### `Gen<T> oneOf(Gen<Ts>... gens)` ####
+### `Gen<T> oneOf(Gen<Ts>... gens)`
+
 Randomly picks one of the given generators and generates a value using that.
 
 ```C++
@@ -308,7 +341,8 @@ const auto name = *gen::oneOf(
     gen::element<std::string>("John", "Bob", "Nick"));
 ```
 
-#### `Gen<T> weightedOneOf(std::initializer_list<std::pair<std::size_t, Gen<T>>> pairs)` ####
+### `Gen<T> weightedOneOf(std::initializer_list<std::pair<std::size_t, Gen<T>>> pairs)`
+
 Like `weightedElement(std::initializer_list<std::pair<std::size_t, T>>)` but specifying generators instead of immediate values.
 
 ```C++
@@ -318,7 +352,8 @@ const auto username = *gen::weightedOneOf({
     (4, gen::element<std::string>("foo", "bar", "baz"))});
 ```
 
-#### `Gen<T> sizedOneOf(Gen<T>... gens)` ####
+### `Gen<T> sizedOneOf(Gen<T>... gens)`
+
 Like `sizedElement(T...)` but specifying generators instead of immediate values.
 
 ```C++
@@ -329,10 +364,10 @@ const auto username = *gen::sizedOneOf(
     gen::element<std::string>("elephant", "giraffe", "horse"));
 ```
 
+## Constructing
 
-## Constructing ##
+### `Gen<T> construct<T>(Gen<Args>... gens)`
 
-#### `Gen<T> construct<T>(Gen<Args>... gens)` ####
 Generates objects of type `T` constructed using arguments from the given generators.
 
 ```C++
@@ -343,7 +378,8 @@ const auto person = *gen::construct<Person>(
     gen::inRange(0, 100));         // Age
 ```
 
-#### `Gen<std::unique_ptr<T>> makeUnique<T>(Gen<Args>... gens)` ####
+### `Gen<std::unique_ptr<T>> makeUnique<T>(Gen<Args>... gens)`
+
 Like `construct` but generates `std::unique_ptr`s to `T` instead.
 
 ```C++
@@ -354,7 +390,8 @@ const auto person = *gen::makeUnique<Person>(
     gen::inRange(0, 100));         // Age
 ```
 
-#### `Gen<std::shared_ptr<T>> makeShared<T>(Gen<Args>... gens)` ####
+### `Gen<std::shared_ptr<T>> makeShared<T>(Gen<Args>... gens)`
+
 Like `construct` but generates `std::shared_ptr`s to `T` instead.
 
 ```C++
@@ -365,7 +402,8 @@ const auto person = *gen::makeShared<Person>(
     gen::inRange(0, 100));         // Age
 ```
 
-#### `Gen<T> build(Gen<T> gen, Bindings... bindings)` ####
+### `Gen<T> build(Gen<T> gen, Bindings... bindings)`
+
 Generates objects of type `T` by setting members of the object according to the specified bindings. A binding is created using `gen::set(Member member, Gen<T> gen)`. `Member` should be a pointer to a member of that object and `gen` should be an appropriate generator for the type of the member. The member may be one of:
 
 - A member variable in which case `gen` should be a generator for the type of that variable.
@@ -389,15 +427,17 @@ const auto person = *gen::build(gen::construct<Person>(genName()),
                                          gen::tuple(
                                              genCity(),
                                              genStreet(),
-                                             genZipcode())));
+                                             genZipCode())));
 ```
 
-#### `Gen<T> build(Bindings... bindings)` ####
+### `Gen<T> build(Bindings... bindings)`
+
 Like `build(Gen<T> gen, Bindings... bindings)` but `T` is default constructed. Since no generator is specified, `T` cannot be deduced and must be explicitly specified.
 
-## Resizing ##
+## Resizing
 
-#### `Gen<T> resize(int size, Gen<T> gen)`
+### `Gen<T> resize(int size, Gen<T> gen)`
+
 Returns a version of the given generator that always uses the specified size.
 
 ```C++
@@ -405,7 +445,8 @@ Returns a version of the given generator that always uses the specified size.
 const auto fullRangeInt = *gen::resize(kNominalSize, gen::arbitrary<int>());
 ```
 
-#### `Gen<T> scale(double scale, Gen<T> gen)`
+### `Gen<T> scale(double scale, Gen<T> gen)`
+
 Returns a version of the given generator that scales the size by the given factor before passing it to the underlying generator.
 
 ```C++
@@ -413,7 +454,8 @@ Returns a version of the given generator that scales the size by the given facto
 const auto smallerInt = *gen::scale(0.5, gen::arbitrary<int>());
 ```
 
-#### `Gen<T> withSize(Callable callable)` ####
+### `Gen<T> withSize(Callable callable)`
+
 Creates a generator by taking a callable which gets passed the current size and is expected to return a generator. The type of the returned generator will be the same as the type returned by `callable`.
 
 ```C++
@@ -423,9 +465,10 @@ const auto sizedInt = *gen::withSize([](int size) {
 });
 ```
 
-## Miscellaneous ##
+## Miscellaneous
 
-#### `Gen<T> exec(Callable callable)` ####
+### `Gen<T> exec(Callable callable)`
+
 This allows you to use the same semantics that is used for properties when creating a generator. However, instead of `callable` yielding a success or a failure, it should return the generated value.
 
 Inside the specified callable, you can use `operator*` of `Gen<T>` to pick values. In this way, you can have the values of one generator depend on the other. Just like with properties, if `callable` has any arguments, those will be generate with tuple-like semantics using `gen::arbitrary<T>()` for the appropriate types.
@@ -441,7 +484,8 @@ const auto name = *gen::exec([](const Address &address) {
 });
 ```
 
-#### `Gen<T> lazy(Callable callable)` ####
+### `Gen<T> lazy(Callable callable)`
+
 Returns a generator which delegates generation to the generator lazily returned by `callable`. This is useful when creating generators for recursive data types such as trees. The type of the returned generator is the same as the type of the generator returned by `callable`.
 
 ```C++
@@ -451,19 +495,21 @@ Gen<LinkedList> genLinkedList() {
   //       that never terminates
   return gen::oneOf(gen::just(LinkedList()),
                     gen::construct<LinkedList>(gen::arbitrary<int>(),
-                                               gen::lazy(&genLinkedlist)));
+                                               gen::lazy(&genLinkedList)));
 }
 ```
 
-#### `Gen<Maybe<T>> maybe(Gen<T> gen)` ####
+### `Gen<Maybe<T>> maybe(Gen<T> gen)`
+
 Generates a `Maybe` of the type of the given generator. At small sizes, the frequency of `Nothing` is greater than at larger sizes.
 
-```
+```C++
 // Example:
 const auto maybeSmallInt = *gen::maybe(gen::inRange(0, 100));
 ```
 
-#### `Gen<T> noShrink(Gen<T> gen)` ####
+### `Gen<T> noShrink(Gen<T> gen)`
+
 Returns a generator which generates the same values as `gen` but RapidCheck will not try to shrink it when a failing case is found.
 
 ```C++
@@ -471,7 +517,8 @@ Returns a generator which generates the same values as `gen` but RapidCheck will
 const auto fixedInt = *gen::noShrink(gen::arbitrary<int>());
 ```
 
-#### `Gen<T> shrink(Gen<T> gen, Shrink shrink)` ####
+### `Gen<T> shrink(Gen<T> gen, Shrink shrink)`
+
 Returns a version of the given generator that will try shrinks returned by the given callable after the regular shrinks have been tried. Use this to add further shrinking to an existing generator.
 
 ```C++

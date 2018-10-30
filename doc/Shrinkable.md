@@ -1,5 +1,5 @@
-`Shrinkable<T>`
-==============
+# `Shrinkable<T>`
+
 _This section is incomplete._
 
 `Shrinkable<T>` is a fundamental template class in RapidCheck. An instance of `Shrinkable<T>` represents some value of type `T` and provides a way to access all the ways in which this value can be shrunk. It has value semantics which means that it can be copied and passed around just like any other value. It has two member functions:
