@@ -176,7 +176,8 @@ TEST_CASE("Gen") {
     SECTION("self assignment leaves value unchanged") {
       const auto shrinkable = shrinkable::just(1337);
       Gen<int> gen([=](const Random &random, int size) { return shrinkable; });
-      gen = gen;
+      auto &ref = gen;
+      gen = ref;
       REQUIRE(gen(Random(), 0) == shrinkable);
     }
   }

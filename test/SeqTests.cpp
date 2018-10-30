@@ -48,7 +48,8 @@ TEST_CASE("Seq") {
   SECTION("self assignment leaves value unchanged") {
     const auto seq = seq::just(1, 2);
     auto x = seq;
-    x = x;
+    auto &ref = x;
+    x = ref;
 
     REQUIRE(x == seq);
   }
