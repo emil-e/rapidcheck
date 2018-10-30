@@ -8,8 +8,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 
-enable_testing()
-
+option(RC_BUILD_SHARED_LIB "Build RapidCheck as a shared library" OFF)
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 
@@ -28,7 +27,13 @@ else()
   endif()
 endif()
 
-add_library(rapidcheck
+if(RC_BUILD_SHARED_LIB)
+  set(RC_SHARED_OR_STATIC "SHARED")
+else()
+  set(RC_SHARED_OR_STATIC "STATIC")
+endif()
+
+add_library(rapidcheck ${RC_SHARED_OR_STATIC}
   src/BeforeMinimalTestCase.cpp
   src/Check.cpp
   src/Classify.cpp
@@ -74,25 +79,18 @@ else()
     APPEND_STRING PROPERTY COMPILE_FLAGS " -O3")
 endif()
 
-
-
 target_include_directories(rapidcheck PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-    $<INSTALL_INTERFACE:include/rapidcheck>  # <prefix>/include/rapidcheck
+    $<INSTALL_INTERFACE:include>  # <prefix>/include
 )
 
 include(GNUInstallDirs)
 install(TARGETS rapidcheck EXPORT rapidcheckConfig
-    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})  # This is for Windows
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
-
-export(TARGETS rapidcheck FILE rapidcheckConfig.cmake)
-
-
 
 # On Windows under MinGW, random_device provides no entropy,
 # so it will always return the same value.
@@ -104,12 +102,17 @@ endif()
 
 add_subdirectory(ext)
 
-if (RC_ENABLE_TESTS)
+if(RC_ENABLE_TESTS)
+  enable_testing()
   add_subdirectory(test)
 endif()
 
-if (RC_ENABLE_EXAMPLES)
+if(RC_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 add_subdirectory(extras)
+
+# Install the export file specifying all the targets for RapidCheck
+install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
+export(EXPORT rapidcheckConfig FILE rapidcheckConfig.cmake)
