@@ -26,6 +26,11 @@ else()
   endif()
 endif()
 
+# RapidCheck will be built either as a static or a dynamic library depending on the CMake internal
+# variable BUILD_SHARED_LIBS (https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html).
+# If you wish to change the library type of RapidCheck, you can either specify the variable when invoking CMake
+# or, if you are including RapidCheck as a subdirectory and wish to control the library type, you can set
+# the variable before the call to add_subdirectory and reset it afterwards, if necessary.
 add_library(rapidcheck
   src/BeforeMinimalTestCase.cpp
   src/Check.cpp
