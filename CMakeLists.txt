@@ -26,7 +26,7 @@ else()
   endif()
 endif()
 
-# RapidCheck will be built either as a static or a dynamic library depending on the CMake internal
+# RapidCheck will be built either as a static or a dynamic library depending on the CMake global
 # variable BUILD_SHARED_LIBS (https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html).
 # If you wish to change the library type of RapidCheck, you can either specify the variable when invoking CMake
 # or, if you are including RapidCheck as a subdirectory and wish to control the library type, you can set
@@ -68,7 +68,7 @@ add_library(rapidcheck
   src/gen/detail/ScaleInteger.cpp
   )
 
-# Random is used a LOT so it should preferrably be really fast.
+# Random is used a LOT so it should preferably be really fast.
 if(MSVC)
   set_property(SOURCE src/Random.cpp
     APPEND_STRING PROPERTY COMPILE_FLAGS " /O2")
