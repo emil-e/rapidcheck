@@ -8,7 +8,6 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 
-option(RC_BUILD_SHARED_LIB "Build RapidCheck as a shared library" OFF)
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 
@@ -27,13 +26,12 @@ else()
   endif()
 endif()
 
-if(RC_BUILD_SHARED_LIB)
-  set(RC_SHARED_OR_STATIC "SHARED")
-else()
-  set(RC_SHARED_OR_STATIC "STATIC")
-endif()
-
-add_library(rapidcheck ${RC_SHARED_OR_STATIC}
+# RapidCheck will be built either as a static or a dynamic library depending on the CMake global
+# variable BUILD_SHARED_LIBS (https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html).
+# If you wish to change the library type of RapidCheck, you can either specify the variable when invoking CMake
+# or, if you are including RapidCheck as a subdirectory and wish to control the library type, you can set
+# the variable before the call to add_subdirectory and reset it afterwards, if necessary.
+add_library(rapidcheck
   src/BeforeMinimalTestCase.cpp
   src/Check.cpp
   src/Classify.cpp
@@ -70,7 +68,7 @@ add_library(rapidcheck ${RC_SHARED_OR_STATIC}
   src/gen/detail/ScaleInteger.cpp
   )
 
-# Random is used a LOT so it should preferrably be really fast.
+# Random is used a LOT so it should preferably be really fast.
 if(MSVC)
   set_property(SOURCE src/Random.cpp
     APPEND_STRING PROPERTY COMPILE_FLAGS " /O2")
