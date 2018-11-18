@@ -134,4 +134,4 @@ rc::check([](const std::map<std::string, std::string> &data) {
 
 ### Non-copyable models
 
-The state testing framework supports models that not have copy constructors and/or copy-assignment operators. For a lot of [calls to the API](state_ref.md) (i.e. `rc::state::check`), you have to use an overload that takes a callable that returns a model state instead of passing the model state directly. Since the testing process destroys the model state, fresh new model states have to be created. For a model which is not copyable, RapidCheck can obviously not store a copy to use as a template.
+The state testing framework supports models that do not have copy constructors and/or copy-assignment operators. For a lot of [calls to the API](state_ref.md) (i.e. `rc::state::check`), you have to use an overload that takes a callable that returns a model state instead of passing the model state directly. Since the testing process destroys the model state, fresh new model states have to be created. For a model which is not copyable, RapidCheck can obviously not store a copy to use as a template.
