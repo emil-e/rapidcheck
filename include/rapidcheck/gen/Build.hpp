@@ -127,7 +127,7 @@ Gen<T> construct(Gen<Args>... gens) {
                   [](std::tuple<Args...> &&argsTuple) {
                     return rc::detail::applyTuple(
                         std::move(argsTuple),
-                        [](Args &&... args) { return T(std::move(args)...); });
+                        [](Args &&... args) { return T{std::move(args)...}; });
                   });
 }
 
@@ -143,7 +143,7 @@ Gen<std::unique_ptr<T>> makeUnique(Gen<Args>... gens) {
                     return rc::detail::applyTuple(
                         std::move(argsTuple),
                         [](Args &&... args) {
-                          return std::unique_ptr<T>(new T(std::move(args)...));
+                          return std::unique_ptr<T>(new T{std::move(args)...});
                         });
                   });
 }
