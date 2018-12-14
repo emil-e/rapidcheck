@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "rapidcheck/gen/Tuple.h"
 #include "rapidcheck/detail/ApplyTuple.h"
 
@@ -119,6 +121,41 @@ private:
   std::tuple<Lenses...> m_lenses;
 };
 
+template<typename T, typename... Args>
+typename std::enable_if<std::is_constructible<T, Args...>::value, T>::type
+construct(Args &&... args) {
+  return T(std::forward<Args>(args)...);
+}
+
+template<typename T, typename... Args>
+typename std::enable_if<!std::is_constructible<T, Args...>::value, T>::type
+construct(Args &&... args) {
+  return T{std::forward<Args>(args)...};
+}
+
+template<typename T, typename... Args>
+typename std::enable_if<std::is_constructible<T, Args...>::value, std::unique_ptr<T>>::type
+makeUnique(Args &&... args) {
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+template<typename T, typename... Args>
+typename std::enable_if<!std::is_constructible<T, Args...>::value, std::unique_ptr<T>>::type
+makeUnique(Args &&... args) {
+  return std::unique_ptr<T>(new T{std::forward<Args>(args)...});
+}
+
+template<typename T, typename... Args>
+typename std::enable_if<std::is_constructible<T, Args...>::value, std::shared_ptr<T>>::type
+makeShared(Args &&... args) {
+  return std::make_shared<T>(std::forward<Args>(args)...);
+}
+
+template<typename T, typename... Args>
+typename std::enable_if<!std::is_constructible<T, Args...>::value, std::shared_ptr<T>>::type
+makeShared(Args &&... args) {
+  return std::shared_ptr<T>(new T{std::forward<Args>(args)...});
+}
 } // namespace detail
 
 template <typename T, typename... Args>
@@ -126,8 +163,9 @@ Gen<T> construct(Gen<Args>... gens) {
   return gen::map(gen::tuple(std::move(gens)...),
                   [](std::tuple<Args...> &&argsTuple) {
                     return rc::detail::applyTuple(
-                        std::move(argsTuple),
-                        [](Args &&... args) { return T{std::move(args)...}; });
+                      std::forward<std::tuple<Args...>>(argsTuple),
+                      detail::construct<T, Args...>
+                    );
                   });
 }
 
@@ -141,10 +179,9 @@ Gen<std::unique_ptr<T>> makeUnique(Gen<Args>... gens) {
   return gen::map(gen::tuple(std::move(gens)...),
                   [](std::tuple<Args...> &&argsTuple) {
                     return rc::detail::applyTuple(
-                        std::move(argsTuple),
-                        [](Args &&... args) {
-                          return std::unique_ptr<T>(new T{std::move(args)...});
-                        });
+                      std::forward<std::tuple<Args...>>(argsTuple),
+                      detail::makeUnique<T, Args...>
+                    );
                   });
 }
 
@@ -152,11 +189,10 @@ template <typename T, typename... Args>
 Gen<std::shared_ptr<T>> makeShared(Gen<Args>... gens) {
   return gen::map(gen::tuple(std::move(gens)...),
                   [](std::tuple<Args...> &&argsTuple) {
-                    return rc::detail::applyTuple(std::move(argsTuple),
-                                                  [](Args &&... args) {
-                                                    return std::make_shared<T>(
-                                                        std::move(args)...);
-                                                  });
+                    return rc::detail::applyTuple(
+                      std::forward<std::tuple<Args...>>(argsTuple),
+                      detail::makeShared<T, Args...>
+                    );
                   });
 }
 
