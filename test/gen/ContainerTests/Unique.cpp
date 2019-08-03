@@ -13,6 +13,11 @@ struct UniqueFactory {
   static Gen<Container> makeGen(Gen<T> gen) {
     return gen::unique<Container>(std::move(gen));
   }
+
+  template <typename Container, typename T>
+  static Gen<Container> makeGen(std::size_t count, Gen<T> gen) {
+    return gen::unique<Container>(count, std::move(gen));
+  }
 };
 
 struct UniqueByFactory {
@@ -20,6 +25,12 @@ struct UniqueByFactory {
   static Gen<Container> makeGen(Gen<std::pair<T1, T2>> gen) {
     return gen::uniqueBy<Container>(
         std::move(gen), [](const std::pair<T1, T2> &p) { return p.first; });
+  }
+
+  template <typename Container, typename T1, typename T2>
+  static Gen<Container> makeGen(std::size_t count, Gen<std::pair<T1, T2>> gen) {
+    return gen::uniqueBy<Container>(
+        count, std::move(gen), [](const std::pair<T1, T2> &p) { return p.first; });
   }
 };
 
@@ -67,6 +78,22 @@ struct UniqueByProperties {
           using Set = std::set<std::pair<int, int>>;
           RC_ASSERT((Set(begin(result), end(result)) ==
                      Set{{target + 1, 0}, {target, 0}}));
+        });
+
+    templatedProp<T>(
+        "generated value always has the requested number of elements",
+        [](const GenParams &params) {
+          const auto count = *gen::inRange<std::size_t>(0, 10);
+          const auto gen = Factory::template makeGen<T>(
+              count,
+              gen::arbitrary<std::pair<int, int>>());
+          onAnyPath(
+              gen(params.random, params.size),
+              [=](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
+                const auto v = value.value();
+                RC_ASSERT(count == 
+                          std::size_t(std::distance(begin(v), end(v))));
+              });
         });
   }
 };
@@ -117,6 +144,21 @@ struct UniqueProperties {
 
           RC_ASSERT((std::set<int>(begin(result), end(result)) ==
                      std::set<int>{target + 1, target}));
+        });
+
+    templatedProp<T>(
+        "generated value always has the requested number of elements",
+        [](const GenParams &params) {
+          const auto count = *gen::inRange<std::size_t>(0, 10);
+          const auto gen = Factory::template makeGen<T>(
+              count, gen::arbitrary<int>());
+          onAnyPath(
+              gen(params.random, params.size),
+              [=](const Shrinkable<T> &value, const Shrinkable<T> &shrink) {
+                const auto v = value.value();
+                RC_ASSERT(count == 
+                          std::size_t(std::distance(begin(v), end(v))));
+              });
         });
   }
 };
