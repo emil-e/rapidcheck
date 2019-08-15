@@ -337,9 +337,11 @@ TEST_CASE("toProperty") {
             if (i == throwIndex) {
               // TODO maybe a "throws" generator?
               try {
-                *Gen<int>([=](const Random &, int) -> Shrinkable<int> {
+                // Introduce a dummy variable to prevent double-free error on LLVM 8.0.0.
+                auto dummy = Gen<int>([=](const Random &, int) -> Shrinkable<int> {
                   throw GenerationFailure(msg);
                 });
+                *dummy;
               } catch (...) {
               }
             } else {
