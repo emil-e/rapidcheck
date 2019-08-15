@@ -519,5 +519,22 @@ Gen<Container> uniqueBy(Gen<T> gen, F &&f) {
   };
 }
 
+template <typename Container, typename T, typename F>
+Gen<Container> uniqueBy(std::size_t count, Gen<T> gen, F &&f) {
+  using Strategy = detail::UniqueContainerStrategy<Decay<F>>;
+  detail::ContainerHelper<Container, Strategy> helper(
+      Strategy(std::forward<F>(f)));
+
+  return [=](const Random &random, int size) {
+    return helper.generate(count, random, size, gen);
+  };
+}
+
+template <typename Container, typename T>
+Gen<Container> unique(std::size_t count, Gen<T> gen) {
+  return gen::uniqueBy<Container>(count, std::move(gen),
+                                  [](const T &x) -> const T & { return x; });
+}
+
 } // namespace gen
 } // namespace rc

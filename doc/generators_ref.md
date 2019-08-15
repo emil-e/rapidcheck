@@ -253,7 +253,7 @@ const auto smallInts = *gen::container<std::vector<int>>(gen::inRange(0, 100));
 
 ### `Gen<Container> container(std::size_t count, Gen<Ts>... gens)`
 
-Like `container(Gen<Ts>... gens)` but generates containers of a fixed size `count.`
+Like `container(Gen<Ts>... gens)` but generates containers of a fixed size `count`.
 
 ### `Gen<Container> unique(Gen<T> gen)`
 
@@ -263,6 +263,10 @@ Generates a container of unique `T`. The `Container` type parameter must be spec
 // Example:
 const auto uniqueInts = gen::unique<std::vector<int>>(gen::arbitrary<int>());
 ```
+
+### `Gen<Container> unique(std::size_t count, Gen<T> gen)`
+
+Like `unique(Gen<T> gen)` but generates containers of a fixed size `count`.
 
 ### `Gen<Container> uniqueBy(Gen<T> gen, F f)`
 
@@ -276,6 +280,10 @@ const auto uniquePeople = gen::uniqueBy<std::vector<Person>>(
       return std::make_pair(p.firstName, p.lastName);
     });
 ```
+
+### `Gen<Container> uniqueBy(std::size_t count, Gen<T> gen, F f)`
+
+Like `uniqueBy(Gen<T> gen, F f)` but generates containers of a fixed size `count`.
 
 ## Picking
 
