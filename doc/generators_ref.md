@@ -264,6 +264,10 @@ Generates a container of unique `T`. The `Container` type parameter must be spec
 const auto uniqueInts = gen::unique<std::vector<int>>(gen::arbitrary<int>());
 ```
 
+### `Gen<Container> unique(std::size_t count, Gen<T> gen)`
+
+Like `unique(Gen<T> gen)` but generates containers of a fixed size `count.`
+
 ### `Gen<Container> uniqueBy(Gen<T> gen, F f)`
 
 Generates a container of `T` such that for every element `e` in the container, `f(e)` is unique. The `Container` type parameter must be specified explicitly.
@@ -276,6 +280,10 @@ const auto uniquePeople = gen::uniqueBy<std::vector<Person>>(
       return std::make_pair(p.firstName, p.lastName);
     });
 ```
+
+### `Gen<Container> uniqueBy(std::size_t count, Gen<T> gen, F f)`
+
+Like `uniqueBy(Gen<T> gen, F f)` but generates containers of a fixed size `count.`
 
 ## Picking
 
