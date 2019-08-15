@@ -77,7 +77,7 @@ script:
   - export PATH="${HOME}/bin:${PATH}"
   - ln -sf /usr/bin/ccache ${HOME}/bin/"${CXX}"
   - which ${CXX}
-  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DRC_ENABLE_TESTS=ON -DRC_ENABLE_EXAMPLES=ON -DRC_ENABLE_GTEST=ON -DRC_ENABLE_GMOCK=ON -DRC_ENABLE_BOOST=ON -DRC_ENABLE_BOOST_TEST=ON -G Ninja ..
+  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DRC_ENABLE_TESTS=ON -DRC_ENABLE_EXAMPLES=ON -DRC_ENABLE_GTEST=ON -DRC_ENABLE_GMOCK=ON -DRC_ENABLE_BOOST=ON -DRC_ENABLE_BOOST_TEST=ON -DRC_ENABLE_RTTI=ON -G Ninja ..
   - ccache --show-stats > ccache_before # collect stats
   - ninja -j1 # Don't run out of memory, please
   - ccache --show-stats > ccache_after
