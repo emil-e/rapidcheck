@@ -106,9 +106,9 @@ constexpr T bitMask(int nbits) {
   // to an explicitly unsigned type before performing bitwise NOT and shift.
   // We're ensuring the target type is as big as unsigned, otherwise it will
   // be promoted to int before bitwise NOT, producing a negative value.
-  return nbits < std::numeric_limits<UT>::digits ?
+  return static_cast<T>(nbits < std::numeric_limits<UT>::digits ?
          ~T(~UTP(0) << nbits)                    :
-         ~T(0);
+         ~T(0));
 }
 
 // TODO separate into header and implementation file

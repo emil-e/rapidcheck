@@ -17,7 +17,7 @@ public:
 
   TowardsSeq(T value, T target)
       : m_value(value)
-      , m_diff((target < value) ? (value - target) : (target - value))
+      , m_diff(static_cast<UInt>((target < value) ? (value - target) : (target - value)))
       , m_down(target < value) {}
 
   Maybe<T> operator()() {
@@ -25,7 +25,7 @@ public:
       return Nothing;
     }
 
-    T ret = m_down ? (m_value - m_diff) : (m_value + m_diff);
+    T ret = static_cast<T>(m_down ? (m_value - m_diff) : (m_value + m_diff));
     m_diff /= 2;
     return ret;
   }

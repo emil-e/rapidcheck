@@ -133,7 +133,7 @@ Seq<Decay<T>> repeat(T &&value) {
 
 template <typename T, typename... Ts>
 Seq<Decay<T>> just(T &&value, Ts &&... values) {
-  return makeSeq<detail::JustSeq<Decay<T>, sizeof...(Ts) + 1>>(
+  return makeSeq<detail::JustSeq<Decay<T>, static_cast<T>(sizeof...(Ts) + 1)>>(
       std::forward<T>(value), std::forward<Ts>(values)...);
 }
 
