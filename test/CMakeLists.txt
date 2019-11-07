@@ -82,7 +82,7 @@ add_executable(rapidcheck_tests
 
 target_link_libraries(rapidcheck_tests
   rapidcheck
-  catch
+  Catch2::Catch2
   rapidcheck_catch
   rapidcheck_test_utils)
 target_include_directories(rapidcheck_tests PRIVATE

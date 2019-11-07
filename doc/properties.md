@@ -1,5 +1,5 @@
-Writing properties
-==================
+# Writing properties
+
 To create a property in RapidCheck, you use the `rc::check` function. This function comes in two different forms:
 
 ```C++
@@ -23,7 +23,8 @@ rc::check([](const std::string &str) {
 });
 ```
 
-## Checking preconditions ##
+## Checking preconditions
+
 Many properties that we want to check are only valid if certain preconditions on the inputs are met. For example, if we wanted to test a function that splits a string into two equally sized parts, the precondition would be that the length of the string must be even. This can be achieved with the `RC_PRE` macro:
 
 ```C++
@@ -33,24 +34,27 @@ rc::check([](const std::string &str) {
 });
 ```
 
-If the precondition does not hold (if the string length is odd), the test case will be discarded and RapidCheck will try again with another set of inputs. Using this functionality is fine if failing preconditions are rare. However, you can run into performance issues (or worse, that Rapidcheck simply [gives up](#gaveup)) if failing preconditions are too frequent. In these cases, you should try to use a generator with much lower chance of generating undesirable data. See the docs on [generators](generators.md) for more info.
+If the precondition does not hold (if the string length is odd), the test case will be discarded and RapidCheck will try again with another set of inputs. Using this functionality is fine if failing preconditions are rare. However, you can run into performance issues (or worse, that RapidCheck simply [gives up](#gave-up)) if failing preconditions are too frequent. In these cases, you should try to use a generator with much lower chance of generating undesirable data. See the docs on [generators](generators.md) for more info.
 
-## Results ##
+## Results
+
 There are three different possible outcomes of running a property and each outcome corresponds to the outcome of a single test case invocation.
 
-### Success ###
+### Success
+
 If enough tests succeed (by default 100 tests but this is [configurable](configuration.md)), RapidCheck will let the property pass and print something similar to:
 
-```
+```text
 OK, passed 100 tests
 ```
 
 This, of course, is not a proof that nothing is wrong, just that nothing was found this time around.
 
-### Failure ###
+### Failure
+
 If RapidCheck finds a failing test, it will try to find the smallest test case that still produces a failure. When all possible ways of shrinking the inputs have been exhausted RapidCheck will print something similar to:
 
-```
+```text
 Falsifiable after 12 tests and 10 shrinks
 
 std::tuple<std::vector<int>>:
@@ -65,10 +69,11 @@ Expands to:
 
 This message includes the number of tests that had to be run to find the failure and the number of shrinks that had to be performed to arrive at the inputs that are included in the counterexample. RapidCheck treats arguments as tuples and because of that, the first item in the counterexample is always a tuple. The message also includes the specific condition that made the test case fail, in this case it was an assertion on line 17 in `main.cpp` where the actual value was not equal to the expected one.
 
-### <a name="gaveup"></a>Gave up ###
+### Gave Up
+
 If enough test cases are discarded, RapidCheck will eventually give up. The threshold after which it gives up is [configurable](configuration.md) but defaults to 10 discards per successful test. If you run 100 tests, this means that a maximum of 1000 test cases may be discarded before RapidCheck gives up. If it does, it will print something similar to:
 
-```
+```text
 Gave up after 84 tests
 
 ../examples/newgen/main.cpp:10:

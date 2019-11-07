@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/Shrinkable.h"
@@ -94,7 +94,8 @@ TEST_CASE("Shrinkable") {
     const auto shrinkable =
         shrinkable::just(13, seq::just(shrinkable::just(37)));
     auto x = shrinkable;
-    x = x;
+    auto &ref = x;
+    x = ref;
     REQUIRE(x == shrinkable);
   }
 

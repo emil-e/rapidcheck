@@ -1,6 +1,5 @@
 if (RC_ENABLE_TESTS OR RC_ENABLE_CATCH)
-  add_library(catch INTERFACE)
-  target_include_directories(catch INTERFACE catch/include)
+  add_subdirectory(catch)
 endif()
 
 if ((RC_ENABLE_GMOCK OR RC_ENABLE_GTEST) AND RC_ENABLE_TESTS)
