@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 #include <sstream>
+#include <fstream>
 #include <iostream>
 
 #include "MapParser.h"
@@ -213,7 +214,17 @@ Configuration loadConfiguration() {
   config.testParams.seed = (static_cast<uint64_t>(device()) << 32) | device();
 #endif
 
-  const auto params = getEnvValue("RC_PARAMS");
+  std::ifstream config_file("rc_config.txt");
+  std::string file_params;
+  if (config_file.good()) {
+    std::string line;
+    while (std::getline(config_file, line)) {
+      file_params += line + " ";
+    }
+  }
+
+  const auto params =
+      file_params.empty() ? getEnvValue("RC_PARAMS") : file_params;
   if (params) {
     try {
       config = configFromString(*params, config);
