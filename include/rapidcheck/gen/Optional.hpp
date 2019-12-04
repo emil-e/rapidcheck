@@ -9,7 +9,7 @@ struct DefaultArbitrary<std::optional<T>> {
   static Gen<std::optional<T>> arbitrary() {
     return gen::oneOf(
       gen::cast<std::optional<T>>(gen::arbitrary<T>()),
-      gen::cast<std::optional<T>>(std::nullopt));
+      gen::cast<std::optional<T>>(gen::element(std::nullopt)));
   }
 };
 
