@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "util/Util.h"
 #include "util/Logger.h"
@@ -159,7 +159,8 @@ TEST_CASE("Variant") {
 
       SECTION("self assignment leaves value unchanged") {
         ABC v(Logger("foo"));
-        v = v;
+        auto &ref = v;
+        v = ref;
         REQUIRE(v.is<Logger>());
         REQUIRE(v.get<Logger>().id == "foo");
       }
