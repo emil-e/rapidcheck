@@ -1,6 +1,6 @@
 #pragma once
 
-// MSVC HACK - Undefine stupid macros MS macros
+// MSVC HACK - Undefine stupid MS macros
 #undef min
 #undef max
 

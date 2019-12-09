@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <array>
 #include <limits>
+#include <iosfwd>
+#include <functional>
 
 namespace rc {
 
