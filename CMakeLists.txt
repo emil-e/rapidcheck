@@ -103,7 +103,7 @@ if(MINGW)
 endif()
 
 if(RC_ENABLE_RTTI)
-  add_definitions(-DRC_USE_RTTI)
+  target_compile_definitions(rapidcheck PUBLIC RC_USE_RTTI)
 endif()
 
 add_subdirectory(ext)
