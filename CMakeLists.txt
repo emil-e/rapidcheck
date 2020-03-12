@@ -60,6 +60,9 @@ add_library(rapidcheck
   src/gen/detail/ScaleInteger.cpp
   )
 
+# TODO switch to Boost::headers when CMake 3.15 is deployed everywhere
+target_link_libraries(rapidcheck PUBLIC Boost::boost)
+
 # Random is used a LOT so it should preferrably be really fast.
 if(MSVC)
   set_property(SOURCE src/Random.cpp
