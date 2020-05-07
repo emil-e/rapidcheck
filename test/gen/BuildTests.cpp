@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
+#include "util/Aggregate.h"
 #include "util/GenUtils.h"
 #include "util/Predictable.h"
 #include "util/Logger.h"
@@ -90,6 +91,20 @@ TEST_CASE("gen::construct") {
     RC_ASSERT(isArbitraryPredictable(std::get<0>(value)));
     RC_ASSERT(isArbitraryPredictable(std::get<1>(value)));
   }
+
+  SECTION("works with aggregate initializers") {
+    gen::construct<NestedAggregate>(gen::arbitrary<Aggregate>(),
+                                    gen::arbitrary<int>());
+    gen::construct<NestedAggregate>(gen::arbitrary<int>(),
+                                    gen::arbitrary<int>(),
+                                    gen::arbitrary<int>());
+  }
+
+  SECTION("prefers T(x, y) over T{x, y} when they behave differently") {
+    auto a = gen::construct<std::vector<int>>(gen::just(3), gen::just(3))(Random(), 0).value();
+    std::vector<int> b(3, 3);
+    RC_ASSERT(a == b);
+  }
 }
 
 TEST_CASE("gen::makeUnique") {
@@ -122,6 +137,20 @@ TEST_CASE("gen::makeUnique") {
     RC_ASSERT(isArbitraryPredictable(std::get<0>(value)));
     RC_ASSERT(isArbitraryPredictable(std::get<1>(value)));
   }
+
+  SECTION("works with aggregate initializers") {
+    gen::makeUnique<NestedAggregate>(gen::arbitrary<Aggregate>(),
+                                     gen::arbitrary<int>());
+    gen::makeUnique<NestedAggregate>(gen::arbitrary<int>(),
+                                     gen::arbitrary<int>(),
+                                     gen::arbitrary<int>());
+  }
+
+  SECTION("prefers T(x, y) over T{x, y} when they behave differently") {
+    auto a = gen::makeUnique<std::vector<int>>(gen::just(3), gen::just(3))(Random(), 0).value();
+    auto b = std::unique_ptr<std::vector<int>>(new std::vector<int>(3, 3));
+    RC_ASSERT(*a == *b);
+  }
 }
 
 TEST_CASE("gen::makeShared") {
@@ -153,6 +182,20 @@ TEST_CASE("gen::makeShared") {
 
     RC_ASSERT(isArbitraryPredictable(std::get<0>(value)));
     RC_ASSERT(isArbitraryPredictable(std::get<1>(value)));
+  }
+
+  SECTION("works with aggregate initializers") {
+    gen::makeShared<NestedAggregate>(gen::arbitrary<Aggregate>(),
+                                     gen::arbitrary<int>());
+    gen::makeShared<NestedAggregate>(gen::arbitrary<int>(),
+                                     gen::arbitrary<int>(),
+                                     gen::arbitrary<int>());
+  }
+
+  SECTION("prefers T(x, y) over T{x, y} when they behave differently") {
+    auto a = gen::makeShared<std::vector<int>>(gen::just(3), gen::just(3))(Random(), 0).value();
+    auto b = std::shared_ptr<std::vector<int>>(new std::vector<int>(3, 3));
+    RC_ASSERT(*a == *b);
   }
 }
 
