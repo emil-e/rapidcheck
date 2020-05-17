@@ -1,6 +1,8 @@
 #include "rapidcheck/GenerationFailure.h"
 
+
 #include <string>
+#include <utility>
 
 namespace rc {
 

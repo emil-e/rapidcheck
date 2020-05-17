@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 
 #include "rapidcheck/detail/Configuration.h"
 #include "rapidcheck/detail/Results.h"

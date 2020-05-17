@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/detail/FunctionTraits.h"
+#include "rapidcheck/Gen.h"
 
 namespace rc {
 namespace gen {

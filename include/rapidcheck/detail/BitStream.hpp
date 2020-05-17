@@ -1,8 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include <limits>
 
 #include "rapidcheck/detail/Utility.h"
+#include "rapidcheck/Gen.h"
 
 namespace rc {
 namespace detail {

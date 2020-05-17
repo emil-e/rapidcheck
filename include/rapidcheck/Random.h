@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstdint>
 #include <array>
+#include <cstdint>
+#include <cstdlib>
 #include <limits>
 #include <iosfwd>
 #include <functional>

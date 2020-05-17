@@ -1,6 +1,10 @@
 #include "Serialization.h"
 
+#include <algorithm>
 #include <limits>
+#include <type_traits>
+#include <utility>
+
 
 namespace rc {
 namespace detail {

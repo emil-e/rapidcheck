@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstdlib>
+#include <ostream>
+#include <string>
+
 namespace rc {
 namespace detail {
 

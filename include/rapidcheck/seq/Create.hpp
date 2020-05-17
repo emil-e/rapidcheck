@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/seq/Transform.h"
+#include <cstdlib>
 
 namespace rc {
 namespace seq {
@@ -189,7 +190,7 @@ Seq<std::pair<std::size_t, std::size_t>> subranges(std::size_t start,
                        return seq::map(
                            seq::range<std::size_t>(start, end - rangeSize + 1),
                            [=](std::size_t rangeStart) {
-                             return std::make_pair(rangeStart,
+                             return std::pair<std::size_t, std::size_t>(rangeStart,
                                                    rangeStart + rangeSize);
                            });
                      });

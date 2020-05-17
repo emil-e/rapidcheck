@@ -2,6 +2,8 @@
 
 #include "rapidcheck/detail/Serialization.h"
 
+#include <tuple>
+
 namespace rc {
 
 template <typename Iterator>

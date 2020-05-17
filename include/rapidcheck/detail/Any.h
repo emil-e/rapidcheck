@@ -1,6 +1,8 @@
 #pragma once
 
+
 #include <memory>
+#include <ostream>
 #include <string>
 
 namespace rc {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cstdlib>
 
 namespace rc {
 namespace detail {
