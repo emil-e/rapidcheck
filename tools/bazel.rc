@@ -1,2 +1,3 @@
-build --crosstool_top=@pesto//toolchain/gcc-7.2.0:toolchain
-build --host_crosstool_top=@pesto//toolchain/gcc-7.2.0-native:toolchain
+build --crosstool_top=@pesto//toolchain/gcc-9.2.0:toolchain
+build --host_crosstool_top=@pesto//toolchain/gcc-9.2.0:toolchain
+
