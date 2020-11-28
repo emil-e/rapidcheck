@@ -34,7 +34,7 @@ class Seq {
   /// Creates a new `Seq` using the implementation class specificed by the
   /// type parameter constructed by forwarding the given arguments.
   template <typename Impl, typename... Args>
-  friend Seq<typename std::result_of<Impl()>::type::ValueType>
+  friend Seq<typename std::invoke_result<Impl>::type::ValueType>
   makeSeq(Args &&... args);
 
 public:

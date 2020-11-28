@@ -117,7 +117,7 @@ private:
 template <typename Mapper, typename T>
 class MapSeq {
 public:
-  using U = Decay<typename std::result_of<Mapper(T)>::type>;
+  using U = Decay<typename std::invoke_result<Mapper,T>::type>;
 
   template <typename MapperArg>
   MapSeq(Seq<T> seq, MapperArg &&mapper)
@@ -142,7 +142,7 @@ private:
 template <typename Zipper, typename... Ts>
 class ZipWithSeq {
 public:
-  using U = Decay<typename std::result_of<Zipper(Ts...)>::type>;
+  using U = Decay<typename std::invoke_result<Zipper,Ts...>::type>;
 
   template <typename ZipperArg>
   ZipWithSeq(ZipperArg &&zipper, Seq<Ts>... seqs)
@@ -263,7 +263,7 @@ private:
 template <typename Mapper, typename T>
 class MapcatSeq {
 public:
-  using U = typename std::result_of<Mapper(T)>::type::ValueType;
+  using U = typename std::invoke_result<Mapper,T>::type::ValueType;
 
   template <typename MapperArg>
   MapcatSeq(Seq<T> seq, MapperArg &&mapper)
@@ -325,14 +325,14 @@ Seq<T> takeWhile(Seq<T> seq, Predicate &&pred) {
 }
 
 template <typename T, typename Mapper>
-Seq<Decay<typename std::result_of<Mapper(T)>::type>> map(Seq<T> seq,
+Seq<Decay<typename std::invoke_result<Mapper,T>::type>> map(Seq<T> seq,
                                                          Mapper &&mapper) {
   return makeSeq<detail::MapSeq<Decay<Mapper>, T>>(
       std::move(seq), std::forward<Mapper>(mapper));
 }
 
 template <typename... Ts, typename Zipper>
-Seq<Decay<typename std::result_of<Zipper(Ts...)>::type>>
+Seq<Decay<typename std::invoke_result<Zipper,Ts...>::type>>
 zipWith(Zipper &&zipper, Seq<Ts>... seqs) {
   return makeSeq<detail::ZipWithSeq<Decay<Zipper>, Ts...>>(
       std::forward<Zipper>(zipper), std::move(seqs)...);
@@ -356,16 +356,16 @@ Seq<T> concat(Seq<T> seq, Seq<Ts>... seqs) {
 }
 
 template <typename T, typename Mapper>
-Seq<typename std::result_of<Mapper(T)>::type::ValueType>
+Seq<typename std::invoke_result<Mapper,T>::type::ValueType>
 mapcat(Seq<T> seq, Mapper &&mapper) {
   return makeSeq<detail::MapcatSeq<Decay<Mapper>, T>>(
       std::move(seq), std::forward<Mapper>(mapper));
 }
 
 template <typename T, typename Mapper>
-Seq<typename std::result_of<Mapper(T)>::type::ValueType>
+Seq<typename std::invoke_result<Mapper,T>::type::ValueType>
 mapMaybe(Seq<T> seq, Mapper &&mapper) {
-  using U = typename std::result_of<Mapper(T)>::type::ValueType;
+  using U = typename std::invoke_result<Mapper,T>::type::ValueType;
   return seq::map(
       seq::filter(seq::map(std::move(seq), std::forward<Mapper>(mapper)),
                   [](const Maybe<U> &x) { return !!x; }),
