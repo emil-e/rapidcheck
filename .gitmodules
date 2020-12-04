@@ -7,3 +7,6 @@
 [submodule "submodule/pesto"]
 	path = submodule/pesto
 	url = git@github.com:lhftio/pesto
+[submodule "submodule/googletest"]
+	path = submodule/googletest
+	url = git@github.com:lhftio/googletest
