@@ -21,7 +21,7 @@ if(MSVC)
   string(REGEX REPLACE "/RTC(su|[1su])" ""
     CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-missing-braces -Wno-unused-command-line-argument")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -Wno-unused-command-line-argument")
   if(APPLE)
     if(CMAKE_CXX_COMPILER_ID MATCHES "^(AppleClang|Clang)")
       # Workaround for legacy Apple environment (cf. https://stackoverflow.com/a/19774902/1682144)
@@ -103,7 +103,7 @@ if(MINGW)
 endif()
 
 if(RC_ENABLE_RTTI)
-  add_definitions(-DRC_USE_RTTI)
+  target_compile_definitions(rapidcheck PUBLIC RC_USE_RTTI)
 endif()
 
 add_subdirectory(ext)
