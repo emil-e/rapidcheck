@@ -43,7 +43,7 @@ Shrinkable<T> real(const Random &random, int size) {
       std::min(size, kNominalSize) / static_cast<double>(kNominalSize);
   const double a = static_cast<double>(stream.nextWithSize<int64_t>(size));
   const double b =
-      (stream.next<uint64_t>() * scale) / std::numeric_limits<uint64_t>::max();
+      (stream.next<uint64_t>() * scale) / static_cast<double>(std::numeric_limits<uint64_t>::max());
   const T value = static_cast<T>(a + b);
   return shrinkable::shrinkRecur(value, &shrink::real<T>);
 }

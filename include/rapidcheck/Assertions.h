@@ -32,8 +32,7 @@
   RC_INTERNAL_CONDITIONAL_RESULT(Failure,                                      \
                                  expression,                                   \
                                  false,                                        \
-                                 "RC_ASSERT_"                                  \
-                                 "FALSE")
+                                 "RC_ASSERT_FALSE", )
 
 /// Fails the current test case unless the provided expression throws an
 /// exception of any type
@@ -81,7 +80,7 @@
 
 /// Succeed if the given condition is true.
 #define RC_SUCCEED_IF(expression)                                              \
-  RC_INTERNAL_CONDITIONAL_RESULT(Success, expression, false, "RC_SUCCEED_IF")
+  RC_INTERNAL_CONDITIONAL_RESULT(Success, expression, false, "RC_SUCCEED_IF", )
 
 /// Unconditionally succeed with the given message.
 #define RC_SUCCEED(...)                                                        \
