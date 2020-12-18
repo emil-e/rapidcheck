@@ -102,8 +102,8 @@ if(MINGW)
   target_compile_definitions(rapidcheck PRIVATE RC_SEED_SYSTEM_TIME)
 endif()
 
-if(RC_ENABLE_RTTI)
-  target_compile_definitions(rapidcheck PUBLIC RC_USE_RTTI)
+if(NOT RC_ENABLE_RTTI)
+  target_compile_definitions(rapidcheck PUBLIC RC_DONT_USE_RTTI)
 endif()
 
 add_subdirectory(ext)

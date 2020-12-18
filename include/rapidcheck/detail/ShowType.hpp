@@ -44,11 +44,11 @@ struct ShowMultipleTypes<Type, Types...> {
 template <typename T>
 struct ShowType {
   static void showType(std::ostream &os) {
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
     os << detail::demangle(typeid(T).name());
 #else
     os << "[unknown type]";
-#endif // RC_USE_RTTI
+#endif // RC_DONT_USE_RTTI
   }
 };
 
