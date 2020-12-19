@@ -50,7 +50,7 @@ struct GeneratesOnConstrution : public IntVecCmd {
 #endif // defined(__GNUC__) || defined(__clang__)
 
 TEST_CASE("state::gen::execOneOf") {
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
   prop("returns one of the commands",
        [](const GenParams &params, const IntVec &s0) {
          const auto cmd =
@@ -98,7 +98,7 @@ TEST_CASE("state::gen::execOneOf") {
 #endif // defined(__GNUC__) || defined(__clang__)
 
 TEST_CASE("state::gen::execOneOfWithArgs") {
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
   prop("returns one of the commands",
        [](const GenParams &params, const IntVec &s0) {
          const auto cmd = state::gen::execOneOfWithArgs<A, B, C>()()(

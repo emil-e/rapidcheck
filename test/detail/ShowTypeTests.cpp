@@ -8,7 +8,7 @@ using namespace rc;
 using namespace rc::test;
 using namespace rc::detail;
 
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
 TEST_CASE("typeToString") {
   SECTION("shows primitive types correctly") {
     REQUIRE(typeToString<void>() == "void");
@@ -167,4 +167,4 @@ TEST_CASE("typeToString") {
             "std::shared_ptr<const FFoo *>");
   }
 }
-#endif // RC_USE_RTTI
+#endif // RC_DONT_USE_RTTI

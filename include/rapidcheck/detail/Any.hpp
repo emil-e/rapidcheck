@@ -15,9 +15,9 @@ public:
   virtual void *get() = 0;
   virtual void showType(std::ostream &os) const = 0;
   virtual void showValue(std::ostream &os) const = 0;
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
   virtual const std::type_info &typeInfo() const = 0;
-#endif // RC_USE_RTTI
+#endif // RC_DONT_USE_RTTI
   virtual ~IAnyImpl() = default;
 };
 
@@ -34,9 +34,9 @@ public:
 
   void showValue(std::ostream &os) const override { show(m_value, os); }
 
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
   const std::type_info &typeInfo() const override { return typeid(T); }
-#endif // RC_USE_RTTI
+#endif // RC_DONT_USE_RTTI
 
 private:
   T m_value;
@@ -53,18 +53,18 @@ Any Any::of(T &&value) {
 template <typename T>
 const T &Any::get() const {
   assert(m_impl);
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
   assert(m_impl->typeInfo() == typeid(T));
-#endif // RC_USE_RTTI
+#endif // RC_DONT_USE_RTTI
   return *static_cast<T *>(m_impl->get());
 }
 
 template <typename T>
 T &Any::get() {
   assert(m_impl);
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
   assert(m_impl->typeInfo() == typeid(T));
-#endif // RC_USE_RTTI
+#endif // RC_DONT_USE_RTTI
   return *static_cast<T *>(m_impl->get());
 }
 

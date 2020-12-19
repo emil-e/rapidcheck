@@ -17,11 +17,11 @@ void Command<Model, Sut>::run(const Model &s0, Sut &sut) const {}
 
 template <typename Model, typename Sut>
 void Command<Model, Sut>::show(std::ostream &os) const {
-#ifdef RC_USE_RTTI
+#ifndef RC_DONT_USE_RTTI
   os << ::rc::detail::demangle(typeid(*this).name());
 #else
   os << "[unknown command]";
-#endif // RC_USE_RTTI
+#endif // RC_DONT_USE_RTTI
 }
 
 template <typename Model, typename Sut>
