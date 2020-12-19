@@ -7,7 +7,7 @@ namespace rc {
 /// Specialize this template to provide default arbitrary generators for custom
 /// types. Specializations should have a static method `Gen<T> arbitrary()` that
 /// returns a suitable generator for generating arbitrary values of `T`.
-template <typename T>
+template <typename T, typename=void>
 struct Arbitrary;
 
 namespace gen {
