@@ -14,8 +14,8 @@ namespace detail {
 template <typename MakeInitialState, typename GenFunc>
 class CommandsGen {
 public:
-  using Model = Decay<typename std::result_of<MakeInitialState()>::type>;
-  using CommandGen = typename std::result_of<GenFunc(Model)>::type;
+  using Model = Decay<typename std::invoke_result<MakeInitialState>::type>;
+  using CommandGen = typename std::invoke_result<GenFunc,Model>::type;
   using Cmd = typename CommandGen::ValueType::element_type::CommandType;
   using CmdSP = std::shared_ptr<const Cmd>;
   using Sut = typename Cmd::Sut;

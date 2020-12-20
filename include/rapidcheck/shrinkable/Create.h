@@ -8,13 +8,13 @@ namespace shrinkable {
 /// Creates a `Shrinkable` from a callable which returns the value and a
 /// callable which returns the shrinks.
 template <typename Value, typename Shrink>
-Shrinkable<typename std::result_of<Value()>::type> lambda(Value &&value,
+Shrinkable<typename std::invoke_result<Value>::type> lambda(Value &&value,
                                                           Shrink &&shrinks);
 
 /// Creates a `Shrinkable` with no shrinks from a callable which returns the
 /// value.
 template <typename Value>
-Shrinkable<typename std::result_of<Value()>::type> lambda(Value &&value);
+Shrinkable<typename std::invoke_result<Value>::type> lambda(Value &&value);
 
 /// Creates a `Shrinkable` from an immediate value and an immediate sequence of
 /// shrinks.
@@ -31,7 +31,7 @@ Shrinkable<Decay<T>> just(T &&value);
 /// Creates a `Shrinkable` from a callable which returns the value and a
 /// callable that returns a `Seq<Shrinkable<T>>` when called with the value.
 template <typename Value, typename Shrink>
-Shrinkable<typename std::result_of<Value()>::type> shrink(Value &&value,
+Shrinkable<typename std::invoke_result<Value>::type> shrink(Value &&value,
                                                           Shrink &&shrinkf);
 
 /// Creates a `Shrinkable` from an immediate value and a shrinking callable that

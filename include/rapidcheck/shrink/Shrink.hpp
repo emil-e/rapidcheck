@@ -75,8 +75,8 @@ private:
 template <typename Container, typename Shrink>
 class EachElementSeq {
 public:
-  using T = typename std::result_of<Shrink(
-      typename Container::value_type)>::type::ValueType;
+  using T = typename std::invoke_result<Shrink,
+      typename Container::value_type>::type::ValueType;
 
   template <typename ContainerArg, typename ShrinkArg>
   explicit EachElementSeq(ContainerArg &&elements, ShrinkArg &&shrink)

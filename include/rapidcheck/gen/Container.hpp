@@ -244,7 +244,7 @@ public:
                                   int size,
                                   std::size_t count,
                                   const Gen<T> &gen) const {
-    using Key = Decay<typename std::result_of<F(T)>::type>;
+    using Key = Decay<typename std::invoke_result<F,T>::type>;
     std::set<Key> values;
     return detail::generateShrinkables(random,
                                        size,
@@ -259,7 +259,7 @@ public:
   template <typename T>
   Seq<Shrinkables<T>>
   shrinkElements(const Shrinkables<T> &shrinkables) const {
-    using Key = Decay<typename std::result_of<F(T)>::type>;
+    using Key = Decay<typename std::invoke_result<F,T>::type>;
     const auto keys = std::make_shared<std::set<Key>>();
     for (const auto &shrinkable : shrinkables) {
       keys->insert(m_f(shrinkable.value()));

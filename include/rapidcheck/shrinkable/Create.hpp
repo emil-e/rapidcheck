@@ -10,7 +10,7 @@ namespace detail {
 template <typename Value, typename Shrink>
 class LambdaShrinkable {
 public:
-  using T = Decay<typename std::result_of<Value()>::type>;
+  using T = Decay<typename std::invoke_result<Value>::type>;
 
   template <typename ValueArg, typename ShrinkArg>
   LambdaShrinkable(ValueArg &&value, ShrinkArg &&shrinks)
@@ -29,7 +29,7 @@ template <typename Value, typename Shrink>
 class JustShrinkShrinkable // Yeah I know, weird name
     {
 public:
-  using T = Decay<typename std::result_of<Value()>::type>;
+  using T = Decay<typename std::invoke_result<Value>::type>;
 
   template <typename ValueArg, typename ShrinkArg>
   JustShrinkShrinkable(ValueArg &&value, ShrinkArg &&shrinks)
@@ -49,7 +49,7 @@ private:
 // TODO test _all_ of these?
 
 template <typename Value, typename Shrink>
-Shrinkable<typename std::result_of<Value()>::type> lambda(Value &&value,
+Shrinkable<typename std::invoke_result<Value>::type> lambda(Value &&value,
                                                           Shrink &&shrinks) {
   using Impl = detail::LambdaShrinkable<Decay<Value>, Decay<Shrink>>;
   return makeShrinkable<Impl>(std::forward<Value>(value),
@@ -57,8 +57,8 @@ Shrinkable<typename std::result_of<Value()>::type> lambda(Value &&value,
 }
 
 template <typename Value>
-Shrinkable<typename std::result_of<Value()>::type> lambda(Value &&value) {
-  using T = typename std::result_of<Value()>::type;
+Shrinkable<typename std::invoke_result<Value>::type> lambda(Value &&value) {
+  using T = typename std::invoke_result<Value>::type;
   return shrinkable::lambda(std::forward<Value>(value),
                             fn::constant(Seq<Shrinkable<T>>()));
 }
@@ -75,7 +75,7 @@ Shrinkable<Decay<T>> just(T &&value) {
 }
 
 template <typename Value, typename Shrink>
-Shrinkable<typename std::result_of<Value()>::type> shrink(Value &&value,
+Shrinkable<typename std::invoke_result<Value>::type> shrink(Value &&value,
                                                           Shrink &&shrinkf) {
   using Impl = detail::JustShrinkShrinkable<Decay<Value>, Decay<Shrink>>;
   return makeShrinkable<Impl>(std::forward<Value>(value),

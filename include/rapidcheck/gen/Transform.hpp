@@ -13,7 +13,7 @@ namespace detail {
 template <typename T, typename Mapper>
 class MapGen {
 public:
-  using U = Decay<typename std::result_of<Mapper(T)>::type>;
+  using U = Decay<typename std::invoke_result<Mapper,T>::type>;
 
   template <typename MapperArg>
   MapGen(Gen<T> gen, MapperArg &&mapper)
@@ -32,7 +32,7 @@ private:
 template <typename T, typename Mapper>
 class MapcatGen {
 public:
-  using U = typename std::result_of<Mapper(T)>::type::ValueType;
+  using U = typename std::invoke_result<Mapper,T>::type::ValueType;
 
   template <typename MapperArg>
   explicit MapcatGen(Gen<T> gen, MapperArg &&mapper)
@@ -73,19 +73,19 @@ private:
 } // namespace detail
 
 template <typename T, typename Mapper>
-Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(Gen<T> gen,
+Gen<Decay<typename std::invoke_result<Mapper,T>::type>> map(Gen<T> gen,
                                                          Mapper &&mapper) {
   return detail::MapGen<T, Decay<Mapper>>(std::move(gen),
                                           std::forward<Mapper>(mapper));
 }
 
 template <typename T, typename Mapper>
-Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(Mapper &&mapper) {
+Gen<Decay<typename std::invoke_result<Mapper,T>::type>> map(Mapper &&mapper) {
   return gen::map(gen::arbitrary<T>(), std::forward<Mapper>(mapper));
 }
 
 template <typename T, typename Mapper>
-Gen<typename std::result_of<Mapper(T)>::type::ValueType>
+Gen<typename std::invoke_result<Mapper,T>::type::ValueType>
 mapcat(Gen<T> gen, Mapper &&mapper) {
   return detail::MapcatGen<T, Decay<Mapper>>(std::move(gen),
                                              std::forward<Mapper>(mapper));
@@ -97,7 +97,7 @@ Gen<T> join(Gen<Gen<T>> gen) {
 }
 
 template <typename Callable, typename... Ts>
-Gen<typename std::result_of<Callable(Ts...)>::type> apply(Callable &&callable,
+Gen<typename std::invoke_result<Callable,Ts...>::type> apply(Callable &&callable,
                                                           Gen<Ts>... gens) {
   return gen::map(gen::tuple(std::move(gens)...),
                   [=](std::tuple<Ts...> &&tuple) {
@@ -124,7 +124,7 @@ Gen<T> scale(double scale, Gen<T> gen) {
 }
 
 template <typename Callable>
-Gen<typename std::result_of<Callable(int)>::type::ValueType>
+Gen<typename std::invoke_result<Callable,int>::type::ValueType>
 withSize(Callable &&callable) {
   return [=](const Random &random, int size) {
     return callable(size)(random, size);

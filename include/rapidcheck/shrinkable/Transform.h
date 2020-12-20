@@ -7,7 +7,7 @@ namespace shrinkable {
 
 /// Maps the given shrinkable recursively using the given mapping callable.
 template <typename T, typename Mapper>
-Shrinkable<Decay<typename std::result_of<Mapper(T)>::type>>
+Shrinkable<Decay<typename std::invoke_result<Mapper,T>::type>>
 map(Shrinkable<T> shrinkable, Mapper &&mapper);
 
 /// Returns a shrinkable equal to the given shrinkable but with the shrinks
@@ -26,7 +26,7 @@ Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate &&pred);
 /// `Shrinkable<U>` and returns a `Shrinkable<U>` that shrinks by first
 /// shrinking the first value and then shrinking the second value.
 template <typename T, typename Mapper>
-Shrinkable<typename std::result_of<Mapper(T)>::type::ValueType>
+Shrinkable<typename std::invoke_result<Mapper,T>::type::ValueType>
 mapcat(Shrinkable<T> shrinkable, Mapper &&mapper);
 
 /// Given two `Shrinkables`, returns a `Shrinkable` pair that first shrinks the
