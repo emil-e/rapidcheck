@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/Show.h"
+#include "rapidcheck/Compat.h"
 
 namespace rc {
 
@@ -59,8 +60,8 @@ Seq<T> &Seq<T>::operator=(const Seq &rhs) {
 }
 
 template <typename Impl, typename... Args>
-Seq<typename std::result_of<Impl(void)>::type::ValueType> makeSeq(Args &&... args) {
-  using SeqT = Seq<typename std::result_of<Impl(void)>::type::ValueType>;
+Seq<typename rc::compat::return_type<Impl>::type::ValueType> makeSeq(Args &&... args) {
+  using SeqT = Seq<typename rc::compat::return_type<Impl>::type::ValueType>;
   using ImplT = typename SeqT::template SeqImpl<Impl>;
 
   SeqT seq;
