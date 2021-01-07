@@ -6,13 +6,14 @@
 #include "rapidcheck/detail/ImplicitParam.h"
 #include "rapidcheck/gen/detail/GenerationHandler.h"
 #include "rapidcheck/shrinkable/Create.h"
+#include  "rapidcheck/Compat.h"
 
 namespace rc {
 namespace gen {
 
 // Forward declare this so we don't need to include Transform.h
 template <typename T, typename Mapper>
-Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(Gen<T> gen,
+Gen<Decay<typename rc::compat::return_type<Mapper,T>::type>> map(Gen<T> gen,
                                                          Mapper &&mapper);
 
 } // namespace gen

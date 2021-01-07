@@ -2,6 +2,7 @@
 
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/seq/Transform.h"
+#include "rapidcheck/Compat.h"
 
 namespace rc {
 namespace shrinkable {
@@ -10,7 +11,7 @@ namespace detail {
 template <typename T, typename Mapper>
 class MapShrinkable {
 public:
-  using U = Decay<typename std::result_of<Mapper(T)>::type>;
+  using U = Decay<typename rc::compat::return_type<Mapper,T>::type>;
 
   template <typename MapperArg>
   MapShrinkable(Shrinkable<T> shrinkable, MapperArg &&mapper)
@@ -54,7 +55,7 @@ private:
 template <typename T, typename Mapper>
 class MapcatShrinkable {
 public:
-  using U = typename std::result_of<Mapper(T)>::type::ValueType;
+  using U = typename rc::compat::return_type<Mapper,T>::type::ValueType;
 
   template <typename MapperArg>
   MapcatShrinkable(Shrinkable<T> shrinkable, MapperArg &&mapper)
@@ -81,7 +82,7 @@ private:
 } // namespace detail
 
 template <typename T, typename Mapper>
-Shrinkable<Decay<typename std::result_of<Mapper(T)>::type>>
+Shrinkable<Decay<typename rc::compat::return_type<Mapper,T>::type>>
 map(Shrinkable<T> shrinkable, Mapper &&mapper) {
   using Impl = detail::MapShrinkable<T, Decay<Mapper>>;
   return makeShrinkable<Impl>(std::move(shrinkable),
@@ -113,7 +114,7 @@ Maybe<Shrinkable<T>> filter(Shrinkable<T> shrinkable, Predicate &&pred) {
 }
 
 template <typename T, typename Mapper>
-Shrinkable<typename std::result_of<Mapper(T)>::type::ValueType>
+Shrinkable<typename rc::compat::return_type<Mapper,T>::type::ValueType>
 mapcat(Shrinkable<T> shrinkable, Mapper &&mapper) {
   using Impl = detail::MapcatShrinkable<T, Decay<Mapper>>;
   return makeShrinkable<Impl>(std::move(shrinkable),
