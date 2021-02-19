@@ -5,7 +5,7 @@
 namespace rc {
 namespace compat {
 
-#if __cplusplus <= 201703L
+#if __cplusplus <= 201402L
 template <typename Fn, typename ...Args>
 using return_type = typename std::result_of<Fn(Args...)>;
 #else
