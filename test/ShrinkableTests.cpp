@@ -21,11 +21,11 @@ public:
       : m_value(value)
       , m_shrinks(shrinks) {}
 
-  typename std::result_of<ValueCallable()>::type value() const {
+  typename rc::compat::return_type<ValueCallable>::type value() const {
     return m_value();
   }
 
-  typename std::result_of<ShrinksCallable()>::type shrinks() const {
+  typename rc::compat::return_type<ShrinksCallable>::type shrinks() const {
     return m_shrinks();
   }
 
@@ -35,7 +35,7 @@ private:
 };
 
 template <typename ValueCallable, typename ShrinksCallable>
-Shrinkable<Decay<typename std::result_of<ValueCallable()>::type>>
+Shrinkable<Decay<typename rc::compat::return_type<ValueCallable>::type>>
 makeMockShrinkable(ValueCallable value, ShrinksCallable shrinks) {
   return makeShrinkable<MockShrinkableImpl<ValueCallable, ShrinksCallable>>(
       value, shrinks);

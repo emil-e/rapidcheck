@@ -102,6 +102,11 @@ if(MINGW)
   target_compile_definitions(rapidcheck PRIVATE RC_SEED_SYSTEM_TIME)
 endif()
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "^MSVC$")
+  # To reflect the language level (cf. https://docs.microsoft.com/en-us/cpp/build/reference/zc-cplusplus?view=msvc-160)
+  target_compile_options(rapidcheck PUBLIC /Zc:__cplusplus)
+endif ()
+
 if(NOT RC_ENABLE_RTTI)
   target_compile_definitions(rapidcheck PUBLIC RC_DONT_USE_RTTI)
 endif()
