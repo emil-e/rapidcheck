@@ -4,6 +4,8 @@
 
 #include "rapidcheck/detail/ExecFixture.h"
 
+#include <boost/test/unit_test.hpp>
+
 namespace rc {
 namespace detail {
 
