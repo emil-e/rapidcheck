@@ -1,6 +1,6 @@
 # Configuration
 
-RapidCheck has several parameters that affect testing. These can be configured by setting the `RC_PARAMS` environment variable to a configuration string. The configuration string as the format `<key1>=<value1> <key2>=<value2> ...`. Values containing spaces can be quoted and backslash works as an escape character, just as you would expect.
+RapidCheck has several parameters that affect testing. These can be configured by setting the `RC_PARAMS` environment variable to a configuration string. The configuration string has the format `<key1>=<value1> <key2>=<value2> ...`. Values containing spaces can be quoted and backslash works as an escape character, just as you would expect.
 
 When RapidCheck is initialized, it prints the configuration that is used excluding parameters that are set to their default value. For example, when running a test without changing the defaults, the following could be printed:
 
