@@ -13,7 +13,7 @@ namespace rc {
 /// @param description  A description of the property.
 /// @param testable     The object that implements the property.
 template <typename Testable>
-void prop(const std::string &description, Testable &&testable) {
+void prop(const std::string &description, Testable &&testable, bool verbose=false) {
   using namespace detail;
 
 #ifdef CATCH_CONFIG_PREFIX_ALL
@@ -26,7 +26,7 @@ void prop(const std::string &description, Testable &&testable) {
 
     if (result.template is<SuccessResult>()) {
       const auto success = result.template get<SuccessResult>();
-      if (!success.distribution.empty()) {
+      if (verbose || !success.distribution.empty()) {
         std::cout << "- " << description << std::endl;
         printResultMessage(result, std::cout);
         std::cout << std::endl;
