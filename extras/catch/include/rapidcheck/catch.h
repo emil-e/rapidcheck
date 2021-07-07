@@ -31,6 +31,11 @@ void prop(const std::string &description, Testable &&testable) {
         printResultMessage(result, std::cout);
         std::cout << std::endl;
       }
+#ifdef CATCH_CONFIG_PREFIX_ALL
+      CATCH_SUCCEED();
+#else
+      SUCCEED();
+#endif
     } else {
       std::ostringstream ss;
       printResultMessage(result, ss);
