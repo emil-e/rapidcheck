@@ -49,7 +49,7 @@ seq::SeqIterator<T> begin(Seq<T> seq) {
 }
 
 template <typename T>
-seq::SeqIterator<T> end(const Seq<T> &seq) {
+seq::SeqIterator<T> end(const Seq<T> &/*seq*/) {
   return seq::SeqIterator<T>();
 }
 

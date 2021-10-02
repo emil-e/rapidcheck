@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/seq/Transform.h"
@@ -55,7 +55,6 @@ TEST_CASE("seq::take") {
        [](const std::vector<int> &elements) {
          std::size_t n =
              *gen::inRange<std::size_t>(0, (elements.size() + 1) * 2);
-         std::size_t start = std::min(elements.size(), n);
          assertEqualCopies(seq::take(n, seq::fromContainer(elements)));
        });
 

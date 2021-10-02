@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "util/Util.h"
 #include "util/Logger.h"
@@ -15,7 +15,6 @@ namespace {
 
 template <std::size_t N>
 struct X {
-  X() {}
   X(const std::string &x)
       : value(x) {}
 
@@ -27,11 +26,6 @@ struct X {
 template <std::size_t N>
 bool operator==(const X<N> &x1, const X<N> &x2) {
   return x1.value == x2.value;
-}
-
-template <std::size_t N>
-bool operator!=(const X<N> &x1, const X<N> &x2) {
-  return x1.value != x2.value;
 }
 
 using A = X<5>;
@@ -165,7 +159,8 @@ TEST_CASE("Variant") {
 
       SECTION("self assignment leaves value unchanged") {
         ABC v(Logger("foo"));
-        v = v;
+        auto &ref = v;
+        v = ref;
         REQUIRE(v.is<Logger>());
         REQUIRE(v.get<Logger>().id == "foo");
       }

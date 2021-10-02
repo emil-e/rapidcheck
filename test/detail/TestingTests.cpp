@@ -1,5 +1,7 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
+
+#include <algorithm>
 
 #include "rapidcheck/detail/TestListenerAdapter.h"
 #include "detail/Testing.h"
@@ -91,7 +93,6 @@ TEST_CASE("searchProperty") {
   prop("gives up if too many test cases are discarded",
        [](const TestParams &params, const std::string &description) {
          RC_PRE(params.maxSuccess > 0);
-         const auto maxDiscards = params.maxSuccess * params.maxDiscardRatio;
          const auto targetSuccess = *gen::inRange<int>(0, params.maxSuccess);
          int size = 0;
          int numTests = 0;
@@ -260,6 +261,7 @@ TEST_CASE("searchProperty") {
        });
 }
 
+namespace {
 Shrinkable<CaseDescription> countdownEven(int start) {
   return shrinkable::map(countdownShrinkable(start),
                          [=](int x) {
@@ -270,6 +272,7 @@ Shrinkable<CaseDescription> countdownEven(int start) {
                            desc.result.description = std::to_string(x);
                            return desc;
                          });
+}
 }
 
 TEST_CASE("shrinkTestCase") {

@@ -1,6 +1,8 @@
 #pragma once
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
+
+#include <algorithm>
 
 namespace rc {
 namespace test {

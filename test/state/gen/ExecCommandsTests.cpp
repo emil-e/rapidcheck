@@ -16,7 +16,6 @@ struct B : public IntVecCmd {};
 struct C : public IntVecCmd {};
 
 struct StateConstructible : public IntVecCmd {
-  StateConstructible() = default;
   StateConstructible(const IntVec &s)
       : state(s)
       , generated(*gen::just(s)) {}
@@ -26,7 +25,6 @@ struct StateConstructible : public IntVecCmd {
 };
 
 struct ArgsConstructible : public IntVecCmd {
-  ArgsConstructible() = default;
   ArgsConstructible(const std::string &s, int n)
       : str(s)
       , num(n) {}
@@ -43,19 +41,16 @@ struct GeneratesOnConstrution : public IntVecCmd {
   T value;
 };
 
-struct AlwaysDiscard : public IntVecCmd {
-  AlwaysDiscard() { RC_DISCARD("Nope"); }
-};
-
 } // namespace
 
 // Test is for deprecated function, don't warn since we're just testing.
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif // __GNUC__
+#endif // defined(__GNUC__) || defined(__clang__)
 
 TEST_CASE("state::gen::execOneOf") {
+#ifndef RC_DONT_USE_RTTI
   prop("returns one of the commands",
        [](const GenParams &params, const IntVec &s0) {
          const auto cmd =
@@ -79,6 +74,7 @@ TEST_CASE("state::gen::execOneOf") {
          }
          RC_SUCCEED("All generated");
        });
+#endif
 
   prop("uses state constructor if there is one, passing it the state",
        [](const GenParams &params, const IntVec &s0) {
@@ -97,11 +93,12 @@ TEST_CASE("state::gen::execOneOf") {
        });
 }
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
-#endif // __GNUC__
+#endif // defined(__GNUC__) || defined(__clang__)
 
 TEST_CASE("state::gen::execOneOfWithArgs") {
+#ifndef RC_DONT_USE_RTTI
   prop("returns one of the commands",
        [](const GenParams &params, const IntVec &s0) {
          const auto cmd = state::gen::execOneOfWithArgs<A, B, C>()()(
@@ -125,6 +122,7 @@ TEST_CASE("state::gen::execOneOfWithArgs") {
          }
          RC_SUCCEED("All generated");
        });
+#endif
 
   prop("uses args constructor if there is one, passing it the state",
        [](const GenParams &params, const std::string &str, int num) {

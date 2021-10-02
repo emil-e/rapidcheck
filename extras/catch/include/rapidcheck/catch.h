@@ -3,11 +3,11 @@
 #include <sstream>
 
 #include <rapidcheck.h>
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 namespace rc {
 
-/// For use with `catch.hpp`. Use this function wherever you would use a
+/// For use with `catch2/catch.hpp`. Use this function wherever you would use a
 /// `SECTION` for convenient checking of properties.
 ///
 /// @param description  A description of the property.

@@ -18,7 +18,7 @@ public:
     }
 
     return prependNothing(shrinkable::map(
-        m_gen(r, size), [](T &&x) -> Maybe<T> { return std::move(x); }));
+        m_gen(r, size), [](T &&y) -> Maybe<T> { return std::move(y); }));
   }
 
 private:
@@ -30,7 +30,7 @@ private:
               seq::just(shrinkable::lambda([] { return Maybe<T>(); })),
               seq::map(std::move(shrinks), &prependNothing));
         });
-  };
+  }
 
   Gen<T> m_gen;
 };

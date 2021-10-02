@@ -11,7 +11,7 @@ namespace detail {
 class ExecHandler : public GenerationHandler {
 public:
   ExecHandler(Recipe &recipe);
-  rc::detail::Any onGenerate(const Gen<rc::detail::Any> &gen);
+  rc::detail::Any onGenerate(const Gen<rc::detail::Any> &gen) override;
 
 private:
   Recipe &m_recipe;

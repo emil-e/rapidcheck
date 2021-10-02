@@ -17,7 +17,7 @@ decltype(Arbitrary<T>::arbitrary()) arbitrary() {
 
 } // namespace gen
 
-template <typename T>
+template <typename T, typename>
 struct Arbitrary {
   static decltype(gen::detail::DefaultArbitrary<T>::arbitrary()) arbitrary() {
     return gen::detail::DefaultArbitrary<T>::arbitrary();

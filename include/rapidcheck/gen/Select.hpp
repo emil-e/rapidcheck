@@ -47,7 +47,7 @@ public:
   ElementOfGen(Arg &&arg)
       : m_container(std::forward<Arg>(arg)) {}
 
-  Shrinkable<T> operator()(const Random &random, int size) const {
+  Shrinkable<T> operator()(const Random &random, int /*size*/) const {
     const auto start = begin(m_container);
     const auto containerSize = end(m_container) - start;
     if (containerSize == 0) {
@@ -70,7 +70,7 @@ public:
       : m_map(std::move(frequencies))
       , m_elements(std::move(elements)) {}
 
-  Shrinkable<T> operator()(const Random &random, int size) const {
+  Shrinkable<T> operator()(const Random &random, int /*size*/) const {
     if (m_map.sum() == 0) {
       throw GenerationFailure("Sum of weights is 0");
     }

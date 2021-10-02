@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/shrinkable/Create.h"
@@ -92,7 +92,7 @@ TEST_CASE("shrinkable::shrinkRecur") {
              *gen::container<std::vector<bool>>(start, gen::arbitrary<bool>());
 
          const auto shrink = [](int x) {
-           return seq::map(seq::range(x, 0), [](int x) { return x - 1; });
+           return seq::map(seq::range(x, 0), [](int y) { return y - 1; });
          };
 
          auto shrinkable = shrinkable::shrinkRecur(start, shrink);

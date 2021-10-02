@@ -4,17 +4,23 @@
 
 #include "rapidcheck/detail/ExecFixture.h"
 
+#include <boost/test/unit_test.hpp>
+
 namespace rc {
 namespace detail {
 
 template <typename Testable>
-void checkBoostTest(const std::string &description, Testable &&testable) {
+void checkBoostTest(Testable &&testable) {
   const auto &testCase = boost::unit_test::framework::current_test_case();
   TestMetadata metadata;
   metadata.id = testCase.full_name();
   metadata.description = testCase.p_name;
 
   const auto result = checkTestable(std::forward<Testable>(testable), metadata);
+
+  // Without this boost.test will complain about the test case having no assertions when the
+  // rapidcheck test passes
+  BOOST_CHECK (true);
 
   if (result.template is<SuccessResult>()) {
     const auto success = result.template get<SuccessResult>();
@@ -39,7 +45,7 @@ void checkBoostTest(const std::string &description, Testable &&testable) {
   void rapidCheck_propImpl_##Name ArgList;                                     \
                                                                                \
   BOOST_AUTO_TEST_CASE(Name) {                                                 \
-    ::rc::detail::checkBoostTest(#Name, &rapidCheck_propImpl_##Name);          \
+    ::rc::detail::checkBoostTest(&rapidCheck_propImpl_##Name);                 \
   }                                                                            \
                                                                                \
   void rapidCheck_propImpl_##Name ArgList
@@ -55,8 +61,7 @@ void checkBoostTest(const std::string &description, Testable &&testable) {
   };                                                                           \
                                                                                \
   BOOST_AUTO_TEST_CASE(Name) {                                                 \
-    ::rc::detail::checkBoostTest(                                              \
-        #Name,                                                                 \
+     ::rc::detail::checkBoostTest(                                             \
         &rc::detail::ExecFixture<                                              \
             RapidCheckPropImpl_##Fixture##_##Name>::exec);                     \
   }                                                                            \

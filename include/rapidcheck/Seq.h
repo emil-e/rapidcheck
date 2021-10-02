@@ -7,6 +7,7 @@
 #include "rapidcheck/Nothing.h"
 #include "rapidcheck/Maybe.h"
 #include "rapidcheck/Traits.h"
+#include "rapidcheck/Compat.h"
 
 namespace rc {
 
@@ -34,7 +35,7 @@ class Seq {
   /// Creates a new `Seq` using the implementation class specificed by the
   /// type parameter constructed by forwarding the given arguments.
   template <typename Impl, typename... Args>
-  friend Seq<typename std::result_of<Impl()>::type::ValueType>
+  friend Seq<typename rc::compat::return_type<Impl>::type::ValueType>
   makeSeq(Args &&... args);
 
 public:

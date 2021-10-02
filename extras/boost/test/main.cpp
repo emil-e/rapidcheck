@@ -12,4 +12,4 @@ inline bool uncaught_exception() noexcept(true) {
 #endif
 
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include <catch2/catch.hpp>

@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/detail/ApplyTuple.h"
@@ -9,9 +9,11 @@ using namespace rc;
 using namespace rc::test;
 using namespace rc::detail;
 
+namespace {
 std::tuple<int, std::string, std::vector<std::string>>
 myFunc(int x, int y, Logger logger) {
   return std::make_tuple(x + y, logger.id, logger.log);
+}
 }
 
 TEST_CASE("applyTuple") {

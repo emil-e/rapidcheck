@@ -8,7 +8,7 @@ target_link_libraries(rapidcheck_boost_tests
   rapidcheck_boost
   rapidcheck_catch
   rapidcheck_test_utils
-  catch)
+  Catch2::Catch2)
 
 add_test(
   NAME rapidcheck_boost_tests

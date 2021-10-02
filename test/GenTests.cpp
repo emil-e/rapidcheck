@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/Gen.h"
@@ -46,10 +46,10 @@ TEST_CASE("Gen") {
            bool called = false;
            Random passedRandom;
            int passedSize;
-           Gen<int> gen([&](const Random &random, int size) {
+           Gen<int> gen([&](const Random &lambdaRandom, int lambdaSize) {
              called = true;
-             passedRandom = random;
-             passedSize = size;
+             passedRandom = lambdaRandom;
+             passedSize = lambdaSize;
              return shrinkable::just(0);
            });
 
@@ -61,7 +61,7 @@ TEST_CASE("Gen") {
 
     prop("returns the value returned by the functor",
          [](const Random &random, int size, int x) {
-           Gen<int> gen([=](const Random &random, int size) {
+           Gen<int> gen([=](const Random &lambdaRandom, int lambdaSize) {
              return shrinkable::just(x);
            });
 
@@ -176,7 +176,8 @@ TEST_CASE("Gen") {
     SECTION("self assignment leaves value unchanged") {
       const auto shrinkable = shrinkable::just(1337);
       Gen<int> gen([=](const Random &random, int size) { return shrinkable; });
-      gen = gen;
+      auto &ref = gen;
+      gen = ref;
       REQUIRE(gen(Random(), 0) == shrinkable);
     }
   }

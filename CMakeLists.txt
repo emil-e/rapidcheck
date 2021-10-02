@@ -1,9 +1,16 @@
-cmake_minimum_required(VERSION 2.8.12)
-project(rapidcheck)
-enable_testing()
+cmake_minimum_required(VERSION 3.0)
+project(rapidcheck CXX)
+
+# Don't warn about symbol visibility for static libraries with CMake 3.3 and later.
+if(POLICY CMP0063)
+  cmake_policy(SET CMP0063 NEW)
+endif()
+
+set(CMAKE_CXX_STANDARD 11)
 
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
+option(RC_ENABLE_RTTI "Build RapidCheck with RTTI" ON)
 
 if(MSVC)
   # /bigobj - some object files become very large so we need this
@@ -14,9 +21,20 @@ if(MSVC)
   string(REGEX REPLACE "/RTC(su|[1su])" ""
     CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -Wno-unused-command-line-argument")
+  if(APPLE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "^(AppleClang|Clang)")
+      # Workaround for legacy Apple environment (cf. https://stackoverflow.com/a/19774902/1682144)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    endif()
+  endif()
 endif()
 
+# RapidCheck will be built either as a static or a dynamic library depending on the CMake global
+# variable BUILD_SHARED_LIBS (https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html).
+# If you wish to change the library type of RapidCheck, you can either specify the variable when invoking CMake
+# or, if you are including RapidCheck as a subdirectory and wish to control the library type, you can set
+# the variable before the call to add_subdirectory and reset it afterwards, if necessary.
 add_library(rapidcheck
   src/BeforeMinimalTestCase.cpp
   src/Check.cpp
@@ -54,7 +72,7 @@ add_library(rapidcheck
   src/gen/detail/ScaleInteger.cpp
   )
 
-# Random is used a LOT so it should preferrably be really fast.
+# Random is used a LOT so it should preferably be really fast.
 if(MSVC)
   set_property(SOURCE src/Random.cpp
     APPEND_STRING PROPERTY COMPILE_FLAGS " /O2")
@@ -63,16 +81,49 @@ else()
     APPEND_STRING PROPERTY COMPILE_FLAGS " -O3")
 endif()
 
-target_include_directories(rapidcheck PUBLIC include)
+target_include_directories(rapidcheck PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+    $<INSTALL_INTERFACE:include>  # <prefix>/include
+)
+
+include(GNUInstallDirs)
+install(TARGETS rapidcheck EXPORT rapidcheckConfig
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# On Windows under MinGW, random_device provides no entropy,
+# so it will always return the same value.
+# Seed using system time instead.
+# See: https://stackoverflow.com/questions/18880654/why-do-i-get-the-same-sequence-for-every-run-with-stdrandom-device-with-mingw
+if(MINGW)
+  target_compile_definitions(rapidcheck PRIVATE RC_SEED_SYSTEM_TIME)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "^MSVC$")
+  # To reflect the language level (cf. https://docs.microsoft.com/en-us/cpp/build/reference/zc-cplusplus?view=msvc-160)
+  target_compile_options(rapidcheck PUBLIC /Zc:__cplusplus)
+endif ()
+
+if(NOT RC_ENABLE_RTTI)
+  target_compile_definitions(rapidcheck PUBLIC RC_DONT_USE_RTTI)
+endif()
 
 add_subdirectory(ext)
 
-if (RC_ENABLE_TESTS)
+if(RC_ENABLE_TESTS)
+  enable_testing()
   add_subdirectory(test)
 endif()
 
-if (RC_ENABLE_EXAMPLES)
+if(RC_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 add_subdirectory(extras)
+
+# Install the export file specifying all the targets for RapidCheck
+install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
+export(EXPORT rapidcheckConfig FILE rapidcheckConfig.cmake)

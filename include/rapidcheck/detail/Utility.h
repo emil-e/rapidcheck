@@ -2,6 +2,7 @@
 
 #include <string>
 #include <tuple>
+#include <limits>
 
 namespace rc {
 namespace detail {
@@ -26,7 +27,7 @@ namespace detail {
 
 /// Base case for `pushBackAll`
 template <typename Collection>
-void pushBackAll(Collection &collection) {
+void pushBackAll(Collection &/*collection*/) {
   // Base case
 }
 
@@ -62,7 +63,7 @@ struct TupleTailHelper;
 
 template <typename TupleT>
 struct TupleTailHelper<TupleT> {
-  static std::tuple<> tail(const TupleT &tuple) { return std::tuple<>(); }
+  static std::tuple<> tail(const TupleT &/*tuple*/) { return std::tuple<>(); }
 };
 
 template <typename TupleT, typename Type, typename... Types>
@@ -95,7 +96,19 @@ inline uint64_t avalanche(uint64_t x) {
 /// and the rest set to 0.
 template <typename T>
 constexpr T bitMask(int nbits) {
-  return ~((~static_cast<T>(0) - 1) << static_cast<T>(nbits - 1));
+  using UT = typename std::make_unsigned<T>::type;
+  using UTP = typename std::common_type<UT, unsigned>::type;
+  // There are two pieces of undefined behavior we're avoiding here,
+  //   1. Shifting past the width of a type (ex `<< 32` against an `int32_t`)
+  //   2. Shifting a negative operand (which `~0` is for all signed types)
+  // First we branch to avoid shifting the past the width of the type, then
+  // (assuming we are shifting, and aren't just returning `~0`) we cast `0`
+  // to an explicitly unsigned type before performing bitwise NOT and shift.
+  // We're ensuring the target type is as big as unsigned, otherwise it will
+  // be promoted to int before bitwise NOT, producing a negative value.
+  return nbits < std::numeric_limits<UT>::digits ?
+         ~T(~UTP(0) << nbits)                    :
+         ~T(0);
 }
 
 // TODO separate into header and implementation file
