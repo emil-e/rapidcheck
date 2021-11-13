@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include <numeric>
@@ -68,9 +68,9 @@ TEST_CASE("BitStream") {
            auto stream = bitStreamOf(source);
 
            const auto sizes = *gen::suchThat(bitSizes,
-                                       [](const std::vector<int> &x) {
+                                       [](const std::vector<int> &y) {
                                          return std::accumulate(
-                                                    begin(x), end(x), 0) >= 64;
+                                                    begin(y), end(y), 0) >= 64;
                                        });
 
            uint64_t value = 0;
@@ -106,7 +106,7 @@ TEST_CASE("BitStream") {
          [=](uint64_t x) {
            auto source = makeSource(seq::repeat(x));
            auto stream = bitStreamOf(source);
-           int n = *gen::inRange(0, 64);
+           int n = *gen::inRange(1, 64);
            RC_ASSERT((stream.next<uint64_t>(n) & ~bitMask<uint64_t>(n)) == 0U);
          });
 
@@ -114,7 +114,7 @@ TEST_CASE("BitStream") {
          [=](uint64_t x) {
            auto source = makeSource(seq::repeat(x));
            auto stream = bitStreamOf(source);
-           const auto n = *gen::inRange(0, 64);
+           const auto n = *gen::inRange(1, 64);
            const bool sign = (x & (1LL << (n - 1LL))) != 0;
            const auto mask = ~bitMask<int64_t>(n);
            if (sign) {
@@ -122,6 +122,20 @@ TEST_CASE("BitStream") {
            } else {
              RC_ASSERT((stream.next<int64_t>(n) & mask) == 0);
            }
+         });
+
+    prop("does not return any bits when none are requested",
+         [=](uint64_t x) {
+           auto source = makeSource(seq::repeat(x));
+           auto stream = bitStreamOf(source);
+           RC_ASSERT(stream.next<uint64_t>(0) == 0U);
+         });
+
+    prop("does not return any bits when none are requested (signed)",
+         [=](uint64_t x) {
+           auto source = makeSource(seq::repeat(x));
+           auto stream = bitStreamOf(source);
+           RC_ASSERT(stream.next<int64_t>(0) == 0);
          });
 
     prop("works with booleans",

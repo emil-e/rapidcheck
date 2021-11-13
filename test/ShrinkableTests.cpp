@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/Shrinkable.h"
@@ -21,11 +21,11 @@ public:
       : m_value(value)
       , m_shrinks(shrinks) {}
 
-  typename std::result_of<ValueCallable()>::type value() const {
+  typename rc::compat::return_type<ValueCallable>::type value() const {
     return m_value();
   }
 
-  typename std::result_of<ShrinksCallable()>::type shrinks() const {
+  typename rc::compat::return_type<ShrinksCallable>::type shrinks() const {
     return m_shrinks();
   }
 
@@ -35,7 +35,7 @@ private:
 };
 
 template <typename ValueCallable, typename ShrinksCallable>
-Shrinkable<Decay<typename std::result_of<ValueCallable()>::type>>
+Shrinkable<Decay<typename rc::compat::return_type<ValueCallable>::type>>
 makeMockShrinkable(ValueCallable value, ShrinksCallable shrinks) {
   return makeShrinkable<MockShrinkableImpl<ValueCallable, ShrinksCallable>>(
       value, shrinks);
@@ -45,8 +45,6 @@ class LoggingShrinkableImpl : public Logger {
 public:
   using IdLogPair = std::pair<std::string, std::vector<std::string>>;
 
-  LoggingShrinkableImpl()
-      : Logger() {}
   LoggingShrinkableImpl(std::string theId)
       : Logger(std::move(theId)) {}
 
@@ -96,7 +94,8 @@ TEST_CASE("Shrinkable") {
     const auto shrinkable =
         shrinkable::just(13, seq::just(shrinkable::just(37)));
     auto x = shrinkable;
-    x = x;
+    auto &ref = x;
+    x = ref;
     REQUIRE(x == shrinkable);
   }
 

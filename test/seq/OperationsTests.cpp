@@ -1,5 +1,7 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
+
+#include <algorithm>
 
 #include "rapidcheck/seq/Operations.h"
 #include "rapidcheck/seq/Create.h"

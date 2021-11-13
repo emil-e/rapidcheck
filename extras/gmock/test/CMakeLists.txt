@@ -2,7 +2,7 @@ add_executable(rapidcheck_gmock_tests main.cpp)
 target_link_libraries(rapidcheck_gmock_tests
   rapidcheck_gmock
   rapidcheck_catch
-  catch
+  Catch2::Catch2
   gmock)
 target_include_directories(rapidcheck_gmock_tests PRIVATE 
     ${CMAKE_SOURCE_DIR}/ext/googletest/googletest/include

@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include <numeric>
@@ -33,13 +33,6 @@ template <typename T,
           typename = typename std::enable_if<std::is_integral<T>::value>::type>
 typename std::make_unsigned<T>::type absolute(T x) {
   return absoluteInt(x, std::is_signed<T>());
-}
-
-template <
-    typename T,
-    typename = typename std::enable_if<std::is_floating_point<T>::value>::type>
-T absolute(T x) {
-  return std::abs(x);
 }
 
 template <typename T>
@@ -85,9 +78,9 @@ struct IntegralProperties {
             const auto error = std::accumulate(begin(bins),
                                            end(bins),
                                            0.0,
-                                           [=](double error, uint64_t x) {
+                                           [=](double lambdaError, uint64_t x) {
                                              double diff = 1.0 - (x / ideal);
-                                             return error + (diff * diff);
+                                             return lambdaError + (diff * diff);
                                            });
 
             RC_ASSERT(error < 0.1);

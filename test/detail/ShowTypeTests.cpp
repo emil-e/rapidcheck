@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "rapidcheck/detail/ShowType.h"
 
@@ -8,6 +8,7 @@ using namespace rc;
 using namespace rc::test;
 using namespace rc::detail;
 
+#ifndef RC_DONT_USE_RTTI
 TEST_CASE("typeToString") {
   SECTION("shows primitive types correctly") {
     REQUIRE(typeToString<void>() == "void");
@@ -166,3 +167,4 @@ TEST_CASE("typeToString") {
             "std::shared_ptr<const FFoo *>");
   }
 }
+#endif // RC_DONT_USE_RTTI

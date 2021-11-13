@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/detail/TestListenerAdapter.h"
@@ -23,9 +23,9 @@ TEST_CASE("checkTestable") {
          Maybe<std::tuple<TestMetadata, TestResult>> callbackParams;
          MockTestListener listener;
          listener.onTestFinishedCallback =
-             [&](const TestMetadata &metadata, const TestResult &result) {
+             [&](const TestMetadata &lambdaMetadata, const TestResult &result) {
                RC_ASSERT(!callbackParams);
-               callbackParams.init(metadata, result);
+               callbackParams.init(lambdaMetadata, result);
              };
 
          const auto result = checkTestable([&] {

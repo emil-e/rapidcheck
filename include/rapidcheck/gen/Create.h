@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/Gen.h"
+#include "rapidcheck/Compat.h"
 
 namespace rc {
 namespace gen {
@@ -13,7 +14,7 @@ Gen<Decay<T>> just(T &&value);
 /// called lazily on actual generation. This is useful when implementing
 /// recursive generators where a generator must reference itself.
 template <typename Callable>
-Gen<typename std::result_of<Callable()>::type::ValueType>
+Gen<typename rc::compat::return_type<Callable>::type::ValueType>
 lazy(Callable &&callable);
 
 } // namespace gen

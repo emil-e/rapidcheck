@@ -24,7 +24,7 @@ struct TupleHelper;
 
 template <std::size_t I>
 struct TupleHelper<std::tuple<>, I> {
-  static void showTuple(const std::tuple<> &tuple, std::ostream &os) {}
+  static void showTuple(const std::tuple<> &/*tuple*/, std::ostream &/*os*/) {}
 };
 
 template <typename TupleT>

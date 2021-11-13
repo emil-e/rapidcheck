@@ -89,6 +89,7 @@ std::ostream &operator<<(std::ostream &os,
   return os;
 }
 
+namespace {
 void printDistribution(const SuccessResult &result, std::ostream &os) {
   using Entry = std::pair<Tags, int>;
   std::vector<Entry> entries(begin(result.distribution),
@@ -112,6 +113,7 @@ void printDistribution(const SuccessResult &result, std::ostream &os) {
     }
     os << std::endl;
   }
+}
 }
 
 void printResultMessage(const SuccessResult &result, std::ostream &os) {
@@ -210,9 +212,11 @@ bool operator!=(const Error &lhs, const Error &rhs) {
   return !(lhs == rhs);
 }
 
+namespace {
 void printResultMessage(const Error &result, std::ostream &os) {
   os << "Failure: " << result.description << std::endl;
   os << std::endl;
+}
 }
 
 //

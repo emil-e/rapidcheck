@@ -6,13 +6,14 @@
 #include "rapidcheck/detail/ImplicitParam.h"
 #include "rapidcheck/gen/detail/GenerationHandler.h"
 #include "rapidcheck/shrinkable/Create.h"
+#include  "rapidcheck/Compat.h"
 
 namespace rc {
 namespace gen {
 
 // Forward declare this so we don't need to include Transform.h
 template <typename T, typename Mapper>
-Gen<Decay<typename std::result_of<Mapper(T)>::type>> map(Gen<T> gen,
+Gen<Decay<typename rc::compat::return_type<Mapper,T>::type>> map(Gen<T> gen,
                                                          Mapper &&mapper);
 
 } // namespace gen
@@ -71,13 +72,6 @@ Shrinkable<T> Gen<T>::operator()(const Random &random, int size) const
     auto exception = std::current_exception();
     return shrinkable::lambda([=]() -> T {
       std::rethrow_exception(exception);
-
-      // MSVC HACK: the following is required for MSVC to stop complaining
-      //            about missing return value. Will never be reached, of
-      //            course.
-#ifdef _MSC_VER
-      throw nullptr;
-#endif // _MSC_VER
     });
   }
 }

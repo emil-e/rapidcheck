@@ -2,6 +2,7 @@
 
 #include "rapidcheck/fn/Common.h"
 #include "rapidcheck/shrinkable/Create.h"
+#include "rapidcheck/Compat.h"
 
 namespace rc {
 namespace gen {
@@ -12,7 +13,7 @@ Gen<Decay<T>> just(T &&value) {
 }
 
 template <typename Callable>
-Gen<typename std::result_of<Callable()>::type::ValueType>
+Gen<typename rc::compat::return_type<Callable>::type::ValueType>
 lazy(Callable &&callable) {
   return
       [=](const Random &random, int size) { return callable()(random, size); };

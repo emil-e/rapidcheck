@@ -5,6 +5,7 @@
 #include "rapidcheck/Random.h"
 #include "rapidcheck/GenerationFailure.h"
 #include "rapidcheck/shrinkable/Transform.h"
+#include "rapidcheck/Compat.h"
 
 namespace rc {
 namespace state {
@@ -14,8 +15,8 @@ namespace detail {
 template <typename MakeInitialState, typename GenFunc>
 class CommandsGen {
 public:
-  using Model = Decay<typename std::result_of<MakeInitialState()>::type>;
-  using CommandGen = typename std::result_of<GenFunc(Model)>::type;
+  using Model = Decay<typename rc::compat::return_type<MakeInitialState>::type>;
+  using CommandGen = typename rc::compat::return_type<GenFunc,Model>::type;
   using Cmd = typename CommandGen::ValueType::element_type::CommandType;
   using CmdSP = std::shared_ptr<const Cmd>;
   using Sut = typename Cmd::Sut;

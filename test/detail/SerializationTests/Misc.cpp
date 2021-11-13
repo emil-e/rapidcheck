@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/detail/Serialization.h"
@@ -52,11 +52,6 @@ TEST_CASE("serializeN") {
 namespace {
 
 struct NonDeserializable {};
-
-template <typename Iterator>
-Iterator deserialize(Iterator begin, Iterator end, NonDeserializable &output) {
-  return begin;
-}
 
 } // namespace
 

@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_RUNNER
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <gmock/gmock.h>
 #include <rapidcheck/catch.h>
 #include <rapidcheck/gmock.h>

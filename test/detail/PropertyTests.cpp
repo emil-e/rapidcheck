@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/detail/Property.h"
@@ -219,8 +219,8 @@ TEST_CASE("PropertyAdapter") {
        [](int a, const std::string &b, NonCopyable c) {
          const auto expected = std::to_string(a) + b + std::to_string(c.extra);
          const auto adapter =
-             makeAdapter([](int a, const std::string &b, NonCopyable c) {
-               return std::to_string(a) + b + std::to_string(c.extra);
+             makeAdapter([](int d, const std::string &e, NonCopyable f) {
+               return std::to_string(d) + e + std::to_string(f.extra);
              });
          const auto result = adapter(std::move(a), std::move(b), std::move(c));
          RC_ASSERT(result.result.description == expected);
@@ -242,11 +242,6 @@ namespace {
 
 template <int N>
 struct Fixed {};
-
-template <int N>
-void showValue(std::ostream &os, const Fixed<N> &) {
-  os << N;
-}
 
 } // namespace
 
@@ -342,9 +337,11 @@ TEST_CASE("toProperty") {
             if (i == throwIndex) {
               // TODO maybe a "throws" generator?
               try {
-                *Gen<int>([=](const Random &, int) -> Shrinkable<int> {
+                // Introduce a dummy variable to prevent double-free error on LLVM 8.0.0.
+                auto dummy = Gen<int>([=](const Random &, int) -> Shrinkable<int> {
                   throw GenerationFailure(msg);
                 });
+                *dummy;
               } catch (...) {
               }
             } else {

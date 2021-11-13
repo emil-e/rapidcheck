@@ -5,6 +5,7 @@
 
 #include "rapidcheck/seq/Transform.h"
 #include "rapidcheck/seq/Create.h"
+#include "rapidcheck/Compat.h"
 
 namespace rc {
 namespace shrink {
@@ -104,8 +105,8 @@ private:
 template <typename Container, typename Shrink>
 class EachElementSeq {
 public:
-  using T = typename std::result_of<Shrink(
-      typename Container::value_type)>::type::ValueType;
+  using T = typename rc::compat::return_type<Shrink,
+      typename Container::value_type>::type::ValueType;
 
   template <typename ContainerArg, typename ShrinkArg>
   explicit EachElementSeq(ContainerArg &&elements, ShrinkArg &&shrink)
@@ -195,8 +196,8 @@ template <typename T>
 Seq<T> real(T value) {
   std::vector<T> shrinks;
 
-  if (value != 0) {
-    shrinks.push_back(0.0);
+  if (std::abs(value) > 0) {
+    shrinks.push_back(T(0.0));
   }
 
   if (value < 0) {

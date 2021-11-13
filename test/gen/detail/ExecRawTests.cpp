@@ -1,6 +1,7 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
+#include <algorithm>
 #include <numeric>
 
 #include "util/Predictable.h"
@@ -153,12 +154,12 @@ TEST_CASE("execRaw") {
        [](const Random &initial) {
          const auto n = *gen::inRange<std::size_t>(1, 10);
          const auto randoms = execRaw([=](const PassedRandom &rnd) {
-           std::set<Random> randoms;
-           randoms.insert(rnd.value);
-           while (randoms.size() < n) {
-             randoms.insert(*genRandom());
+           std::set<Random> lambdaRandoms;
+           lambdaRandoms.insert(rnd.value);
+           while (lambdaRandoms.size() < n) {
+             lambdaRandoms.insert(*genRandom());
            }
-           return randoms;
+           return lambdaRandoms;
          })(initial, 0).value().first;
 
          RC_ASSERT(randoms.size() == n);

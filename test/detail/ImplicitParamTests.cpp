@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 #include <rapidcheck/state.h>
 
@@ -253,8 +253,8 @@ TEST_CASE("ImplicitParam") {
       SECTION(
           "with new scope and binding, value() the value of that"
           " binding") {
-        ImplicitParam<ParamA> a1("bind!");
-        ImplicitParam<ParamB> b1(101);
+        ImplicitParam<ParamA> a2("bind!");
+        ImplicitParam<ParamB> b2(101);
         REQUIRE(ImplicitParam<ParamA>::value() == "bind!");
         REQUIRE(ImplicitParam<ParamB>::value() == 101);
       }

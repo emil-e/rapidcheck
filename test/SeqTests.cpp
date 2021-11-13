@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 
 #include "rapidcheck/Seq.h"
@@ -14,8 +14,6 @@ namespace {
 
 class LoggingSeqImpl : public Logger {
 public:
-  LoggingSeqImpl()
-      : Logger() {}
   LoggingSeqImpl(std::string theId)
       : Logger(std::move(theId)) {}
 
@@ -50,7 +48,8 @@ TEST_CASE("Seq") {
   SECTION("self assignment leaves value unchanged") {
     const auto seq = seq::just(1, 2);
     auto x = seq;
-    x = x;
+    auto &ref = x;
+    x = ref;
 
     REQUIRE(x == seq);
   }

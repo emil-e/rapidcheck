@@ -7,7 +7,7 @@ namespace test {
 
 struct SerializationProperties {
   template <typename T>
-  static void exec(const Gen<T> &gen = gen::arbitrary<T>()) {
+  static void exec(const Gen<T> &gen = gen::template arbitrary<T>()) {
     using namespace rc::detail;
 
     templatedProp<T>("returns an iterator past the written data",

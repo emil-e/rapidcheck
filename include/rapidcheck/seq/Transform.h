@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rapidcheck/Seq.h"
+#include "rapidcheck/Compat.h"
 
 namespace rc {
 namespace seq {
@@ -23,7 +24,7 @@ Seq<T> takeWhile(Seq<T> seq, Predicate &&pred);
 
 /// Maps the elements of the given `Seq` using the given callable.
 template <typename T, typename Mapper>
-Seq<Decay<typename std::result_of<Mapper(T)>::type>> map(Seq<T> seq,
+Seq<Decay<typename rc::compat::return_type<Mapper,T>::type>> map(Seq<T> seq,
                                                          Mapper &&mapper);
 
 /// Takes elements from the given `Seq`s and passes them as arguments to the
@@ -33,7 +34,7 @@ Seq<Decay<typename std::result_of<Mapper(T)>::type>> map(Seq<T> seq,
 /// Fun fact: Also works with no sequences and in that case returns an infinite
 /// sequence of the return values of calling the given callable.
 template <typename... Ts, typename Zipper>
-Seq<Decay<typename std::result_of<Zipper(Ts...)>::type>>
+Seq<Decay<typename rc::compat::return_type<Zipper,Ts...>::type>>
 zipWith(Zipper &&zipper, Seq<Ts>... seqs);
 
 /// Skips elements not matching the given predicate from the given stream.
@@ -51,14 +52,14 @@ Seq<T> concat(Seq<T> seq, Seq<Ts>... seqs);
 /// Maps each tuple elements of the given to `Seq`s to further `Seq`s and
 /// concatenates them into one `Seq`. Sometimes called a "flat map".
 template <typename T, typename Mapper>
-Seq<typename std::result_of<Mapper(T)>::type::ValueType>
+Seq<typename rc::compat::return_type<Mapper,T>::type::ValueType>
 mapcat(Seq<T> seq, Mapper &&mapper);
 
 /// Like `map` but expects the mapping functor to return a `Maybe`. If `Nothing`
 /// is returned, the element is skipped. Otherwise, the `Maybe` is unwrapped and
 /// included in the resulting `Seq`.
 template <typename T, typename Mapper>
-Seq<typename std::result_of<Mapper(T)>::type::ValueType>
+Seq<typename rc::compat::return_type<Mapper,T>::type::ValueType>
 mapMaybe(Seq<T> seq, Mapper &&mapper);
 
 /// Creates a `Seq` which infinitely repeats the given `Seq`.

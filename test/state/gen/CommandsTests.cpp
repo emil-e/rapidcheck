@@ -1,4 +1,4 @@
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <rapidcheck/catch.h>
 #include <rapidcheck/state.h>
 
@@ -35,10 +35,10 @@ std::vector<GenParams> collectParams(const IntVecCmds &cmds) {
                  [](const IntVecCmdSP &cmd) {
                    const auto paramsCmd =
                        std::static_pointer_cast<const ParamsCmd>(cmd);
-                   GenParams params;
-                   params.random = paramsCmd->random;
-                   params.size = paramsCmd->size;
-                   return params;
+                   GenParams lambdaParams;
+                   lambdaParams.random = paramsCmd->random;
+                   lambdaParams.size = paramsCmd->size;
+                   return lambdaParams;
                  });
   return params;
 }
@@ -49,7 +49,7 @@ std::set<Random> collectRandoms(const IntVecCmds &cmds) {
   std::transform(begin(params),
                  end(params),
                  std::inserter(randoms, randoms.end()),
-                 [](const GenParams &params) { return params.random; });
+                 [](const GenParams &lambdaParams) { return lambdaParams.random; });
   return randoms;
 }
 
@@ -162,8 +162,8 @@ TEST_CASE("state::gen::commands") {
                      auto sut = s0;
                      runAll(value.value(), s0, sut);
                      int x = 0;
-                     for (int value : sut) {
-                       RC_ASSERT(value == x++);
+                     for (int lambdaValue : sut) {
+                       RC_ASSERT(lambdaValue == x++);
                      }
                    });
        });
