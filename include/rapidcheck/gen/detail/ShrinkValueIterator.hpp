@@ -5,15 +5,14 @@ namespace gen {
 namespace detail {
 
 template <typename Iterator>
-class ShrinkValueIterator
-    : public std::iterator<
-          std::input_iterator_tag,
-          typename std::iterator_traits<Iterator>::value_type::ValueType,
-          std::ptrdiff_t,
-          typename std::iterator_traits<Iterator>::value_type::ValueType *,
-          typename std::iterator_traits<Iterator>::value_type::ValueType &&> {
+class ShrinkValueIterator {
 public:
-  using T = typename std::iterator_traits<Iterator>::value_type::ValueType;
+  using iterator_category = std::input_iterator_tag;
+  using value_type =
+      typename std::iterator_traits<Iterator>::value_type::ValueType;
+  using difference_type = std::ptrdiff_t;
+  using pointer = value_type *;
+  using reference = value_type &&;
 
   ShrinkValueIterator(Iterator it)
       : m_it(it) {}
@@ -22,7 +21,7 @@ public:
     return m_it == rhs.m_it;
   }
 
-  T operator*() const { return m_it->value(); }
+  value_type operator*() const { return m_it->value(); }
 
   ShrinkValueIterator &operator++() {
     ++m_it;
