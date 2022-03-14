@@ -40,6 +40,7 @@ template <typename Source>
 template <typename T>
 T BitStream<Source>::next(int nbits, std::false_type) {
   using SourceType = decltype(m_source.next());
+  nbits = std::min(nbits, numBits<T>());
 
   if (nbits == 0) {
     return 0;

@@ -18,6 +18,7 @@ public:
   T next();
 
   /// Returns the next random of the given type and number of bits.
+  /// nbits is capped at the number of bits in T
   template <typename T>
   T next(int nbits);
 
