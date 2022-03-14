@@ -35,7 +35,7 @@ TEST_CASE("seq::drop") {
     REQUIRE(seq.next()->numberOf("copy") == 0);
   }
 
-  SECTION("sanity check") {
+  SECTION("safety test") {
     REQUIRE(seq::drop(2, seq::just(1, 2, 3)) == seq::just(3));
   }
 }
@@ -64,7 +64,7 @@ TEST_CASE("seq::take") {
     REQUIRE(seq.next()->numberOf("copy") == 0);
   }
 
-  SECTION("sanity check") {
+  SECTION("safety test") {
     REQUIRE(seq::take(2, seq::just(1, 2, 3)) == seq::just(1, 2));
   }
 }
@@ -93,7 +93,7 @@ TEST_CASE("seq::dropWhile") {
     REQUIRE(seq.next()->numberOf("copy") == 0);
   }
 
-  SECTION("sanity check") {
+  SECTION("safety test") {
     auto seq = seq::dropWhile(seq::just(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
                               [](int x) { return x < 5; });
     auto expected = seq::just(5, 6, 7, 8, 9, 10);
@@ -125,7 +125,7 @@ TEST_CASE("seq::takeWhile") {
     REQUIRE(seq.next()->numberOf("copy") == 0);
   }
 
-  SECTION("sanity check") {
+  SECTION("safety test") {
     auto seq = seq::takeWhile(seq::just(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
                               [](int x) { return x < 5; });
     auto expected = seq::just(0, 1, 2, 3, 4);
