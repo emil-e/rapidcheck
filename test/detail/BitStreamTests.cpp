@@ -51,7 +51,9 @@ TEST_CASE("BitStream") {
            const auto sizes = *bitSizes;
            int totalSize = 0;
            for (int size : sizes) {
-             totalSize += size;
+             // nbits is capped at 64 when reading a 64-bit integer,
+            //  so we have to cap it as well.
+             totalSize += std::min(size, 64);
              stream.next<uint64_t>(size);
            }
 
