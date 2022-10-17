@@ -183,7 +183,7 @@ Seq<T> real(T value) {
   return seq::fromContainer(shrinks);
 }
 
-Seq<bool> boolean(bool value) { return value ? seq::just(false) : Seq<bool>(); }
+Seq<bool> boolean(bool value) { return value ? seq::just<bool>(false) : Seq<bool>(); }
 
 template <typename T>
 Seq<T> character(T value) {
