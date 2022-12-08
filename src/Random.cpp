@@ -1,8 +1,8 @@
 #include "rapidcheck/Random.h"
 
-#include <iostream>
 #include <cassert>
 #include <functional>
+#include <iostream>
 
 #include "rapidcheck/Show.h"
 
@@ -67,7 +67,9 @@ void Random::append(bool x) {
   m_bitsi++;
 }
 
-void Random::mash(Block &output) {
+void Random::mash(Block &output) 
+  __attribute__((no_sanitize("unsigned-shift-base")))
+{
   // Input
   uint64_t b0 = m_bits;
   uint64_t b1 = m_counter;
