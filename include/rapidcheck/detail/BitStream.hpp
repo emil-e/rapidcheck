@@ -39,8 +39,10 @@ T BitStream<Source>::next(int /*nbits*/, std::true_type) {
 template <typename Source>
 template <typename T>
 T BitStream<Source>::next(int nbits, std::false_type) 
+#ifdef __clang__
   __attribute__((no_sanitize("implicit-signed-integer-truncation"))) 
   __attribute__((no_sanitize("implicit-integer-sign-change"))) 
+#endif
 {
   using SourceType = decltype(m_source.next());
 
