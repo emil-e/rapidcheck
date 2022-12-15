@@ -3,7 +3,12 @@
 #include <sstream>
 
 #include <rapidcheck.h>
-#include <catch2/catch.hpp>
+
+// To support Catch2 v3 we check if the new header has already been included,
+// otherwise we include the old header.
+#ifndef CATCH_TEST_MACROS_HPP_INCLUDED
+  #include <catch2/catch.hpp>
+#endif
 
 namespace rc {
 
