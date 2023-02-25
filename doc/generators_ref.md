@@ -237,7 +237,7 @@ Generates a value which is not less than `0`.
 
 ```C++
 // Example:
-const auto x = *gen::positive<int>();
+const auto x = *gen::nonNegative<int>();
 ```
 
 ## Containers
