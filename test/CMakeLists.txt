@@ -40,9 +40,10 @@ add_executable(rapidcheck_tests
   detail/SerializationTests/Misc.cpp
   detail/ShowTypeTests.cpp
   detail/StringSerializationTests.cpp
+  detail/TestingTests.cpp
   detail/TestMetadataTests.cpp
   detail/TestParamsTests.cpp
-  detail/TestingTests.cpp
+  detail/Utility.cpp
   detail/VariantTests.cpp
   fn/CommonTests.cpp
   gen/BuildTests.cpp
