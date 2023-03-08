@@ -91,7 +91,7 @@ public:
       : m_gens(std::forward<Args>(args)...) {}
 
   Shrinkable<std::tuple<Ts...>> operator()(const Random &random,
-                                           size_t size) const {
+                                           std::size_t size) const {
     auto r = random;
     Random randoms[sizeof...(Ts)];
     for (std::size_t i = 0; i < sizeof...(Ts); i++) {

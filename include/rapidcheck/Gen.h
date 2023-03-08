@@ -13,7 +13,7 @@ class Random;
 /// This applies to, for example, generation of numbers but not to the
 /// generation of collection where there is an associated cost to generating
 /// large collections.
-constexpr size_t kNominalSize = 100;
+constexpr std::size_t kNominalSize = 100;
 
 /// This class is the type of RapidCheck generators. A generator is essentially
 /// a function which takes a `Random` and some generation parameters and returns
@@ -42,7 +42,7 @@ public:
   /// @param size    The generation size
   ///
   /// @return a random generated `Shrinkable`
-  Shrinkable<T> operator()(const Random &random, size_t size = kNominalSize) const
+  Shrinkable<T> operator()(const Random &random, std::size_t size = kNominalSize) const
       noexcept;
 
   /// The meaning of this operator depends on the context in which it is used

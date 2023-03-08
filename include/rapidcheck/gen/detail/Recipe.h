@@ -36,7 +36,7 @@ struct Recipe {
   using Ingredients = std::vector<Ingredient>;
 
   Random random;
-  size_t size = 0;
+  std::size_t size = 0;
   Ingredients ingredients;
   std::size_t numFixed = 0;
 };

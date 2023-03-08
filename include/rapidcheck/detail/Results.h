@@ -45,7 +45,7 @@ struct Reproduce {
   /// The Random to generate the shrinkable with.
   Random random;
   /// The size to generate the shrinkable with.
-  size_t size;
+  std::size_t size;
   /// The shrink path to follow.
   std::vector<std::size_t> shrinkPath;
 };

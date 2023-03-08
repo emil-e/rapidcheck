@@ -36,7 +36,7 @@ std::string base64Encode(const std::vector<std::uint8_t> &data) {
   output.reserve(outputSize);
 
   for (std::size_t i = 0; i < size; i += 3) {
-    size_t nbits = 0;
+    std::size_t nbits = 0;
     std::uint32_t bits = 0;
     for (std::size_t j = i; j < std::min<std::size_t>(size, i + 3); j++) {
       bits |= static_cast<std::uint32_t>(data[j] << nbits);
@@ -46,7 +46,7 @@ std::string base64Encode(const std::vector<std::uint8_t> &data) {
     while (nbits > 0) {
       output.append(1, kBase64Alphabet[bits & 0x3F]);
       if (nbits >= 6) {
-        // Prevent underflow of size_t
+        // Prevent underflow of std::size_t
         nbits -= 6;
       } else {
         nbits = 0;

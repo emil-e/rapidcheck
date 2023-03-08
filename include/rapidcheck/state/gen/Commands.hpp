@@ -26,7 +26,7 @@ public:
       : m_initialState(std::forward<InitialStateArg>(initialState))
       , m_genFunc(std::forward<GenFuncArg>(genFunc)) {}
 
-  Shrinkable<Commands<Cmd>> operator()(const Random &random, size_t size) const {
+  Shrinkable<Commands<Cmd>> operator()(const Random &random, std::size_t size) const {
     auto sequenceShrinkable = shrinkable::shrinkRecur(
         CommandSequence(m_initialState, random, m_genFunc, size),
         [](const CommandSequence &commandSequence) {
@@ -81,7 +81,7 @@ private:
     CommandSequence(const MakeInitialState &initState,
                     const Random &random,
                     const GenFunc &func,
-                    size_t sz)
+                    std::size_t sz)
         : m_initialState(initState)
         , m_genFunc(func)
         , m_size(sz) {
@@ -240,7 +240,7 @@ private:
 
     MakeInitialState m_initialState;
     GenFunc m_genFunc;
-    size_t m_size;
+    std::size_t m_size;
     std::vector<CommandEntry> m_entries;
   };
 

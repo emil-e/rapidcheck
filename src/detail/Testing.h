@@ -17,7 +17,7 @@ struct SearchResult {
 
   /// Represents information about a failure.
   struct Failure {
-    Failure(Shrinkable<CaseDescription> shr, size_t sz, const Random &rnd)
+    Failure(Shrinkable<CaseDescription> shr, std::size_t sz, const Random &rnd)
         : shrinkable(shr)
         , size(sz)
         , random(rnd) {}
@@ -26,7 +26,7 @@ struct SearchResult {
     Shrinkable<CaseDescription> shrinkable;
 
     /// The size at which the property failed.
-    size_t size;
+    std::size_t size;
 
     /// The Random state which produced the failure.
     Random random;

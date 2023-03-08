@@ -43,7 +43,7 @@ Gen<T> cast(Gen<U> gen);
 /// Returns a version of the given generator that always uses the specified
 /// size.
 template <typename T>
-Gen<T> resize(size_t size, Gen<T> gen);
+Gen<T> resize(std::size_t size, Gen<T> gen);
 
 /// Returns a version of the given generator that scales the size by the given
 /// factor before passing it to the underlying generator.

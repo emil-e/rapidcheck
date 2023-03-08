@@ -21,7 +21,7 @@ public:
       : m_mapper(std::forward<MapperArg>(mapper))
       , m_gen(std::move(gen)) {}
 
-  Shrinkable<U> operator()(const Random &random, size_t size) const {
+  Shrinkable<U> operator()(const Random &random, std::size_t size) const {
     return shrinkable::map(m_gen(random, size), m_mapper);
   }
 
@@ -40,7 +40,7 @@ public:
       : m_gen(std::move(gen))
       , m_mapper(std::forward<MapperArg>(mapper)) {}
 
-  Shrinkable<U> operator()(const Random &random, size_t size) const {
+  Shrinkable<U> operator()(const Random &random, std::size_t size) const {
     auto r1 = random;
     auto r2 = r1.split();
     const auto mapper = m_mapper;
@@ -59,7 +59,7 @@ public:
   explicit JoinGen(Gen<Gen<T>> gen)
       : m_gen(std::move(gen)) {}
 
-  Shrinkable<T> operator()(const Random &random, size_t size) const {
+  Shrinkable<T> operator()(const Random &random, std::size_t size) const {
     auto r1 = random;
     auto r2 = r1.split();
     return shrinkable::mapcat(
@@ -113,13 +113,13 @@ Gen<T> cast(Gen<U> gen) {
 }
 
 template <typename T>
-Gen<T> resize(size_t size, Gen<T> gen) {
+Gen<T> resize(std::size_t size, Gen<T> gen) {
   return [=](const Random &random, int) { return gen(random, size); };
 }
 
 template <typename T>
 Gen<T> scale(double scale, Gen<T> gen) {
-  return [=](const Random &random, size_t size) {
+  return [=](const Random &random, std::size_t size) {
     return gen(random, static_cast<int>(size * scale));
   };
 }
@@ -127,14 +127,14 @@ Gen<T> scale(double scale, Gen<T> gen) {
 template <typename Callable>
 Gen<typename rc::compat::return_type<Callable,int>::type::ValueType>
 withSize(Callable &&callable) {
-  return [=](const Random &random, size_t size) {
+  return [=](const Random &random, std::size_t size) {
     return callable(size)(random, size);
   };
 }
 
 template <typename T>
 Gen<T> noShrink(Gen<T> gen) {
-  return [=](const Random &random, size_t size) {
+  return [=](const Random &random, std::size_t size) {
     return shrinkable::mapShrinks(gen(random, size),
                                   fn::constant(Seq<Shrinkable<T>>()));
   };
@@ -142,7 +142,7 @@ Gen<T> noShrink(Gen<T> gen) {
 
 template <typename T, typename Shrink>
 Gen<T> shrink(Gen<T> gen, Shrink &&shrink) {
-  return [=](const Random &random, size_t size) {
+  return [=](const Random &random, std::size_t size) {
     return shrinkable::postShrink(gen(random, size), shrink);
   };
 }

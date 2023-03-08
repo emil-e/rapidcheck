@@ -10,7 +10,7 @@ public:
   MaybeGen(Gen<T> gen)
       : m_gen(std::move(gen)) {}
 
-  Shrinkable<Maybe<T>> operator()(const Random &random, size_t size) const {
+  Shrinkable<Maybe<T>> operator()(const Random &random, std::size_t size) const {
     auto r = random;
     const auto x = r.split().next() % (size + 1);
     if (x == 0) {

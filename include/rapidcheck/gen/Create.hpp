@@ -16,7 +16,7 @@ template <typename Callable>
 Gen<typename rc::compat::return_type<Callable>::type::ValueType>
 lazy(Callable &&callable) {
   return
-      [=](const Random &random, size_t size) { return callable()(random, size); };
+      [=](const Random &random, std::size_t size) { return callable()(random, size); };
 }
 
 } // namespace gen

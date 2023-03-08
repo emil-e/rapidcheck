@@ -11,29 +11,29 @@ namespace gen {
 namespace detail {
 
 template <typename T>
-Shrinkable<T> integral(const Random &random, size_t size) {
+Shrinkable<T> integral(const Random &random, std::size_t size) {
   return shrinkable::shrinkRecur(
       rc::detail::bitStreamOf(random).nextWithSize<T>(size),
       &shrink::integral<T>);
 }
 
-extern template Shrinkable<char> integral<char>(const Random &random, size_t size);
+extern template Shrinkable<char> integral<char>(const Random &random, std::size_t size);
 extern template Shrinkable<unsigned char>
-integral<unsigned char>(const Random &random, size_t size);
+integral<unsigned char>(const Random &random, std::size_t size);
 extern template Shrinkable<short> integral<short>(const Random &random,
-                                                  size_t size);
+                                                  std::size_t size);
 extern template Shrinkable<unsigned short>
-integral<unsigned short>(const Random &random, size_t size);
-extern template Shrinkable<int> integral<int>(const Random &random, size_t size);
+integral<unsigned short>(const Random &random, std::size_t size);
+extern template Shrinkable<int> integral<int>(const Random &random, std::size_t size);
 extern template Shrinkable<unsigned int>
-integral<unsigned int>(const Random &random, size_t size);
-extern template Shrinkable<long> integral<long>(const Random &random, size_t size);
+integral<unsigned int>(const Random &random, std::size_t size);
+extern template Shrinkable<long> integral<long>(const Random &random, std::size_t size);
 extern template Shrinkable<unsigned long>
-integral<unsigned long>(const Random &random, size_t size);
+integral<unsigned long>(const Random &random, std::size_t size);
 extern template Shrinkable<long long> integral<long long>(const Random &random,
-                                                          size_t size);
+                                                          std::size_t size);
 extern template Shrinkable<unsigned long long>
-integral<unsigned long long>(const Random &random, size_t size);
+integral<unsigned long long>(const Random &random, std::size_t size);
 
 template <typename T>
 Shrinkable<T> real(const Random &random, std::size_t size) {
@@ -48,10 +48,10 @@ Shrinkable<T> real(const Random &random, std::size_t size) {
   return shrinkable::shrinkRecur(value, &shrink::real<T>);
 }
 
-extern template Shrinkable<float> real<float>(const Random &random, size_t size);
-extern template Shrinkable<double> real<double>(const Random &random, size_t size);
+extern template Shrinkable<float> real<float>(const Random &random, std::size_t size);
+extern template Shrinkable<double> real<double>(const Random &random, std::size_t size);
 
-Shrinkable<bool> boolean(const Random &random, size_t size);
+Shrinkable<bool> boolean(const Random &random, std::size_t size);
 
 template <typename T>
 struct DefaultArbitrary {
@@ -89,7 +89,7 @@ struct DefaultArbitrary<bool> {
 
 template <typename T>
 Gen<T> inRange(T min, T max) {
-  return [=](const Random &random, size_t size) {
+  return [=](const Random &random, std::size_t size) {
     if (max <= min) {
       std::string msg;
       msg += "Invalid range [" + std::to_string(min);
