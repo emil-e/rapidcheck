@@ -36,16 +36,21 @@ std::string base64Encode(const std::vector<std::uint8_t> &data) {
   output.reserve(outputSize);
 
   for (std::size_t i = 0; i < size; i += 3) {
-    int nbits = 0;
+    size_t nbits = 0;
     std::uint32_t bits = 0;
     for (std::size_t j = i; j < std::min<std::size_t>(size, i + 3); j++) {
-      bits |= data[j] << nbits;
+      bits |= static_cast<std::uint32_t>(data[j] << nbits);
       nbits += 8;
     }
 
     while (nbits > 0) {
       output.append(1, kBase64Alphabet[bits & 0x3F]);
-      nbits -= 6;
+      if (nbits >= 6) {
+        // Prevent underflow of size_t
+        nbits -= 6;
+      } else {
+        nbits = 0;
+      }
       bits = bits >> 6;
     }
   }
@@ -72,7 +77,7 @@ std::vector<std::uint8_t> base64Decode(const std::string &data) {
       if (x == -1) {
         throw ParseException(j, "Invalid Base64 character");
       }
-      bits |= x << nbits;
+      bits |= static_cast<std::uint32_t>(x << nbits);
       nbits += 6;
     }
 

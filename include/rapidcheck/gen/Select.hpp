@@ -92,7 +92,7 @@ public:
   explicit SizedElementOfGen(Arg &&arg)
       : m_container(std::forward<Arg>(arg)) {}
 
-  Shrinkable<T> operator()(const Random &random, int size) const {
+  Shrinkable<T> operator()(const Random &random, size_t size) const {
     if (m_container.size() == 0) {
       throw GenerationFailure("Cannot pick element from empty container.");
     }
@@ -117,7 +117,7 @@ public:
   OneOfGen(Gen<Ts>... gens)
       : m_gens{std::move(gens)...} {}
 
-  Shrinkable<T> operator()(const Random &random, int size) const {
+  Shrinkable<T> operator()(const Random &random, size_t size) const {
     Random r(random);
     const auto i = static_cast<std::size_t>(r.split().next() % m_gens.size());
     return m_gens[i](r, size);

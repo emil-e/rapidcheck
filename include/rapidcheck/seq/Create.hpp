@@ -19,7 +19,7 @@ private:
   T m_value;
 };
 
-template <typename T, int N>
+template <typename T, size_t N>
 class JustSeq {
 public:
   template <typename... Args>

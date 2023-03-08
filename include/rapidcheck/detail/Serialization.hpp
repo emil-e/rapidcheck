@@ -2,6 +2,8 @@
 
 #include <limits>
 
+#include "rapidcheck/detail/Utility.h"
+
 namespace rc {
 namespace detail {
 
@@ -60,7 +62,7 @@ Iterator deserialize(Iterator begin, Iterator end, std::string &output) {
       throw SerializationException("Unexpected end of input");
     }
 
-    output.push_back(*iit);
+    output.push_back(makeSigned(*iit));
     iit++;
   }
 
@@ -203,7 +205,8 @@ Iterator deserializeCompact(Iterator begin, Iterator end, T &output) {
 template <typename InputIterator, typename OutputIterator>
 OutputIterator
 serializeCompact(InputIterator begin, InputIterator end, OutputIterator output) {
-  const std::uint64_t numElements = std::distance(begin, end);
+  auto dist = std::distance(begin, end);
+  const std::uint64_t numElements = makeUnsigned(dist);
   auto oit = serializeCompact(numElements, output);
   for (auto it = begin; it != end; it++) {
     oit = serializeCompact(*it, oit);

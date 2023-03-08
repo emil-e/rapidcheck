@@ -46,7 +46,7 @@ public:
   OneOfCmdGen(Ts &&... args)
       : m_args(std::forward<Ts>(args)...) {}
 
-  Shrinkable<CmdSP> operator()(const Random &random, int size) const {
+  Shrinkable<CmdSP> operator()(const Random &random, size_t size) const {
     using MakeFunc = CmdSP (*)(const Args &...);
     using ArgsList = TypeList<Args...>;
     static const MakeFunc makeFuncs[] = {&MakeCommand<Cmd, ArgsList>::make,

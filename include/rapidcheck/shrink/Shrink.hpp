@@ -6,6 +6,7 @@
 #include "rapidcheck/seq/Transform.h"
 #include "rapidcheck/seq/Create.h"
 #include "rapidcheck/Compat.h"
+#include "rapidcheck/detail/Utility.h"
 
 namespace rc {
 namespace shrink {
@@ -14,27 +15,23 @@ namespace detail {
 template <typename T>
 class TowardsSeq {
 public:
-  using UInt = typename std::make_unsigned<T>::type;
-
   TowardsSeq(T value, T target)
       : m_value(value)
-      , m_diff((target < value) ? (value - target) : (target - value))
-      , m_down(target < value) {}
+      , m_diff(target - value) {}
 
   Maybe<T> operator()() {
     if (m_diff == 0) {
       return Nothing;
     }
 
-    T ret = m_down ? (m_value - m_diff) : (m_value + m_diff);
+    T ret = m_value + m_diff;
     m_diff /= 2;
     return ret;
   }
 
 private:
   T m_value;
-  UInt m_diff;
-  bool m_down;
+  T m_diff;
 };
 
 template <typename Container>
@@ -55,8 +52,8 @@ public:
     elements.reserve(m_elements.size() - m_size);
     const auto start = begin(m_elements);
     const auto fin = end(m_elements);
-    elements.insert(end(elements), start, start + m_start);
-    elements.insert(end(elements), start + m_start + m_size, fin);
+    elements.insert(end(elements), start, start + rc::detail::makeSigned(m_start));
+    elements.insert(end(elements), start + rc::detail::makeSigned(m_start) + rc::detail::makeSigned(m_size), fin);
 
     if ((m_size + m_start) >= m_elements.size()) {
       m_size--;

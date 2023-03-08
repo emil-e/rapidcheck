@@ -17,7 +17,7 @@ class StringGen<std::basic_string<T, Args...>> {
 public:
   using String = std::basic_string<T, Args...>;
 
-  Shrinkable<String> operator()(const Random &random, int size) const {
+  Shrinkable<String> operator()(const Random &random, size_t size) const {
     auto stream = rc::detail::bitStreamOf(random);
     String str;
     auto length = stream.next<std::size_t>() % (size + 1);

@@ -12,7 +12,7 @@ public:
       : m_predicate(std::forward<PredicateArg>(predicate))
       , m_gen(std::move(gen)) {}
 
-  Shrinkable<T> operator()(const Random &random, int size) const {
+  Shrinkable<T> operator()(const Random &random, size_t size) const {
     Random r(random);
     int currentSize = size;
     for (int tries = 0; tries < 100; tries++) {

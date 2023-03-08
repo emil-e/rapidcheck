@@ -28,7 +28,7 @@ Container toContainer(const Shrinkables<T> &shrinkables) {
 
 template <typename T, typename Predicate>
 Shrinkables<T> generateShrinkables(const Random &random,
-                                   int size,
+                                   size_t size,
                                    std::size_t count,
                                    const Gen<T> &gen,
                                    Predicate predicate) {
@@ -63,7 +63,7 @@ class CollectionStrategy {
 public:
   template <typename T>
   Shrinkables<T> generateElements(const Random &random,
-                                  int size,
+                                  size_t size,
                                   std::size_t count,
                                   const Gen<T> &gen) const {
     return generateShrinkables(random, size, count, gen, fn::constant(true));
@@ -86,7 +86,7 @@ class GenericContainerStrategy<Set, true, false> {
 public:
   template <typename T>
   Shrinkables<T> generateElements(const Random &random,
-                                  int size,
+                                  size_t size,
                                   std::size_t count,
                                   const Gen<T> &gen) const {
     Set set;
@@ -125,7 +125,7 @@ class GenericContainerStrategy<Map, true, true> {
 public:
   template <typename K, typename V>
   ShrinkablePairs<K, V> generateElements(const Random &random,
-                                         int size,
+                                         size_t size,
                                          std::size_t count,
                                          const Gen<K> &keyGen,
                                          const Gen<V> &valueGen) const {
@@ -190,7 +190,7 @@ class MultiMapStrategy : public CollectionStrategy<MultiMap> {
 public:
   template <typename K, typename V>
   ShrinkablePairs<K, V> generateElements(const Random &random,
-                                         int size,
+                                         size_t size,
                                          std::size_t count,
                                          const Gen<K> &keyGen,
                                          const Gen<V> &valueGen) const {
@@ -242,7 +242,7 @@ public:
 
   template <typename T>
   Shrinkables<T> generateElements(const Random &random,
-                                  int size,
+                                  size_t size,
                                   std::size_t count,
                                   const Gen<T> &gen) const {
     using Key = Decay<typename rc::compat::return_type<F,T>::type>;
@@ -292,7 +292,7 @@ public:
 
   template <typename... Ts>
   Shrinkable<Container>
-  generate(const Random &random, int size, const Gen<Ts> &... gens) const {
+  generate(const Random &random, size_t size, const Gen<Ts> &... gens) const {
     const auto strategy = m_strategy;
     auto r = random;
     std::size_t count = r.split().next() % (size + 1);
@@ -312,7 +312,7 @@ public:
   template <typename... Ts>
   Shrinkable<Container> generate(std::size_t count,
                                  const Random &random,
-                                 int size,
+                                 size_t size,
                                  const Gen<Ts> &... gens) const {
     const auto strategy = m_strategy;
     auto shrinkables = strategy.generateElements(random, size, count, gens...);
@@ -340,7 +340,7 @@ public:
 
   template <typename U>
   Shrinkable<Array>
-  generate(const Random &random, int size, const Gen<U> &gen) const {
+  generate(const Random &random, size_t size, const Gen<U> &gen) const {
     const auto strategy = m_strategy;
     auto shrinkables = strategy.generateElements(random, size, N, gen);
 
@@ -361,7 +361,7 @@ public:
   template <typename U>
   Shrinkable<Array> generate(std::size_t count,
                              const Random &random,
-                             int size,
+                             size_t size,
                              const Gen<U> &gen) const {
     if (count != N) {
       throw GenerationFailure(
@@ -488,7 +488,7 @@ Gen<Container> container(Gen<Ts>... gens) {
   using Strategy = detail::GenericContainerStrategy<Container>;
   detail::ContainerHelper<Container, Strategy> helper{Strategy()};
 
-  return [=](const Random &random, int size) {
+  return [=](const Random &random, size_t size) {
     return helper.generate(random, size, gens...);
   };
 }
@@ -498,7 +498,7 @@ Gen<Container> container(std::size_t count, Gen<Ts>... gens) {
   using Strategy = detail::GenericContainerStrategy<Container>;
   detail::ContainerHelper<Container, Strategy> helper{Strategy()};
 
-  return [=](const Random &random, int size) {
+  return [=](const Random &random, size_t size) {
     return helper.generate(count, random, size, gens...);
   };
 }
@@ -515,7 +515,7 @@ Gen<Container> uniqueBy(Gen<T> gen, F &&f) {
   detail::ContainerHelper<Container, Strategy> helper(
       Strategy(std::forward<F>(f)));
 
-  return [=](const Random &random, int size) {
+  return [=](const Random &random, size_t size) {
     return helper.generate(random, size, gen);
   };
 }
@@ -526,7 +526,7 @@ Gen<Container> uniqueBy(std::size_t count, Gen<T> gen, F &&f) {
   detail::ContainerHelper<Container, Strategy> helper(
       Strategy(std::forward<F>(f)));
 
-  return [=](const Random &random, int size) {
+  return [=](const Random &random, size_t size) {
     return helper.generate(count, random, size, gen);
   };
 }

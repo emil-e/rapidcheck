@@ -56,7 +56,7 @@ shrinkableWithRecipe(Callable callable, Recipe recipe) {
 template <typename Callable>
 Gen<std::pair<rc::detail::ReturnType<Callable>, Recipe>>
 execRaw(Callable callable) {
-  return [=](const Random &random, int size) {
+  return [=](const Random &random, size_t size) {
     Recipe recipe;
     recipe.random = random;
     recipe.size = size;

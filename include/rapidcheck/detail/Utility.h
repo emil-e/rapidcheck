@@ -2,6 +2,7 @@
 
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <limits>
 
 namespace rc {
@@ -109,6 +110,55 @@ constexpr T bitMask(int nbits) {
   return nbits < std::numeric_limits<UT>::digits ?
          ~T(~UTP(0) << nbits)                    :
          ~T(0);
+}
+
+/// Thrown by sign conversion functions on failure.
+class SignException : public std::exception {
+public:
+  /// C-tor.
+  ///
+  /// @param msg  A message describing the sign error.
+  SignException(const std::string &msg) : m_msg(msg) {}
+
+  std::string message() const { return m_msg; }
+
+  const char *what() const noexcept override {
+    return m_msg.c_str();
+  }
+
+
+private:
+  std::string m_msg;
+};
+
+/// Casts a value from a signed type to an unsigned type
+/// Raises a SignException if the narrowing would change the value
+template<typename NarrowFrom>
+typename std::make_unsigned<NarrowFrom>::type makeUnsigned(NarrowFrom value) {
+  static_assert(std::is_integral<NarrowFrom>::value);
+  static_assert(std::is_signed<NarrowFrom>::value);
+
+  if (value < 0) {
+      throw SignException("Narrowing value below target range");
+  }
+
+  return static_cast<typename std::make_unsigned<NarrowFrom>::type>(value);
+}
+
+/// Casts a value from an unsigned type to a signed type
+/// Raises a SignException if the narrowing would change the value
+template<typename NarrowFrom>
+typename std::make_signed<NarrowFrom>::type makeSigned(NarrowFrom value) {
+  using DestType = typename std::make_signed<NarrowFrom>::type;
+
+  static_assert(std::is_integral<NarrowFrom>::value);
+  static_assert(std::is_unsigned<NarrowFrom>::value);
+
+  if (value > static_cast<NarrowFrom>(std::numeric_limits<DestType>::max())) {
+      throw SignException("Narrowing value above target range");
+  }
+
+  return static_cast<DestType>(value);
 }
 
 // TODO separate into header and implementation file

@@ -25,7 +25,7 @@ public:
   /// Returns the next random of the given type and size. Size maxes out at
   /// `kNominalSize`.
   template <typename T>
-  T nextWithSize(int size);
+  T nextWithSize(size_t size);
 
 private:
   template <typename T>

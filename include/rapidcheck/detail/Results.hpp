@@ -19,7 +19,7 @@ Iterator deserialize(Iterator begin, Iterator end, Reproduce &out) {
 
   std::uint32_t size;
   iit = deserialize(iit, end, size);
-  out.size = static_cast<int>(size);
+  out.size = size;
 
   out.shrinkPath.clear();
   const auto p = deserializeCompact<std::size_t>(

@@ -21,7 +21,7 @@ Gen<Decay<typename rc::compat::return_type<Mapper,T>::type>> map(Gen<T> gen,
 template <typename T>
 class Gen<T>::IGenImpl {
 public:
-  virtual Shrinkable<T> generate(const Random &random, int size) const = 0;
+  virtual Shrinkable<T> generate(const Random &random, size_t size) const = 0;
   virtual void retain() = 0;
   virtual void release() = 0;
   virtual ~IGenImpl() = default;
@@ -36,7 +36,7 @@ public:
       : m_impl(std::forward<Args>(args)...)
       , m_count(1) {}
 
-  Shrinkable<T> generate(const Random &random, int size) const override {
+  Shrinkable<T> generate(const Random &random, size_t size) const override {
     return m_impl(random, size);
   }
 
@@ -64,7 +64,7 @@ std::string Gen<T>::name() const {
 }
 
 template <typename T>
-Shrinkable<T> Gen<T>::operator()(const Random &random, int size) const
+Shrinkable<T> Gen<T>::operator()(const Random &random, size_t size) const
     noexcept {
   try {
     return m_impl->generate(random, size);
