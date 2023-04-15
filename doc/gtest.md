@@ -4,7 +4,7 @@ RapidCheck comes with support for integrating with Google Test and allows you to
 
 ## Usage
 
-This support is available through the `extras/gtest` module. You can either directly add the `extras/gtest/include` directory to your include path or link against the `rapidcheck_gtest` target in your `CMakeLists.txt`. You can then simply `#include <rapidcheck/gtest.h>`. Note that `rapidcheck/gtest.h` needs to be included after `gtest/gtest.h`.
+This support is available through the `extras/gtest` module. In order to enable it, pass `-DRC_ENABLE_GTEST=ON` to your `CMake` flags while building RapidCheck. Then you can either directly add the `extras/gtest/include` directory to your include path or link against the `rapidcheck_gtest` target in your `CMakeLists.txt`. You can then simply `#include <rapidcheck/gtest.h>`. Note that `rapidcheck/gtest.h` needs to be included after `gtest/gtest.h`.
 
 ## Reference
 
