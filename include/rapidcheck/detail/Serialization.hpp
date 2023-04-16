@@ -1,5 +1,6 @@
 #include "Serialization.h"
 
+#include <cstdint>
 #include <limits>
 
 namespace rc {
