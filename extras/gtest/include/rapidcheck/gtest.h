@@ -60,3 +60,55 @@ void checkGTest(Testable &&testable) {
   }                                                                            \
                                                                                \
   void RapidCheckPropImpl_##Fixture##_##Name::operator() ArgList
+
+/// Helper macro for defining the RC_GTEST_* assertion macros.
+#define RC_WRAP_GTEST_ASSERTION_IMPL(assertion, gtest_assertion, expression)
+  do {
+    try {
+      assertion(expression);
+    } catch(const ::rc::detail::CaseResult& e) {
+      using rc::detail::param::CurrentPropertyContext;
+      if(rc::detail::ImplicitParam<CurrentPropertyContext>::value() ==
+         CurrentPropertyContext::defaultValue()) {
+        gtest_assertion() << e.description;
+      } else {
+        throw;
+      }
+    }
+  } while (false)
+
+/// Wrapper for RC_ASSERT that also works in non-RC GTest tests.
+#define RC_GTEST_ASSERT(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_ASSERT, FAIL, expression)
+
+/// Wrapper for RC_ASSERT_FALSE that also works in non-RC GTest tests.
+#define RC_GTEST_ASSERT_FALSE(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_ASSERT_FALSE, FAIL, expression)
+
+/// Wrapper for RC_ASSERT_THROWS that also works in non-RC GTest tests.
+#define RC_GTEST_ASSERT_THROWS(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_ASSERT_THROWS, FAIL, expression)
+
+/// Wrapper for RC_ASSERT_THROWS_AS that also works in non-RC GTest tests.
+#define RC_GTEST_ASSERT_THROWS_AS(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_ASSERT_THROWS_AS, FAIL, expression)
+
+/// Wrapper for RC_ASSERT_FAIL that also works in non-RC GTest tests.
+#define RC_GTEST_FAIL(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_FAIL, FAIL, expression)
+
+/// Wrapper for RC_ASSERT_SUCCEED_IF that also works in non-RC GTest tests.
+#define RC_GTEST_SUCCEED_IF(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_SUCCEED_IF, SUCCEED, expression)
+
+/// Wrapper for RC_ASSERT_SUCCEED that also works in non-RC GTest tests.
+#define RC_GTEST_SUCCEED(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_SUCCEED, SUCCEED, expression)
+
+/// Wrapper for RC_PRE that also works in non-RC GTest tests.
+#define RC_GTEST_PRE(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_PRE, FAIL, expression)
+
+/// Wrapper for RC_DISCARD that also works in non-RC GTest tests.
+#define RC_GTEST_DISCARD(expression)
+  RC_WRAP_GTEST_ASSERTION_IMPL(RC_DISCARD, FAIL, expression)
