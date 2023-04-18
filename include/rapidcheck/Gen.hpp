@@ -1,5 +1,6 @@
 #pragma once
 
+#include <type_traits>
 #include <cassert>
 
 #include "rapidcheck/detail/Any.h"
@@ -17,6 +18,13 @@ Gen<Decay<typename rc::compat::return_type<Mapper,T>::type>> map(Gen<T> gen,
                                                          Mapper &&mapper);
 
 } // namespace gen
+
+// Concept check for types that have method
+// `Shrinkable<T> G::operator()(const Random &, int) const`
+template<typename T, typename G>
+using MakesShrinkable = std::is_convertible<
+  decltype(std::declval<const G>()(std::declval<Random>(), 0)),
+  Shrinkable<T>>;
 
 template <typename T>
 class Gen<T>::IGenImpl {
@@ -56,7 +64,10 @@ private:
 template <typename T>
 template <typename Impl, typename>
 Gen<T>::Gen(Impl &&impl)
-    : m_impl(new GenImpl<Decay<Impl>>(std::forward<Impl>(impl))) {}
+    : m_impl(new GenImpl<Decay<Impl>>(std::forward<Impl>(impl))) {
+  static_assert(MakesShrinkable<T, Decay<Impl>>::value,
+                "Generator implementation must have a method Shrinkable<T> operator()(const Random &, int) const");
+}
 
 template <typename T>
 std::string Gen<T>::name() const {
