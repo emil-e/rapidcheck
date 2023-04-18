@@ -5,6 +5,24 @@ cache: ccache
 
 matrix:
   include:
+    # GCC 6
+    - addons: &gcc6
+        apt:
+          sources:
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - cmake-data
+            - ninja-build
+            - g++-6
+      compiler: gcc
+      env: COMPILER_VERSION=6 BUILD_TYPE=Release
+
+    - addons: *gcc6
+      compiler: gcc
+      env: COMPILER_VERSION=6 BUILD_TYPE=Debug
+
     # GCC 4.9
     - addons: &gcc49
         apt:
