@@ -60,3 +60,29 @@ void checkGTest(Testable &&testable) {
   }                                                                            \
                                                                                \
   void RapidCheckPropImpl_##Fixture##_##Name::operator() ArgList
+
+/// Defines a RapidCheck property as a typed Google Test.
+///
+/// TypedFixture is a Google Test typed (or type-parameterized) test
+/// fixture. The test type can be accessed from ArgList or from the
+/// property body as TypeParam (similarly to a TYPED_TEST).
+///
+/// The fixture is reinstantiated for each test case of the property.
+#define RC_GTEST_TYPED_FIXTURE_PROP(Fixture, Name, ArgList)                    \
+  template <typename TypeParam>                                                \
+  class RapidCheckPropImpl_##Fixture##_##Name : public Fixture<TypeParam> {    \
+  public:                                                                      \
+    void rapidCheck_fixtureSetUp() { this->SetUp(); }                          \
+    void TestBody() override {}                                                \
+    void operator() ArgList;                                                   \
+    void rapidCheck_fixtureTearDown() { this->TearDown(); }                    \
+  };                                                                           \
+                                                                               \
+  TYPED_TEST(Fixture, Name) {                                                  \
+    ::rc::detail::checkGTest(                                                  \
+        &rc::detail::ExecFixture<                                              \
+            RapidCheckPropImpl_##Fixture##_##Name<TypeParam>>::exec);          \
+  }                                                                            \
+                                                                               \
+  template <typename TypeParam>                                                \
+  void RapidCheckPropImpl_##Fixture##_##Name<TypeParam>::operator() ArgList
