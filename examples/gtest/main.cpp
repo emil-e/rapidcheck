@@ -60,6 +60,37 @@ TEST_F(MyFixture, incrementIncrementsByOne) {
   ASSERT_EQ(1U, counter);
 }
 
+// Typed test fixtures are also supported:
+template <typename TypeParam>
+class MyTypedFixture : public ::testing::Test {
+protected:
+  void add(const TypeParam x) { sum += x; }
+
+  TypeParam sum{};
+};
+
+// A typed suite can be defined as usual ...
+using TestTypes = ::testing::Types<int, float, double>;
+TYPED_TEST_SUITE(MyTypedFixture, TestTypes, );
+
+// ... and used with properties ...
+RC_GTEST_TYPED_FIXTURE_PROP(MyTypedFixture,
+                            typeParameterizedProperty,
+                            (TypeParam a, TypeParam b)) {
+  this->add(a);
+  this->add(b);
+  RC_ASSERT(this->sum == (a + b));
+}
+
+// ...as with regular typed tests:
+TYPED_TEST(MyTypedFixture, test) {
+  const auto a = static_cast<TypeParam>(10);
+  const auto b = static_cast<TypeParam>(20);
+  this->add(a);
+  this->add(b);
+  ASSERT_EQ(this->sum, a + b);
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
