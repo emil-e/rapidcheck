@@ -1,10 +1,15 @@
-# Since 
+# Since
 option(RC_INSTALL_ALL_EXTRAS "Add all possible integrations without
   requiring the initialization of all the submodules in ext." OFF)
 
 option(RC_ENABLE_CATCH "Build Catch.hpp support" OFF)
 if (RC_ENABLE_CATCH OR RC_ENABLE_TESTS OR RC_INSTALL_ALL_EXTRAS)
   add_subdirectory(catch)
+endif()
+
+option(RC_ENABLE_DOCTEST "Build DocTest support" OFF)
+if (RC_ENABLE_DOCTEST OR RC_ENABLE_TESTS OR RC_INSTALL_ALL_EXTRAS)
+  add_subdirectory(doctest)
 endif()
 
 option(RC_ENABLE_GMOCK "Build Google Mock integration" OFF)
