@@ -197,7 +197,7 @@ Generates strings. Essentially equivalent to `gen::container<String>(gen::charac
 
 ### `Gen<T> inRange(T min, T max)`
 
-Generates an integer between `min` (inclusive) and `max` (exclusive). The part of the range that is used grows with size and when size is `0`, only `min` is generated. When shrinking, the value will shrink towards `min`.
+Generates a value between `min` (inclusive) and `max` (exclusive). The part of the range that is used grows with size and when size is `0`, only `min` is generated. When shrinking, the value will shrink towards `min`.
 
 ```C++
 // Example:
