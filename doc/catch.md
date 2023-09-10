@@ -9,7 +9,7 @@ directly add the `extras/gtest/inclode` directory to your include path:
 
 ```cmake
 add_subdirectory(rapidcheck)
-set include_directories(rapidcheck/extras/gtest/include)
+include_directories(rapidcheck/extras/gtest/include)
 add_executable(MyTest main.cpp)
 ```
 
