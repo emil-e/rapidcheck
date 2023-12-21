@@ -228,7 +228,7 @@ Generates a value which is less than `0`.
 
 ```C++
 // Example:
-const auto x = *gen::positive<int>();
+const auto x = *gen::negative<int>();
 ```
 
 ### `Gen<T> nonNegative()`
