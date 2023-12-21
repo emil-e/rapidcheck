@@ -70,7 +70,7 @@ protected:
 };
 
 // A typed suite can be defined as usual ...
-using TestTypes = ::testing::Types<int, float, double>;
+using TestTypes = ::testing::Types<unsigned, float, double>;
 TYPED_TEST_SUITE(MyTypedFixture, TestTypes, );
 
 // ... and used with properties ...
