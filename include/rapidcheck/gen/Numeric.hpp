@@ -1,9 +1,12 @@
 #pragma once
 
+#include <complex>
+
 #include "rapidcheck/detail/BitStream.h"
 #include "rapidcheck/shrinkable/Create.h"
 #include "rapidcheck/shrink/Shrink.h"
 #include "rapidcheck/gen/Transform.h"
+#include "rapidcheck/gen/Tuple.h"
 #include "rapidcheck/gen/detail/ScaleInteger.h"
 
 namespace rc {
@@ -78,6 +81,18 @@ struct DefaultArbitrary<double> {
 template <>
 struct DefaultArbitrary<long double> {
   static Gen<long double> arbitrary() { return real<long double>; }
+};
+
+template <typename T>
+struct DefaultArbitrary<std::complex<T>> {
+  static Gen<std::complex<T>> arbitrary() {
+    return gen::map(
+      gen::pair(
+        DefaultArbitrary<T>::arbitrary(),
+        DefaultArbitrary<T>::arbitrary()),
+      [](std::pair<T, T> pair) { return std::complex<T> (pair.first, pair.second); }
+      );
+  }
 };
 
 template <>
