@@ -29,6 +29,7 @@
 #include "rapidcheck/gen/Text.h"
 #include "rapidcheck/gen/Transform.h"
 #include "rapidcheck/gen/Tuple.h"
+#include "rapidcheck/gen/Variant.h"
 
 #include "rapidcheck/Assertions.h"
 #include "rapidcheck/Check.h"
