@@ -16,10 +16,14 @@ struct MaxOf<V1, V2, Vs...>
           (V1 > MaxOf<V2, Vs...>::value ? V1 : MaxOf<V2, Vs...>::value)> {};
 
 /// Replacement for std::aligned_union for compiles that do not have it.
+///
+/// See https://stackoverflow.com/questions/71828288/why-is-stdaligned-storage-to-be-deprecated-in-c23-and-what-to-use-instead
+
 template <typename... Ts>
-using AlignedUnion =
-    typename std::aligned_storage<MaxOf<sizeof(Ts)...>::value,
-                                  MaxOf<alignof(Ts)...>::value>::type;
+struct alignas(MaxOf<alignof(Ts)...>::value) AlignedUnion
+{
+  std::uint8_t bytes [MaxOf<sizeof(Ts)...>::value];
+};
 
 } // namespace detail
 } // namespace rc
