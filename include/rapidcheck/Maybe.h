@@ -81,8 +81,13 @@ public:
   ~Maybe();
 
 private:
-  using Storage = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
-  Storage m_storage;
+// See https://stackoverflow.com/questions/71828288/why-is-stdaligned-storage-to-be-deprecated-in-c23-and-what-to-use-instead
+
+// using Storage = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
+// Storage m_storage;
+
+  alignas(T) std::uint8_t m_storage[sizeof(T)];
+
   bool m_initialized;
 };
 
