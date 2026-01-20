@@ -75,7 +75,7 @@ TEST_CASE("MulticastTestListener") {
     prop("passes on correct arguments",
          [](const TestMetadata &metadata, const TestResult &result) {
            MockTestListener mock;
-           mock.onTestFinishedCallback = [=](const TestMetadata &meta,
+           mock.onTestFinishedCallback = [&](const TestMetadata &meta,
                                              const TestResult &res) {
              RC_ASSERT(meta == metadata);
              RC_ASSERT(res == result);

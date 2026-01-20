@@ -32,7 +32,7 @@ Variant<Type, Types...>::Variant(T &&value) noexcept(
   static_assert(isValidType<Decay<T>>(),
                 "T is not a valid type of this variant");
 
-  new (&m_storage) Decay<T>(std::forward<T>(value));
+  new (m_storage) Decay<T>(std::forward<T>(value));
 }
 
 template <typename Type, typename... Types>
@@ -43,11 +43,11 @@ operator=(const T &value) noexcept {
 
   const auto newIndex = indexOfType<T>();
   if (newIndex == m_typeIndex) {
-    *reinterpret_cast<T *>(&m_storage) = value;
+    *reinterpret_cast<T *>(m_storage) = value;
   } else {
-    destroy(m_typeIndex, &m_storage);
+    destroy(m_typeIndex, m_storage);
     m_typeIndex = newIndex;
-    new (&m_storage) T(value);
+    new (m_storage) T(value);
   }
   return *this;
 }
@@ -60,11 +60,11 @@ operator=(T &&value) noexcept {
 
   const auto newIndex = indexOfType<T>();
   if (newIndex == m_typeIndex) {
-    *reinterpret_cast<T *>(&m_storage) = std::move(value);
+    *reinterpret_cast<T *>(m_storage) = std::move(value);
   } else {
-    destroy(m_typeIndex, &m_storage);
+    destroy(m_typeIndex, m_storage);
     m_typeIndex = newIndex;
-    new (&m_storage) T(std::move(value));
+    new (m_storage) T(std::move(value));
   }
   return *this;
 }
@@ -73,14 +73,14 @@ template <typename Type, typename... Types>
 template <typename T>
 T &Variant<Type, Types...>::get() & {
   assert(indexOfType<T>() == m_typeIndex);
-  return *reinterpret_cast<T *>(&m_storage);
+  return *reinterpret_cast<T *>(m_storage);
 }
 
 template <typename Type, typename... Types>
 template <typename T>
 const T &Variant<Type, Types...>::get() const & {
   assert(indexOfType<T>() == m_typeIndex);
-  return *reinterpret_cast<const T *>(&m_storage);
+  return *reinterpret_cast<const T *>(m_storage);
 }
 
 template <typename Type, typename... Types>
@@ -97,7 +97,7 @@ bool Variant<Type, Types...>::match(T &value) const {
     return false;
   }
 
-  value = *reinterpret_cast<const T *>(&m_storage);
+  value = *reinterpret_cast<const T *>(m_storage);
   return true;
 }
 
@@ -123,7 +123,7 @@ bool Variant<Type, Types...>::operator==(const Variant &rhs) const {
   static bool (*const equalsFuncs[])(const void *, const void *) = {
       &variantEqualsImpl<Type>, &variantEqualsImpl<Types>...};
 
-  return equalsFuncs[m_typeIndex](&m_storage, &rhs.m_storage);
+  return equalsFuncs[m_typeIndex](m_storage, rhs.m_storage);
 }
 
 template <typename T>
@@ -136,21 +136,21 @@ void Variant<Type, Types...>::printTo(std::ostream &os) const {
   static void (*printToFuncs[])(std::ostream &, const void *) = {
       &variantPrintToImpl<Type>, &variantPrintToImpl<Types>...};
 
-  printToFuncs[m_typeIndex](os, &m_storage);
+  printToFuncs[m_typeIndex](os, m_storage);
 }
 
 template <typename Type, typename... Types>
 Variant<Type, Types...>::Variant(const Variant &other) noexcept(
     AllIs<std::is_nothrow_copy_constructible, Type, Types...>::value)
     : m_typeIndex(other.m_typeIndex) {
-  copy(m_typeIndex, &m_storage, &other.m_storage);
+  copy(m_typeIndex, m_storage, other.m_storage);
 }
 
 template <typename Type, typename... Types>
 Variant<Type, Types...>::Variant(Variant &&other) noexcept(
     AllIs<std::is_nothrow_move_constructible, Type, Types...>::value)
     : m_typeIndex(other.m_typeIndex) {
-  move(m_typeIndex, &m_storage, &other.m_storage);
+  move(m_typeIndex, m_storage, other.m_storage);
 }
 
 template <typename Type, typename... Types>
@@ -163,12 +163,12 @@ operator=(const Variant &rhs) noexcept(
       "AllIs types must be nothrow move-constructible to use copy assignment");
 
   if (m_typeIndex == rhs.m_typeIndex) {
-    copyAssign(m_typeIndex, &m_storage, &rhs.m_storage);
+    copyAssign(m_typeIndex, m_storage, rhs.m_storage);
   } else {
-    Storage tmp;
-    copy(rhs.m_typeIndex, &tmp, &rhs.m_storage);
-    destroy(m_typeIndex, &m_storage);
-    move(rhs.m_typeIndex, &m_storage, &tmp);
+    decltype(m_storage) tmp;
+    copy(rhs.m_typeIndex, tmp, rhs.m_storage);
+    destroy(m_typeIndex, m_storage);
+    move(rhs.m_typeIndex, m_storage, tmp);
     m_typeIndex = rhs.m_typeIndex;
   }
 
@@ -184,11 +184,11 @@ operator=(Variant &&rhs) noexcept(
       "AllIs types must be nothrow move-constructible to use copy assignment");
 
   if (m_typeIndex == rhs.m_typeIndex) {
-    moveAssign(m_typeIndex, &m_storage, &rhs.m_storage);
+    moveAssign(m_typeIndex, m_storage, rhs.m_storage);
   } else {
-    destroy(m_typeIndex, &m_storage);
+    destroy(m_typeIndex, m_storage);
     m_typeIndex = rhs.m_typeIndex;
-    move(m_typeIndex, &m_storage, &rhs.m_storage);
+    move(m_typeIndex, m_storage, rhs.m_storage);
   }
 
   return *this;
@@ -196,7 +196,7 @@ operator=(Variant &&rhs) noexcept(
 
 template <typename Type, typename... Types>
 Variant<Type, Types...>::~Variant() noexcept {
-  destroy(m_typeIndex, &m_storage);
+  destroy(m_typeIndex, m_storage);
 }
 
 template <typename T>

@@ -52,7 +52,7 @@ template <typename T>
 template <typename... Args>
 void Maybe<T>::init(Args &&... args) {
   reset();
-  new (&m_storage) T(std::forward<Args>(args)...);
+  new (m_storage) T(std::forward<Args>(args)...);
   m_initialized = true;
 }
 
@@ -66,27 +66,27 @@ void Maybe<T>::reset() {
 
 template <typename T>
 T &Maybe<T>::operator*() & {
-  return *reinterpret_cast<T *>(&m_storage);
+  return *reinterpret_cast<T *>(m_storage);
 }
 
 template <typename T>
 const T &Maybe<T>::operator*() const & {
-  return *reinterpret_cast<const T *>(&m_storage);
+  return *reinterpret_cast<const T *>(m_storage);
 }
 
 template <typename T>
 T &&Maybe<T>::operator*() && {
-  return std::move(*reinterpret_cast<T *>(&m_storage));
+  return std::move(*reinterpret_cast<T *>(m_storage));
 }
 
 template <typename T>
 T *Maybe<T>::operator->() {
-  return reinterpret_cast<T *>(&m_storage);
+  return reinterpret_cast<T *>(m_storage);
 }
 
 template <typename T>
 const T *Maybe<T>::operator->() const {
-  return reinterpret_cast<const T *>(&m_storage);
+  return reinterpret_cast<const T *>(m_storage);
 }
 
 template <typename T>

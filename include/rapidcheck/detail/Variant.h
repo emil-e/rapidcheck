@@ -90,8 +90,8 @@ private:
   static constexpr bool isValidType();
 
   std::size_t m_typeIndex;
-  using Storage = AlignedUnion<Type, Types...>;
-  Storage m_storage;
+  alignas(MaxOf<alignof(Type), alignof(Types)...>::value)
+      uint8_t m_storage[MaxOf<sizeof(Type), sizeof(Types)...>::value];
 };
 
 template <typename Type, typename... Types>
