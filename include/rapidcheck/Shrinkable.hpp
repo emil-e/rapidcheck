@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <stdexcept>
 
 namespace rc {
 
@@ -41,11 +42,17 @@ private:
 
 template <typename T>
 T Shrinkable<T>::value() const {
+  if (!m_impl) {
+    throw std::runtime_error("tried to get value of moved-from Shrinkable");
+  }
   return m_impl->value();
 }
 
 template <typename T>
 Seq<Shrinkable<T>> Shrinkable<T>::shrinks() const noexcept {
+  if (!m_impl) {
+    return Seq<Shrinkable<T>>();
+  }
   try {
     return m_impl->shrinks();
   } catch (...) {
@@ -56,7 +63,9 @@ Seq<Shrinkable<T>> Shrinkable<T>::shrinks() const noexcept {
 template <typename T>
 Shrinkable<T>::Shrinkable(const Shrinkable &other) noexcept
     : m_impl(other.m_impl) {
-  m_impl->retain();
+  if (m_impl) {
+    m_impl->retain();
+  }
 }
 
 template <typename T>
@@ -66,7 +75,9 @@ Shrinkable<T>::Shrinkable(Shrinkable &&other) noexcept : m_impl(other.m_impl) {
 
 template <typename T>
 Shrinkable<T> &Shrinkable<T>::operator=(const Shrinkable &other) noexcept {
-  other.m_impl->retain();
+  if (other.m_impl) {
+    other.m_impl->retain();
+  }
   if (m_impl) {
     m_impl->release();
   }
