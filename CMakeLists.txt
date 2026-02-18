@@ -121,7 +121,7 @@ endif()
 add_subdirectory(extras)
 
 # Install the export file specifying all the targets for RapidCheck
-install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
+install(EXPORT rapidcheckConfig DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 export(EXPORT rapidcheckConfig FILE rapidcheckConfig.cmake)
 
 set(PKG_CONFIG_DESCRIPTION_SUMMARY "C++ framework for property based testing inspired by QuickCheck and other similar frameworks")
