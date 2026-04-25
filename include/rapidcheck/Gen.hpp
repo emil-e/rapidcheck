@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <exception>
 
 #include "rapidcheck/detail/Any.h"
 #include "rapidcheck/detail/ImplicitParam.h"
