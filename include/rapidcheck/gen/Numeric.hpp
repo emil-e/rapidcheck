@@ -116,9 +116,20 @@ Gen<T> inRange(T min, T max, std::false_type) {
 }
 
 template <typename T>
+void assertFiniteRange(T min, T max) {
+  if (!std::isfinite(min) || !std::isfinite(max)) {
+    std::string msg;
+    msg += "Non-finite range [" + std::to_string(min);
+    msg += ", " + std::to_string(max) + ")";
+    throw GenerationFailure(msg);
+  }
+}
+
+template <typename T>
 Gen<T> inRange(T min, T max, std::true_type) {
   return [=](const Random &random, int size) {
     assertValidRange(min, max);
+    assertFiniteRange(min, max);
 
     const auto unit =
         static_cast<T>(Random(random).next()) /
@@ -128,8 +139,9 @@ Gen<T> inRange(T min, T max, std::true_type) {
     const auto scale =
         std::min(size, kNominalSize) / static_cast<T>(kNominalSize);
 
-    auto value = min + ((max - min) * unit * scale);
-    // Rounding can land on `max`, which is exclusive.
+    // Interpolate the value and limit it to the range [min, max)
+    const auto t = unit * scale;
+    auto value = ((1 - t) * min) + (t * max);
     if (value >= max) {
       value = std::nextafter(max, min);
     }

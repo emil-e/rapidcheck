@@ -48,13 +48,13 @@ public:
       , m_target(target) {}
 
   Maybe<T> operator()() {
-    if (m_value == m_target) {
+    if (m_value == m_target || std::isnan(m_value) || std::isnan(m_target)) {
       return Nothing;
     }
 
     T new_value = (m_value / 2) + (m_target / 2);
 
-    if (new_value == m_value) {
+    if (new_value == m_value || std::isnan(new_value)) {
       new_value = m_target;
     }
 
