@@ -5,7 +5,7 @@
 namespace rc {
 namespace gen {
 
-/// Generates an integer in a given range.
+/// Generates an integer or floating point value in a given range.
 ///
 /// @param min  The minimum value, inclusive.
 /// @param max  The maximum value, exclusive.

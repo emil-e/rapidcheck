@@ -28,10 +28,11 @@ Seq<Container> removeChunks(Container elements);
 template <typename Container, typename Shrink>
 Seq<Container> eachElement(Container elements, Shrink shrink);
 
-/// Shrinks an integral value towards another integral value.
+/// Shrinks an integral or floating point value towards another value of the
+/// same type by repeated bisection. The target is always tried first.
 ///
 /// @param value   The value to shrink.
-/// @param target  The integer to shrink towards.
+/// @param target  The value to shrink towards.
 template <typename T>
 Seq<T> towards(T value, T target);
 
