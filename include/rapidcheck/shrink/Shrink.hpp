@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <locale>
 
@@ -11,7 +12,7 @@ namespace rc {
 namespace shrink {
 namespace detail {
 
-template <typename T>
+template <typename T, typename Enable = void>
 class TowardsSeq {
 public:
   using UInt = typename std::make_unsigned<T>::type;
@@ -35,6 +36,35 @@ private:
   T m_value;
   UInt m_diff;
   bool m_down;
+};
+
+template <typename T>
+class TowardsSeq<
+    T,
+    typename std::enable_if<std::is_floating_point<T>::value>::type> {
+public:
+  TowardsSeq(T value, T target)
+      : m_value(value)
+      , m_target(target) {}
+
+  Maybe<T> operator()() {
+    if (m_value == m_target) {
+      return Nothing;
+    }
+
+    T new_value = (m_value / 2) + (m_target / 2);
+
+    if (new_value == m_value) {
+      new_value = m_target;
+    }
+
+    m_value = new_value;
+    return m_value;
+  }
+
+private:
+  T m_value;
+  T m_target;
 };
 
 template <typename Container>

@@ -6,6 +6,8 @@
 #include "rapidcheck/gen/Transform.h"
 #include "rapidcheck/gen/detail/ScaleInteger.h"
 
+#include <cmath>
+
 namespace rc {
 namespace gen {
 namespace detail {
@@ -85,22 +87,25 @@ struct DefaultArbitrary<bool> {
   static Gen<bool> arbitrary() { return boolean; }
 };
 
-} // namespace detail
+template <typename T>
+void assertValidRange(T min, T max) {
+  if (max <= min) {
+    std::string msg;
+    msg += "Invalid range [" + std::to_string(min);
+    msg += ", " + std::to_string(max) + ")";
+    throw GenerationFailure(msg);
+  }
+}
 
 template <typename T>
-Gen<T> inRange(T min, T max) {
+Gen<T> inRange(T min, T max, std::false_type) {
   return [=](const Random &random, int size) {
-    if (max <= min) {
-      std::string msg;
-      msg += "Invalid range [" + std::to_string(min);
-      msg += ", " + std::to_string(max) + ")";
-      throw GenerationFailure(msg);
-    }
+    assertValidRange(min, max);
 
     const auto rangeSize =
-        detail::scaleInteger(static_cast<Random::Number>(max) -
-                                 static_cast<Random::Number>(min) - 1,
-                             size) +
+        scaleInteger(static_cast<Random::Number>(max) -
+                         static_cast<Random::Number>(min) - 1,
+                     size) +
         1;
     const auto value =
         static_cast<T>((Random(random).next() % rangeSize) + min);
@@ -108,6 +113,38 @@ Gen<T> inRange(T min, T max) {
     return shrinkable::shrinkRecur(
         value, [=](T x) { return shrink::towards<T>(x, min); });
   };
+}
+
+template <typename T>
+Gen<T> inRange(T min, T max, std::true_type) {
+  return [=](const Random &random, int size) {
+    assertValidRange(min, max);
+
+    const auto unit =
+        static_cast<T>(Random(random).next()) /
+        (static_cast<T>(std::numeric_limits<Random::Number>::max()) + 1);
+    // As for integrals, `size` decides how much of the range is used, with a
+    // size of zero yielding only `min`.
+    const auto scale =
+        std::min(size, kNominalSize) / static_cast<T>(kNominalSize);
+
+    auto value = min + ((max - min) * unit * scale);
+    // Rounding can land on `max`, which is exclusive.
+    if (value >= max) {
+      value = std::nextafter(max, min);
+    }
+
+    assert(value >= min && value < max);
+    return shrinkable::shrinkRecur(
+        value, [=](T x) { return shrink::towards<T>(x, min); });
+  };
+}
+
+} // namespace detail
+
+template <typename T>
+Gen<T> inRange(T min, T max) {
+  return detail::inRange<T>(min, max, std::is_floating_point<T>());
 }
 
 } // namespace gen

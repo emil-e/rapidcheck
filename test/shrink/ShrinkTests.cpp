@@ -123,6 +123,28 @@ namespace {
 struct ShrinkTowardsProperties {
   template <typename T>
   static void exec() {
+    templatedProp<T>(
+        "shrinking towards self yields empty shrink",
+        [](T target) { RC_ASSERT(!shrink::towards(target, target).next()); });
+
+    templatedProp<T>(
+        "never contains original value",
+        [](T x, T y) { RC_ASSERT(!seq::contains(shrink::towards(x, y), x)); });
+
+    templatedProp<T>("never leaves the interval between target and value",
+                     [](T target) {
+                       T value = *gen::distinctFrom(target);
+                       const auto lo = std::min(value, target);
+                       const auto hi = std::max(value, target);
+                       seq::forEach(shrink::towards(value, target),
+                                    [=](T x) { RC_ASSERT(x >= lo && x <= hi); });
+                     });
+  }
+};
+
+struct ShrinkTowardsIntegralProperties {
+  template <typename T>
+  static void exec() {
     templatedProp<T>("first tries target immediately",
                      [](T target) {
                        T value = *gen::distinctFrom(target);
@@ -142,21 +164,40 @@ struct ShrinkTowardsProperties {
                            (value > target) ? (value - *fin) : (*fin - value);
                        RC_ASSERT(diff == T(1));
                      });
+  }
+};
 
-    templatedProp<T>(
-        "shrinking towards self yields empty shrink",
-        [](T target) { RC_ASSERT(!shrink::towards(target, target).next()); });
+struct ShrinkTowardsRealProperties {
+  template <typename T>
+  static void exec() {
+    templatedProp<T>("each shrink is closer to the target than the last",
+                     [](T target) {
+                       T value = *gen::distinctFrom(target);
+                       T previous = value;
+                       seq::forEach(shrink::towards(value, target),
+                                    [&](T x) {
+                                      RC_ASSERT(std::abs(x - target) <
+                                                std::abs(previous - target));
+                                      previous = x;
+                                    });
+                     });
 
-    templatedProp<T>(
-        "never contains original value",
-        [](T x, T y) { RC_ASSERT(!seq::contains(shrink::towards(x, y), x)); });
+    templatedProp<T>("reaches the target",
+                     [](T target) {
+                       T value = *gen::distinctFrom(target);
+                       const auto fin = seq::last(shrink::towards(value, target));
+                       RC_ASSERT(fin);
+                       RC_ASSERT(*fin == target);
+                     });
   }
 };
 
 } // namespace
 
 TEST_CASE("shrink::towards") {
-  forEachType<ShrinkTowardsProperties, RC_INTEGRAL_TYPES>();
+  forEachType<ShrinkTowardsProperties, RC_NUMERIC_TYPES>();
+  forEachType<ShrinkTowardsIntegralProperties, RC_INTEGRAL_TYPES>();
+  forEachType<ShrinkTowardsRealProperties, RC_REAL_TYPES>();
 }
 
 namespace {
