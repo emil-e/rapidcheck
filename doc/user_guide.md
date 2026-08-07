@@ -17,7 +17,7 @@ The following document is a work in progress and some parts are still missing. T
 
 ## Extras
 
-- [Catch Test integratio](catch.md)
+- [Catch Test integration](catch.md)
 - [Google Test integration](gtest.md)
 - [Google Mock integration](gmock.md)
 - [Boost support](boost.md)
