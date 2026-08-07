@@ -12,6 +12,8 @@ option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 option(RC_ENABLE_RTTI "Build RapidCheck with RTTI" ON)
 
+include(GNUInstallDirs)
+
 if(MSVC)
   # /bigobj - some object files become very large so we need this
   # /wd4503 - truncation of decorated name, not much we can do about it so
@@ -83,10 +85,9 @@ endif()
 
 target_include_directories(rapidcheck PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-    $<INSTALL_INTERFACE:include>  # <prefix>/include
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-include(GNUInstallDirs)
 install(TARGETS rapidcheck EXPORT rapidcheckConfig
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -120,16 +121,10 @@ endif()
 add_subdirectory(extras)
 
 # Install the export file specifying all the targets for RapidCheck
-install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
+install(EXPORT rapidcheckConfig DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 export(EXPORT rapidcheckConfig FILE rapidcheckConfig.cmake)
 
-set(PKG_CONFIG_REQUIRES)
 set(PKG_CONFIG_DESCRIPTION_SUMMARY "C++ framework for property based testing inspired by QuickCheck and other similar frameworks")
-set(PKG_CONFIG_VERSION)
-set(PKG_CONFIG_LIBDIR "\${prefix}/lib")
-set(PKG_CONFIG_INCLUDEDIR "\${prefix}/include")
-set(PKG_CONFIG_LIBS)
-set(PKG_CONFIG_CFLAGS "-I\${includedir}")
 
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/pkg-config.pc.cmake"
