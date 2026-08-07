@@ -121,6 +121,10 @@ private:
 
 } // namespace detail
 
+// Suppress clang warning which appears to errornously trigger on construct
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-braces"
+
 template <typename T, typename... Args>
 Gen<T> construct(Gen<Args>... gens) {
   return gen::map(gen::tuple(std::move(gens)...),
@@ -130,6 +134,8 @@ Gen<T> construct(Gen<Args>... gens) {
                         [](Args &&... args) { return T{std::move(args)...}; });
                   });
 }
+
+#pragma clang diagnostic pop
 
 template <typename T, typename Arg, typename... Args>
 Gen<T> construct() {
