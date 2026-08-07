@@ -33,14 +33,27 @@ protected:
     // SetUp works as usual...
   }
 
-  void increment() { counter++; }
+  static void SetUpTestSuite() {
+    // ... SetUpTestSuite also works
+    step_size = 1U;
+  }
+
+  void increment() { counter += step_size; }
 
   void TearDown() override {
     // ...as does TearDown
   }
 
+  static void TearDownTestSuite() {
+    // ... and TearDownTestSuite
+    EXPECT_EQ(step_size, 1U);
+  }
+
   std::size_t counter;
+  static std::size_t step_size;
 };
+
+std::size_t MyFixture::step_size{0U};
 
 // ...and use them like this:
 RC_GTEST_FIXTURE_PROP(MyFixture,
