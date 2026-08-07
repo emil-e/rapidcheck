@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD 11)
 option(RC_ENABLE_TESTS "Build RapidCheck tests" OFF)
 option(RC_ENABLE_EXAMPLES "Build RapidCheck examples" OFF)
 option(RC_ENABLE_RTTI "Build RapidCheck with RTTI" ON)
+option(RC_ENABLE_INSTALL "Install rapidcheck" ON)
 
 if(MSVC)
   # /bigobj - some object files become very large so we need this
@@ -86,13 +87,16 @@ target_include_directories(rapidcheck PUBLIC
     $<INSTALL_INTERFACE:include>  # <prefix>/include
 )
 
-include(GNUInstallDirs)
-install(TARGETS rapidcheck EXPORT rapidcheckConfig
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+if(RC_ENABLE_INSTALL)
+  include(GNUInstallDirs)
+  install(TARGETS rapidcheck EXPORT rapidcheckConfig
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      COMPONENT ${PROJECT_NAME}
+  )
+  install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT ${PROJECT_NAME})
+endif()
 
 # On Windows under MinGW, random_device provides no entropy,
 # so it will always return the same value.
@@ -120,8 +124,10 @@ endif()
 add_subdirectory(extras)
 
 # Install the export file specifying all the targets for RapidCheck
-install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake)
-export(EXPORT rapidcheckConfig FILE rapidcheckConfig.cmake)
+if(RC_ENABLE_INSTALL)
+  install(EXPORT rapidcheckConfig DESTINATION share/rapidcheck/cmake COMPONENT ${PROJECT_NAME})
+  export(EXPORT rapidcheckConfig FILE rapidcheckConfig.cmake)
+endif()
 
 set(PKG_CONFIG_REQUIRES)
 set(PKG_CONFIG_DESCRIPTION_SUMMARY "C++ framework for property based testing inspired by QuickCheck and other similar frameworks")
@@ -136,6 +142,9 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
   )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
-  )
+if(RC_ENABLE_INSTALL)
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+    COMPONENT ${PROJECT_NAME}
+    )
+endif()
