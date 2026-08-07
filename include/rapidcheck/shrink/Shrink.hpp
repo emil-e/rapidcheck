@@ -199,5 +199,17 @@ Seq<T> character(T value) {
   return seq::takeWhile(std::move(shrinks), [=](T x) { return x != value; });
 }
 
+/// Shrinks a unicode codepoint
+template <typename T>
+Seq<T> unicodeCodepoint(T value){
+	auto shrinks = seq::cast<T>(seq::concat(
+		seq::fromContainer(std::vector<T>({'a', 'b', 'c'})),
+		seq::fromContainer(std::vector<T>({'A', 'B', 'C', 
+			'1', '2', '3', ' ', '\n' })),
+		seq::filter(towards(value, static_cast<T>(1)), [](const T& val) 
+				{ return val != static_cast<T>(0); } )));
+
+	return seq::takeWhile(std::move(shrinks), [=](T x) { return x != value; });
+}
 } // namespace shrink
 } // namespace rc

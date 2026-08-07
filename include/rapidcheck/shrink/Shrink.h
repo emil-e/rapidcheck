@@ -2,6 +2,8 @@
 
 #include "rapidcheck/Seq.h"
 
+#include <cstdint>
+
 namespace rc {
 namespace shrink {
 
@@ -49,6 +51,10 @@ inline Seq<bool> boolean(bool value);
 /// Shrinks a text character.
 template <typename T>
 Seq<T> character(T value);
+
+/// Shrinks a unicode codepoint
+template <typename T>
+Seq<T> unicodeCodepoint(T value);
 
 } // namespace shrink
 } // namespace rc
