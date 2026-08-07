@@ -4,7 +4,7 @@ rapidcheck comes with some basic integrations for the catch test library.
 
 ## Usage
 
-This support is available throught the `extras/catch` module. You can either
+This support is available through the `extras/catch` module. You can either
 directly add the `extras/gtest/inclode` directory to your include path:
 
 ```cmake
