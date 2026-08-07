@@ -110,6 +110,9 @@ add_subdirectory(ext)
 
 if(RC_ENABLE_TESTS)
   enable_testing()
+
+  add_compile_definitions(-DCATCH_CONFIG_NO_POSIX_SIGNALS)
+
   add_subdirectory(test)
 endif()
 
