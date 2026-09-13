@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iterator>
+
 namespace rc {
 namespace detail {
 
