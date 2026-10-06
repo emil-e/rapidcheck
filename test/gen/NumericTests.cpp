@@ -174,16 +174,21 @@ TEST_CASE("arbitrary reals") {
 
 namespace {
 
+template <typename T>
+Gen<std::pair<T, T>> genRangeOf() {
+  // TODO proper range generator
+  return gen::exec([] {
+    const auto a = *gen::arbitrary<T>();
+    const auto b = *gen::distinctFrom(a);
+    return std::make_pair(std::min(a, b), std::max(a, b));
+  });
+}
+
 struct InRangeProperties {
   template <typename T>
   static void exec() {
 
-    // TODO proper range generator
-    static const auto genRange = gen::exec([] {
-      const auto a = *gen::arbitrary<T>();
-      const auto b = *gen::distinctFrom(a);
-      return std::make_pair(std::min(a, b), std::max(a, b));
-    });
+    static const auto genRange = genRangeOf<T>();
 
     templatedProp<T>(
         "never generates values outside of range",
@@ -210,6 +215,22 @@ struct InRangeProperties {
                        RC_ASSERT_THROWS_AS(shrinkable.value(),
                                            GenerationFailure);
                      });
+
+    templatedProp<T>("when size == 0, generates only min",
+                     [](const Random &random) {
+                       const auto range = *genRange;
+                       RC_ASSERT(
+                           gen::inRange(range.first, range.second)(random, 0) ==
+                           shrinkable::just(range.first));
+                     });
+  }
+};
+
+struct InRangeIntegralProperties {
+  template <typename T>
+  static void exec() {
+
+    static const auto genRange = genRangeOf<T>();
 
     templatedProp<T>("first shrink is min",
                      [](const GenParams &params) {
@@ -249,14 +270,6 @@ struct InRangeProperties {
           RC_FAIL("Gave up");
         });
 
-    templatedProp<T>("when size == 0, generates only min",
-                     [](const Random &random) {
-                       const auto range = *genRange;
-                       RC_ASSERT(
-                           gen::inRange(range.first, range.second)(random, 0) ==
-                           shrinkable::just(range.first));
-                     });
-
     templatedProp<T>("finds shrink where value must be larger than some value",
                      [](const Random &random) {
                        const auto range = *genRange;
@@ -273,8 +286,54 @@ struct InRangeProperties {
   }
 };
 
+struct InRangeRealProperties {
+  template <typename T>
+  static void exec() {
+
+    static const auto genRange = genRangeOf<T>();
+
+    templatedProp<T>(
+        "spreads values over the whole range",
+        [](const Random &random) {
+          // Unlike the integral case a continuous range cannot be covered
+          // exhaustively, so check that every decile gets hit instead.
+          const auto min = *gen::inRange<T>(-1000, 1000);
+          const auto max = min + *gen::inRange<T>(1, 1000);
+
+          const auto gen = gen::inRange<T>(min, max);
+          auto r = random;
+          std::vector<int> counts(10, 0);
+          for (std::size_t i = 0; i < 100000; i++) {
+            const auto x = gen(r.split(), kNominalSize).value();
+            const auto decile = static_cast<std::size_t>(
+                (10 * (x - min)) / (max - min));
+            counts[std::min<std::size_t>(decile, 9)]++;
+            if (std::find(begin(counts), end(counts), 0) == end(counts)) {
+              RC_SUCCEED("All deciles generated");
+            }
+          }
+
+          RC_FAIL("Gave up");
+        });
+
+    templatedProp<T>(
+        "shrinks towards min",
+        [](const GenParams &params) {
+          const auto range = *genRange;
+          const auto shrinkable =
+              gen::inRange<T>(range.first, range.second)(params.random,
+                                                         params.size);
+          const auto result = shrinkable::findLocalMin(
+              shrinkable, [](T) { return true; });
+          RC_ASSERT(result.first == range.first);
+        });
+  }
+};
+
 } // namespace
 
 TEST_CASE("gen::inRange") {
-  forEachType<InRangeProperties, RC_INTEGRAL_TYPES>();
+  forEachType<InRangeProperties, RC_NUMERIC_TYPES>();
+  forEachType<InRangeIntegralProperties, RC_INTEGRAL_TYPES>();
+  forEachType<InRangeRealProperties, RC_REAL_TYPES>();
 }
