@@ -128,7 +128,7 @@ set(PKG_CONFIG_DESCRIPTION_SUMMARY "C++ framework for property based testing ins
 set(PKG_CONFIG_VERSION)
 set(PKG_CONFIG_LIBDIR "\${prefix}/lib")
 set(PKG_CONFIG_INCLUDEDIR "\${prefix}/include")
-set(PKG_CONFIG_LIBS)
+set(PKG_CONFIG_LIBS "-L\${libdir} -lrapidcheck")
 set(PKG_CONFIG_CFLAGS "-I\${includedir}")
 
 configure_file(
